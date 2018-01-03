@@ -1,0 +1,79 @@
+{
+	"elements": [
+		{
+			"name": "search-button", 
+			"label": "Google Search", 
+			"type": "button"
+		}, 
+		{
+			"name": "lucky-button", 
+			"label": "I'm Feeling Lucky",
+			"type": "button"
+		}, 
+		{
+			"name": "logo", 
+			"data": "google-logo.png",
+			"type": "logo"
+		}, 
+		{
+			"name": "about", 
+			"label": "About", 
+			"type": "link"
+		}, 
+		{
+			"name": "store", 
+			"label": "Store", 
+			"type": "link"
+		}, 
+		{
+			"name": "mail", 
+			"label": "Mail", 
+			"type": "link"
+		},
+		{
+			"name": "images", 
+			"label": "Images", 
+			"type": "link"
+		},
+		{
+			"name": "advertising", 
+			"label": "Advertising", 
+			"type": "link"
+		},		
+		{
+			"name": "business", 
+			"label": "Business", 
+			"type": "link"
+		},
+		{
+			"name": "privacy", 
+			"label": "Privacy", 
+			"type": "link"
+		},
+		{
+			"name": "terms", 
+			"label": "Terms", 
+			"type": "link"
+		}, 
+		{
+			"name": "settings", 
+			"label": "Settings", 
+			"type": "link"
+		}, 
+		{
+			"name": "apps", 
+			"data": "apps-logo.png", 
+			"type": "image"
+		}, 
+		{
+			"name": "notifications", 
+			"data": "notifications.png", 
+			"type": "image"
+		}, 
+		{
+			"name": "profile-pic", 
+			"data": "amanda.png", 
+			"type": "image"
+		}
+	]
+}
