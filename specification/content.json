@@ -1,6 +1,10 @@
 {
 	"elements": [
 		{
+			"name": "search-field", 
+			"type": "field"
+		}, 	
+		{
 			"name": "search-button", 
 			"label": "Google Search", 
 			"type": "button"
@@ -12,7 +16,7 @@
 		}, 
 		{
 			"name": "logo", 
-			"data": "google-logo.png",
+			"path": "../data/google-logo.png",
 			"type": "logo"
 		}, 
 		{
@@ -62,17 +66,17 @@
 		}, 
 		{
 			"name": "apps", 
-			"data": "apps-logo.png", 
+			"path": "../data/apps-logo.png", 
 			"type": "image"
 		}, 
 		{
 			"name": "notifications", 
-			"data": "notifications.png", 
+			"path": "../data/notifications.png", 
 			"type": "image"
 		}, 
 		{
 			"name": "profile-pic", 
-			"data": "amanda.png", 
+			"path": "../data/amanda.png", 
 			"type": "image"
 		}
 	]

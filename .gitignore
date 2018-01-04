@@ -1,3 +1,4 @@
 layout/*
 static/node_modules/*
 static/dist/*
+*__py_cache__
