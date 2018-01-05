@@ -1,0 +1,10 @@
+# Requirements
+1. Accept JSON file that specifies the content pieces
+2. Generate layout alternatives that satisfy those constraints
+3. Output SVG for each
+4. Display SVG in the web page
+
+Files for each SVG? 
+A Layout specification for the hardcoded elements
+
+What are we generating? 

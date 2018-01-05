@@ -2,82 +2,210 @@
 	"elements": [
 		{
 			"name": "search-field", 
-			"type": "field"
+			"type": "field",
+			"location": {
+				"x": 150, 
+				"y": 150
+			}, 
+			"size": {
+				"height": 30,
+				"width": 200
+			}
 		}, 	
 		{
 			"name": "search-button", 
 			"label": "Google Search", 
-			"type": "button"
+			"type": "button", 
+			"location": {
+				"x": 170, 
+				"y": 200
+			}, 
+			"size": {
+				"height": 30,
+				"width": 100
+			}
 		}, 
 		{
 			"name": "lucky-button", 
 			"label": "I'm Feeling Lucky",
-			"type": "button"
+			"type": "button", 
+			"location": {
+				"x": 270, 
+				"y": 200
+			}, 
+			"size": {
+				"height": 30,
+				"width": 100
+			}
 		}, 
 		{
 			"name": "logo", 
 			"path": "../data/google-logo.png",
-			"type": "logo"
+			"type": "logo", 
+			"location": {
+				"x": 150, 
+				"y": 100
+			},
+			"size": {
+				"height": 50,
+				"width": 50
+			}
 		}, 
 		{
 			"name": "about", 
 			"label": "About", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		}, 
 		{
 			"name": "store", 
 			"label": "Store", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 20, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		}, 
 		{
 			"name": "mail", 
 			"label": "Mail", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 300, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		},
 		{
 			"name": "images", 
 			"label": "Images", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 320, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		},
 		{
 			"name": "advertising", 
 			"label": "Advertising", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 0, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		},		
 		{
 			"name": "business", 
 			"label": "Business", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 60, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		},
 		{
 			"name": "privacy", 
 			"label": "Privacy", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 300, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		},
 		{
 			"name": "terms", 
 			"label": "Terms", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 340, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		}, 
 		{
 			"name": "settings", 
 			"label": "Settings", 
-			"type": "link"
+			"type": "link", 
+			"location": {
+				"x": 380, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}
 		}, 
 		{
 			"name": "apps", 
 			"path": "../data/apps-logo.png", 
-			"type": "image"
+			"type": "image", 
+			"location": {
+				"x": 340, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 50,
+				"width": 50
+			}
 		}, 
 		{
 			"name": "notifications", 
 			"path": "../data/notifications.png", 
-			"type": "image"
+			"type": "image", 
+			"location": {
+				"x": 360, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 50,
+				"width": 50
+			}
 		}, 
 		{
 			"name": "profile-pic", 
 			"path": "../data/amanda.png", 
-			"type": "image"
+			"type": "image",
+			"location": {
+				"x": 380, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 50,
+				"width": 50
+			}
 		}
 	]
 }

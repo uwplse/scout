@@ -2,8 +2,11 @@
 from flask import Flask, render_template
 import json
 import base64
+import solver
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+APP_HEIGHT = 350
+APP_WIDTH = 450
 
 @app.route("/")
 def index():
@@ -31,6 +34,10 @@ def get_elements():
 		for element in elements: 
 			if element["type"] == "logo" or element["type"] == "image": 
 				element["source"] = read_image_data(element["path"])
+
+	# Solve for all possible layouts (or one possible layout)
+	layout_solver = solver.LayoutSolver.init_problem(elements, APP_WIDTH, APP_WIDTH)
+	layout_solver.solve()
 
 	return json.dumps(elements).encode('utf-8')
 

@@ -15,7 +15,7 @@ export default class Canvas extends React.Component {
   drawField(x, y) {
   	this.ctx.fillStyle = 'white'; 
   	this.ctx.strokeStyle = 'grey'; 
-  	this.ctx.strokeRect(x, y, 100, 30); 
+  	this.ctx.strokeRect(x, y, 200, 30); 
   }
 
   drawLink(x, y, text) {
@@ -34,24 +34,23 @@ export default class Canvas extends React.Component {
   }
 
   drawElements(elements) {
-  	var startingY = 0; 
   	for(var i=0; i<elements.length; i++) {
   		var element = elements[i]; 
+  		var x = element.location.x; 
+  		var y = element.location.y;
+
   		if(element.type == "button") {
-  			this.drawButton(0, startingY);
+  			this.drawButton(x, y);
   		} 
   		else if (element.type == "image") {
-  			this.drawImage(0, startingY, element.source); 
+  			this.drawImage(x, y, element.source); 
   		}
   		else if (element.type == "link") {
-  			this.drawLink(0, startingY, element.label); 
+  			this.drawLink(x, y, element.label); 
   		}
   		else if (element.type == "field") {
-  			this.drawField(0, startingY); 
+  			this.drawField(x, y); 
   		}
-
-
-  		startingY += 55; 
   	}
   }
 
@@ -72,7 +71,7 @@ export default class Canvas extends React.Component {
   }
 
   render () {
-    return <canvas id="shape-canvas" width="300px" height="2000px"></canvas>;
+    return <canvas id="shape-canvas" width="450px" height="350px"></canvas>;
   }
 }
 
