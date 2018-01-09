@@ -7,6 +7,16 @@ export default class Canvas extends React.Component {
   	super(props); 
   	this.drawElements = this.drawElements.bind(this); 
   	this.drawButton = this.drawButton.bind(this); 
+    this.elements = props.elements; 
+    this.id = props.id; 
+  }
+
+  componentDidMount() {
+    var canvas = document.getElementById(this.id)
+    if (canvas.getContext) {
+      this.ctx = canvas.getContext("2d"); 
+      this.drawElements(this.elements); 
+    }
   }
 
   drawButton(x, y, width, height) {
@@ -58,24 +68,8 @@ export default class Canvas extends React.Component {
   	}
   }
 
-  componentDidMount() {
-  	var canvas = document.getElementById("shape-canvas")
-  	if (canvas.getContext) {
-  		this.ctx = canvas.getContext("2d"); 
-
-  		// Request the elements from the configuration file
-  		var self = this; 
-		$.get('/get_elements', 
-			function (data) {
-				let elementsParsed = JSON.parse(data); 
-				self.drawElements(elementsParsed); 
-			}
-		);
-  	}
-  }
-
   render () {
-    return <canvas className="canvas" id="shape-canvas" width="450px" height="350px"></canvas>;
+    return <canvas className="canvas" id={this.id} width="450px" height="350px"></canvas>;
   }
 }
 

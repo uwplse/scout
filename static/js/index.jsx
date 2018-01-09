@@ -1,6 +1,6 @@
 // index.jsx
 import React from "react";
 import ReactDOM from "react-dom";
-import Canvas from "./Canvas";
+import CanvasContainer from "./CanvasContainer";
 
-ReactDOM.render(<Canvas />, document.getElementById("content"));
+ReactDOM.render(<CanvasContainer />, document.getElementById("content"));

@@ -36,10 +36,15 @@ def get_elements():
 				element["source"] = read_image_data(element["path"])
 
 	# Solve for all possible layouts (or one possible layout)
+	print("num elements " + str(len(elements)))
 	layout_solver = solver.LayoutSolver.init_problem(elements, APP_WIDTH, APP_WIDTH)
-	elements = layout_solver.solve()
+	solutions = layout_solver.solve()
 
-	return json.dumps(elements).encode('utf-8')
+	# Write the results for debugging
+	with open('../results/results.json', 'w') as outfile:
+		json.dump(solutions, outfile)
+
+	return json.dumps(solutions).encode('utf-8')
 
 def read_image_data(image_path): 
 	img = open(image_path, 'rb')
