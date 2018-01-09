@@ -1,5 +1,7 @@
 // App.jsx
 import React from "react";
+import '../css/Canvas.css'; 
+
 export default class Canvas extends React.Component {
   constructor(props) {
   	super(props); 
@@ -7,27 +9,28 @@ export default class Canvas extends React.Component {
   	this.drawButton = this.drawButton.bind(this); 
   }
 
-  drawButton(x, y) {
+  drawButton(x, y, width, height) {
   	this.ctx.fillStyle = 'grey'; 
-  	this.ctx.fillRect(x, y, 100, 30); 
+  	this.ctx.fillRect(x, y, width, height); 
   }
 
-  drawField(x, y) {
+  drawField(x, y, width, height) {
   	this.ctx.fillStyle = 'white'; 
   	this.ctx.strokeStyle = 'grey'; 
-  	this.ctx.strokeRect(x, y, 200, 30); 
+  	this.ctx.strokeRect(x, y, width, height); 
   }
 
-  drawLink(x, y, text) {
+  drawLink(x, y, width, height, text) {
   	this.ctx.fillStyle = 'blue'; 
+  	this.ctx.textBaseline = 'top'; 
   	this.ctx.fillText(text, x, y); 
   }
 
-  drawImage(x, y, source) {
+  drawImage(x, y, width, height, source) {
   	var img = new Image(); 
   	var self = this; 
   	img.onload = function() {
-  		self.ctx.drawImage(img, x, y);   		
+  		self.ctx.drawImage(img, x, y, width, height);   		
   	}
 
   	img.src = source; 
@@ -38,18 +41,19 @@ export default class Canvas extends React.Component {
   		var element = elements[i]; 
   		var x = element.location.x; 
   		var y = element.location.y;
-
+  		var width = element.size.width; 
+  		var height = element.size.height; 
   		if(element.type == "button") {
-  			this.drawButton(x, y);
+  			this.drawButton(x, y, width, height);
   		} 
   		else if (element.type == "image") {
-  			this.drawImage(x, y, element.source); 
+  			this.drawImage(x, y, width, height, element.source); 
   		}
   		else if (element.type == "link") {
-  			this.drawLink(x, y, element.label); 
+  			this.drawLink(x, y, width, height, element.label); 
   		}
   		else if (element.type == "field") {
-  			this.drawField(x, y); 
+  			this.drawField(x, y, width, height); 
   		}
   	}
   }
@@ -71,7 +75,7 @@ export default class Canvas extends React.Component {
   }
 
   render () {
-    return <canvas id="shape-canvas" width="450px" height="350px"></canvas>;
+    return <canvas className="canvas" id="shape-canvas" width="450px" height="350px"></canvas>;
   }
 }
 

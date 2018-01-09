@@ -48,14 +48,9 @@ class LayoutSolver(object):
 		text_shapes = []
 		layout_problem = LayoutProblem(area_width, area_height)
 		for shape in elements: 
-			x = shape["location"]["x"]
-			y = shape["location"]["y"]
-			width = shape["size"]["width"]
-			height = shape["size"]["height"]
-			new_shape = None
-
-			shape_id = uuid.uuid4().hex
-			new_shape = shapes.Shape(x, y, width, height, str(shape_id))
+			# shape_id = uuid.uuid4().hex
+			shape_id = shape["name"]
+			new_shape = shapes.Shape(shape, str(shape_id))
 			adj_shapes.append(new_shape)
 		
 		layout_problem.shapes = adj_shapes
@@ -112,11 +107,28 @@ class LayoutSolver(object):
 			# shapes = self.translate_model_to_shapes(model, shapes)
 			print("-------Statistics-------")
 			#print self.solver.statistics()
-			return shapes
+
+			json_shapes = self.translate_model_to_shapes(model, shapes)
+			return json_shapes
 		else: 
 			print('solution could not be found :(')
 			#print self.solver.unsat_core()
 
-	def translate_model_to_shapes(model, shapes): 
+	def translate_model_to_shapes(self, model, shapes): 
 		# Convert the produced values back to the format of shapes to be drawn
-		print("converting")
+		final_shapes_json = []
+		for shape in shapes: 
+			final_x = shape.adjusted_x
+			final_y = shape.adjusted_y
+
+			adj_x = model[final_x].as_string()
+			adj_y = model[final_y].as_string()
+
+			adj_x = int(adj_x)
+			adj_y = int(adj_y)
+			shape.json_shape["location"]["x"] = adj_x
+			shape.json_shape["location"]["y"] = adj_y
+			final_shapes_json.append(shape.json_shape)
+		return final_shapes_json
+
+

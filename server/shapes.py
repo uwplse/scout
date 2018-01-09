@@ -2,17 +2,18 @@ from z3 import *
 
 # Adjustable shape position class
 class Shape(object):
-	def __init__(self, x, y, width, height, shape_id):
-		self.orig_x = x
-		self.orig_y = y
+	def __init__(self, json_shape, shape_id):
+		self.json_shape = json_shape
+		self.orig_x = self.json_shape["location"]["x"]
+		self.orig_y = self.json_shape["location"]["y"]
 		self.id = shape_id
+
+		self.width = self.json_shape["size"]["width"]
+		self.height = self.json_shape["size"]["height"] 
 
 		# Adjusted values are Z3 variables
 		self.adjusted_x = Int(self.id + '_adjusted_x')
 		self.adjusted_y = Int(self.id + '_adjusted_y')
-
-		self.width = width 
-		self.height = height
 
 	@property
 	def orig_x(self):

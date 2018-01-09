@@ -13,7 +13,7 @@ def index():
 
 	# Configuration
 	elements = dict()
-	with open('../specification/content.json') as data_file:
+	with open('../specification/content2.json') as data_file:
 		config = json.load(data_file)
 		elements = config["elements"]
 		print(str(len(elements)))
@@ -37,7 +37,7 @@ def get_elements():
 
 	# Solve for all possible layouts (or one possible layout)
 	layout_solver = solver.LayoutSolver.init_problem(elements, APP_WIDTH, APP_WIDTH)
-	layout_solver.solve()
+	elements = layout_solver.solve()
 
 	return json.dumps(elements).encode('utf-8')
 
