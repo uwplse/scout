@@ -9,11 +9,11 @@ export default class CanvasContainer extends React.Component {
     this.state = { canvases: [] }; 
   }
 
-  drawCanvas(canvas) {
+  drawCanvas(canvas, width, height, background) {
     let children = canvas["elements"];
     let id = canvas["id"];
     let canvasList = this.state.canvases; 
-    canvasList.push(<Canvas elements={children} id={id} key={id} />)
+    canvasList.push(<Canvas elements={children} id={id} key={id} width={width} height={height} background={background}/>)
   }
 
   componentDidMount() {
@@ -21,10 +21,13 @@ export default class CanvasContainer extends React.Component {
 		var self = this; 
 		$.get('/get_elements', 
 			function (data) {
-				let elementsParsed = JSON.parse(data); 
-        for(var i=0; i<elementsParsed.length; i++){
-          let canvas = elementsParsed[i]; 
-          self.drawCanvas(canvas); 
+				let resultsParsed = JSON.parse(data); 
+        let elements = resultsParsed.elements; 
+        let size = resultsParsed.size; 
+        let background = resultsParsed.background; 
+        for(var i=0; i<elements.length; i++){
+          let canvas = elements[i]; 
+          self.drawCanvas(canvas, size.width, size.height, background); 
         }
 
         let canvasList = self.state.canvases; 

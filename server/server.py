@@ -5,20 +5,12 @@ import base64
 import solver
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
-APP_HEIGHT = 350
-APP_WIDTH = 450
+DEFAULT_APP_HEIGHT = 667
+DEFAULT_APP_WIDTH = 375
 
 @app.route("/")
 def index():
-
-	# Configuration
-	elements = dict()
-	with open('../specification/content2.json') as data_file:
-		config = json.load(data_file)
-		elements = config["elements"]
-		print(str(len(elements)))
-
-	return render_template("index.html", elements=elements)
+	return render_template("index.html")
 
 @app.route("/hello")
 def hello():
@@ -28,23 +20,37 @@ def hello():
 def get_elements(): 
 	# Configuration
 	elements = dict()
-	with open('../specification/content.json') as data_file:
+	canvas_width = DEFAULT_APP_WIDTH
+	canvas_height = DEFAULT_APP_HEIGHT
+	with open('../specification/google.json') as data_file:
 		config = json.load(data_file)
 		elements = config["elements"]
 		for element in elements: 
 			if element["type"] == "logo" or element["type"] == "image": 
 				element["source"] = read_image_data(element["path"])
 
+		canvas_width = config["canvas_size"]["width"]
+		canvas_height = config["canvas_size"]["height"]
+		background = config["background"]
+
 	# Solve for all possible layouts (or one possible layout)
 	print("num elements " + str(len(elements)))
-	layout_solver = solver.LayoutSolver.init_problem(elements, APP_WIDTH, APP_WIDTH)
+	layout_solver = solver.LayoutSolver.init_problem(elements, canvas_width, canvas_height)
 	solutions = layout_solver.solve()
+
+	# Output dictionary 
+	output = dict() 
+	output["size"] = dict() 
+	output["size"]["width"] = canvas_width
+	output["size"]["height"] = canvas_height
+	output["background"] = background
+	output["elements"] = solutions
 
 	# Write the results for debugging
 	with open('../results/results.json', 'w') as outfile:
-		json.dump(solutions, outfile)
+		json.dump(output, outfile)
 
-	return json.dumps(solutions).encode('utf-8')
+	return json.dumps(output).encode('utf-8')
 
 def read_image_data(image_path): 
 	img = open(image_path, 'rb')
@@ -54,4 +60,20 @@ def read_image_data(image_path):
 	return "data:image/png;base64, " + img_b64_string
 
 if __name__ == "__main__":
-	app.run()  
+	import argparse
+
+	parser = argparse.ArgumentParser(description='Development Server Help')
+	parser.add_argument("-d", "--debug", action="store_true", dest="debug_mode",
+						help="run in debug mode (for use with PyCharm)", default=False)
+	parser.add_argument("-p", "--port", dest="port",
+						help="port of server (default:%(default)s)", type=int, default=5000)
+
+	cmd_args = parser.parse_args()
+	app_options = {"port": cmd_args.port}
+
+	if cmd_args.debug_mode:
+		app_options["debug"] = True
+		app_options["use_debugger"] = False
+		app_options["use_reloader"] = False
+
+	app.run(**app_options)

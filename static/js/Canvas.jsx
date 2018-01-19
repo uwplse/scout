@@ -9,6 +9,9 @@ export default class Canvas extends React.Component {
   	this.drawButton = this.drawButton.bind(this); 
     this.elements = props.elements; 
     this.id = props.id; 
+    this.width = props.width; 
+    this.height = props.height; 
+    this.background = props.background; 
   }
 
   componentDidMount() {
@@ -19,9 +22,11 @@ export default class Canvas extends React.Component {
     }
   }
 
-  drawButton(x, y, width, height) {
+  drawButton(x, y, width, height, label) {
   	this.ctx.fillStyle = 'grey'; 
   	this.ctx.fillRect(x, y, width, height); 
+    this.ctx.fillStyle = 'white'; 
+    this.ctx.fillText(label, x+(width/4), y+(height/2))
   }
 
   drawField(x, y, width, height) {
@@ -54,7 +59,8 @@ export default class Canvas extends React.Component {
   		var width = element.size.width; 
   		var height = element.size.height; 
   		if(element.type == "button") {
-  			this.drawButton(x, y, width, height);
+        let label = element.label; 
+  			this.drawButton(x, y, width, height, label);
   		} 
   		else if (element.type == "image") {
   			this.drawImage(x, y, width, height, element.source); 
@@ -69,7 +75,8 @@ export default class Canvas extends React.Component {
   }
 
   render () {
-    return <canvas className="canvas" id={this.id} width="450px" height="350px"></canvas>;
+    return <canvas className="canvas" id={this.id} width={this.width + "px"} height={this.height + "px"} style={{backgroundColor: this.background}}>
+           </canvas>;
   }
 }
 

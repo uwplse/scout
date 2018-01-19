@@ -8,3 +8,14 @@ Files for each SVG?
 A Layout specification for the hardcoded elements
 
 What are we generating? 
+
+# Generating all possible layouts
+# Non-overlapping constraint by default? 
+# Need to know how large the components are going to be
+# Should restrict positions to be along some kind of grid otherwise the search space is endless
+# Should specify that shapes cannot overlap
+# Constraint solver
+#  - only returns one solution at a time
+#  - need to add a cconstraint to prevent the values of the model from happening again
+#  - How to rank the solutions? 
+#  - optimize a cost function possibly

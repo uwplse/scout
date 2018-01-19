@@ -3,3 +3,4 @@ static/node_modules/*
 static/dist/*
 *__pycache__
 server/__pycache__
+*.pyc

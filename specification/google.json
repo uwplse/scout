@@ -1,4 +1,9 @@
 {
+	"background": "#ffffff",
+	"canvas_size": {
+		"width": 450, 
+		"height": 350
+	},
 	"elements": [
 		{
 			"name": "search-field", 
@@ -10,7 +15,8 @@
 			"size": {
 				"height": 30,
 				"width": 200
-			}
+			}, 
+			"tag": "search"
 		}, 	
 		{
 			"name": "search-button", 
@@ -23,7 +29,8 @@
 			"size": {
 				"height": 30,
 				"width": 100
-			}
+			}, 
+			"tag": "search"
 		}, 
 		{
 			"name": "lucky-button", 
@@ -36,124 +43,8 @@
 			"size": {
 				"height": 30,
 				"width": 100
-			}
-		}, 
-		{
-			"name": "logo", 
-			"path": "../data/google-logo.png",
-			"type": "logo", 
-			"location": {
-				"x": 150, 
-				"y": 100
-			},
-			"size": {
-				"height": 50,
-				"width": 50
-			}
-		}, 
-		{
-			"name": "about", 
-			"label": "About", 
-			"type": "link", 
-			"location": {
-				"x": 0, 
-				"y": 0
 			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
-		}, 
-		{
-			"name": "store", 
-			"label": "Store", 
-			"type": "link", 
-			"location": {
-				"x": 20, 
-				"y": 0
-			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
-		}, 
-		{
-			"name": "mail", 
-			"label": "Mail", 
-			"type": "link", 
-			"location": {
-				"x": 300, 
-				"y": 0
-			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
-		},
-		{
-			"name": "images", 
-			"label": "Images", 
-			"type": "link", 
-			"location": {
-				"x": 320, 
-				"y": 0
-			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
-		},
-		{
-			"name": "advertising", 
-			"label": "Advertising", 
-			"type": "link", 
-			"location": {
-				"x": 0, 
-				"y": 300
-			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
-		},		
-		{
-			"name": "business", 
-			"label": "Business", 
-			"type": "link", 
-			"location": {
-				"x": 60, 
-				"y": 300
-			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
-		},
-		{
-			"name": "privacy", 
-			"label": "Privacy", 
-			"type": "link", 
-			"location": {
-				"x": 300, 
-				"y": 300
-			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
-		},
-		{
-			"name": "terms", 
-			"label": "Terms", 
-			"type": "link", 
-			"location": {
-				"x": 340, 
-				"y": 300
-			}, 
-			"size": {
-				"height": 30,
-				"width": 50
-			}
+			"tag": "search"
 		}, 
 		{
 			"name": "settings", 
@@ -166,20 +57,107 @@
 			"size": {
 				"height": 30,
 				"width": 50
-			}
+			}, 
+			"tag": "search"
 		}, 
 		{
-			"name": "apps", 
-			"path": "../data/apps-logo.png", 
-			"type": "image", 
+			"name": "logo", 
+			"path": "../data/google-logo.png",
+			"type": "logo", 
 			"location": {
-				"x": 340, 
+				"x": 150, 
+				"y": 100
+			},
+			"size": {
+				"height": 50,
+				"width": 50
+			}, 
+			"tag": "google"
+		}, 
+		{
+			"name": "about", 
+			"label": "About", 
+			"type": "link", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}, 
+			"tag": "google"
+		}, 
+
+		{
+			"name": "advertising", 
+			"label": "Advertising", 
+			"type": "link", 
+			"location": {
+				"x": 0, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}, 
+			"tag": "google"
+		},	
+		{
+			"name": "store", 
+			"label": "Store", 
+			"type": "link", 
+			"location": {
+				"x": 20, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			},
+			"tag": "google"
+		}, 
+		{
+			"name": "business", 
+			"label": "Business", 
+			"type": "link", 
+			"location": {
+				"x": 60, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}, 
+			"tag": "google"
+		},
+		{
+			"name": "mail", 
+			"label": "Mail", 
+			"type": "link", 
+			"location": {
+				"x": 300, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}, 
+			"tag": "user"
+		},
+		{
+			"name": "profile-pic", 
+			"path": "../data/amanda.png", 
+			"type": "image",
+			"location": {
+				"x": 380, 
 				"y": 0
 			}, 
 			"size": {
 				"height": 50,
 				"width": 50
-			}
+			}, 
+			"tag": "user"
 		}, 
 		{
 			"name": "notifications", 
@@ -192,20 +170,64 @@
 			"size": {
 				"height": 50,
 				"width": 50
-			}
-		}, 
+			}, 
+			"tag": "user"
+		},
 		{
-			"name": "profile-pic", 
-			"path": "../data/amanda.png", 
-			"type": "image",
+			"name": "images", 
+			"label": "Images", 
+			"type": "link", 
 			"location": {
-				"x": 380, 
+				"x": 320, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}, 
+			"tag": "applications"
+		},	
+		{
+			"name": "apps", 
+			"path": "../data/apps-logo.png", 
+			"type": "image", 
+			"location": {
+				"x": 340, 
 				"y": 0
 			}, 
 			"size": {
 				"height": 50,
 				"width": 50
-			}
+			}, 
+			"tag": "applications"
+		}, 
+		{
+			"name": "privacy", 
+			"label": "Privacy", 
+			"type": "link", 
+			"location": {
+				"x": 300, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}, 
+			"tag": "legal"
+		},
+		{
+			"name": "terms", 
+			"label": "Terms", 
+			"type": "link", 
+			"location": {
+				"x": 340, 
+				"y": 300
+			}, 
+			"size": {
+				"height": 30,
+				"width": 50
+			}, 
+			"tag": "legal"
 		}
 	]
 }
