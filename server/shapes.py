@@ -4,14 +4,36 @@ from z3 import *
 class Shape(object):
 	def __init__(self, shape_id, json_shape=None):
 		self.id = shape_id
+		self.importance = None
+		self.size_adjustable = False
+		self.json_shape = None
+
+		if json_shape is not None: 
+			self.json_shape = json_shape
+			if "importance" in self.json_shape: 
+				self.importance = self.json_shape["importance"]
+
+			if self.importance == "most" or self.importance == "least": 
+				self.size_adjustable = True
+
+		# Adjusted values are Z3 variables
+		self.adjusted_x = Int(self.id + '_adjusted_x')
+		self.adjusted_y = Int(self.id + '_adjusted_y')
+		self.adjusted_width = Int(self.id + '_adjusted_width')
+		self.adjusted_height = Int(self.id + '_adjusted_height')
+
+class BasicShape(object): 
+	def __init__(self, shape_id, json_shape=None):
+		Shape.__init__(self, shape_id, json_shape)
+
 		self.tag = None
 		self.effect = None
 		self.locked = False
+
 		if json_shape is not None: 
-			self.json_shape = json_shape
 			self.type = self.json_shape["type"]
-			self.width = self.json_shape["size"]["width"]
-			self.height = self.json_shape["size"]["height"] 
+			self.orig_width = self.json_shape["size"]["width"]
+			self.orig_height = self.json_shape["size"]["height"] 
 			self.orig_x = self.json_shape["location"]["x"]
 			self.orig_y = self.json_shape["location"]["y"]
 
@@ -26,20 +48,20 @@ class Shape(object):
 			if "locked" in self.json_shape: 
 				self.locked = self.json_shape["locked"]
 
-		# Adjusted values are Z3 variables
-		self.adjusted_x = Int(self.id + '_adjusted_x')
-		self.adjusted_y = Int(self.id + '_adjusted_y')
-
 
 # Group shapes can have an adjustable width and height
 class GroupShape(Shape): 
-	def __init__(self, shape_id): 
-		Shape.__init__(self, shape_id)
-		# Width and height will be adjustable for group shapes
-		self.width = Int(self.id + '_adjusted_width')
-		self.height = Int(self.id + '_adjusted_height')
+	def __init__(self, shape_id, json_shape=None): 
+		Shape.__init__(self, shape_id, json_shape)
 
 		# Children contained within this group
 		self.children = []
 
 		self.type = "group"
+
+		if self.json_shape is not None: 
+			if "importance" in self.json_shape: 
+				self.importance = self.json_shape["importance"]
+
+			if self.importance == "most" or self.importance == "least": 
+				self.size_adjustable = True

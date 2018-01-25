@@ -22,9 +22,13 @@ def get_elements():
 	elements = dict()
 	canvas_width = DEFAULT_APP_WIDTH
 	canvas_height = DEFAULT_APP_HEIGHT
-	with open('../specification/google.json') as data_file:
+	with open('../specification/facebook_app.json') as data_file:
 		config = json.load(data_file)
 		elements = config["elements"]
+		tags = None
+		if "tags" in config: 
+			tags = config["tags"]
+
 		for element in elements: 
 			if element["type"] == "logo" or element["type"] == "image": 
 				element["source"] = read_image_data(element["path"])
@@ -35,7 +39,7 @@ def get_elements():
 
 	# Solve for all possible layouts (or one possible layout)
 	print("num elements " + str(len(elements)))
-	layout_solver = solver.LayoutSolver.init_problem(elements, canvas_width, canvas_height)
+	layout_solver = solver.LayoutSolver.init_problem(elements, canvas_width, canvas_height, tags)
 	solutions = layout_solver.solve()
 
 	# Output dictionary 

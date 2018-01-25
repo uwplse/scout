@@ -17,7 +17,8 @@
 				"height": 40,
 				"width": 315
 			}, 
-			"tag": "login"
+			"tag": "login", 
+			"importance": "most"
 		}, 
 		{
 			"name": "email-field", 
@@ -115,7 +116,7 @@
 				"height": 14,
 				"width": 68
 			},
-			"effect": "languages"
+			"tag": "languages"
 		}, 
 		{
 			"name": "log", 
@@ -130,6 +131,12 @@
 				"width": 375
 			},
 			"locked": true
+		}
+	], 
+	"tags": [
+		{
+			"tag": "languages", 
+			"importance": "least"
 		}
 	]
 }

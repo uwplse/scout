@@ -1,5 +1,10 @@
 {
-	"elements": [
+	"background": "#1E5C99", 
+	"canvas_size": {
+		"width": 375, 
+		"height": 667
+	},
+	"elements": [ 
 		{
 			"name": "espanol", 
 			"label": "Espanol", 
