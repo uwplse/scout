@@ -1,13 +1,11 @@
 import uuid 
 from z3 import *
-import shapes
-import copy
-import math
+import z3_shapes as shapes # Change here to use Z3
 import time
-import constraint_helpers
+import z3_solver
 
 # Global constraint variables
-MAX_SOLUTIONS = 500
+MAX_SOLUTIONS = 100
 GROUP_PROXIMITY = 5
 GLOBAL_PROXIMITY = 5
 
@@ -63,11 +61,13 @@ class LayoutSolver(object):
 		group_shapes = dict()
 		for group_name, grouped_shape_ids in groups.items():
 			group_json = None
-			for tag_group in tags: 
-				if "tag" in tag_group: 
-					tag_name = tag_group["tag"]
-					if tag_name == group_name: 
-						group_json = tag_group
+			if tags is not None:
+				for tag_group in tags:
+					if "tag" in tag_group:
+						tag_name = tag_group["tag"]
+						if tag_name == group_name:
+							group_json = tag_group
+						
 			# Add new group element
 			group_shape = shapes.GroupShape(group_name, group_json)
 			group_shape.children = grouped_shape_ids
@@ -78,8 +78,7 @@ class LayoutSolver(object):
 		return cls(layout_problem)
 
 	def solve(self): 
-		self.solver = z3.Optimize()
-		self.ch = constraint_helpers.ConstraintHelper(self.solver, self.problem)
+		self.solver = z3_solver.Z3Solver(self.problem) # set the value of this above. Can be
 		self.shapes = self.problem.shapes
 		self.groups = self.problem.groups
 
@@ -88,46 +87,90 @@ class LayoutSolver(object):
 
 		time_start = time.time() 
 
+		# Add cost constraints
+		self.solver.add_alignment_cost()
+
 		# Add single shape constraints 
 		for shp_id, shp in self.shapes.items():
-			self.ch.add_grid_constraints(shp)
-			self.ch.add_bounds_constraints(shp)
+			self.solver.add_grid_constraints(shp)
+			self.solver.add_bounds_constraints(shp)
 		
-			if shp.tag is not None and shp.tag in self.shapes:
-				tag_group = self.shapes[shp.tag]
-				self.ch.add_grouping_constraints(shp, tag_group)
+			if shp.tag is not None and shp.tag in self.groups:
+				tag_group = self.groups[shp.tag]
+				self.solver.add_grouping_constraints(shp, tag_group)
 
-			# # Add effect constraints
+			# Add effect constraints
 			if shp.effect and shp.effect in self.shapes: 
 				effect_shape = self.shapes[shp.effect]
 				self.ch.add_effect_constraint(shp, effect_shape)
 
-			if shp.locked: 
-				self.ch.add_locked_position_constraint(shp)
+			if shp.locked:
+				self.solver.add_locked_position_constraint(shp)
 
 			if shp.importance: 
-				self.ch.add_importance_constraints(shp)
+				self.solver.add_importance_constraints(shp)
 			else: 
-				self.ch.add_locked_size_constraint(shp)
+				self.solver.add_locked_size_constraint(shp)
 
-		for grp_id, grp in self.groups.items(): 
+		for grp_id, grp in self.groups.items():
+			self.solver.add_bounds_constraints(grp)
+
 			# Add constraints to set the max/min width and height
-			min_width = 0
-			min_height = 0
-			max_height = 0
-			max_width = 0
+			vertical_height = 0
+			horizontal_width = 0
+			horizontal_height = []
+			vertical_width = []
 			for child_id in grp.children:
 				child = self.shapes[child_id]
-				max_height += child.adjusted_height + GLOBAL_PROXIMITY
-				max_width += child.adjusted_width + GLOBAL_PROXIMITY
+				vertical_height += child.adjusted_height + GLOBAL_PROXIMITY
+				horizontal_width += child.adjusted_width + GLOBAL_PROXIMITY
+
+				grp_h_eq = grp.adjusted_height == (child.adjusted_height + 2*GLOBAL_PROXIMITY)
+				horizontal_height.append(grp_h_eq)
+
+				grp_w_eq = grp.adjusted_width == (child.adjusted_width + 2*GLOBAL_PROXIMITY)
+				vertical_width.append(grp_w_eq)
+
+
+			bottom_align = []
+			left_align = []
+			for c_index in range(0, len(grp.children)): 
+				id1 = grp.children[c_index]
+				child1 = self.shapes[id1]
+				for c_index2 in range(0, len(grp.children)): 
+					id2 = grp.children[c_index2]
+					child2 = self.shapes[id2]
+					if c_index != c_index2: 
+						align_left = child1.adjusted_x == child2.adjusted_x
+						left_align.append(align_left)
+
+						align_bottom = child1.adjusted_y + child1.adjusted_height == child2.adjusted_y + child2.adjusted_height
+						bottom_align.append(align_bottom)
+
+			left_alignments = And(left_align)
+			bottom_alignments = And(bottom_align)
+
+			set_alignment = If(grp.arrangement, bottom_alignments, left_alignments)
+
+
 
 				# Add constraint to set the child sizes to be adjustable if the group importance is set
-				if grp.importance: 
-					child.importance = grp.importance
-					self.ch.add_importance_constraints(child)
+				# if grp.importance:
+				# 	child.importance = grp.importance
+				# 	self.ch.add_importance_constraints(child)
 
-			self.ch.add_min_size_constraints(grp, min_width, min_height)
-			self.ch.add_max_size_constraints(grp, max_width, max_height)
+			vertical_height += GLOBAL_PROXIMITY
+			horizontal_width += GLOBAL_PROXIMITY
+
+			horizontal_arrange = And(grp.adjusted_width == horizontal_width, Or(horizontal_height))
+			vertical_arrange = And(grp.adjusted_height == vertical_height, Or(vertical_width))
+			constrain_size = If(grp.arrangement, horizontal_arrange, vertical_arrange)
+
+
+
+			## Eventually move this into the constraint helpers class 
+			self.solver.add_group_constraints(grp, constrain_size, set_alignment)
+			
 
 		# For each pair of shapes add non-overlapping constraints 
 		all_shapes = list(self.shapes.values())
@@ -138,33 +181,62 @@ class LayoutSolver(object):
 					shape2 = all_shapes[j]
 
 					# Non-overlappping constraints
-					self.ch.add_proximity_constraints(shape1, shape2)
-		
+					self.solver.add_non_overlapping_constraints(shape1, shape2)
+					# self.solver.add_alignment_constraint(shape1, shape2)
+
 		# Evaluate the results
 		solutions_found = 0
 		results = []
-		curr_model = None
-		while solutions_found < MAX_SOLUTIONS: 
-			if solutions_found > 0: 
-				# Add constraints
-				self.add_solution_to_constraints(curr_model)
 
-			# Now solve for a new solution
-			model = self.solve_and_check_solution()
-			if model is None: 
-				# When no results returned, stop solving for new solutions
-				break	
-			else: 
-				json_shapes = self.translate_model_to_shapes(model)
+		##### Incremental backtracking to find solutions
+		backtrack = False
+		while solutions_found < MAX_SOLUTIONS:
+			print("Number of solutions: " + str(solutions_found))
+			if not backtrack:
+				if solutions_found > 0:
+					# Add constraints
+					self.solver.increment_cost_constraint()
 
-				new_canvas = dict() 
-				new_canvas["elements"] = json_shapes
-				new_canvas["id"] = uuid.uuid4().hex
-				results.append(new_canvas)
+				# Now solve for a new solution
+				sln = self.solver.get_solution()
+				if not sln:
+					backtrack = True
+				else:
+					new_solution = self.get_next_solution()
+					results.append(new_solution)
+					solutions_found+=1
+			else:
+				can_backtrack = self.solver.backtrack()
+				if can_backtrack:
+					sln = self.solver.get_solution()
+					if sln:
+						new_solution = self.get_next_solution()
+						results.append(new_solution)
+						solutions_found+=1
+				else:
+					break
 
-				solutions_found+=1
-				print("Number of solutions: " + str(solutions_found))
-				curr_model = model
+		# while solutions_found < MAX_SOLUTIONS:
+		# 	print("Number of solutions: " + str(solutions_found))
+		# 	if solutions_found > 0:
+		# 		self.solver.add_constraint_from_solution()
+		#
+		# 		# Now solve for a new solution
+		# 		sln = self.solver.get_solution()
+		# 		if not sln:
+		# 			break
+		# 		else:
+		# 			new_solution = self.get_next_solution()
+		# 			results.append(new_solution)
+		# 			solutions_found += 1
+		# 	else:
+		# 		sln = self.solver.get_solution()
+		# 		if sln:
+		# 			new_solution = self.get_next_solution()
+		# 			results.append(new_solution)
+		# 			solutions_found += 1
+		# 		else:
+		# 			break
 
 		time_end = time.time() 
 		print("Total time taken: " + str(time_end-time_start))
@@ -172,95 +244,16 @@ class LayoutSolver(object):
 				
 		return results
 
-	def solve_and_check_solution(self): 
-		print("Looking for a solution.")
-		# Pass in the cost function
-		curr_shapes = list(self.shapes.values())
-		# object_fun = self.solver.minimize(self.ch.maximize_alignments(curr_shapes))
-		result = self.solver.check(); 
-		if str(result) == 'sat': 
-			# Find one solution for now
-			model = self.solver.model()
+	def get_next_solution(self): 
+		json_shapes = self.solver.get_json_shapes()
 
-			# print(model)
-			# # shapes = self.translate_model_to_shapes(model, shapes)
-			# print("-------Statistics-------")
-			# #print self.solver.statistics()
+		new_solution = dict() 
+		new_solution["elements"] = json_shapes
+		new_solution["id"] = uuid.uuid4().hex
 
-			# Keep the solution to add to the set of constraints
-			return model
-		else: 
-			print("No solution found :(")
+		return new_solution
 
-	def translate_model_to_shapes(self, model): 
-		# Convert the produced values back to the format of shapes to be drawn
-		final_shapes_json = []
-		for shape_id, shape in self.shapes.items(): 
-			final_x = shape.adjusted_x
-			final_y = shape.adjusted_y
-			final_width = shape.adjusted_width
-			final_height = shape.adjusted_height
 
-			f_x = model[final_x]
-			f_y = model[final_y]
-			f_width = model[final_width]
-			f_height = model[final_height]
 
-			adj_x = f_x.as_string()
-			adj_y = f_y.as_string()
-			adj_width = f_width.as_string()
-			adj_height = f_height.as_string()
 
-			adj_x = int(adj_x)
-			adj_y = int(adj_y)
-			adj_width = int(adj_width)
-			adj_height = int(adj_height)
-
-			# TOODO later figure out why necessary or do something more efficient
-			json_shape = copy.deepcopy(shape.json_shape)
-			json_shape["location"]["x"] = adj_x
-			json_shape["location"]["y"] = adj_y
-			json_shape["size"]["width"] = adj_width
-			json_shape["size"]["height"] = adj_height
-
-			final_shapes_json.append(json_shape)
-
-		return final_shapes_json
-	
-	def add_solution_to_constraints(self, model): 
-		constraints = []
-		for shape_id, shape in self.shapes.items():
-			final_x = shape.adjusted_x
-			final_y = shape.adjusted_y
-
-			f_x = model[final_x]
-			f_y = model[final_y]
-			adj_x = f_x.as_string()
-			adj_y = f_y.as_string()
-
-			adj_x = int(adj_x)
-			adj_y = int(adj_y)
-
-			x_not_same = shape.adjusted_x != adj_x
-			y_not_same = shape.adjusted_y != adj_y
-			constraints.append(x_not_same)
-			constraints.append(y_not_same)
-
-			# Width and height can change but may be equal to original so only add these if width/height are adjustable
-			if shape.size_adjustable: 
-				final_width = shape.adjusted_width
-				final_height = shape.adjusted_height
-				f_width = model[final_width]
-				f_height = model[final_height]
-				adj_width = f_width.as_string()
-				adj_height = f_height.as_string()
-				adj_width = int(adj_width)
-				adj_height = int(adj_height)
-				width_not_same = shape.adjusted_width != adj_width
-				height_not_same = shape.adjusted_height != adj_height
-				constraints.append(width_not_same)
-				constraints.append(height_not_same)
-
-		if len(constraints):
-			self.solver.add(Or(constraints))
 
