@@ -59,21 +59,7 @@
 				"width": 50
 			}, 
 			"tag": "search"
-		}, 
-		{
-			"name": "logo", 
-			"path": "../data/google-logo.png",
-			"type": "logo", 
-			"location": {
-				"x": 150, 
-				"y": 100
-			},
-			"size": {
-				"height": 50,
-				"width": 50
-			}, 
-			"tag": "google"
-		}, 
+		},
 		{
 			"name": "about", 
 			"label": "About", 

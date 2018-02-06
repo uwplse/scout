@@ -119,7 +119,7 @@
 			"tag": "languages"
 		}, 
 		{
-			"name": "log", 
+			"name": "logo", 
 			"path": "../data/facebook.png", 
 			"type": "image",
 			"location": {
@@ -128,7 +128,7 @@
 			}, 
 			"size": {
 				"height": 208,
-				"width": 375
+				"width": 370
 			},
 			"locked": true
 		}

@@ -5,15 +5,14 @@ import time
 import z3_solver
 
 # Global constraint variables
-MAX_SOLUTIONS = 100
+MAX_SOLUTIONS = 10
 GROUP_PROXIMITY = 5
 GLOBAL_PROXIMITY = 5
 
 # The global grid along which elements are aligned
 GRID_CONSTANT = 5
 
-def abs(x):
-	return If(x>=0,x,-x)
+
 
 def contains(a_list, a_id): 
 	try: 
@@ -36,6 +35,8 @@ class LayoutProblem(object):
 class LayoutSolver(object): 
 	def __init__(self, problem):
 		self.problem = problem
+		self.shapes = self.problem.shapes
+		self.groups = self.problem.groups
 
 	@classmethod
 	def init_problem(cls, elements, area_width, area_height, tags=None): 
@@ -79,42 +80,94 @@ class LayoutSolver(object):
 
 	def solve(self): 
 		self.solver = z3_solver.Z3Solver(self.problem) # set the value of this above. Can be
-		self.shapes = self.problem.shapes
-		self.groups = self.problem.groups
+		time_start = time.time()
 
-		print("num shapes: " + str(len(self.shapes)))
-		print("Box size: " + str(self.problem.box_width) + "," + str(self.problem.box_height))
+		# Build the initial set of constraints
+		self.add_global_constraints()
+		self.add_designer_constraints()
 
-		time_start = time.time() 
+		# Evaluate the results
+		results = []
 
-		# Add cost constraints
-		self.solver.add_alignment_cost()
+		##### Incremental backtracking to find solutions
+		backtrack = False
+		while self.solver.solutions_found < MAX_SOLUTIONS:
+			print("Number of solutions: " + str(self.solver.solutions_found))
+			if not backtrack:
+				# Add constraints
+				# self.solver.increment_cost_constraint()
+				self.solver.add_constraint_from_solution()
 
+				# Now solve for a new solution
+				sln = self.solver.get_solution()
+				if not sln:
+					unsat_core = self.solver.unsat_core()
+					backtrack = True
+				else:
+					new_solution = self.get_next_solution()
+					results.append(new_solution)
+					self.solver.increment_solutions()
+			else:
+				can_backtrack = self.solver.backtrack()
+				if can_backtrack:
+					sln = self.solver.get_solution()
+					if sln:
+						new_solution = self.get_next_solution()
+						results.append(new_solution)
+						self.solver.increment_solutions()
+				else:
+					break
+
+		time_end = time.time() 
+		print("Total time taken: " + str(time_end-time_start))
+		return results
+
+
+	def add_designer_constraints(self): 
 		# Add single shape constraints 
 		for shp_id, shp in self.shapes.items():
-			self.solver.add_grid_constraints(shp)
-			self.solver.add_bounds_constraints(shp)
-		
 			if shp.tag is not None and shp.tag in self.groups:
 				tag_group = self.groups[shp.tag]
-				self.solver.add_grouping_constraints(shp, tag_group)
+				self.solver.helper.add_grouping_constraints(shp, tag_group)
 
 			# Add effect constraints
 			if shp.effect and shp.effect in self.shapes: 
 				effect_shape = self.shapes[shp.effect]
-				self.ch.add_effect_constraint(shp, effect_shape)
+				self.solver.helper.add_effect_constraint(shp, effect_shape)
 
 			if shp.locked:
-				self.solver.add_locked_position_constraint(shp)
+				self.solver.helper.add_locked_position_constraint(shp)
 
 			if shp.importance: 
-				self.solver.add_importance_constraints(shp)
+				self.solver.helper.add_importance_constraints(shp)
 			else: 
-				self.solver.add_locked_size_constraint(shp)
+				self.solver.helper.add_locked_size_constraint(shp)
 
+
+	def add_global_constraints(self): 
+		# Add cost constraints
+		# all_shapes = list(self.shapes.values())
+		# self.solver.helper.add_alignment_cost(all_shapes)
+
+		# Each shape should stay in bounds and be aligned to the pixel grid
+		for shp_id1, shp1 in self.shapes.items():
+			self.solver.helper.add_grid_constraints(shp1)
+			self.solver.helper.add_bounds_constraints(shp1)
+			self.solver.helper.add_size_constraints(shp1)
+
+			for shp_id2, shp2 in self.shapes.items(): 
+				if shp_id1 != shp_id2:
+					print(shp_id1, shp_id2)
+					# Non-overlappping constraints
+					self.solver.helper.add_non_overlapping_constraints(shp1, shp2)
+					# self.solver.add_alignment_constraint(shape1, shape2)
+
+		# Group containers should also have a stay in bounds constraint
 		for grp_id, grp in self.groups.items():
-			self.solver.add_bounds_constraints(grp)
+			self.solver.helper.add_bounds_constraints(grp)
 
+	def add_group_constraints(self): 
+		for grp_id, grp in self.groups.items():
 			# Add constraints to set the max/min width and height
 			vertical_height = 0
 			horizontal_width = 0
@@ -130,7 +183,6 @@ class LayoutSolver(object):
 
 				grp_w_eq = grp.adjusted_width == (child.adjusted_width + 2*GLOBAL_PROXIMITY)
 				vertical_width.append(grp_w_eq)
-
 
 			bottom_align = []
 			left_align = []
@@ -153,12 +205,6 @@ class LayoutSolver(object):
 			set_alignment = If(grp.arrangement, bottom_alignments, left_alignments)
 
 
-
-				# Add constraint to set the child sizes to be adjustable if the group importance is set
-				# if grp.importance:
-				# 	child.importance = grp.importance
-				# 	self.ch.add_importance_constraints(child)
-
 			vertical_height += GLOBAL_PROXIMITY
 			horizontal_width += GLOBAL_PROXIMITY
 
@@ -166,83 +212,13 @@ class LayoutSolver(object):
 			vertical_arrange = And(grp.adjusted_height == vertical_height, Or(vertical_width))
 			constrain_size = If(grp.arrangement, horizontal_arrange, vertical_arrange)
 
-
-
 			## Eventually move this into the constraint helpers class 
 			self.solver.add_group_constraints(grp, constrain_size, set_alignment)
-			
 
-		# For each pair of shapes add non-overlapping constraints 
-		all_shapes = list(self.shapes.values())
-		for i in range(0, len(all_shapes)): 
-			for j in range(0, len(all_shapes)): 
-				if i != j: 
-					shape1 = all_shapes[i]
-					shape2 = all_shapes[j]
-
-					# Non-overlappping constraints
-					self.solver.add_non_overlapping_constraints(shape1, shape2)
-					# self.solver.add_alignment_constraint(shape1, shape2)
-
-		# Evaluate the results
-		solutions_found = 0
-		results = []
-
-		##### Incremental backtracking to find solutions
-		backtrack = False
-		while solutions_found < MAX_SOLUTIONS:
-			print("Number of solutions: " + str(solutions_found))
-			if not backtrack:
-				if solutions_found > 0:
-					# Add constraints
-					self.solver.increment_cost_constraint()
-
-				# Now solve for a new solution
-				sln = self.solver.get_solution()
-				if not sln:
-					backtrack = True
-				else:
-					new_solution = self.get_next_solution()
-					results.append(new_solution)
-					solutions_found+=1
-			else:
-				can_backtrack = self.solver.backtrack()
-				if can_backtrack:
-					sln = self.solver.get_solution()
-					if sln:
-						new_solution = self.get_next_solution()
-						results.append(new_solution)
-						solutions_found+=1
-				else:
-					break
-
-		# while solutions_found < MAX_SOLUTIONS:
-		# 	print("Number of solutions: " + str(solutions_found))
-		# 	if solutions_found > 0:
-		# 		self.solver.add_constraint_from_solution()
-		#
-		# 		# Now solve for a new solution
-		# 		sln = self.solver.get_solution()
-		# 		if not sln:
-		# 			break
-		# 		else:
-		# 			new_solution = self.get_next_solution()
-		# 			results.append(new_solution)
-		# 			solutions_found += 1
-		# 	else:
-		# 		sln = self.solver.get_solution()
-		# 		if sln:
-		# 			new_solution = self.get_next_solution()
-		# 			results.append(new_solution)
-		# 			solutions_found += 1
-		# 		else:
-		# 			break
-
-		time_end = time.time() 
-		print("Total time taken: " + str(time_end-time_start))
-		print("Number of solutions: " + str(solutions_found))
-				
-		return results
+				# Add constraint to set the child sizes to be adjustable if the group importance is set
+				# if grp.importance:
+				# 	child.importance = grp.importance
+				# 	self.ch.add_importance_constraints(child)
 
 	def get_next_solution(self): 
 		json_shapes = self.solver.get_json_shapes()
