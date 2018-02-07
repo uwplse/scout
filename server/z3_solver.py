@@ -10,6 +10,7 @@ class Z3Solver(object):
 
 		self.model = None
 		self.solver = Solver()
+		self.solver.set(unsat_core=True)
 
 		# Keeps track of the overall number of solutions found so far
 		self.solutions_found = 0
