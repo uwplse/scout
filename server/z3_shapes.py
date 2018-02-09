@@ -48,6 +48,12 @@ class BasicShape(object):
 			if "locked" in self.json_shape: 
 				self.locked = self.json_shape["locked"]
 
+			# Set the current values to the original values to start
+			# These are used to keep track of the current value of the variable after solving
+			self.curr_x = self.orig_x
+			self.curr_y = self.orig_y 
+			self.curr_width = self.orig_width
+			self.curr_height = self.orig_height
 
 # Group shapes can have an adjustable width and height
 class GroupShape(Shape): 

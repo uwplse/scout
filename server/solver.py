@@ -12,8 +12,6 @@ GLOBAL_PROXIMITY = 5
 # The global grid along which elements are aligned
 GRID_CONSTANT = 5
 
-
-
 def contains(a_list, a_id): 
 	try: 
 		a_list.index(a_id)
@@ -80,23 +78,25 @@ class LayoutSolver(object):
 
 	def solve(self): 
 		self.solver = z3_solver.Z3Solver(self.problem) # set the value of this above. Can be
-		time_start = time.time()
 
 		# Build the initial set of constraints
 		self.add_global_constraints()
 		self.add_designer_constraints()
+		self.add_group_constraints()
 
 		# Evaluate the results
 		results = []
 
 		##### Incremental backtracking to find solutions
 		backtrack = False
+		time_start = time.time()
+
 		while self.solver.solutions_found < MAX_SOLUTIONS:
 			print("Number of solutions: " + str(self.solver.solutions_found))
 			if not backtrack:
 				# Add constraints
 				# self.solver.increment_cost_constraint()
-				self.solver.add_constraint_from_solution()
+				self.solver.update_constraints_from_model()
 
 				# Now solve for a new solution
 				sln = self.solver.get_solution()
@@ -107,6 +107,8 @@ class LayoutSolver(object):
 					new_solution = self.get_next_solution()
 					results.append(new_solution)
 					self.solver.increment_solutions()
+
+				self.solver.print_cost_scores()
 			else:
 				can_backtrack = self.solver.backtrack()
 				if can_backtrack:
@@ -146,8 +148,9 @@ class LayoutSolver(object):
 
 	def add_global_constraints(self): 
 		# Add cost constraints
-		# all_shapes = list(self.shapes.values())
+		all_shapes = list(self.shapes.values())
 		# self.solver.helper.add_alignment_cost(all_shapes)
+		self.solver.helper.add_balance_cost(all_shapes)
 
 		# Each shape should stay in bounds and be aligned to the pixel grid
 		for shp_id1, shp1 in self.shapes.items():
@@ -157,7 +160,6 @@ class LayoutSolver(object):
 
 			for shp_id2, shp2 in self.shapes.items(): 
 				if shp_id1 != shp_id2:
-					print(shp_id1, shp_id2)
 					# Non-overlappping constraints
 					self.solver.helper.add_non_overlapping_constraints(shp1, shp2)
 					# self.solver.add_alignment_constraint(shape1, shape2)
@@ -212,8 +214,7 @@ class LayoutSolver(object):
 			vertical_arrange = And(grp.adjusted_height == vertical_height, Or(vertical_width))
 			constrain_size = If(grp.arrangement, horizontal_arrange, vertical_arrange)
 
-			## Eventually move this into the constraint helpers class 
-			self.solver.add_group_constraints(grp, constrain_size, set_alignment)
+			self.solver.helper.add_group_constraints(grp, constrain_size, set_alignment)
 
 				# Add constraint to set the child sizes to be adjustable if the group importance is set
 				# if grp.importance:

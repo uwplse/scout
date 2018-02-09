@@ -1,51 +1,57 @@
 {
-	"background": "#1E5C99", 
+	"background": "#1E5C99",
 	"canvas_size": {
-		"width": 375, 
+		"width": 375,
 		"height": 667
 	},
-	"elements": [ 
+	"elements": [
 		{
-			"name": "espanol", 
-			"label": "Espanol", 
-			"type": "link", 
+			"name": "password-field",
+			"label": "Password",
+			"type": "field",
 			"location": {
-				"x": 100, 
-				"y": 244
-			}, 
-			"size": {
-				"height": 14,
-				"width": 68
-			}, 
-			"tag": "languages"
-		}, 
-		{
-			"name": "french", 
-			"label": "Francais", 
-			"type": "link", 
-			"location": {
-				"x": 163, 
-				"y": 242
-			}, 
-			"size": {
-				"height": 14,
-				"width": 68
-			}, 
-			"tag": "languages"
-		}, 
-		{
-			"name": "more", 
-			"label": "More...", 
-			"type": "link", 
-			"location": {
-				"x": 230, 
-				"y": 244
-			}, 
-			"size": {
-				"height": 14,
-				"width": 68
+				"x": 30,
+				"y": 350
 			},
-			"effect": "languages"
+			"size": {
+				"height": 40,
+				"width": 315
+			},
+			"tag": "login"
+		},
+		{
+			"name": "new-account-button",
+			"label": "CREATE NEW FACEBOOK ACCOUNT",
+			"type": "button",
+			"location": {
+				"x": 30,
+				"y": 553
+			},
+			"size": {
+				"height": 40,
+				"width": 315
+			},
+			"tag": "new-account"
+		},
+		{
+			"name": "logo",
+			"path": "../data/facebook.png",
+			"type": "image",
+			"location": {
+				"x": 0,
+				"y": 0
+			},
+			"size": {
+				"height": 208,
+				"width": 370
+			},
+			"locked": true
+		}
+	],
+	"tags": [
+		{
+			"tag": "languages",
+			"importance": "least"
 		}
 	]
 }
