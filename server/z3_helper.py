@@ -23,9 +23,13 @@ class Z3Helper(object):
 		self.solver = solver
 
 		# cost variables
-		self.alignment_cost = Int('NumAlignments')
+		self.alignments_cost = Real('NumAlignments')
 		self.distance_cost = Int('DistanceCost')
-		self.balance_cost = Int('BalanceCost')
+		self.balance_cost = Real('BalanceCost')
+
+		self.l_balance = Real('L_Balance')
+		self.r_balance = Real('R_Balance')
+		self.s_balance = Real('S_Balance')
 
 		self.box_width = bounds_width
 		self.box_height = bounds_height
@@ -123,6 +127,12 @@ class Z3Helper(object):
 	def add_balance_cost(self, shapes): 
 		# self.solver.assert_and_track(self.balance_cost == self.get_balance_cost(shapes), 'balance')
 		self.solver.add(self.balance_cost == self.get_horizontal_balance_cost(shapes))
+		self.solver.add(self.l_balance == self.get_left_balance_cost(shapes))
+		self.solver.add(self.r_balance == self.get_right_balance_cost(shapes))
+		self.solver.add(self.s_balance == self.get_splitting_balance_cost(shapes))
+
+	def add_alignments_cost(self, shapes): 
+		self.solver.add(self.alignments_cost == self.get_alignments_cost(shapes))
 
 	# def add_alignment_cost(self, shapes): 
 	# 	self.solver.add(self.alignment_cost == self.num_alignments(shapes))
@@ -141,22 +151,24 @@ class Z3Helper(object):
 	def is_splitting_center(self, shape): 
 		return And(shape.adjusted_x < self.center_x, (shape.adjusted_x + shape.adjusted_width) > self.center_x)
 
+	def vertically_aligned(self, shape1, shape2): 
+		top = shape1.adjusted_y == shape2.adjusted_y
+		bottom = (shape1.adjusted_y + shape1.adjusted_height) == (shape2.adjusted_y + shape2.adjusted_height)
+		y_center = (shape1.adjusted_y + (shape1.adjusted_height/2)) == (shape2.adjusted_y + (shape2.adjusted_height/2))
+		return Or(top, bottom, y_center)
+
 	def get_center_overlap_cost(self, shape):
 		right_width = (shape.adjusted_x + shape.adjusted_width) - self.center_x
 		left_width = self.center_x - shape.adjusted_x
 		return abs(left_width - right_width)
 
-	def overlapping_vertical(self, shape1, shape2): 
-		return Or(And(shape2.adjusted_y >= shape1.adjusted_y, shape2.adjusted_y <= shape1.adjusted_y + shape1.adjusted_height), \
-			And((shape2.adjusted_y + shape2.adjusted_height) >= shape1.adjusted_y, (shape2.adjusted_y + shape2.adjusted_height) <= (shape1.adjusted_y + shape1.adjusted_height)))
-
 	def amount_of_horizontal_overlap(self, l1, r1, l2, r2): 
 		cost = 0
 		no_overlap = Or(r1 <= l2, r2 <= l1)
-		enclosed = And(l1 >= l2, r2 >= l2)
+		enclosed1 = And(l1 >= l2, r1 <= r2)
+		enclosed2 = And(l2 >= l1, r2 <= r1)
 		left_smaller = l1 <= l2 
-		right_smaller = l2 <= l1 
-		cost += If(enclosed, r1 - l1, If(left_smaller, r1 - l2, r2 - l1))
+		cost += If(enclosed1, r1 - l1, If(enclosed2, (r2 - l2), If(left_smaller, r1 - l2, r2 - l1)))
 		return If(no_overlap, 0, cost)
 
 	# Computing the amount of horizontal overlap for shapes on left
@@ -175,7 +187,7 @@ class Z3Helper(object):
 		for i in range(0, len(shapes)): 
 			if i != shape_index: 
 				shape = shapes[i]
-				total_cost -= If(And(Or(self.is_right_of_center(shape), self.is_splitting_center(shape)), self.overlapping_vertical(shape, curr_shape)), self.right_overlap_cost(curr_shape, shape), 0)
+				total_cost -= If(And(Or(self.is_right_of_center(shape), self.is_splitting_center(shape)), self.vertically_aligned(shape, curr_shape)), self.right_overlap_cost(curr_shape, shape), 0)
 		return total_cost
 
 	# Computing the amount of horizontal overlap for shapes on right
@@ -185,7 +197,7 @@ class Z3Helper(object):
 		for i in range(0, len(shapes)): 
 			if i != shape_index: 
 				shape = shapes[i]
-				total_cost -= If(And(Or(self.is_left_of_center(shape), self.is_splitting_center(shape)), self.overlapping_vertical(shape, curr_shape)), self.left_overlap_cost(curr_shape, shape), 0)
+				total_cost -= If(And(Or(self.is_left_of_center(shape), self.is_splitting_center(shape)), self.vertically_aligned(shape, curr_shape)), self.left_overlap_cost(curr_shape, shape), 0)
 		return total_cost
 
 	def left_overlap_cost(self, shape_right, shape_left):
@@ -201,12 +213,35 @@ class Z3Helper(object):
 	# The overall horizontal balance cost function
 	def get_horizontal_balance_cost(self, shapes): 
 		balance_cost = 0
+		total_widths = 0.0
 		for i in range(0, len(shapes)):
 			shape = shapes[i]
-			# balance_cost += If(self.is_left_of_center(shape), self.get_right_overlap_cost(i, shapes), 0)
-			# balance_cost += If(self.is_right_of_center(shape), self.get_left_overlap_cost(i, shapes), 0)
+			balance_cost += If(self.is_left_of_center(shape), self.get_right_overlap_cost(i, shapes), 0)
+			balance_cost += If(self.is_right_of_center(shape), self.get_left_overlap_cost(i, shapes), 0)
 			balance_cost += If(self.is_splitting_center(shape), self.get_center_overlap_cost(shape), 0)
-		return balance_cost
+			total_widths += shape.adjusted_width
+		return  balance_cost
+
+	def get_left_balance_cost(self, shapes): 
+		balance_cost = 0
+		for i in range(0, len(shapes)):
+			shape = shapes[i]
+			balance_cost += If(self.is_left_of_center(shape), self.get_right_overlap_cost(i, shapes), 0)
+		return  balance_cost
+
+	def get_right_balance_cost(self, shapes): 
+		balance_cost = 0
+		for i in range(0, len(shapes)):
+			shape = shapes[i]
+			balance_cost += If(self.is_right_of_center(shape), self.get_left_overlap_cost(i, shapes), 0)
+		return  balance_cost
+
+	def get_splitting_balance_cost(self, shapes): 
+		balance_cost = 0
+		for i in range(0, len(shapes)):
+			shape = shapes[i]
+			balance_cost += If(self.is_splitting_center(shape), self.get_center_overlap_cost(shape), 0)
+		return  balance_cost
 
 	# ---------- Alignments cost functions ---------- # 
 	def is_aligned(self, shape1, shape2):
@@ -228,6 +263,29 @@ class Z3Helper(object):
 					total_alignments += If(self.is_aligned(shape1, shape2), 1, 0)
 
 		return total_alignments
+
+	def get_alignments_cost(self, shapes): 
+		total_alignments = 0
+		total_pairs = 0.0
+		for i in range(0, len(shapes)):
+			for j in range(i+1, len(shapes)):
+				if i != j:
+					total_pairs += 1
+					shape1 = shapes[i]
+					shape2 = shapes[j]
+					total_alignments += If(self.is_aligned(shape1, shape2), 1.0, 0.0)
+
+		# return (total_pairs - total_alignments)
+		return (total_alignments/total_pairs)
+
+	# ------- Weighted cost functions ----------- # 
+	def get_weighted_cost(self, shapes): 
+		alignments = self.get_alignments_cost(shapes)
+		balance = self.get_horizontal_balance_cost(shapes)
+
+		alignments_factor = 0.5
+		balance_factor = 0.5
+
 
 	# def add_distance_cost(self, shapes): 
 	# 	# The most recent previous solution

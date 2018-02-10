@@ -151,6 +151,7 @@ class LayoutSolver(object):
 		all_shapes = list(self.shapes.values())
 		# self.solver.helper.add_alignment_cost(all_shapes)
 		self.solver.helper.add_balance_cost(all_shapes)
+		self.solver.helper.add_alignments_cost(all_shapes)
 
 		# Each shape should stay in bounds and be aligned to the pixel grid
 		for shp_id1, shp1 in self.shapes.items():

@@ -1,6 +1,7 @@
 import copy
 from z3 import *
 import z3_helper
+from fractions import Fraction
 
 class Z3Solver(object): 
 	def __init__(self, layout_problem):
@@ -96,6 +97,23 @@ class Z3Solver(object):
 		balance = final_balance.as_string()
 		print("Balance cost: " + balance)
 
+		# Print out the current alignments cost percentage
+		final_alignment = self.model[self.helper.alignments_cost]
+		alignment = Fraction(final_alignment.as_string())
+		alignment = float(alignment)
+		print("Alignment cost: " + final_alignment.as_string())
+
+		# Left balance
+		final_l_balance = self.model[self.helper.l_balance]
+		final_r_balance = self.model[self.helper.r_balance]
+		final_s_balance = self.model[self.helper.s_balance]
+		l_balance = final_l_balance.as_string()
+		r_balance = final_r_balance.as_string()
+		s_balance = final_s_balance.as_string()
+		print("Left balance cost: " + l_balance)
+		print("Right balance cost: " + r_balance)
+		print("Splitting balance cost: " + s_balance)
+
 	def update_constraints_from_model(self): 
 		if self.solutions_found > 0:
 			# Then, get and store the previous solution conjunction into the list of previous solutions 
@@ -187,7 +205,7 @@ class Z3Solver(object):
 
 		print("minimizing the balance cost")
 		balance_cost = self.solver.minimize(self.helper.get_horizontal_balance_cost(curr_shapes))
-		alignments_cost = self.solver.maximize(self.helper.num_alignments(curr_shapes))
+		alignments_cost = self.solver.minimize(self.helper.get_alignments_cost(curr_shapes))
 		constraints = self.solver.sexpr()
 		result = self.solver.check();
 
