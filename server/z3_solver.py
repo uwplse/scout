@@ -20,6 +20,12 @@ class Z3Solver(object):
 
 		# Previous solutions 
 		self.previous_solutions = []
+
+		self.previous_alignments_score = -1 
+		self.previous_balance_score = -1
+
+		self.first_alignments_score = -1 
+		self.first_balance_score = -1 
 		
 	def check(self):
 		return self.solver.check()
@@ -61,8 +67,6 @@ class Z3Solver(object):
 
 			test_total_width += adj_width
 
-		print("total width of all shapes " + str(test_total_width))
-
 	def get_previous_solution_negation(self): 
 		curr_values = []
 		for shape in self.shapes.values(): 
@@ -103,71 +107,56 @@ class Z3Solver(object):
 		alignment = float(alignment)
 		print("Alignment cost: " + final_alignment.as_string())
 
-		# Left balance
-		final_l_balance = self.model[self.helper.l_balance]
-		final_r_balance = self.model[self.helper.r_balance]
-		final_s_balance = self.model[self.helper.s_balance]
-		l_balance = final_l_balance.as_string()
-		r_balance = final_r_balance.as_string()
-		s_balance = final_s_balance.as_string()
-		print("Left balance cost: " + l_balance)
-		print("Right balance cost: " + r_balance)
-		print("Splitting balance cost: " + s_balance)
-
 	def update_constraints_from_model(self): 
-		if self.solutions_found > 0:
-			# Then, get and store the previous solution conjunction into the list of previous solutions 
-			previous = self.get_previous_solution_negation() 
-			self.previous_solutions.append(previous)
-			# self.solver.assert_and_track(previous, 'prev' + str(self.solutions_found))
-			self.solver.add(previous)
-		# 	self.solver.pop()
+		test = False
+		# if self.solutions_found > 0:
+		# 	# Then, get and store the previous solution conjunction into the list of previous solutions 
+		# 	previous = self.get_previous_solution_negation() 
+		# 	self.previous_solutions.append(previous)
+		# 	# self.solver.assert_and_track(previous, 'prev' + str(self.solutions_found))
+		# 	self.solver.add(previous)
+			# self.solver.pop()
 			
-		# # Create a new solving context
+		# Create a new solving context
 		# self.solver.push()
 
-		# Add the previous solutions back into the set of constraints
+		# # Add the previous solutions back into the set of constraints
 		# if self.solutions_found > 0:
-		# 	# TODO: possibly optimize so we can just add a new one on every time
-		# 	for i in range(0, len(self.previous_solutions)):
-		# 		self.solver.assert_and_track(self.previous_solutions[i], 'prev' + str(i))
-			
-			####### Add one value as a constraint to the solution
-			# Add the distance function into the set of constraints
-			# all_shapes = list(self.shapes.values())
-			# self.helper.add_distance_cost(all_shapes)
-			# if self.solutions_found == 0:
-			# 	p_index = 0
-			# 	for shape in all_shapes:
-			# 		self.helper.add_previous_solution_from_original(shape, p_index)
-			# 		p_index += 4
-			# else:
-			# 	p_index = 0
-			# 	for shape in all_shapes:
-			# 		f_x = self.model[shape.adjusted_x]
-			# 		f_y = self.model[shape.adjusted_y]
-			# 		adj_x = f_x.as_string()
-			# 		adj_y = f_y.as_string()
-			# 		adj_x = int(adj_x)
-			# 		adj_y = int(adj_y)
-			#
-			# 		f_width = self.model[shape.adjusted_width]
-			# 		f_height = self.model[shape.adjusted_height]
-			# 		adj_width = f_width.as_string()
-			# 		adj_height = f_height.as_string()
-			# 		adj_width = int(adj_width)
-			# 		adj_height = int(adj_height)
-			# 		new_bounds = [adj_x, adj_y, adj_width, adj_height]
-			#
-			# 		self.helper.add_previous_solution_from_bounds(new_bounds, p_index)
-			# 		p_index += 4
-			#
-			# 	# Previous computed distance
-			# 	# prev_distance = self.model[self.distance_cost]
-			# 	# dist = final_distance.as_string()
-			# 	# dist = int(dist)
-			# 	self.helper.add_distance_increase_cost()
+		# 	###### Add one value as a constraint to the solution
+		# 	# Add the distance function into the set of constraints
+		# 	all_shapes = list(self.shapes.values())
+		# 	self.helper.add_distance_cost(all_shapes)
 
+		# 	p_index = 0
+		# 	for shape in all_shapes:
+		# 		f_x = self.model[shape.adjusted_x]
+		# 		f_y = self.model[shape.adjusted_y]
+		# 		adj_x = f_x.as_string()
+		# 		adj_y = f_y.as_string()
+		# 		adj_x = int(adj_x)
+		# 		adj_y = int(adj_y)
+		
+		# 		f_width = self.model[shape.adjusted_width]
+		# 		f_height = self.model[shape.adjusted_height]
+		# 		adj_width = f_width.as_string()
+		# 		adj_height = f_height.as_string()
+		# 		adj_width = int(adj_width)
+		# 		adj_height = int(adj_height)
+		# 		new_bounds = [adj_x, adj_y, adj_width, adj_height]
+		
+		# 		self.helper.add_previous_solution_from_bounds(new_bounds, p_index)
+		# 		p_index += 4
+		
+		# 	# Previous computed distance
+		# 	self.previous_alignments_score = self.model[self.helper.alignments_cost]
+		# 	self.previous_balance_score = self.model[self.helper.balance_cost]
+		# 	if self.first_balance_score == -1 and self.first_alignments_score == -1: 
+		# 		self.first_balance_score = self.previous_balance_score
+		# 		self.first_alignments_score = self.previous_alignments_score
+
+		# 	self.helper.add_distance_increase_cost()
+		# 	self.helper.add_alignment_balance_increase_cost(self.previous_alignments_score, self.previous_balance_score)
+			# self.helper.add_balance_increase_cost(self.previous_balance_score)
 
 	# def increment_cost_constraint(self):
 	# 	# Print out the current alignment cost
@@ -188,7 +177,8 @@ class Z3Solver(object):
 	# 	self.solver.add(self.alignment_cost >= f_aligns)
 
 	def backtrack(self):
-		# print("Current alignments cost: " + str(self.current_alignments))
+		print("Current alignments cost: " + str(self.previous_alignments_score))
+		print("Current balance score: " + str(self.previous_balance_score))
 		# if self.current_alignments >= 0:
 		# 	self.solver.pop()
 		# 	self.current_alignments -= 1
@@ -201,20 +191,13 @@ class Z3Solver(object):
 	def get_solution(self): 
 		# print("Looking for a solution.")
 		# Pass in the cost function
-		curr_shapes = list(self.shapes.values())
+		# curr_shapes = list(self.shapes.values())
 
-		print("minimizing the balance cost")
-		balance_cost = self.solver.minimize(self.helper.get_horizontal_balance_cost(curr_shapes))
-		alignments_cost = self.solver.minimize(self.helper.get_alignments_cost(curr_shapes))
+		# print("minimizing the balance cost")
+		# balance_cost = self.solver.minimize(self.helper.get_horizontal_balance_cost(curr_shapes))
+		# alignments_cost = self.solver.minimize(self.helper.get_alignments_cost(curr_shapes))
 		constraints = self.solver.sexpr()
 		result = self.solver.check();
-
-		with open('../results/constraints.rkt', 'w') as outfile: 
-			outfile.write(constraints)
-		# upper_vals = self.solver.upper_values(object_fun)
-		# upper = self.solver.upper(object_fun)
-		# lower_vals = self.solver.lower_values(object_fun)
-		# lower = self.solver.lower(object_fun)
 
 		# obj = self.solver.objectives()
 		if str(result) == 'sat': 

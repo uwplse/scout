@@ -5,7 +5,7 @@ import time
 import z3_solver
 
 # Global constraint variables
-MAX_SOLUTIONS = 10
+MAX_SOLUTIONS = 25
 GROUP_PROXIMITY = 5
 GLOBAL_PROXIMITY = 5
 
@@ -31,13 +31,11 @@ class LayoutProblem(object):
 		self.groups = None
 
 class LayoutSolver(object): 
-	def __init__(self, problem):
-		self.problem = problem
-		self.shapes = self.problem.shapes
-		self.groups = self.problem.groups
+	def __init__(self, elements, area_width, area_height, tags=None):
+		self.init(elements, area_width, area_height, tags)
+		self.solver = z3_solver.Z3Solver(self.problem) # set the value of this above. Can be
 
-	@classmethod
-	def init_problem(cls, elements, area_width, area_height, tags=None): 
+	def init(self, elements, area_width, area_height, tags, solver=None): 
 		problem_shapes = dict()
 		layout_problem = LayoutProblem(area_width, area_height)
 
@@ -74,11 +72,12 @@ class LayoutSolver(object):
 
 		layout_problem.shapes = problem_shapes
 		layout_problem.groups = group_shapes
-		return cls(layout_problem)
+
+		self.problem = layout_problem
+		self.shapes = self.problem.shapes
+		self.groups = self.problem.groups
 
 	def solve(self): 
-		self.solver = z3_solver.Z3Solver(self.problem) # set the value of this above. Can be
-
 		# Build the initial set of constraints
 		self.add_global_constraints()
 		self.add_designer_constraints()
@@ -95,20 +94,19 @@ class LayoutSolver(object):
 			print("Number of solutions: " + str(self.solver.solutions_found))
 			if not backtrack:
 				# Add constraints
-				# self.solver.increment_cost_constraint()
 				self.solver.update_constraints_from_model()
 
 				# Now solve for a new solution
 				sln = self.solver.get_solution()
 				if not sln:
-					unsat_core = self.solver.unsat_core()
+					# unsat_core = self.solver.unsat_core()
 					backtrack = True
 				else:
 					new_solution = self.get_next_solution()
 					results.append(new_solution)
 					self.solver.increment_solutions()
 
-				self.solver.print_cost_scores()
+				# self.solver.print_cost_scores()
 			else:
 				can_backtrack = self.solver.backtrack()
 				if can_backtrack:
@@ -117,6 +115,8 @@ class LayoutSolver(object):
 						new_solution = self.get_next_solution()
 						results.append(new_solution)
 						self.solver.increment_solutions()
+					else: 
+						break
 				else:
 					break
 
@@ -149,13 +149,12 @@ class LayoutSolver(object):
 	def add_global_constraints(self): 
 		# Add cost constraints
 		all_shapes = list(self.shapes.values())
-		# self.solver.helper.add_alignment_cost(all_shapes)
 		self.solver.helper.add_balance_cost(all_shapes)
 		self.solver.helper.add_alignments_cost(all_shapes)
 
 		# Each shape should stay in bounds and be aligned to the pixel grid
 		for shp_id1, shp1 in self.shapes.items():
-			self.solver.helper.add_grid_constraints(shp1)
+			# self.solver.helper.add_grid_constraints(shp1)
 			self.solver.helper.add_bounds_constraints(shp1)
 			self.solver.helper.add_size_constraints(shp1)
 

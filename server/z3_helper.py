@@ -23,13 +23,13 @@ class Z3Helper(object):
 		self.solver = solver
 
 		# cost variables
-		self.alignments_cost = Real('NumAlignments')
+		self.alignments_cost = Int('NumAlignments')
 		self.distance_cost = Int('DistanceCost')
-		self.balance_cost = Real('BalanceCost')
+		self.balance_cost = Int('BalanceCost')
 
-		self.l_balance = Real('L_Balance')
-		self.r_balance = Real('R_Balance')
-		self.s_balance = Real('S_Balance')
+		# self.l_balance = Real('L_Balance')
+		# self.r_balance = Real('R_Balance')
+		# self.s_balance = Real('S_Balance')
 
 		self.box_width = bounds_width
 		self.box_height = bounds_height
@@ -116,31 +116,26 @@ class Z3Helper(object):
 			self.solver.add(shape.adjusted_height >= shape.orig_height)
 			self.solver.add(shape.adjusted_width <= self.box_width)
 			self.solver.add(shape.adjusted_height <= self.box_height)
+
+			# Maintain the original aspect ratio of the shapes 
+			self.solver.add((shape.adjusted_width/shape.adjusted_height) == (shape.orig_width/shape.orig_height))	
 		elif shape.importance == "least":
 			self.solver.add(shape.adjusted_width <= shape.orig_width)
 			self.solver.add(shape.adjusted_height <= shape.orig_height)
 			self.solver.add(shape.adjusted_width >= MINIMUM_WIDTH_SHAPE)
 			self.solver.add(shape.adjusted_height >= MINIMUM_HEIGHT_SHAPE)
+			self.solver.add((shape.adjusted_width/shape.adjusted_height) == (shape.orig_width/shape.orig_height))	
 		else:
 			self.add_locked_size_constraint(shape)
 
 	def add_balance_cost(self, shapes): 
-		# self.solver.assert_and_track(self.balance_cost == self.get_balance_cost(shapes), 'balance')
 		self.solver.add(self.balance_cost == self.get_horizontal_balance_cost(shapes))
-		self.solver.add(self.l_balance == self.get_left_balance_cost(shapes))
-		self.solver.add(self.r_balance == self.get_right_balance_cost(shapes))
-		self.solver.add(self.s_balance == self.get_splitting_balance_cost(shapes))
+		# self.solver.add(self.l_balance == self.get_left_balance_cost(shapes))
+		# self.solver.add(self.r_balance == self.get_right_balance_cost(shapes))
+		# self.solver.add(self.s_balance == self.get_splitting_balance_cost(shapes))
 
 	def add_alignments_cost(self, shapes): 
-		self.solver.add(self.alignments_cost == self.get_alignments_cost(shapes))
-
-	# def add_alignment_cost(self, shapes): 
-	# 	self.solver.add(self.alignment_cost == self.num_alignments(shapes))
-
-	# def add_alignment_constraint(self, shape1, shape2):
-	# 	# Add each alignment constraint as a soft constraint
-	# 	aligned = self.is_aligned(shape1, shape2)
-	# 	self.solver.add_soft(aligned)
+		self.solver.add(self.alignments_cost == self.num_alignments(shapes))
 
 	def is_left_of_center(self, shape): 
 		return shape.adjusted_x + shape.adjusted_width < self.center_x
@@ -220,7 +215,7 @@ class Z3Helper(object):
 			balance_cost += If(self.is_right_of_center(shape), self.get_left_overlap_cost(i, shapes), 0)
 			balance_cost += If(self.is_splitting_center(shape), self.get_center_overlap_cost(shape), 0)
 			total_widths += shape.adjusted_width
-		return  balance_cost
+		return  total_widths -balance_cost
 
 	def get_left_balance_cost(self, shapes): 
 		balance_cost = 0
@@ -286,58 +281,65 @@ class Z3Helper(object):
 		alignments_factor = 0.5
 		balance_factor = 0.5
 
+	def add_distance_cost(self, shapes): 
+		# The most recent previous solution
+		num_shapes = len(shapes)
+		self.previous_solution = IntVector('PrevSolution', num_shapes*4)
 
-	# def add_distance_cost(self, shapes): 
-	# 	# The most recent previous solution
-	# 	num_shapes = len(shapes)
-	# 	self.previous_solution = IntVector('PrevSolution', num_shapes*4)
+		self.solver.add(self.distance_cost == self.get_distance_cost(shapes))
 
-	# 	self.solver.add(self.distance_cost == self.get_distance_cost(shapes))
+	def add_distance_increase_cost(self): 
+		distance_const = 500
+		self.solver.add(self.distance_cost >= distance_const)
 
-	# def add_distance_increase_cost(self): 
-	# 	distance_const = 500
-	# 	self.solver.add(self.distance_cost >= distance_const)
+	def add_alignment_balance_increase_cost(self, previous_alignments_cost, previous_balance_cost): 
+		self.solver.add(self.alignments_cost >= previous_alignments_cost)
+		self.solver.add(self.balance_cost >= previous_balance_cost)
+		self.solver.add(Or(self.alignments_cost > previous_alignments_cost, self.balance_cost > previous_balance_cost))
 
-	# def add_previous_solution_from_original(self, shape, p_index): 
-	# 	self.solver.add(self.previous_solution[p_index] == shape.orig_x)
-	# 	self.solver.add(self.previous_solution[p_index+1] == shape.orig_y)
-	# 	self.solver.add(self.previous_solution[p_index+2] == shape.orig_width)
-	# 	self.solver.add(self.previous_solution[p_index+3] == shape.orig_height)
+	# def add_balance_increase_cost(self, previous_balance_cost): 
+	# 	self.solver.add(self.balance_cost > previous_balance_cost)
 
-	# def add_previous_solution_from_bounds(self, bounds, p_index): 
-	# 	adj_x,adj_y,adj_width,adj_height = bounds
-	# 	self.solver.add(self.previous_solution[p_index] == adj_x)
-	# 	self.solver.add(self.previous_solution[p_index+1] == adj_y)
-	# 	self.solver.add(self.previous_solution[p_index+2] == adj_width)
-	# 	self.solver.add(self.previous_solution[p_index+3] == adj_height)
+	def add_previous_solution_from_original(self, shape, p_index): 
+		self.solver.add(self.previous_solution[p_index] == shape.orig_x)
+		self.solver.add(self.previous_solution[p_index+1] == shape.orig_y)
+		self.solver.add(self.previous_solution[p_index+2] == shape.orig_width)
+		self.solver.add(self.previous_solution[p_index+3] == shape.orig_height)
 
-	# def get_distance_cost(self, shapes): 
-	# 	# Compute the IoU cost of this solution from the previous solution
-	# 	prev_i = 0
-	# 	total_cost = 0
-	# 	for i in range(0, len(shapes)): 
-	# 		shape = shapes[i]
+	def add_previous_solution_from_bounds(self, bounds, p_index): 
+		adj_x,adj_y,adj_width,adj_height = bounds
+		self.solver.add(self.previous_solution[p_index] == adj_x)
+		self.solver.add(self.previous_solution[p_index+1] == adj_y)
+		self.solver.add(self.previous_solution[p_index+2] == adj_width)
+		self.solver.add(self.previous_solution[p_index+3] == adj_height)
 
-	# 		prev_x = self.previous_solution[prev_i]
-	# 		prev_y = self.previous_solution[prev_i+1]
-	# 		prev_width = self.previous_solution[prev_i+2]
-	# 		prev_height = self.previous_solution[prev_i+3]
-	# 		total_cost += abs(shape.adjusted_x-prev_x)
-	# 		total_cost += abs(shape.adjusted_y-prev_y)
-	# 		total_cost += abs(shape.adjusted_width-prev_width)
-	# 		total_cost += abs(shape.adjusted_height-prev_height)
-	# 		# # Compute the area of overlap between the two boxes
-	# 		# xA = max(prev_x, shape.adjusted_x)
-	# 		# yA = max(prev_y, shape.adjusted_y)
-	# 		# xB = min(prev_width, shape.adjusted_width)
-	# 		# yB = min(prev_height, shape.adjusted_height)
-	# 		# overlap = (xB - xA + 1) * (yB - yA + 1)
-	# 		# curr_area = shape.adjusted_width * shape.adjusted_height
-	# 		# prev_area = prev_width * prev_height
-	# 		# iou = overlap / (curr_area + prev_area - overlap)
+	def get_distance_cost(self, shapes): 
+		# Compute the IoU cost of this solution from the previous solution
+		prev_i = 0
+		total_cost = 0
+		for i in range(0, len(shapes)): 
+			shape = shapes[i]
 
-	# 		# total_cost += iou # We want to minimize the amount of overlap with the previous solution
-	# 		prev_i += 4
-	# 	return total_cost
+			prev_x = self.previous_solution[prev_i]
+			prev_y = self.previous_solution[prev_i+1]
+			prev_width = self.previous_solution[prev_i+2]
+			prev_height = self.previous_solution[prev_i+3]
+			total_cost += abs(shape.adjusted_x-prev_x)
+			total_cost += abs(shape.adjusted_y-prev_y)
+			total_cost += abs(shape.adjusted_width-prev_width)
+			total_cost += abs(shape.adjusted_height-prev_height)
+			# # Compute the area of overlap between the two boxes
+			# xA = max(prev_x, shape.adjusted_x)
+			# yA = max(prev_y, shape.adjusted_y)
+			# xB = min(prev_width, shape.adjusted_width)
+			# yB = min(prev_height, shape.adjusted_height)
+			# overlap = (xB - xA + 1) * (yB - yA + 1)
+			# curr_area = shape.adjusted_width * shape.adjusted_height
+			# prev_area = prev_width * prev_height
+			# iou = overlap / (curr_area + prev_area - overlap)
+
+			# total_cost += iou # We want to minimize the amount of overlap with the previous solution
+			prev_i += 4
+		return total_cost
 
 
