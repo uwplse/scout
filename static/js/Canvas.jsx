@@ -36,7 +36,7 @@ export default class Canvas extends React.Component {
   }
 
   drawLink(x, y, width, height, text) {
-  	this.ctx.fillStyle = 'blue';
+  	this.ctx.fillStyle = 'white';
   	this.ctx.textBaseline = 'top'; 
   	this.ctx.fillText(text, x, y); 
   }
