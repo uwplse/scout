@@ -2,11 +2,11 @@ from z3 import *
 
 # These will eventually be customizable
 GRID_CONSTANT = 5
-GROUP_PROXIMITY = 5
-GLOBAL_PROXIMITY = 5
+GROUP_PROXIMITY = 1
+GLOBAL_PROXIMITY = 1
 
-MINIMUM_WIDTH_SHAPE = 10
-MINIMUM_HEIGHT_SHAPE = 10
+MINIMUM_WIDTH_SHAPE = 2
+MINIMUM_HEIGHT_SHAPE = 2
 
 # Override default abs, max, min functions to construct Z3 expressions
 def abs(x):

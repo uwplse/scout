@@ -21,8 +21,13 @@ def contains(a_list, a_id):
 
 class LayoutProblem(object): 
 	def __init__(self, width, height): # Width and height are the size of the containing box
-		self.box_width = width
-		self.box_height = height
+
+		# Compute the scaled values of the canvas height and width
+		scaled_width = width/GRID_CONSTANT
+		scaled_height = height/GRID_CONSTANT
+
+		self.box_width = scaled_width
+		self.box_height = scaled_height
 
 		# Individual shapes
 		self.shapes = None

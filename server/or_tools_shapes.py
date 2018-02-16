@@ -1,10 +1,8 @@
-from z3 import *
-
-GRID_CONSTANT = 5
+from ortools.constraint_solver import pywrapcp
 
 # Adjustable shape position class
 class Shape(object):
-	def __init__(self, shape_id, json_shape=None):
+	def __init__(self, solver, shape_id, json_shape=None, dims=[]):
 		self.id = shape_id
 		self.importance = None
 		self.size_adjustable = False
@@ -19,14 +17,19 @@ class Shape(object):
 				self.size_adjustable = True
 
 		# Adjusted values are Z3 variables
-		self.adjusted_x = Int(self.id + '_adjusted_x')
-		self.adjusted_y = Int(self.id + '_adjusted_y')
-		self.adjusted_width = Int(self.id + '_adjusted_width')
-		self.adjusted_height = Int(self.id + '_adjusted_height')
+		max_width = 200
+		max_height = 200
+		if len(dims):
+			max_width,max_height = dims
+
+		self.adjusted_x = solver.IntVar(0, max_width, self.id + '_adjusted_x')
+		self.adjusted_y = solver.IntVar(0, max_height, self.id + '_adjusted_y')
+		self.adjusted_width = solver.IntVar(10, max_width, self.id + '_adjusted_width')
+		self.adjusted_height = solver.IntVar(10, max_height, self.id + '_adjusted_height')
 
 class BasicShape(object): 
-	def __init__(self, shape_id, json_shape=None):
-		Shape.__init__(self, shape_id, json_shape)
+	def __init__(self, solver, shape_id, json_shape=None, dims=[]):
+		Shape.__init__(self, solver, shape_id, json_shape, dims)
 
 		self.tag = None
 		self.effect = None
@@ -34,16 +37,10 @@ class BasicShape(object):
 
 		if json_shape is not None: 
 			self.type = self.json_shape["type"]
-			self.unscaled_width = self.json_shape["size"]["width"]
-			self.unscaled_height = self.json_shape["size"]["height"] 
-			self.unscaled_x = self.json_shape["location"]["x"]
-			self.unscaled_y = self.json_shape["location"]["y"]
-
-			# Calculate the scaled values
-			self.orig_width = self.unscaled_width/GRID_CONSTANT
-			self.orig_height = self.unscaled_height/GRID_CONSTANT
-			self.orig_y = self.unscaled_y/GRID_CONSTANT
-			self.orig_x = self.unscaled_x/GRID_CONSTANT
+			self.orig_width = self.json_shape["size"]["width"]
+			self.orig_height = self.json_shape["size"]["height"] 
+			self.orig_x = self.json_shape["location"]["x"]
+			self.orig_y = self.json_shape["location"]["y"]
 
 			# Tag
 			if "tag" in self.json_shape: 
@@ -65,14 +62,14 @@ class BasicShape(object):
 
 # Group shapes can have an adjustable width and height
 class GroupShape(Shape): 
-	def __init__(self, shape_id, json_shape=None): 
-		Shape.__init__(self, shape_id, json_shape)
+	def __init__(self, solver, shape_id, json_shape=None, dims=[]): 
+		Shape.__init__(self, solver, shape_id, json_shape, dims)
 
 		# Children contained within this group
 		self.children = []
 
 		# Arrangement - Horizontal (True) or Vertical (False)
-		self.arrangement = Bool(self.id + '_arrangement')
+		self.arrangement = solver.BoolVar(self.id + '_arrangement')
 
 		self.vertical_alignments = ['left', 'right', 'x-center']
 		self.horizontal_alignments = ['top', 'bottom', 'y-center']

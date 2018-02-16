@@ -3,10 +3,14 @@ from z3 import *
 import z3_helper
 from fractions import Fraction
 
+GRID_CONSTANT = 5
+
 class Z3Solver(object): 
 	def __init__(self, layout_problem):
 		self.shapes = layout_problem.shapes
 		self.groups = layout_problem.groups
+		self.shape_items = self.shapes.values()
+		self.shapes_list = list(self.shape_items)
 		self.problem = layout_problem
 
 		self.model = None
@@ -69,7 +73,7 @@ class Z3Solver(object):
 
 	def get_previous_solution_negation(self): 
 		curr_values = []
-		for shape in self.shapes.values(): 
+		for shape in self.shape_items: 
 			stmt_x = shape.adjusted_x == shape.curr_x
 			stmt_y = shape.adjusted_y == shape.curr_y
 			stmt_width = shape.adjusted_width == shape.curr_width
@@ -85,12 +89,14 @@ class Z3Solver(object):
 	def get_json_shapes(self): 
 		# Convert the produced values back to the format of shapes to be drawn
 		final_json = []
-		for shape in self.shapes.values(): 
+		for shape in self.shape_items: 
 			json_shape = copy.deepcopy(shape.json_shape)
-			json_shape["location"]["x"] = shape.curr_x
-			json_shape["location"]["y"] = shape.curr_y
-			json_shape["size"]["width"] = shape.curr_width
-			json_shape["size"]["height"] = shape.curr_height
+
+			# Calculate the rescaled_values
+			json_shape["location"]["x"] = shape.curr_x * GRID_CONSTANT
+			json_shape["location"]["y"] = shape.curr_y * GRID_CONSTANT
+			json_shape["size"]["width"] = shape.curr_width * GRID_CONSTANT
+			json_shape["size"]["height"] = shape.curr_height * GRID_CONSTANT
 
 			final_json.append(json_shape)
 		return final_json
@@ -109,54 +115,52 @@ class Z3Solver(object):
 
 	def update_constraints_from_model(self): 
 		test = False
-		# if self.solutions_found > 0:
-		# 	# Then, get and store the previous solution conjunction into the list of previous solutions 
-		# 	previous = self.get_previous_solution_negation() 
-		# 	self.previous_solutions.append(previous)
-		# 	# self.solver.assert_and_track(previous, 'prev' + str(self.solutions_found))
-		# 	self.solver.add(previous)
-			# self.solver.pop()
+		if self.solutions_found > 0:
+			# Then, get and store the previous solution conjunction into the list of previous solutions 
+			previous = self.get_previous_solution_negation() 
+			self.previous_solutions.append(previous)
+			# self.solver.assert_and_track(previous, 'prev' + str(self.solutions_found))
+			self.solver.add(previous)
+			self.solver.pop()
 			
 		# Create a new solving context
-		# self.solver.push()
+		self.solver.push()
 
-		# # Add the previous solutions back into the set of constraints
-		# if self.solutions_found > 0:
-		# 	###### Add one value as a constraint to the solution
-		# 	# Add the distance function into the set of constraints
-		# 	all_shapes = list(self.shapes.values())
-		# 	self.helper.add_distance_cost(all_shapes)
+		# Add the previous solutions back into the set of constraints
+		if self.solutions_found > 0:
+			###### Add one value as a constraint to the solution
+			# Add the distance function into the set of constraints
+			# self.helper.add_distance_cost(self.shapes_list)
 
-		# 	p_index = 0
-		# 	for shape in all_shapes:
-		# 		f_x = self.model[shape.adjusted_x]
-		# 		f_y = self.model[shape.adjusted_y]
-		# 		adj_x = f_x.as_string()
-		# 		adj_y = f_y.as_string()
-		# 		adj_x = int(adj_x)
-		# 		adj_y = int(adj_y)
+			# p_index = 0
+			# for shape in self.shapes_list:
+			# 	f_x = self.model[shape.adjusted_x]
+			# 	f_y = self.model[shape.adjusted_y]
+			# 	adj_x = f_x.as_string()
+			# 	adj_y = f_y.as_string()
+			# 	adj_x = int(adj_x)
+			# 	adj_y = int(adj_y)
 		
-		# 		f_width = self.model[shape.adjusted_width]
-		# 		f_height = self.model[shape.adjusted_height]
-		# 		adj_width = f_width.as_string()
-		# 		adj_height = f_height.as_string()
-		# 		adj_width = int(adj_width)
-		# 		adj_height = int(adj_height)
-		# 		new_bounds = [adj_x, adj_y, adj_width, adj_height]
+			# 	f_width = self.model[shape.adjusted_width]
+			# 	f_height = self.model[shape.adjusted_height]
+			# 	adj_width = f_width.as_string()
+			# 	adj_height = f_height.as_string()
+			# 	adj_width = int(adj_width)
+			# 	adj_height = int(adj_height)
+			# 	new_bounds = [adj_x, adj_y, adj_width, adj_height]
 		
-		# 		self.helper.add_previous_solution_from_bounds(new_bounds, p_index)
-		# 		p_index += 4
+			# 	self.helper.add_previous_solution_from_bounds(new_bounds, p_index)
+			# 	p_index += 4
 		
-		# 	# Previous computed distance
-		# 	self.previous_alignments_score = self.model[self.helper.alignments_cost]
-		# 	self.previous_balance_score = self.model[self.helper.balance_cost]
-		# 	if self.first_balance_score == -1 and self.first_alignments_score == -1: 
-		# 		self.first_balance_score = self.previous_balance_score
-		# 		self.first_alignments_score = self.previous_alignments_score
+			# Previous computed distance
+			self.previous_alignments_score = self.model[self.helper.alignments_cost]
+			self.previous_balance_score = self.model[self.helper.balance_cost]
+			# if self.first_balance_score == -1 and self.first_alignments_score == -1: 
+			# 	self.first_balance_score = self.previous_balance_score
+			# 	self.first_alignments_score = self.previous_alignments_score
 
-		# 	self.helper.add_distance_increase_cost()
-		# 	self.helper.add_alignment_balance_increase_cost(self.previous_alignments_score, self.previous_balance_score)
-			# self.helper.add_balance_increase_cost(self.previous_balance_score)
+			# self.helper.add_distance_increase_cost()
+			self.helper.add_alignment_balance_increase_cost(self.previous_alignments_score, self.previous_balance_score)
 
 	# def increment_cost_constraint(self):
 	# 	# Print out the current alignment cost
@@ -191,12 +195,11 @@ class Z3Solver(object):
 	def get_solution(self): 
 		# print("Looking for a solution.")
 		# Pass in the cost function
-		# curr_shapes = list(self.shapes.values())
 
 		# print("minimizing the balance cost")
-		# balance_cost = self.solver.minimize(self.helper.get_horizontal_balance_cost(curr_shapes))
-		# alignments_cost = self.solver.minimize(self.helper.get_alignments_cost(curr_shapes))
-		constraints = self.solver.sexpr()
+		# balance_cost = self.solver.minimize(self.helper.get_horizontal_balance_cost(self.shapes_list))
+		# alignments_cost = self.solver.minimize(self.helper.get_alignments_cost(self.shapes_list))
+		# constraints = self.solver.sexpr()
 		result = self.solver.check();
 
 		# obj = self.solver.objectives()
