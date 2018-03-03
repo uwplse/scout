@@ -43,7 +43,8 @@ def get_elements():
 
 
 	# Simulated annealing search 
-	solutions = get_solution_annealing(elements, canvas_width, canvas_height)
+	# solutions = get_solution_annealing(elements, canvas_width, canvas_height)
+	solutions = get_solution_from_solver(elements, canvas_width, canvas_height, tags)
 
 	# Output dictionary 
 	output = dict() 
@@ -104,7 +105,7 @@ def get_solution_annealing(elements, canvas_width, canvas_height):
 	tmin = 1
 
 	tsp = an.LayoutAnnealingProblem(init_state, canvas_width, canvas_height)
-	tsp.steps = 25000
+	tsp.steps = 250000
 	tsp.Tmax = tmax
 	tsp.Tmin = tmin
 
