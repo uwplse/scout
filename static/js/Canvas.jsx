@@ -31,7 +31,7 @@ export default class Canvas extends React.Component {
 
   drawField(x, y, width, height) {
   	this.ctx.fillStyle = 'white'; 
-  	this.ctx.strokeStyle = 'grey'; 
+  	this.ctx.strokeStyle = 'black'; 
   	this.ctx.strokeRect(x, y, width, height); 
   }
 

@@ -2,11 +2,12 @@
 from flask import Flask, render_template
 import json
 import base64
-import solver
-import annealing_solver as an
+# import solver
+# import annealing_solver as an
 import uuid
 import random
 import copy
+import custom_solver
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 DEFAULT_APP_HEIGHT = 667
@@ -26,7 +27,7 @@ def get_elements():
 	elements = dict()
 	canvas_width = DEFAULT_APP_WIDTH
 	canvas_height = DEFAULT_APP_HEIGHT
-	with open('../specification/facebook_app.json') as data_file:
+	with open('../specification/with_labels.json') as data_file:
 		config = json.load(data_file)
 		elements = config["elements"]
 		tags = None
@@ -44,7 +45,8 @@ def get_elements():
 
 	# Simulated annealing search 
 	# solutions = get_solution_annealing(elements, canvas_width, canvas_height)
-	solutions = get_solution_from_solver(elements, canvas_width, canvas_height, tags)
+	# solutions = get_solution_from_solver(elements, canvas_width, canvas_height, tags)
+	solutions = get_solution_from_custom_solver(elements, canvas_width, canvas_height, tags)
 
 	# Output dictionary 
 	output = dict() 
@@ -59,6 +61,11 @@ def get_elements():
 	# 	json.dump(output, outfile)
 
 	return json.dumps(output).encode('utf-8')
+
+def get_solution_from_custom_solver(elements, canvas_width, canvas_height, tags): 
+	solver = custom_solver.Solver(elements, canvas_width, canvas_height)
+	solutions = solver.solve()
+	return solutions
 
 def get_solution_from_solver(elements, canvas_width, canvas_height, tags): 
 	layout_solver = solver.LayoutSolver(elements, canvas_width, canvas_height, tags)

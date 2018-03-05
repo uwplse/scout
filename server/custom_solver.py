@@ -1,4 +1,6 @@
 import jsonpickle
+import copy
+import uuid
 # What will we be solving for? 
 
 # Steps
@@ -80,39 +82,56 @@ class Solution(object):
 	def add_assigned_variable(self, variable): 
 		self.variables.append(variable)
 
-	def convert_to_json(self, shapes): 
+	def convert_to_json(self, shapes, canvas_width, canvas_height): 
+		sln = dict()
 		for variable in self.variables: 
 			if variable.shape_id == "canvas":
-				shapes[variable.shape_id].x = 0
-				shapes[variable.shape_id].y = 0
-				for child in shapes[variable.shape_id].children: 
+				# shapes[variable.shape_id].x = 0
+				# shapes[variable.shape_id].y = 0
+				for child_shape in shapes: 
 					if variable.name == "alignment": 
 						if variable.assigned == "right": 
-							child.x = shapes[variable.shape_id].width - child.width
+							child_shape["location"]["x"] = canvas_width - child_shape["size"]["width"]
 						elif variable.assigned == "center": 
-							child.x = shapes[variable.shape_id].width/2 - child.width/2
+							child_shape["location"]["x"] = canvas_width/2 - child_shape["size"]["width"]/2
 						else: 
-							child.x = 0
+							child_shape["location"]["x"] = 0
 
 					if variable.name == "justification": 
 						if variable.assigned == "top": 
-							child.y = 0
+							child_shape["location"]["y"] = 0
 						elif variable.assigned == "center": 
-							child.y = shapes[variable.shape_id].height/2 - child.height/2
+							child_shape["location"]["y"] = canvas_height/2 - child_shape["size"]["height"]/2
 						else: 
-							child.y = shapes[variable.shape_id].height - child.height
+							child_shape["location"]["y"] = canvas_height - child_shape["size"]["height"]
 
-		return jsonpickle.encode(shapes)
+		new_shapes = copy.deepcopy(shapes);
+		sln["elements"] = new_shapes
+		sln["id"] = uuid.uuid4().hex
+
+		return sln
 
 class Solver(object): 
-	def __init__(self, shapes): 
+	def __init__(self, elements, canvas_width, canvas_height): 
 		self.solutions = [] # Initialize the variables somewhere
 		self.unassigned = []
-		self.shapes = shapes
+		self.shapes = elements
+		self.variables = self.init_variables(canvas_width, canvas_height)
+		self.canvas_width = canvas_width
+		self.canvas_height = canvas_height
 
-	def solve(self, variables): 
-		self.unassigned = variables
+	def init_variables(self, canvas_width, canvas_height): 
+		variables = []
+		var1 = Variable("canvas", "alignment", ["left", "right", "center"])
+		var2 = Variable("canvas", "justification", ["top", "bottom", "center"])
+		variables.append(var1)
+		variables.append(var2)
+		return variables
+
+	def solve(self): 
+		self.unassigned = self.variables
 		self.branch_and_bound()
+		return self.solutions
 
 	def select_next_variable(self):
 		return self.unassigned.pop()
@@ -126,7 +145,7 @@ class Solver(object):
 		# State keeps track of the variables assigned so far
 		if len(self.unassigned) == 0: 
 			# Keep the solution 
-			sln = state.convert_to_json(self.shapes)
+			sln = state.convert_to_json(self.shapes, self.canvas_width, self.canvas_height)
 			self.solutions.append(sln)
 			return 
 		else: 
@@ -142,31 +161,31 @@ class Solver(object):
 		return 
 
 if __name__ == "__main__":
-    # with open('specification/with_labels.json') as data_file:
-    #     shapes = json.load(data_file)
-    shapes = dict() 
-    child1 = Shape("child1", 50, 50)
-    shapes["child1"] = child1
-    canvas = Shape("canvas", 375, 667)
-    canvas.add_child(child1)
-    shapes["canvas"] = canvas
+	# with open('specification/with_labels.json') as data_file:
+	#     shapes = json.load(data_file)
+	shapes = dict() 
+	child1 = Shape("child1", 50, 50)
+	shapes["child1"] = child1
+	canvas = Shape("canvas", 375, 667)
+	canvas.add_child(child1)
+	shapes["canvas"] = canvas
 
-    # Create some variables
-    var1 = Variable("canvas", "alignment", ["left", "right", "center"])
-    var2 = Variable("canvas", "justification", ["top", "bottom", "center"])
-    variables = []
-    variables.append(var1)
-    variables.append(var2)
-    solver = Solver(shapes)
-    solver.solve(variables)
+	# Create some variables
+	var1 = Variable("canvas", "alignment", ["left", "right", "center"])
+	var2 = Variable("canvas", "justification", ["top", "bottom", "center"])
+	variables = []
+	variables.append(var1)
+	variables.append(var2)
+	solver = Solver(shapes)
+	solver.solve(variables)
 
-    # for shape_key, shape in shapes.items(): 
-    # 	print("-----------------")
-    # 	print(shape.shape_id)
-    # 	print(shape.x, shape.y, shape.width, shape.height)
+	# for shape_key, shape in shapes.items(): 
+	# 	print("-----------------")
+	# 	print(shape.shape_id)
+	# 	print(shape.x, shape.y, shape.width, shape.height)
 
-    for sln in solver.solutions: 
-    	print(sln)
+	for sln in solver.solutions: 
+		print(sln)
 
 
 
