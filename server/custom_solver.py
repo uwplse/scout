@@ -76,19 +76,34 @@ def get_shape_y_domain(height):
 
 class Shape(object):
 	def __init__(self, shape_id, width, height): 
+		self.type = "leaf"
 		self.shape_id = shape_id
 		self.width = width 
 		self.height = height
 		self.x = Variable(shape_id, "x")
 		self.y = Variable(shape_id, "y")
 
+class ContainerShape(Shape): 
+	def __init__(self, shape_id, width=0, height=0): 
+		Shape.__init__(self, shape_id, width, height)
+		self.type = "container"
+		self.children = []
+		self.arrangement = Variable(shape_id, "arrangement", ["vertical", "horizontal"])
+
+		# Width and Height will be adjustable for container shapes since their contents can change arrangements
+		self.width = Int(shape_id + "_width")
+		self.height = Int(shape_id + "_height")
+
 class CanvasShape(Shape):
 	def __init__(self, shape_id, width, height): 
 		Shape.__init__(self, shape_id, width, height)
 		self.children = []
-		self.alignment = Variable("canvas", "alignment", ["left", "right", "center"])
-		self.justification = Variable("canvas", "justification", ["top", "bottom", "center"])
+		self.type = "canvas"
+		self.alignment = Variable("canvas", "alignment", ["left", "right"])
+		self.justification = Variable("canvas", "justification", ["top", "bottom"])
 		self.arrangement = Variable("canvas", "arrangement", ["vertical", "horizontal"])
+		self.orig_x = 0
+		self.orig_y = 0
 
 	def add_child(self, child): 
 		self.children.append(child)
@@ -121,9 +136,9 @@ class Solution(object):
 
 	def convert_to_json(self, elements, shapes, model): 
 		sln = dict()
-		for s_index in range(0, len(shapes)):  
-			shape = shapes[s_index]
-			element = elements[s_index]
+		for e_index in range(0, len(elements)):  
+			element = elements[e_index]
+			shape = [shp for shp in shapes if shp.shape_id == element["name"]][0]
 
 			f_x = model[shape.x.z3]
 			f_y = model[shape.y.z3]
@@ -135,26 +150,6 @@ class Solution(object):
 			# Copy the solved info back into the JSON shape
 			element["location"]["x"] = adj_x
 			element["location"]["y"] = adj_y
-
-			# if variable.shape_id == "canvas":
-			# 	# shapes[variable.shape_id].x = 0
-			# 	# shapes[variable.shape_id].y = 0
-			# 	for child_shape in shapes: 
-			# 		if variable.name == "alignment": 
-			# 			if variable.assigned == "right": 
-			# 				child_shape["location"]["x"] = canvas_width - child_shape["size"]["width"]
-			# 			elif variable.assigned == "center": 
-			# 				child_shape["location"]["x"] = canvas_width/2 - child_shape["size"]["width"]/2
-			# 			else: 
-			# 				child_shape["location"]["x"] = 0
-
-			# 		if variable.name == "justification": 
-			# 			if variable.assigned == "top": 
-			# 				child_shape["location"]["y"] = 0
-			# 			elif variable.assigned == "center": 
-			# 				child_shape["location"]["y"] = canvas_height/2 - child_shape["size"]["height"]/2
-			# 			else: 
-			# 				child_shape["location"]["y"] = canvas_height - child_shape["size"]["height"]
 
 		new_elements = copy.deepcopy(elements);
 		sln["elements"] = new_elements
@@ -169,29 +164,58 @@ class Solver(object):
 		self.elements = elements
 		self.canvas_width = canvas_width
 		self.canvas_height = canvas_height
-		self.shapes = self.init_shapes(canvas_width, canvas_height)
+		self.shapes, self.root = self.init_shapes(canvas_width, canvas_height)
 
 		# Canvas contains all the elements as direct children for now
-		self.canvas_shape = CanvasShape("canvas", "width", "height")	
-		self.canvas_shape.add_children(self.shapes)
+		self.canvas_shape = CanvasShape("canvas", canvas_width, canvas_height)	
+		self.canvas_shape.add_children(self.root)
 		self.variables = self.init_variables()
 
 		# Construct the solver instance we will use for Z3
 		self.solver = z3.Solver()
 		self.solver_helper = z3_helper.Z3Helper(self.solver, canvas_width, canvas_height)
 		self.init_domains()
+
+		# To Do : Move elswhere
 		self.init_container_constraints(self.canvas_shape)
+		for shape in self.shapes: 
+			if shape.type == "container": 
+				self.init_container_constraints(shape)
 
 	def init_shapes(self, canvas_width, canvas_height): 
 		shapes = []
-		# x_domain = get_shape_x_domain(canvas_width)
-		# y_domain = get_shape_y_domain(canvas_height)
+		root = []
+
+		# Root will contain the root  level shapes (just below the canvas)
 		for element in self.elements: 
 			element_shape = Shape(element["name"], element["size"]["width"], element["size"]["height"])
-			# element_shape.x.domain = x_domain
-			# element_shape.y.domain = y_domain
 			shapes.append(element_shape)
-		return shapes
+			root.append(element_shape)
+
+		for element in self.elements: 
+			element_name = element["name"]
+			if "labels" in element: 
+				# Find the shape & the corresponding labeled shape
+				# TODO: Find better way to do this (using dictionary)
+				label_shape = [shp for shp in root if shp.shape_id == element_name]
+				labeled_shape = [shp for shp in root if shp.shape_id == element["labels"]]
+				label_shape = label_shape[0]
+				labeled_shape = labeled_shape[0]
+
+				# Make a container for them to go into 
+				container_id = uuid.uuid4().hex
+				container_shape = ContainerShape(container_id)
+				container_shape.children.append(label_shape)
+				container_shape.children.append(labeled_shape)
+				root.append(container_shape) 
+				shapes.append(container_shape)
+
+				# Remove the entries from the dictionary 
+				root.remove(label_shape)
+				root.remove(labeled_shape)
+
+		# Shapes left in the dictionary are at the root level 
+		return shapes, root
 
 	# initialize domains
 	def init_domains(self): 
@@ -199,13 +223,19 @@ class Solver(object):
 			# x_size = len(shape.x.domain)
 			# y_size = len(shape.y.domain)
 			self.solver.add(shape.x.z3 >= 0)
-			self.solver.add(shape.x.z3 <= self.canvas_width)
+			self.solver.add((shape.x.z3 + shape.width) <= self.canvas_width)
 			self.solver.add(shape.y.z3 >= 0)
-			self.solver.add(shape.y.z3 <= self.canvas_height)
+			self.solver.add((shape.y.z3 + shape.height) <= self.canvas_height)
 
 	def init_variables(self): 
 		variables = []
 		variables.append(self.canvas_shape.arrangement)
+		variables.append(self.canvas_shape.alignment)
+		variables.append(self.canvas_shape.justification)
+
+		for child in self.root: 
+			if child.type == "container" and len(child.children): 
+				variables.append(child.arrangement)
 		# Later: Justification and alignment 
 		return variables
 
@@ -216,20 +246,76 @@ class Solver(object):
 		is_vertical = container.arrangement.z3 == v_index
 		vertical_pairs = []
 		horizontal_pairs = []
-		for s_index in range(0, len(self.shapes)-1): 
-			shape1 = self.shapes[s_index]
-			shape2 = self.shapes[s_index+1]
-			vertical_pair_y = (shape1.y.z3 + shape1.height + GLOBAL_PROXIMITY) == shape2.y.z3 
-			vertical_pair_x = (shape1.x.z3 == shape2.x.z3)
-			vertical_pairs.append(vertical_pair_x)
-			vertical_pairs.append(vertical_pair_y)
-			horizontal_pair_x = (shape1.x.z3 + shape1.width + GLOBAL_PROXIMITY) == shape2.x.z3
-			horizontal_pair_y = (shape1.y.z3 == shape2.y.z3)
-			horizontal_pairs.append(horizontal_pair_x)
-			horizontal_pairs.append(horizontal_pair_y)
-		vertical_arrange = And(vertical_pairs)
-		horizontal_arrange = And(horizontal_pairs)
-		self.solver.add(If(is_vertical, vertical_arrange, horizontal_arrange))
+		child_widths = GLOBAL_PROXIMITY
+		child_heights = GLOBAL_PROXIMITY
+		child_shapes = container.children
+		if len(child_shapes) > 0: 
+			for s_index in range(0, len(child_shapes)-1): 
+				shape1 = child_shapes[s_index]
+				shape2 = child_shapes[s_index+1]
+				vertical_pair_y = (shape1.y.z3 + shape1.height + GLOBAL_PROXIMITY) == shape2.y.z3 
+				vertical_pair_x = (shape1.x.z3 == shape2.x.z3)
+				vertical_pairs.append(vertical_pair_x)
+				vertical_pairs.append(vertical_pair_y)
+				horizontal_pair_x = (shape1.x.z3 + shape1.width + GLOBAL_PROXIMITY) == shape2.x.z3
+				horizontal_pair_y = (shape1.y.z3 == shape2.y.z3)
+				horizontal_pairs.append(horizontal_pair_x)
+				horizontal_pairs.append(horizontal_pair_y)
+
+			# Sum up the widths and heights
+			max_width = -1 
+			max_height = -1
+			for child in child_shapes: 
+				child_widths += child.width + GLOBAL_PROXIMITY
+				child_heights += child.height + GLOBAL_PROXIMITY
+
+				# if max_width == -1 or child.width > max_width: 
+				# 	max_width = child.width 
+
+				# if max_height == -1 or child.height > max_height: 
+				# 	max_height = child.height
+
+			vertical_arrange = And(vertical_pairs)
+			horizontal_arrange = And(horizontal_pairs)
+			self.solver.add(If(is_vertical, vertical_arrange, horizontal_arrange))
+
+			if container.type == "container": 
+				# Set the width and height of the container based on the arrangement  
+				self.solver.add(If(is_vertical, container.height == child_heights, container.width == child_widths))
+
+			# Alignment & Justification
+			# Questions to resolve
+			# Group that sizes to its content vs available spaace
+			# For groups that are sizing to their contents, alignment and justification dont' make sense
+			# Just restricting to the canvas for now, refactor later
+			if container.type == "canvas": 
+				first_shape = child_shapes[0]
+				last_shape = child_shapes[len(child_shapes)-1]
+
+				# The X,Y positions of the canvas are not adjustable
+				if container.shape_id == "canvas": 
+					self.solver.add(container.x.z3 == container.orig_x)
+					self.solver.add(container.y.z3 == container.orig_y)
+
+				l_index = container.alignment.domain.index("left")
+				# c_index = container.alignment.domain.index("center")
+				is_left = container.alignment.z3 == l_index
+				# is_center = container.alignment.z3 == c_index
+
+				# The first shape should be aligned to the left edge of the container
+				left_aligned = first_shape.x.z3 == container.x.z3
+				right_aligned = (last_shape.x.z3 + last_shape.width) == (container.x.z3 + container.width)
+
+				# Center aligned
+				self.solver.add(If(is_left, left_aligned, right_aligned))
+
+				# Justification 
+				t_index = container.justification.domain.index("top")
+				is_top = container.justification.z3 == t_index
+				top_justified = first_shape.y.z3 == container.y.z3
+				bottom_justified = (last_shape.y.z3 + last_shape.height) == (container.y.z3 + container.height)
+				self.solver.add(If(is_top, top_justified, bottom_justified))
+
 
 	# def init_global_constraints():
 	# 	# Stay in bounds of the canvas
@@ -258,8 +344,6 @@ class Solver(object):
 		if len(self.unassigned) == 0: 
 			# Create a new stack context so we can remove the assignments after solving
 			self.solver.push()
-			print("encoding variables")
-			print(str(len(self.variables)))
 			self.encode_assigned_variables()
 
 			# Ask the solver for a solution to the X,Y location varibles

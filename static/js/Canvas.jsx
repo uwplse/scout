@@ -29,6 +29,12 @@ export default class Canvas extends React.Component {
     this.ctx.fillText(label, x+(width/4), y+(height/2))
   }
 
+  drawLabel(x, y, width, height, label) {
+    this.ctx.fillStyle = 'black'; 
+    this.ctx.textBaseline = 'top'; 
+    this.ctx.fillText(label, x, y)
+  }
+
   drawField(x, y, width, height) {
   	this.ctx.fillStyle = 'white'; 
   	this.ctx.strokeStyle = 'black'; 
@@ -71,6 +77,9 @@ export default class Canvas extends React.Component {
   		else if (element.type == "field") {
   			this.drawField(x, y, width, height); 
   		}
+      else if (element.type == "label") {
+        this.drawLabel(x, y, width, height, element.label); 
+      }
   	}
   }
 

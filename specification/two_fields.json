@@ -1,0 +1,35 @@
+{
+	"background": "#ffffff",
+	"canvas_size": {
+		"width": 375,
+		"height": 667
+	},
+	"elements": [
+		{
+			"name": "password_field", 
+			"label": "Password", 
+			"type": "field", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 40,
+				"width": 150
+			}
+		},
+		{
+			"name": "email_field", 
+			"label": "Email", 
+			"type": "field", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 40,
+				"width": 150
+			}
+		}
+	]
+}

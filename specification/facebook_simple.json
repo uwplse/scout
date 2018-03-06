@@ -6,46 +6,46 @@
 	},
 	"elements": [
 		{
-			"name": "password-field",
-			"label": "Password",
-			"type": "field",
+			"name": "forgot-password", 
+			"label": "Forgot Password?", 
+			"type": "link", 
 			"location": {
-				"x": 30,
-				"y": 350
-			},
+				"x": 131, 
+				"y": 470
+			}, 
 			"size": {
-				"height": 40,
-				"width": 315
-			},
+				"height": 25,
+				"width": 115
+			}, 
 			"tag": "login"
-		},
+		}, 
 		{
-			"name": "new-account-button",
-			"label": "CREATE NEW FACEBOOK ACCOUNT",
-			"type": "button",
+			"name": "espanol", 
+			"label": "Espanol", 
+			"type": "link", 
 			"location": {
-				"x": 30,
-				"y": 553
-			},
+				"x": 100, 
+				"y": 244
+			}, 
 			"size": {
-				"height": 40,
-				"width": 315
-			},
-			"tag": "new-account"
-		},
+				"height": 14,
+				"width": 68
+			}, 
+			"tag": "languages"
+		}, 
 		{
-			"name": "logo",
-			"path": "../data/facebook.png",
-			"type": "image",
+			"name": "french", 
+			"label": "Francais", 
+			"type": "link", 
 			"location": {
-				"x": 0,
-				"y": 0
-			},
+				"x": 163, 
+				"y": 242
+			}, 
 			"size": {
-				"height": 208,
-				"width": 370
-			},
-			"locked": true
+				"height": 14,
+				"width": 68
+			}, 
+			"tag": "languages"
 		}
 	],
 	"tags": [
