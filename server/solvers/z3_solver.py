@@ -10,7 +10,7 @@ class Z3Solver(object):
 		self.shapes = layout_problem.shapes
 		self.groups = layout_problem.groups
 		self.shape_items = self.shapes.values()
-		self.shapes_list = list(self.shape_items)
+		self.shapes_list = list(self.shape_items)model
 		self.problem = layout_problem
 
 		self.model = None
