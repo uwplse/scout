@@ -31,6 +31,33 @@
 				"height": 40,
 				"width": 150
 			}
+		}, 
+		{
+			"name": "password_label", 
+			"label": "Password", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "password_field"
+		}, 
+		{
+			"name": "password_field", 
+			"label": "Password", 
+			"type": "field", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 40,
+				"width": 150
+			}
 		}
 	]
 }
