@@ -33,15 +33,22 @@ class Solution(object):
 		# 		f_y = model[shape.y.z3]
 		# 		f_width = model[shape.width]
 		# 		f_height = model[shape.height]
+		# 		prox = model[shape.proximity.z3]
+
 		# 		adj_x = f_x.as_string()
 		# 		adj_y = f_y.as_string()
+		# 		adj_prox = prox.as_string()
+		# 		adj_prox = int(adj_prox)
+
 		# 		adj_x = int(adj_x)
 		# 		adj_y = int(adj_y)
 		# 		adj_width = f_width.as_string()
 		# 		adj_height = f_height.as_string()
 		# 		adj_width = int(adj_width)
 		# 		adj_height = int(adj_height)
+
 		# 		print(adj_x,adj_y,adj_width,adj_height)
+		# 		print(adj_prox)
 
 		sln = dict()
 		for e_index in range(0, len(elements)):  

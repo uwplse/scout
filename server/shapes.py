@@ -18,6 +18,7 @@ class ContainerShape(Shape):
 		self.children = []
 		self.arrangement = sh.Variable(shape_id, "arrangement", ["vertical", "horizontal"])
 		self.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
+		self.proximity = sh.Variable(shape_id, "proximity", [10,20,30])
 
 		# Width and Height will be adjustable for container shapes since their contents can change arrangements
 		self.width = Int(shape_id + "_width")
@@ -36,7 +37,6 @@ class CanvasShape(Shape):
 		self.type = "canvas"
 		self.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-		self.arrangement = sh.Variable("canvas", "arrangement", ["vertical", "horizontal"])
 		self.orig_x = 0
 		self.orig_y = 0
 
