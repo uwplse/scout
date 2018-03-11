@@ -1,6 +1,11 @@
 from z3 import Int
 import copy 
 import uuid 
+import numpy as np
+import math
+
+CANVAS_WIDTH = 375
+CANVAS_HEIGHT = 667
 
 class Variable(object): 
 	def __init__(self, shape_id, name, domain=[]): 
@@ -24,6 +29,24 @@ class Solution(object):
 
 	def add_assigned_variable(self, variable): 
 		self.variables.append(variable)
+
+	def compute_symmetry_cost(self, cost_matrix): 
+		# Compute the symmetry cost
+		mat_height = len(cost_matrix)
+		mat_width = len(cost_matrix[0])
+		second_i = math.ceil(mat_width/2)
+
+		# Split the matrix into two halves vertically
+		first_half = cost_matrix[0:mat_height, 0:int(mat_width/2)]
+		second_half = cost_matrix[0:mat_height, second_i:mat_width]
+
+		# Then rotate the second half l to r
+		second_half_rotated = np.fliplr(second_half)
+
+		# Use bitwise XOR to find the bits that are still set
+		results = np.bitwise_xor(first_half, second_half_rotated)
+		total = np.sum(results)
+		return int(total)
 
 	def convert_to_json(self, elements, shapes, model):
 		# for shape in shapes:
@@ -49,8 +72,8 @@ class Solution(object):
 
 		# 		print(adj_x,adj_y,adj_width,adj_height)
 		# 		print(adj_prox)
-
 		sln = dict()
+		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
 		for e_index in range(0, len(elements)):  
 			element = elements[e_index]
 			shape = [shp for shp in shapes if shp.shape_id == element["name"]][0]
@@ -66,8 +89,15 @@ class Solution(object):
 			element["location"]["x"] = adj_x
 			element["location"]["y"] = adj_y
 
+			# update the cost matrix 
+			cost_matrix[adj_y:(adj_y+shape.height+1),adj_x:(adj_x+shape.width+1)] = 1
+
+		cost = self.compute_symmetry_cost(cost_matrix)
+		# print("Total cost: " + str(cost))
+
 		new_elements = copy.deepcopy(elements);
 		sln["elements"] = new_elements
 		sln["id"] = uuid.uuid4().hex
+		sln["cost"] = cost
 
 		return sln

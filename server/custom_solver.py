@@ -7,119 +7,6 @@ import shapes as shape_classes
 import solver_helpers as sh
 import time
 import random
-# What will we be solving for? 
-
-# Steps
-# 1. Design constructs initial design sketch
-# 2. Designer creates initial set of constraints with relationships 
-# 3. Solve
-
-
-# What are the constraints? 
-# Related Groups
-# Related Collections
-# Labels
-# Captions
-# Headers --> maybe
-# Footers --> maybe
-# Global -> No overlapping, no out of bounds
-
-# What can we change just with labels relationship? 
-# Labels 
-# 	E1/G1 labels E2/G2
-#   Element or group 1 labels element or group 2
-#   Positions of the label: Top-Left, Center, Top-Right, Left
-# 	Proximity of the label: GLOBAL value --> we should get this from somewhere
-
-# Elements - N elements 
-# Variables: X, Y, Width, Height, Position of the label (top-left, center, top-right,  left)
-# The canvas
-# - The overall layout canvas is an element that has constraints on alignment (left, center, right)
-# Variables: Alignment (l,c,r)
-# Arrangement: Vertical 
-# Order unimportant -- Need to generate all of the possible orders  
-
-
-# What positions make sense? 
-	# The element is aligned to other elements on the page 
-	# Or aligned globally (Left, Center, Right) or vertical position 
-
-# Just one element (no changing size)
-# Variables: X, Y
-# Canvas Variables: Alignment, Justification
-# Alignment values: Left, Center, Right
-# Justification values: Top, Bottom, Center 
-
-# With the label
-# Variables for label placement: Left, Top-Left, Top-center, top-right
-# Variables for canvas: 
-# - Alignment - left, center, right
-# - Justification - top, center, bottom
-# - Order - The relative order of the elements
-
-# 05/08/2018
-# Variables so far
-# Groups with alignment, arrangment (2 axes)
-# Canvas alignment, and justification 
-# What is left: 
-#   Proximity 
-#   Emphasis
-#   More arrangment types 
-#   Order not important
-#.  Other label placements
-#.  Captions
-# Needs implemented 
-#.  - Concept list
-#.  - Task group (?)
-#.  - Group hiearchies
-#.  - Snapping to edges
-#.  - Locking 
-#.  - absolute positioning
-#.  - Cost function & optimization 
-#   - Search random through search space 
-#.  - eliminating duplicates (looks the same even if variable assignments are different)
-
-# 05/092018
-# - Encoding done after variable assignment and push/pop in the loop greatly lowers the encoding time. 
-# - What to evaluate next? 
-# 	- Larger amount of items
-# - What just adds to the search space size vs slowing down the time to a single solution? 
-#    - Proximity -- Adds additional variable (with X amount of values)
-#.   - Emphasis -- Adds additional variables (Size, Distance from center)
-#.   - More arrangements (patterns) - Adds more values to arrangment variables (bigger search space), ** should't increase runtime as much?
-# 	 - Order not important - Effects arrangments - More constraints 
-#.   - More label placements - Adds additional values to variables
-#.   - Captions - Just a different kind of group 
-# - What is most important to evaluate? 
-#.  - Evaluating goodness of solutions
-#.  - Random search through space
-#.     - Can branch and bound do this or do we need something else? *** left to evaluate
-#      - Could do random walk through the solution space (but how do we prevent generating same solutions if designer asks for more?)
-#.  - Proximity/Global variables and effect on search space
-#.  - Larger amount of items in UI (Can search rico to find one possibly) -- Need to test out w/ more elements & groups
-#.  - Can we pause solving and restart? (only show first 100, then solve for the rest if the designer doesn't like them) --> should be doable by engineering
-#.- Optimizations 
-#.  - If all of the children elements have same width/height, it doens't make sense to explore the alignments for the group since they will all be the same
-
-# Facebook benchmark time: 100 solutions - .38s solving, .66s encoding (all solutions), .83s to 100 solutions
-# Questions to resolve
-# Group that sizes to its content vs available spaace
-# For groups that are sizing to their contents, alignment and justification dont' make sense
-# Just restricting to the canvas for now, refactor later
-
-
-# evaluating goodness
-#  Metrics - Balance, Alignment, Whitespace
-#.  - I believe alignments should not be relevant since we are only iteration aligned axes? 
-#.  - Balance - evaluate how symmetrical the layout is 
-
-# 05/10/2018 
-# Things to evaluate:
-#.  - Goodness metric & ordering solutions by quality 
-#.  - What is the effect of allowing ordering to change? 
-#.  - Larger amount of items 
-#.  - Think about random search 
-
 
 
 GRID_CONSTANT = 5
@@ -398,6 +285,8 @@ class Solver(object):
 		print("Z3 time: " + str(self.time_z3))
 		print("Encoding time: " + str(self.time_encoding))
 		print("Amount of time taken: " + str(end_time-start_time))
+
+		# self.solutions.sort(key=lambda s: s["cost"])
 		return self.solutions
 
 	def select_next_variable(self):
