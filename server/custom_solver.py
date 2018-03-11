@@ -287,6 +287,8 @@ class Solver(object):
 		print("Amount of time taken: " + str(end_time-start_time))
 
 		# self.solutions.sort(key=lambda s: s["cost"])
+		# print("lowest cost: " + str(self.solutions[0]["cost"]))
+		# print("higest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))
 		return self.solutions
 
 	def select_next_variable(self):

@@ -34,18 +34,26 @@ class Solution(object):
 		# Compute the symmetry cost
 		mat_height = len(cost_matrix)
 		mat_width = len(cost_matrix[0])
-		second_i = math.ceil(mat_width/2)
+		right_i = math.ceil(mat_width/2)
+		bottom_i = math.ceil(mat_height/2)
 
 		# Split the matrix into two halves vertically
 		first_half = cost_matrix[0:mat_height, 0:int(mat_width/2)]
-		second_half = cost_matrix[0:mat_height, second_i:mat_width]
+		second_half = cost_matrix[0:mat_height, right_i:mat_width]
+		top_half = cost_matrix[0:int(mat_height/2), 0:mat_width]
+		bottom_half = cost_matrix[bottom_i:mat_height, 0:mat_width]
 
 		# Then rotate the second half l to r
 		second_half_rotated = np.fliplr(second_half)
+		bottom_half_rotated = np.flipud(bottom_half)
 
 		# Use bitwise XOR to find the bits that are still set
-		results = np.bitwise_xor(first_half, second_half_rotated)
-		total = np.sum(results)
+		results_lr = np.bitwise_xor(first_half, second_half_rotated)
+		results_tb = np.bitwise_xor(top_half, bottom_half_rotated)
+
+		total_lr = np.sum(results_lr)
+		total_tb = np.sum(results_tb)
+		total = total_lr + total_tb
 		return int(total)
 
 	def convert_to_json(self, elements, shapes, model):
