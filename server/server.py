@@ -27,7 +27,7 @@ def get_elements():
 	elements = dict()
 	canvas_width = DEFAULT_APP_WIDTH
 	canvas_height = DEFAULT_APP_HEIGHT
-	with open('../specification/one_field.json') as data_file:
+	with open('../specification/two_fields.json') as data_file:
 		config = json.load(data_file)
 		elements = config["elements"]
 		tags = None

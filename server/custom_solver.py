@@ -32,8 +32,6 @@ def get_shape_y_domain(height):
 class Solver(object): 
 	def __init__(self, elements, canvas_width, canvas_height): 
 		self.solutions = [] # Initialize the variables somewhere
-		self.invalid_solutions = 0 # Used to keep track of the number of invalid solutions
-		self.num_solutions = 0
 		self.unassigned = []
 		self.elements = elements
 		self.canvas_width = canvas_width
@@ -63,6 +61,9 @@ class Solver(object):
 		# Timing variables to measure performance for various parts
 		self.time_z3 = 0
 		self.time_encoding = 0
+		self.invalid_solutions = 0 # Used to keep track of the number of invalid solutions
+		self.num_solutions = 0
+		self.branches_pruned = 0
 
 
 	def init_shape_hierarchy(self, canvas_width, canvas_height): 
@@ -136,19 +137,25 @@ class Solver(object):
 			self.solver.add((shape.y.z3 + shape.height) <= self.canvas_height)
 
 	def init_variables(self): 
+		last = []
+		first = []
 		variables = []
-		variables.append(self.canvas_shape.alignment)
-		variables.append(self.canvas_shape.justification)
+		last.append(self.canvas_shape.alignment)
+		last.append(self.canvas_shape.justification)
 
 		for child in self.root.children:
 			if child.type == "container" and len(child.children): 
-				variables.append(child.arrangement)
-				variables.append(child.alignment)
-				variables.append(child.proximity)
+				first.append(child.arrangement)
+				last.append(child.alignment)
+				last.append(child.proximity)
 
-		variables.append(self.root.arrangement)
-		variables.append(self.root.alignment)
-		variables.append(self.root.proximity)
+		first.append(self.root.arrangement)
+		last.append(self.root.alignment)
+		last.append(self.root.proximity)
+
+		# More important variables are in first. putting them at the end of the list , they will get assigned first
+		variables.extend(last)
+		variables.extend(first)
 
 		# Later: Justification and alignment 
 		return variables
@@ -177,16 +184,38 @@ class Solver(object):
 
 	# Intialize constraints on the containers for arrangment, ordering, justification, and alignment
 	def init_container_constraints(self, container): 
+		# Initialize domains of the canvas variables
+		if container.type == "canvas": 
+			self.solver.add(container.alignment.z3 >= 0)
+			self.solver.add(container.alignment.z3 < len(container.alignment.domain))
+			self.solver.add(container.justification.z3 >= 0)
+			self.solver.add(container.justification.z3 < len(container.justification.domain))
+		else: 
+			self.solver.add(container.arrangement.z3 >= 0)
+			self.solver.add(container.arrangement.z3 <= len(container.arrangement.domain))
+			self.solver.add(container.alignment.z3 >= 0)
+			self.solver.add(container.alignment.z3 <= len(container.alignment.domain))
+			self.solver.add(container.proximity.z3 >= 0)
+
+			largest = max(container.proximity.domain)
+			self.solver.add(container.proximity.z3 <= largest)
 
 		child_shapes = container.children
 		if len(child_shapes) > 0: 
 			# Every child shape should remain inside of its parent container
 			for s_index in range(0, len(child_shapes)): 
 				shape1 = child_shapes[s_index]
-				self.solver.add(shape1.x.z3 >= container.x.z3)
-				self.solver.add(shape1.y.z3 >= container.y.z3)
-				self.solver.add((shape1.x.z3 + shape1.width) <= (container.x.z3 + container.width))
-				self.solver.add((shape1.y.z3 + shape1.height) <= (container.y.z3 + container.height))
+
+				if container.type == "container": 
+					self.solver.add(shape1.x.z3 >= (container.x.z3 + container.proximity.z3))
+					self.solver.add(shape1.y.z3 >= (container.y.z3 + container.proximity.z3))
+					self.solver.add((shape1.x.z3 + shape1.width) <= (container.x.z3 + container.width - container.proximity.z3))
+					self.solver.add((shape1.y.z3 + shape1.height) <= (container.y.z3 + container.height - container.proximity.z3))
+				else: 
+					self.solver.add(shape1.x.z3 >= container.x.z3)
+					self.solver.add(shape1.y.z3 >= container.y.z3)
+					self.solver.add((shape1.x.z3 + shape1.width) <= (container.x.z3 + container.width))
+					self.solver.add((shape1.y.z3 + shape1.height) <= (container.y.z3 + container.height))				
 
 			if container.type == "container": 
 				# ====== Arrangement constraints =======
@@ -219,8 +248,8 @@ class Solver(object):
 				# self.solver.assert_and_track(If(is_vertical, container.height == child_heights, container.width == child_widths), "height_constraint_" + container.shape_id)
 				self.solver.add(If(is_vertical, container.height == child_heights, container.width == child_widths))
 
-				m_w_constraint = container.width == self.get_max_width_constraint(1,0,child_shapes)
-				m_h_constraint = container.height == self.get_max_height_constraint(1,0,child_shapes)
+				m_w_constraint = container.width == (self.get_max_width_constraint(1,0,child_shapes) + container.proximity.z3 + container.proximity.z3)
+				m_h_constraint = container.height == (self.get_max_height_constraint(1,0,child_shapes) + container.proximity.z3 + container.proximity.z3)
 				# self.solver.assert_and_track(If(is_vertical, m_w_constraint, m_h_constraint), "max_height_constraint_" + container.shape_id)
 				self.solver.add(If(is_vertical, m_w_constraint, m_h_constraint))
 
@@ -246,6 +275,7 @@ class Solver(object):
 				bottom_justified = (first_child.y.z3 + first_child.height) == (container.y.z3 + container.height)
 				center_justified = (first_child.y.z3 + (first_child.height/2)) == (container.y.z3 + (container.height/2))
 				self.solver.add(If(is_top, top_justified, If(is_center, center_justified, bottom_justified)))
+				# self.solver.assert_and_track(If(is_top, top_justified, If(is_center, center_justified, bottom_justified)), "canvas_justification")
 
 				# Canvas aligment is different than other containers since there is no concept of arrangement
 				l_index = container.alignment.domain.index("left")
@@ -256,13 +286,14 @@ class Solver(object):
 				center_aligned = (first_child.x.z3 + (first_child.width/2)) == (container.x.z3 + (container.width/2))
 				right_aligned = (first_child.x.z3 + first_child.width) == (container.x.z3 + container.width)
 				self.solver.add(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)))
+				# self.solver.assert_and_track(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), "canvas_alignment")
 			else: 
 				for child in child_shapes:
-					left_aligned = child.x.z3 == container.x.z3
-					right_aligned = (child.x.z3 + child.width) == (container.x.z3 + container.width)
+					left_aligned = child.x.z3 == (container.x.z3 + container.proximity.z3)
+					right_aligned = (child.x.z3 + child.width) == (container.x.z3 + container.width - container.proximity.z3)
 					h_center_aligned = (child.x.z3 + (child.width/2)) == (container.x.z3 + (container.width/2))
-					top_aligned = child.y.z3 == container.y.z3
-					bottom_aligned = (child.y.z3 + child.height) == (container.y.z3 + container.height)
+					top_aligned = child.y.z3 == container.y.z3 + container.proximity.z3
+					bottom_aligned = (child.y.z3 + child.height) == (container.y.z3 + container.height - container.proximity.z3)
 					v_center_aligned = (child.y.z3 + (child.height/2)) == (container.y.z3 + (container.height/2))
 					horizontal = If(is_left, top_aligned, If(is_center, v_center_aligned, bottom_aligned))
 					vertical = If(is_left, left_aligned, If(is_center, h_center_aligned, right_aligned))
@@ -282,13 +313,14 @@ class Solver(object):
 		end_time = time.time()
 		print("number of solutions found: " + str(len(self.solutions)))
 		print("number of invalid solutions: " + str(self.invalid_solutions))
+		print("branches pruned: " + str(self.branches_pruned))
 		print("Z3 time: " + str(self.time_z3))
 		print("Encoding time: " + str(self.time_encoding))
 		print("Amount of time taken: " + str(end_time-start_time))
 
-		# self.solutions.sort(key=lambda s: s["cost"])
-		# print("lowest cost: " + str(self.solutions[0]["cost"]))
-		# print("higest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))
+		self.solutions.sort(key=lambda s: s["cost"])
+		print("lowest cost: " + str(self.solutions[0]["cost"]))
+		print("higest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))
 		return self.solutions
 
 	def select_next_variable(self):
@@ -328,11 +360,18 @@ class Solver(object):
 			print(variable.shape_id)
 			print(str(variable.domain[variable.assigned]))
 
+	def print_partial_solution(self): 
+		for variable in self.variables: 
+			if variable.assigned is not None:
+				print(variable.shape_id)
+				print(str(variable.domain[variable.assigned]))
+
 	def branch_and_bound(self, time_start, state=sh.Solution()): 
 		# Dumb this down so we are not optimizing for the cost right now
 		# State keeps track of the variables assigned so far
-		# print("Found: " + str(self.num_solutions + self.invalid_solutions))
-		if self.num_solutions == NUM_SOLUTIONS:
+		# print("solutions found: " + str(self.num_solutions))
+		# print("invalid: " + str(self.invalid_solutions))
+		if self.num_solutions >= NUM_SOLUTIONS:
 			return
 
 		if len(self.unassigned) == 0: 
@@ -366,7 +405,6 @@ class Solver(object):
 				return 
 			else: 
 				self.invalid_solutions += 1
-				# print("-----Invalid solution------")
 				# self.print_solution()
 		else: 
 			# Selects the next variable to assign
@@ -383,7 +421,21 @@ class Solver(object):
 
 				# Set the value of the variable to fixed in the solver
 				self.encode_assigned_variable(next_var)
-				self.branch_and_bound(time_start, state)
+
+				# GGet a solution
+				time_z3_start = time.time()
+				result = self.solver.check()
+				time_z3_end = time.time()
+				time_z3_total = time_z3_end - time_z3_start
+				self.time_z3 += time_z3_total
+
+				# Only branch if the result so far is satisfiable 
+				if str(result) == 'sat': 
+					self.branch_and_bound(time_start, state)
+				else: 
+					print("pruning branch: ")
+					self.print_partial_solution()
+					self.branches_pruned+=1
 
 				# Remove the stack context after the branch for this assignment has been explored
 				self.solver.pop()

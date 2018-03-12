@@ -6,8 +6,8 @@
 	},
 	"elements": [
 		{
-			"name": "email_label", 
-			"label": "Email", 
+			"name": "username_label", 
+			"label": "Username", 
 			"type": "label", 
 			"location": {
 				"x": 100, 
@@ -17,11 +17,11 @@
 				"height": 15,
 				"width": 30
 			}, 
-			"labels": "email_field"
+			"labels": "username_field"
 		}, 
 		{
-			"name": "email_field", 
-			"label": "Email", 
+			"name": "username_field", 
+			"label": "Username", 
 			"type": "field", 
 			"location": {
 				"x": 100, 
@@ -49,6 +49,33 @@
 		{
 			"name": "password_field", 
 			"label": "Password", 
+			"type": "field", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 40,
+				"width": 150
+			}
+		}, 
+		{
+			"name": "city_label", 
+			"label": "City", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "city_field"
+		}, 
+		{
+			"name": "city_field", 
+			"label": "City", 
 			"type": "field", 
 			"location": {
 				"x": 100, 

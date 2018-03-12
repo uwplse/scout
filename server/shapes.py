@@ -16,9 +16,9 @@ class ContainerShape(Shape):
 		Shape.__init__(self, shape_id, width, height)
 		self.type = "container"
 		self.children = []
-		self.arrangement = sh.Variable(shape_id, "arrangement", ["vertical", "horizontal"])
+		self.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
 		self.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
-		self.proximity = sh.Variable(shape_id, "proximity", [10,20,30])
+		self.proximity = sh.Variable(shape_id, "proximity", [5,10,15])
 
 		# Width and Height will be adjustable for container shapes since their contents can change arrangements
 		self.width = Int(shape_id + "_width")

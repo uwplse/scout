@@ -110,3 +110,35 @@
 #.  - What is the effect of allowing ordering to change? 
 #.  - Larger amount of items 
 #.  - Think about random search 
+
+
+05/12/2018
+- Would this be scalable if ordering were to change? 
+- Search strategies - diversity - change lots of variables at once? 
+- Prune the solutions that produce the exact same output (looks the same)
+- Seems like we can prune the search space by limiting partial assignments (?)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

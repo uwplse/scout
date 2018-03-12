@@ -98,7 +98,7 @@ class Solution(object):
 			element["location"]["y"] = adj_y
 
 			# update the cost matrix 
-			cost_matrix[adj_y:(adj_y+shape.height+1),adj_x:(adj_x+shape.width+1)] = 1
+			cost_matrix[adj_y-1:(adj_y+shape.height-1),adj_x-1:(adj_x+shape.width-1)] = 1
 
 		cost = self.compute_symmetry_cost(cost_matrix)
 		# print("Total cost: " + str(cost))
