@@ -16,7 +16,8 @@
       "size": {
         "height": 208,
         "width": 375
-      }
+      }, 
+      "locked": true
     },
     {
       "name": "email-field",
@@ -85,7 +86,8 @@
       "size": {
         "height": 40,
         "width": 315
-      }
+      }, 
+      "order": "last"
     },
     {
       "name": "espanol",
@@ -129,5 +131,9 @@
       },
       "group": "languages"
     }
-  ]
+  ], 
+  "groups": [{
+    "name": "languages", 
+    "order": "first"
+  }]
 }

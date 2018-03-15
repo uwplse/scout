@@ -60,12 +60,10 @@
 #.  Other label placements
 #.  Captions
 # Needs implemented 
-#.  - Concept list
-#.  - Task group (?)
-#.  - Group hiearchies
+#.  - Groups - typing and ordering
+    - Hierarchies 
 #.  - Snapping to edges
-#.  - Locking 
-#.  - absolute positioning
+#.  - Locking & absolute
 #.  - Cost function & optimization 
 #   - Search random through search space 
 #.  - eliminating duplicates (looks the same even if variable assignments are different)
@@ -90,7 +88,7 @@
 #.  - Larger amount of items in UI (Can search rico to find one possibly) -- Need to test out w/ more elements & groups
 #.  - Can we pause solving and restart? (only show first 100, then solve for the rest if the designer doesn't like them) --> should be doable by engineering
 #.- Optimizations 
-#.  - If all of the children elements have same width/height, it doens't make sense to explore the alignments for the group since they will all be the same
+#.  - If all of the children elements have same width/height, it doesn't make sense to explore the alignments for the group since they will all be the same
 
 # Facebook benchmark time: 100 solutions - .38s solving, .66s encoding (all solutions), .83s to 100 solutions
 # Questions to resolve
@@ -103,7 +101,7 @@
 #  Metrics - Balance, Alignment, Whitespace
 #.  - I believe alignments should not be relevant since we are only iteration aligned axes? 
 #.  - Balance - evaluate how symmetrical the layout is 
-
+w
 # 05/10/2018 
 # Things to evaluate:
 #.  - Goodness metric & ordering solutions by quality 
@@ -118,13 +116,28 @@
 - Prune the solutions that produce the exact same output (looks the same)
 - Seems like we can prune the search space by limiting partial assignments (?)
 
+Think about
+- How hard is it going to be to encode the patterns? 
+- Ordering - Ordering as another variable, domain values are the possible orderings 
+
+03/14/2018 
+- Encoding patterns
+- Ordering - Can allow in the arrrangment encoding -- still pretty expensive 
+- How to get diversity 
 
 
+- Diversity of solution space
+- Patterns
+- Types in groups 
+- Cost functions - White space - others
+- Emphasis 
+	- Increasing size
+	- Moving towards center
+- De-emphasis 
+	- Decreasing size
+	- Moving away from center
 
-
-
-
-
+3/15/2018
 
 
 

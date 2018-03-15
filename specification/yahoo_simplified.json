@@ -1,0 +1,205 @@
+{
+	"background": "#ffffff", 
+	"canvas_size": {
+		"width": 375, 
+		"height": 667
+	},
+	"elements": [
+		{
+			"name": "giftbox_label", 
+			"label": "Giftbox", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "giftbox_logo"
+		}, 
+		{
+			"name": "giftbox_logo", 
+			"label": "Giftbox", 
+			"type": "image", 
+			"path": "../data/icon.png", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 64,
+				"width": 64
+			}
+		},
+		{
+			"name": "yahoo_label", 
+			"label": "Yahoo", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "yahoo_logo"
+		}, 
+		{
+			"name": "yahoo_logo", 
+			"label": "Yahoo", 
+			"type": "image", 
+			"path": "../data/icon.png", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 64,
+				"width": 64
+			}
+		},
+		{
+			"name": "Facebook_label", 
+			"label": "Facebook", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "facebook_logo"
+		}, 
+		{
+			"name": "facebook_logo", 
+			"label": "Facebook", 
+			"type": "image", 
+			"path": "../data/icon.png", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 64,
+				"width": 64
+			}
+		},
+		{
+			"name": "youtube_label", 
+			"label": "Youtube", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "youtube_logo"
+		}, 
+		{
+			"name": "youtube_logo", 
+			"label": "Youtube", 
+			"type": "image", 
+			"path": "../data/icon.png", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 64,
+				"width": 64
+			}
+		},
+		{
+			"name": "viki_label", 
+			"label": "Viki", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "viki_logo"
+		}, 
+		{
+			"name": "viki_logo", 
+			"label": "Viki", 
+			"type": "image", 
+			"path": "../data/icon.png", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 64,
+				"width": 64
+			}
+		},
+		{
+			"name": "ebay_label", 
+			"label": "eBay", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "ebay_logo"
+		}, 
+		{
+			"name": "ebay_logo", 
+			"label": "Ebay", 
+			"type": "image", 
+			"path": "../data/icon.png", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 64,
+				"width": 64
+			}
+		},
+		{
+			"name": "add_label", 
+			"label": "Add", 
+			"type": "label", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 15,
+				"width": 50
+			}, 
+			"labels": "add_logo"
+		}, 
+		{
+			"name": "add_logo", 
+			"label": "Add", 
+			"type": "image", 
+			"path": "../data/icon.png", 
+			"location": {
+				"x": 100, 
+				"y": 244
+			}, 
+			"size": {
+				"height": 64,
+				"width": 64
+			}
+		}
+	]
+}

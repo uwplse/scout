@@ -39,6 +39,7 @@ class Solution(object):
 
 		# Split the matrix into two halves vertically
 		first_half = cost_matrix[0:mat_height, 0:int(mat_width/2)]
+
 		second_half = cost_matrix[0:mat_height, right_i:mat_width]
 		top_half = cost_matrix[0:int(mat_height/2), 0:mat_width]
 		bottom_half = cost_matrix[bottom_i:mat_height, 0:mat_width]
