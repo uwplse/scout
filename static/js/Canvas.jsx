@@ -30,7 +30,7 @@ export default class Canvas extends React.Component {
   }
 
   drawLabel(x, y, width, height, label) {
-    this.ctx.fillStyle = 'black'; 
+    this.ctx.fillStyle = 'white'; 
     this.ctx.textBaseline = 'top'; 
     this.ctx.fillText(label, x, y)
   }

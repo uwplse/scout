@@ -1,0 +1,103 @@
+{
+	"background": "#000000", 
+	"canvas_size": {
+		"width": 375, 
+		"height": 667
+	},
+	"elements": [
+		{
+			"name": "pick_up_button", 
+			"label": "Pick Up From Walgreens", 
+			"type": "button", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 74,
+				"width": 349
+			}, 
+			"group": "delivery_options"
+		}, 
+		{
+			"name": "deliver_button", 
+			"label": "Deliver", 
+			"type": "button", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 74,
+				"width": 349
+			},
+			"group": "delivery_options"
+		}, 
+		{
+			"name": "pick_up_label", 
+			"label": "How do you want to get your prints?", 
+			"type": "label", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 21,
+				"width": 298
+			}
+		}, 
+		{
+			"name": "prints_logo",
+			"type": "image", 
+			"path": "../data/prints.png", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 205,
+				"width": 205
+			}
+		},	
+		{
+			"name": "printicular_header", 
+			"label": "Printicular", 
+			"type": "label", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 36,
+				"width": 149
+			}, 
+			"labels": "printicular_logo"
+		},
+		{
+			"name": "printicular_logo",
+			"type": "image", 
+			"path": "../data/printicular.png", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 95,
+				"width": 84
+			}
+		}, 
+		{
+			"name": "apple_pay_logo",
+			"type": "image", 
+			"path": "../data/applepay.png", 
+			"location": {
+				"x": 0, 
+				"y": 0
+			}, 
+			"size": {
+				"height": 55,
+				"width": 55
+			}
+		}
+	]
+}
