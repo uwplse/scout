@@ -131,9 +131,5 @@
       },
       "group": "languages"
     }
-  ], 
-  "groups": [{
-    "name": "languages", 
-    "order": "first"
-  }]
+  ]
 }

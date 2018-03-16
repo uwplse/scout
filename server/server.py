@@ -43,7 +43,8 @@ def get_elements():
 		canvas_height = config["canvas_size"]["height"]
 		background = config["background"]
 
-		groups = config["groups"]
+		if "groups" in config: 
+			groups = config["groups"]
 
 
 	# Simulated annealing search 

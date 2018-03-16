@@ -11,7 +11,7 @@ import constraint_builder
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 100
+NUM_SOLUTIONS = 3
 
 def get_shape_x_domain(width): 
 	domain = []
@@ -252,6 +252,7 @@ class Solver(object):
 		self.time_encoding += (time_encoding_end - time_encoding_start)
 
 	def print_solution(self):
+		print("------------Solution------------")
 		for variable in self.variables:
 			print(variable.shape_id)
 			print(str(variable.domain[variable.assigned]))
@@ -263,6 +264,9 @@ class Solver(object):
 				print(str(variable.domain[variable.assigned]))
 
 	def branch_and_bound(self, time_start, state=sh.Solution()):
+		if self.num_solutions >= NUM_SOLUTIONS:
+			return
+
 		if len(self.unassigned) == 0:
 			# Ask the solver for a solution to the X,Y location varibles
 			# constraints = self.solver.sexpr()
@@ -273,6 +277,8 @@ class Solver(object):
 			time_z3_total = time_z3_end - time_z3_start
 			self.time_z3 += time_z3_total
 			unsat_core = self.solver.unsat_core()
+
+			self.print_solution()
 
 			if str(result) == 'sat':
 				# print("------Valid solution------")
@@ -324,7 +330,7 @@ class Solver(object):
 
 				# Only branch if the result so far is satisfiable
 				if str(result) == 'sat':
-					self.branch_and=_bound(time_start, state)
+					self.branch_and_bound(time_start, state)
 				else: 
 					# print("pruning branch: ")
 					# self.print_partial_solution()
