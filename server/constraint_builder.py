@@ -42,13 +42,14 @@ class ConstraintBuilder(object):
 	def init_container_constraints(self, container):
 		# Limit domains to the set of variable values
 		self.solver.add(container.arrangement.z3 >= 0)
-		self.solver.add(container.arrangement.z3 <= len(container.arrangement.domain))
+		self.solver.add(container.arrangement.z3 < len(container.arrangement.domain))
 		self.solver.add(container.alignment.z3 >= 0)
-		self.solver.add(container.alignment.z3 <= len(container.alignment.domain))
-		self.solver.add(container.proximity.z3 >= 0)
+		self.solver.add(container.alignment.z3 < len(container.alignment.domain))
 
-		largest = max(container.proximity.domain)
-		self.solver.add(container.proximity.z3 <= largest)
+		or_values = []
+		for prox_value in container.proximity.domain: 
+			or_values.append(container.proximity.z3 == prox_value)
+		self.solver.add(Or(or_values))
 
 		child_shapes = container.children
 		for s_index in range(0, len(child_shapes)): 
@@ -135,22 +136,23 @@ class ConstraintBuilder(object):
 		v_index = container.arrangement.domain.index("vertical")
 		is_vertical = container.arrangement.z3 == v_index
 
-		# vertical_pairs = []
-		# horizontal_pairs = []
-		# child_shapes = container.children
-		# for s_index in range(0, len(child_shapes)-1): 
-		# 	shape1 = child_shapes[s_index]
-		# 	shape2 = child_shapes[s_index+1]
-		# 	vertical_pair_y = (shape1.y.z3 + shape1.height + container.proximity.z3) == shape2.y.z3 
-		# 	vertical_pairs.append(vertical_pair_y)
-		# 	horizontal_pair_x = (shape1.x.z3 + shape1.width + container.proximity.z3) == shape2.x.z3
-		# 	horizontal_pairs.append(horizontal_pair_x)
+		if container.order == "important": 
+			vertical_pairs = []
+			horizontal_pairs = []
+			child_shapes = container.children
+			for s_index in range(0, len(child_shapes)-1): 
+				shape1 = child_shapes[s_index]
+				shape2 = child_shapes[s_index+1]
+				vertical_pair_y = (shape1.y.z3 + shape1.height + container.proximity.z3) == shape2.y.z3 
+				vertical_pairs.append(vertical_pair_y)
+				horizontal_pair_x = (shape1.x.z3 + shape1.width + container.proximity.z3) == shape2.x.z3
+				horizontal_pairs.append(horizontal_pair_x)
 
-		# vertical_arrange = And(vertical_pairs)
-		# horizontal_arrange = And(horizontal_pairs)
-		# # self.solver.assert_and_track(If(is_vertical, vertical_arrange, horizontal_arrange), "arrangment_constraint_" + container.shape_id)
-		# self.solver.add(If(is_vertical, vertical_arrange, horizontal_arrange), container.shape_id + " arrangement")
-
+			vertical_arrange = And(vertical_pairs)
+			horizontal_arrange = And(horizontal_pairs)
+			# self.solver.assert_and_track(If(is_vertical, vertical_arrange, horizontal_arrange), "arrangment_constraint_" + container.shape_id)
+			self.solver.add(If(is_vertical, vertical_arrange, horizontal_arrange), container.shape_id + " arrangement")
+			
 		# Sum up the widths and heights
 		child_widths = 0
 		child_heights = 0

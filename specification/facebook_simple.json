@@ -99,7 +99,7 @@
       },
       "size": {
         "height": 14,
-        "width": 68
+        "width": 40
       },
       "group": "languages"
     },
@@ -113,7 +113,7 @@
       },
       "size": {
         "height": 14,
-        "width": 68
+        "width": 40
       },
       "group": "languages"
     },
@@ -127,9 +127,19 @@
       },
       "size": {
         "height": 14,
-        "width": 68
+        "width": 40
       },
       "group": "languages"
+    }
+  ], 
+  "groups": [
+    {
+      "name": "login", 
+      "order": "important"
+    }, 
+    {
+      "name": "languages",
+      "order": "important"
     }
   ]
 }

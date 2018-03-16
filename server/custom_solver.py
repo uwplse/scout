@@ -11,23 +11,8 @@ import constraint_builder
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 3
-
-def get_shape_x_domain(width): 
-	domain = []
-	beg = 0 
-	while beg <= width: 
-		domain.append(beg)
-		beg += GRID_CONSTANT
-	return domain
-
-def get_shape_y_domain(height): 
-	domain = []
-	beg = 0
-	while beg <= height: 
-		domain.append(beg)
-		beg += GRID_CONSTANT
-	return domain
+NUM_SOLUTIONS = 100
+NUM_DIFFERENT = 5
 
 class Solver(object): 
 	def __init__(self, elements, groups, canvas_width, canvas_height): 
@@ -43,16 +28,14 @@ class Solver(object):
 		self.canvas_shape = shape_classes.CanvasShape("canvas", [0, 0, canvas_width, canvas_height])	
 		self.canvas_shape.add_child(self.root)
 		self.variables = self.init_variables()
+		self.previous_solution = IntVector('PrevSolution', len(self.variables))
+		self.variables_different = Int('VariablesDifferent')
 
 		# Construct the solver instance we will use for Z3
 		self.solver = z3.Solver()
 		self.solver_helper = z3_helper.Z3Helper(self.solver, canvas_width, canvas_height)
 		self.cb = constraint_builder.ConstraintBuilder(self.solver)
 		self.init_domains()
-
-		# For debugging how large the search space isd
-		size = self.compute_search_space()
-		print("Total search space size: " + str(size))
 
 		# To Do : Move elswhere
 		self.cb.init_canvas_constraints(self.canvas_shape)
@@ -69,7 +52,6 @@ class Solver(object):
 		self.num_solutions = 0
 		self.branches_pruned = 0
 		self.z3_calls = 0
-
 
 	def init_shape_hierarchy(self, canvas_width, canvas_height):
 		shapes = []
@@ -136,9 +118,9 @@ class Solver(object):
 
 			order = None
 			if group_name in group_metadata: 
-				group_metadata = group_metadata[group_name]
-				if "order" in group_metadata: 
-					order = group_metadata["order"]
+				group_props = group_metadata[group_name]
+				if "order" in group_props: 
+					order = group_props["order"]
 
 			group_shape = shape_classes.ContainerShape(group_name, order=order)
 			for element in group_items:
@@ -186,6 +168,7 @@ class Solver(object):
 		# Later: Justification and alignment
 		return variables
 
+
 	def compute_search_space(self):
 		total = 1
 		for variable in self.variables:
@@ -200,8 +183,12 @@ class Solver(object):
 	def solve(self):
 		self.unassigned = copy.copy(self.variables)
 
+		# For debugging how large the search space isd
+		size = self.compute_search_space()
+		print("Total search space size: " + str(size))
+
 		start_time = time.time()
-		self.branch_and_bound(start_time)
+		self.z3_solve(start_time, size)
 		end_time = time.time()
 		print("number of solutions found: " + str(len(self.solutions)))
 		print("number of invalid solutions: " + str(self.invalid_solutions))
@@ -251,6 +238,59 @@ class Solver(object):
 		time_encoding_end = time.time()
 		self.time_encoding += (time_encoding_end - time_encoding_start)
 
+	# Computes the number of variables that are different than the previous solution
+	def num_variables_different(self): 
+		vars_diff = 0
+		for var_i in range(0, len(self.variables)): 
+			variable = self.variables[var_i]
+			vars_diff += If(variable.z3 != self.previous_solution[var_i], 1, 0)
+		return vars_diff
+
+	def encode_solution_from_model(self, model): 
+		# The next solution cannot be the exact same set of assignments as the current solution
+		# These are cumulative
+		all_values = []
+		previous_solution_values = []
+		for v_i in range(0, len(self.variables)): 
+			variable = self.variables[v_i]
+			# Get the value of the variable out of the model 
+			variable_value = model[variable.z3]
+			variable_value = variable_value.as_string()
+			variable_value = int(variable_value)
+			all_values.append(variable.z3 == variable_value)
+			previous_solution_values.append(self.previous_solution[v_i] == variable_value)
+
+		self.solver.add(Not(And(all_values)))
+
+		if self.num_solutions > 0: 
+			# Pop the previous 
+			if self.num_solutions > 1: 
+				# Remove the previous stack context
+				self.solver.pop()
+
+			self.solver.push()
+			
+			# Add the previous solution values for the cost function
+			self.solver.add(previous_solution_values) 
+
+			# New solutions must be at least NUM_DIFFERENT variable changes away from 
+			# the previous solution
+			self.solver.add(self.variables_different == self.num_variables_different())
+
+			half = math.floor(len(self.variables)/2)
+			self.solver.add(self.variables_different >= half)
+
+	def print_solution_from_model(self, model): 
+		print("------------Solution-------------")
+		for variable in self.variables: 
+			# Get the value of the variable out of the model 
+			variable_value = model[variable.z3]
+			variable_value = variable_value.as_string()
+			variable_value = int(variable_value)
+			print(variable.shape_id)
+			print(variable.name)
+			print(variable_value)
+
 	def print_solution(self):
 		print("------------Solution------------")
 		for variable in self.variables:
@@ -262,6 +302,44 @@ class Solver(object):
 			if variable.assigned is not None:
 				print(variable.shape_id)
 				print(str(variable.domain[variable.assigned]))
+
+
+	# Loop and solve until num solutions is reached
+	def z3_solve(self, time_start, search_space_size, state=sh.Solution()): 
+		print("num variables " + str(len(self.variables)))
+		while self.num_solutions < NUM_SOLUTIONS and (self.num_solutions + self.invalid_solutions) < search_space_size: 
+			# print("valid: " + str(self.num_solutions))
+			# Call to Z3 
+			time_z3_start = time.time()
+			result = self.solver.check();
+			self.z3_calls += 1
+			time_z3_end = time.time()
+			time_z3_total = time_z3_end - time_z3_start
+			self.time_z3 += time_z3_total
+			if str(result) == 'sat': 
+				self.num_solutions += 1
+
+				# Find one solution for now
+				time_z3_start = time.time()
+				model = self.solver.model()
+				time_z3_start = time.time()
+				time_z3_total = time_z3_end - time_z3_start
+				self.time_z3 += time_z3_total
+
+				sln = state.convert_to_json(self.elements, self.shapes, model)
+				self.solutions.append(sln)
+
+				# Encode a conjunction into the solver
+				self.encode_solution_from_model(model)
+				# self.print_solution_from_model(model)
+
+				if len(self.solutions) == NUM_SOLUTIONS:
+					time_end = time.time()
+					total_time = time_end - time_start
+					print("Total time to " + str(NUM_SOLUTIONS) + ": " + str(total_time))
+			else: 
+				# print("invalid: " + str(self.invalid_solutions))
+				self.invalid_solutions += 1
 
 	def branch_and_bound(self, time_start, state=sh.Solution()):
 		if self.num_solutions >= NUM_SOLUTIONS:
@@ -277,7 +355,6 @@ class Solver(object):
 			time_z3_total = time_z3_end - time_z3_start
 			self.time_z3 += time_z3_total
 			unsat_core = self.solver.unsat_core()
-
 			self.print_solution()
 
 			if str(result) == 'sat':
