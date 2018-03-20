@@ -11,7 +11,7 @@ import constraint_builder
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 100
+NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
 class Solver(object): 
@@ -188,7 +188,16 @@ class Solver(object):
 		print("Total search space size: " + str(size))
 
 		start_time = time.time()
-		self.z3_solve(start_time, size)
+
+		# Z3 looping version
+		# self.z3_solve(start_time, size)
+
+		# Branch and bound regular 
+		# self.branch_and_bound(start_time)
+
+		# Branch and bound get one solution at a time
+		self.branch_and_bound_n_solutions(start_time)
+
 		end_time = time.time()
 		print("number of solutions found: " + str(len(self.solutions)))
 		print("number of invalid solutions: " + str(self.invalid_solutions))
@@ -207,9 +216,11 @@ class Solver(object):
 		return self.solutions
 
 	def select_next_variable(self):
+		return self.unassigned.pop()
+
+	def select_next_variable_random(self): 
 		# Select a random index to assign
-		# random_index = random.randint(0, len(self.unassigned)-1)
-		random_index = len(self.unassigned)-1
+		random_index = random.randint(0, len(self.unassigned)-1)
 		return random_index, self.unassigned.pop(random_index)
 
 	def restore_variable(self, variable, index):
@@ -402,11 +413,103 @@ class Solver(object):
 				time_z3_total = time_z3_end - time_z3_start
 				self.time_z3 += time_z3_total
 
-				unsat_core = self.solver.unsat_core()
-
 				# Only branch if the result so far is satisfiable
 				if str(result) == 'sat':
 					self.branch_and_bound(time_start, state)
+				else: 
+					# print("pruning branch: ")
+					# self.print_partial_solution()
+					self.branches_pruned+=1
+
+				# Remove the stack context after the branch for this assignment has been explored
+				self.solver.pop()
+
+			# Then unassign the value
+			self.restore_variable(next_var, var_i)
+		return 
+
+	def branch_and_bound_n_solutions(self, time_start): 
+		while self.num_solutions < NUM_SOLUTIONS: 
+			sln = self.branch_and_bound_random(time_start)
+			if sln is not None: 
+				self.solutions.append(sln)
+				self.num_solutions += 1
+			else: 
+				print("No more solutions could be found.")
+				break 
+
+		time_end = time.time()
+		total_time = time_end - time_start
+		print("Total time to " + str(NUM_SOLUTIONS) + ": " + str(total_time))
+
+	def restore_state(self): 
+		# Unassign and reset the variables
+		for variable in self.variables: 
+			variable.assigned = None
+
+		self.unassigned = copy.copy(self.variables)
+
+		# Restore the stack context for the solver
+		for i in range(0, len(self.variables)):
+			self.solver.pop()
+
+	def branch_and_bound_random(self, time_start, state=sh.Solution()):
+		if len(self.unassigned) == 0:
+			time_z3_start = time.time()
+			result = self.solver.check();
+			self.z3_calls += 1
+			time_z3_end = time.time()
+			time_z3_total = time_z3_end - time_z3_start
+			self.time_z3 += time_z3_total
+
+			if str(result) == 'sat':
+				# Find one solution for now
+				time_z3_start = time.time()
+				model = self.solver.model()
+				time_z3_start = time.time()
+				time_z3_total = time_z3_end - time_z3_start
+				self.time_z3 += time_z3_total
+
+				# Keep the solution & convert to json
+				self.print_solution()
+
+				sln = state.convert_to_json(self.elements, self.shapes, model)
+				self.restore_state()
+				return sln
+			else:
+				self.invalid_solutions += 1
+				# self.print_solution()
+		else:
+			# Selects the next variable to assign
+			var_i, next_var = self.select_next_variable_random()
+			state.add_assigned_variable(next_var)
+
+			# Randomize the order in which we iterate through the domain
+			random_domain = self.get_randomized_domain(next_var)
+			for val_index in range(0, len(random_domain)):
+				dom_value = random_domain[val_index]
+				in_domain_index = next_var.domain.index(dom_value)
+				next_var.assigned = in_domain_index
+
+				# Creates a new stack context for the variable assignment
+				self.solver.push()
+
+				# Set the value of the variable to fixed in the solvfer
+				self.encode_assigned_variable(next_var)
+
+				# GGet a solution
+				time_z3_start = time.time()
+				result = self.solver.check()
+				self.z3_calls += 1
+				time_z3_end = time.time()
+				time_z3_total = time_z3_end - time_z3_start
+				self.time_z3 += time_z3_total
+
+				# Only branch if the result so far is satisfiable
+				if str(result) == 'sat':
+					sln = self.branch_and_bound_random(time_start, state)
+					if sln is not None: 
+						return sln
 				else: 
 					# print("pruning branch: ")
 					# self.print_partial_solution()
