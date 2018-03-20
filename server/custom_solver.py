@@ -338,7 +338,6 @@ class Solver(object):
 					total_time = time_end - time_start
 					print("Total time to " + str(NUM_SOLUTIONS) + ": " + str(total_time))
 			else: 
-				# print("invalid: " + str(self.invalid_solutions))
 				self.invalid_solutions += 1
 
 	def branch_and_bound(self, time_start, state=sh.Solution()):

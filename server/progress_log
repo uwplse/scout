@@ -137,7 +137,25 @@ Think about
 	- Decreasing size
 	- Moving away from center
 
-3/15/2018
+3/19/2018
+Main challenges left
+- Diverse solutions
+	- Have a measure now of that, but is it good enough? (X variables are different in each iteration)
+	- How should we define different? (coverage over various patterns)
+- Other goodness metrics - 
+	- Can we search in a way that produces certain designs first?
+	- visual design principles
+	- Emphasis 
+	- White space usage
+	- only symmetry currently
+- What to do about duplicate outputs? (looks the same but different constraints)
+- Where will we get more patterns of layout (beyond horizontal and vertical), and proximity values?
+- Scaling - Need to make more complicated examples to get better measure of runtime
+- Things that aren't implemented but might affect performance
+	- Emphasis (might have lots of challenges with distance calculations, etc.)
+	- Typing/Non-typing of groups (Might be scaling challenge there?)
+
+What to do next? 
 
 
 

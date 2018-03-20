@@ -16,7 +16,8 @@
       "size": {
         "height": 40,
         "width": 315
-      }
+      }, 
+      "group": "login"
     },
     {
       "name": "password-field",
@@ -29,7 +30,8 @@
       "size": {
         "height": 40,
         "width": 315
-      }
+      }, 
+      "group": "login"
     },
     {
       "name": "forgot-password",
@@ -42,7 +44,8 @@
       "size": {
         "height": 25,
         "width": 82
-      }
+      },
+      "group": "login"
     },
     {
       "name": "login-button",
@@ -55,7 +58,14 @@
       "size": {
         "height": 40,
         "width": 315
-      }
+      }, 
+      "group": "login"
+    }
+  ], 
+  "groups": [
+    {
+      "name": "login", 
+      "order": "important"
     }
   ]
 }
