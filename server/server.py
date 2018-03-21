@@ -1,5 +1,5 @@
 # server.py
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import json
 import base64
 # import solver
@@ -24,6 +24,23 @@ def home():
 @app.route("/hello")
 def hello():
 	return "Hello World!"
+
+
+@app.route('/solve', methods=['POST'])
+def solve(): 
+	print("solving!")
+	print(request.data)
+
+	canvas_width = DEFAULT_APP_WIDTH
+	canvas_height = DEFAULT_APP_HEIGHT
+
+	request_data = json.loads(request.data.decode("utf-8"))
+	if "elements" in request_data: 
+		elements = request_data["elements"]
+		groups = dict()
+		solutions = get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height)
+
+	return "" 
 
 @app.route("/get_elements")
 def get_elements(): 
@@ -70,7 +87,7 @@ def get_elements():
 
 	return json.dumps(output).encode('utf-8')
 
-def get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height, tags): 
+def get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height): 
 	solver = custom_solver.Solver(elements, groups, canvas_width, canvas_height)
 	solutions = solver.solve()
 	return solutions

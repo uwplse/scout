@@ -8,18 +8,33 @@
 	width: 100%;
 }
 
-.page-container {
+.page-container, .top, .bottom {
 	display: flex;
+}
+
+.page-container {
+	flex-direction: column;
 }
 
 .widgets-container {
 	padding-left: 10px;
-	border-right: 1px solid black;
+	border-right: 1px solid #ccc;
 	width: 200px;
 }
 
 .constraints-container {
 	padding-left: 10px;
 	width: 70%;
+}
+
+.navbar-default {
+	background-color: #f8f8f8;
+    border-color: #e7e7e7;
+    border-bottom: 1px solid #ccc;
+    padding-left: 10px;
+}
+
+.navbar {
+	margin-bottom: 0px;
 }
 

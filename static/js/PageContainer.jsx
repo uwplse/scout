@@ -1,6 +1,7 @@
 // App.jsx
 import React from "react";
 import '../css/Canvas.css'; 
+import 'whatwg-fetch'; 
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -9,9 +10,13 @@ export default class PageContainer extends React.Component {
     this.fieldClicked = this.fieldClicked.bind(this); 
     this.textClicked = this.textClicked.bind(this); 
     this.buttonClicked = this.buttonClicked.bind(this); 
+    this.getDesigns = this.getDesigns.bind(this); 
 
     this.canvas = undefined; 
     this.constraintsTop = 10; 
+
+    // This collection contains the set of shapes on the constraints canvas
+    this.constraintsShapes = []; 
   }
 
   componentDidMount() {
@@ -26,7 +31,7 @@ export default class PageContainer extends React.Component {
         fill : '#44ACB1'
     });
 
-    var text = new fabric.Text('Button', {
+    var text = new fabric.IText('Button', {
       fontSize: 20, 
       fontFamily: 'Georgia', 
       strokeWidth:0, 
@@ -113,6 +118,15 @@ export default class PageContainer extends React.Component {
     let field = this.getField(left, top);
     this.constraintsCanvas.add(field); 
 
+    // Set up the JSON object
+    let json = {
+      "name": _.uniqueId(),
+      "label": "field", 
+      "type": "field", 
+      "shape": field
+    }
+
+    this.constraintsShapes.push(json); 
   }
 
   textClicked() {
@@ -121,8 +135,18 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new text to the constraints canvas
-    let field = this.getInteractiveText(left, top);
-    this.constraintsCanvas.add(field); 
+    let text = this.getInteractiveText(left, top);
+    this.constraintsCanvas.add(text); 
+
+    // Set up the JSON object
+    let json = {
+      "name": _.uniqueId(),
+      "label": "text", 
+      "type": "text", 
+      "shape": text
+    }
+
+    this.constraintsShapes.push(json); 
   }
 
   buttonClicked() {
@@ -131,8 +155,18 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new field to the constraints canvas
-    let field = this.getButton(left, top);
-    this.constraintsCanvas.add(field); 
+    let button = this.getButton(left, top);
+    this.constraintsCanvas.add(button); 
+
+    // Set up the JSON object
+    let json = {
+      "name": _.uniqueId(),
+      "label": "button", 
+      "type": "button", 
+      "shape": button
+    }
+
+    this.constraintsShapes.push(json);  
   }
 
   drawCanvas() {
@@ -151,18 +185,72 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvas = new fabric.Canvas('constraints-canvas'); 
   }
 
+  getShapesJSON() {
+    // Get all of the shapes on the canvas into a collection 
+    let shapeJSON = []; 
+    for(var i=0; i<this.constraintsShapes.length; i++) {
+      let shape = this.constraintsShapes[i]; 
+      let jsonShape = {}; 
+      let fabricShape = shape.shape; 
+
+      jsonShape["name"] = shape.name; 
+      jsonShape["label"] = shape.label;
+      jsonShape["type"] = shape.type;
+
+      jsonShape["location"] = {
+        "x": fabricShape.left, 
+        "y": fabricShape.top
+      }
+
+      jsonShape["size"] = {
+        "width": fabricShape.width, 
+        "height": fabricShape.height
+      }
+
+      shapeJSON.push(jsonShape); 
+    }  
+
+    let jsonAllShapes = {
+      "elements": shapeJSON
+    }
+
+    return JSON.stringify(jsonAllShapes); 
+  }
+
+  getDesigns() {
+    let jsonShapes = this.getShapesJSON(); 
+   
+    // Send an ajax request to the server
+    fetch('/solve', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: jsonShapes
+    });
+  }
+
   render () {
     return (
       <div className="page-container">
-        <div className="widgets-container">
-          <h1>Widgets</h1>
-          <canvas id="widgets-canvas" width="200px" height="1000px">
-          </canvas>
-        </div>
-        <div className="constraints-container"> 
-          <h1>Constraints</h1>
-          <canvas id="constraints-canvas" width="600px" height="1000px">
-          </canvas>
+        <nav className="navbar navbar-default">
+         <div className="container-fluid">
+          <div className="navbar-header">
+            <button type="button" className="btn btn-default navbar-btn" onClick={this.getDesigns}>Get Designs</button>
+          </div>
+         </div>
+        </nav>
+        <div className="bottom">
+          <div className="widgets-container">
+            <h1>Widgets</h1>
+            <canvas id="widgets-canvas" width="200px" height="1000px">
+            </canvas>
+          </div>
+          <div className="constraints-container"> 
+            <h1>Constraints</h1>
+            <canvas id="constraints-canvas" width="600px" height="1000px">
+            </canvas>
+          </div>
         </div>
       </div>
     ); 
