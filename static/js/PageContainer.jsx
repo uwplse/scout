@@ -61,6 +61,21 @@ export default class PageContainer extends React.Component {
     return text; 
   }
 
+  getInteractiveText(left, top, cursor, selectable=true) {
+    var text = new fabric.IText('Text', {
+      fontSize: 60,
+      left: left,
+      top: top,
+      fontFamily: 'Georgia',
+      fill: '#000', 
+      lockRotation: true, 
+      hoverCursor: cursor, 
+      selectable: selectable
+    });
+
+    return text; 
+  }
+
   getField(left, top, cursor, selectable=true) {
     var rect = new fabric.Rect({
         width : 120,
@@ -106,7 +121,7 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new text to the constraints canvas
-    let field = this.getText(left, top);
+    let field = this.getInteractiveText(left, top);
     this.constraintsCanvas.add(field); 
   }
 
