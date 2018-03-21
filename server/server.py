@@ -26,66 +26,75 @@ def hello():
 	return "Hello World!"
 
 
-@app.route('/solve', methods=['POST'])
+@app.route('/solve', methods=['POST','GET'])
 def solve(): 
 	print("solving!")
-	print(request.data)
+	print(request.form)
 
 	canvas_width = DEFAULT_APP_WIDTH
 	canvas_height = DEFAULT_APP_HEIGHT
+	form_data = request.form
 
-	request_data = json.loads(request.data.decode("utf-8"))
-	if "elements" in request_data: 
-		elements = request_data["elements"]
+	if "elements" in form_data:
 		groups = dict()
+		elements_json = form_data["elements"]
+		elements = json.loads(elements_json)
 		solutions = get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height)
 
-	return "" 
+		# Output dictionary 
+		output = dict() 
+		output["size"] = dict() 
+		output["size"]["width"] = canvas_width
+		output["size"]["height"] = canvas_height
+		output["elements"] = solutions
 
-@app.route("/get_elements")
-def get_elements(): 
-	# Configuration
-	elements = dict()
-	canvas_width = DEFAULT_APP_WIDTH
-	canvas_height = DEFAULT_APP_HEIGHT
-	groups = dict()
-	with open('../specification/facebook_simple.json') as data_file:
-		config = json.load(data_file)
-		elements = config["elements"]
-		tags = None
-		if "tags" in config: 
-			tags = config["tags"]
+		return json.dumps(output).encode('utf-8')
+	return ""
 
-		for element in elements: 
-			if element["type"] == "logo" or element["type"] == "image": 
-				element["source"] = read_image_data(element["path"])
+# @app.route("/get_elements")
+# def get_elements(): 
+# 	# Configuration
+# 	elements = dict()
+# 	canvas_width = DEFAULT_APP_WIDTH
+# 	canvas_height = DEFAULT_APP_HEIGHT
+# 	groups = dict()
+# 	with open('../specification/facebook_simple.json') as data_file:
+# 		config = json.load(data_file)
+# 		elements = config["elements"]
+# 		tags = None
+# 		if "tags" in config: 
+# 			tags = config["tags"]
 
-		canvas_width = config["canvas_size"]["width"]
-		canvas_height = config["canvas_size"]["height"]
-		background = config["background"]
+# 		for element in elements: 
+# 			if element["type"] == "logo" or element["type"] == "image": 
+# 				element["source"] = read_image_data(element["path"])
 
-		if "groups" in config: 
-			groups = config["groups"]
+# 		canvas_width = config["canvas_size"]["width"]
+# 		canvas_height = config["canvas_size"]["height"]
+# 		background = config["background"]
+
+# 		if "groups" in config: 
+# 			groups = config["groups"]
 
 
-	# Simulated annealing search 
-	# solutions = get_solution_annealing(elements, canvas_width, canvas_height)
-	# solutions = get_solution_from_solver(elements, canvas_width, canvas_height, tags)
-	solutions = get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height, tags)
+# 	# Simulated annealing search 
+# 	# solutions = get_solution_annealing(elements, canvas_width, canvas_height)
+# 	# solutions = get_solution_from_solver(elements, canvas_width, canvas_height, tags)
+# 	solutions = get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height, tags)
 
-	# Output dictionary 
-	output = dict() 
-	output["size"] = dict() 
-	output["size"]["width"] = canvas_width
-	output["size"]["height"] = canvas_height
-	output["background"] = background
-	output["elements"] = solutions
+# 	# Output dictionary 
+# 	output = dict() 
+# 	output["size"] = dict() 
+# 	output["size"]["width"] = canvas_width
+# 	output["size"]["height"] = canvas_height
+# 	output["background"] = background
+# 	output["elements"] = solutions
 
-	# Write the results for debugging
-	# with open('../results/results.json', 'w') as outfile:
-	# 	json.dump(output, outfile)
+# 	# Write the results for debugging
+# 	# with open('../results/results.json', 'w') as outfile:
+# 	# 	json.dump(output, outfile)
 
-	return json.dumps(output).encode('utf-8')
+# 	return json.dumps(output).encode('utf-8')
 
 def get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height): 
 	solver = custom_solver.Solver(elements, groups, canvas_width, canvas_height)

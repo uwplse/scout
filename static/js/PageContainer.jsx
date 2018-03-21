@@ -2,6 +2,8 @@
 import React from "react";
 import '../css/Canvas.css'; 
 import 'whatwg-fetch'; 
+import Canvas from "./Canvas"; 
+import FabricHelpers from './FabricHelpers.js';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -11,12 +13,16 @@ export default class PageContainer extends React.Component {
     this.textClicked = this.textClicked.bind(this); 
     this.buttonClicked = this.buttonClicked.bind(this); 
     this.getDesigns = this.getDesigns.bind(this); 
+    this.parseSolutions = this.parseSolutions.bind(this);
 
     this.canvas = undefined; 
     this.constraintsTop = 10; 
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapes = []; 
+
+    // This is the set of design canvases in the design window
+    this.state = { designCanvases: [] }; 
   }
 
   componentDidMount() {
@@ -24,90 +30,6 @@ export default class PageContainer extends React.Component {
     this.drawCanvas(); 
   }
 
-  getButton(left, top, cursor, selectable=true) {
-    var rect = new fabric.Rect({
-        width : 120,
-        height : 40,
-        fill : '#44ACB1'
-    });
-
-    var text = new fabric.IText('Button', {
-      fontSize: 20, 
-      fontFamily: 'Georgia', 
-      strokeWidth:0, 
-      fill: 'white', 
-      left: 25, 
-      top: 10
-    });
-
-    var group = new fabric.Group([ rect, text ], { 
-        left: left, 
-        top: top, 
-        selectable: false, 
-        hoverCursor: cursor, 
-        selectable: selectable
-      });
-
-    return group; 
-  }
-
-  getText(left, top, cursor, selectable=true) {
-    var text = new fabric.Text('Text', {
-      fontSize: 60,
-      left: left,
-      top: top,
-      fontFamily: 'Georgia',
-      fill: '#000', 
-      lockRotation: true, 
-      hoverCursor: cursor, 
-      selectable: selectable
-    });
-
-    return text; 
-  }
-
-  getInteractiveText(left, top, cursor, selectable=true) {
-    var text = new fabric.IText('Text', {
-      fontSize: 60,
-      left: left,
-      top: top,
-      fontFamily: 'Georgia',
-      fill: '#000', 
-      lockRotation: true, 
-      hoverCursor: cursor, 
-      selectable: selectable
-    });
-
-    return text; 
-  }
-
-  getField(left, top, cursor, selectable=true) {
-    var rect = new fabric.Rect({
-        width : 120,
-        height : 40,
-        fill: 'white', 
-        stroke: 'black', 
-        strokeWidth: 1
-    });
-
-    var text = new fabric.Text('Field', {
-      fontSize: 20, 
-      fontFamily: 'Georgia', 
-      strokeWidth:0, 
-      fill: 'black', 
-      top: 10, 
-      left: 25
-    });
-
-    var group = new fabric.Group([ rect, text ], { 
-        left: left, 
-        top: top,
-        hoverCursor: cursor, 
-        selectable: selectable
-      });
-
-    return group;
-  }
 
   fieldClicked() {
     this.constraintsTop += 50; 
@@ -115,7 +37,7 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new field to the constraints canvas
-    let field = this.getField(left, top);
+    let field = FabricHelpers.getField(left, top,120,40);
     this.constraintsCanvas.add(field); 
 
     // Set up the JSON object
@@ -135,7 +57,7 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new text to the constraints canvas
-    let text = this.getInteractiveText(left, top);
+    let text = FabricHelpers.getInteractiveText(left, top);
     this.constraintsCanvas.add(text); 
 
     // Set up the JSON object
@@ -155,7 +77,7 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new field to the constraints canvas
-    let button = this.getButton(left, top);
+    let button = FabricHelpers.getButton(left, top,120,40);
     this.constraintsCanvas.add(button); 
 
     // Set up the JSON object
@@ -171,9 +93,9 @@ export default class PageContainer extends React.Component {
 
   drawCanvas() {
     this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
-    let field = this.getField(20,50,'hand',false); 
-    let text = this.getText(20,150,'hand',false); 
-    let button = this.getButton(20,250,'hand',false); 
+    let field = FabricHelpers.getField(20,50,120,40,'hand',false); 
+    let text = FabricHelpers.getText(20,150,'hand',false); 
+    let button = FabricHelpers.getButton(20,250,120,40,'hand',false); 
     field.on('mousedown', this.fieldClicked); 
     text.on('mousedown', this.textClicked); 
     button.on('mousedown', this.buttonClicked); 
@@ -205,32 +127,40 @@ export default class PageContainer extends React.Component {
       jsonShape["size"] = {
         "width": fabricShape.width, 
         "height": fabricShape.height
+
       }
 
       shapeJSON.push(jsonShape); 
     }  
 
-    let jsonAllShapes = {
-      "elements": shapeJSON
+    return JSON.stringify(shapeJSON)
+  }
+
+  parseSolutions(requestData) {
+    let resultsParsed = JSON.parse(requestData); 
+    let solutions = resultsParsed.elements;
+    let designCanvasList = this.state.designCanvases; 
+    for(let i=0; i<solutions.length; i++) {
+      let solution = solutions[i]; 
+      let elements = solution.elements; 
+      designCanvasList.push(<Canvas key={solution.id} id={solution.id} elements={elements} />); 
     }
 
-    return JSON.stringify(jsonAllShapes); 
+    this.setState({
+      designCanvases: designCanvasList
+    });
   }
 
   getDesigns() {
     let jsonShapes = this.getShapesJSON(); 
    
-    // Send an ajax request to the server
-    fetch('/solve', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: jsonShapes
-    });
+   // Send an ajax request to the server 
+   // Solve for the new designs
+    $.post("/solve", {"elements": jsonShapes}, this.parseSolutions, 'text');
   }
 
   render () {
+    const designs = this.state.designCanvases;
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
@@ -241,15 +171,31 @@ export default class PageContainer extends React.Component {
          </div>
         </nav>
         <div className="bottom">
-          <div className="widgets-container">
-            <h1>Widgets</h1>
-            <canvas id="widgets-canvas" width="200px" height="1000px">
-            </canvas>
+          <div className="panel panel-primary widgets-container">
+            <div className="panel-heading"> 
+              <h3 className="panel-title">Widgets</h3>
+            </div>  
+            <div className="panel-body">         
+              <canvas id="widgets-canvas" width="200px" height="667px">
+              </canvas>
+            </div>
           </div>
-          <div className="constraints-container"> 
-            <h1>Constraints</h1>
-            <canvas id="constraints-canvas" width="600px" height="1000px">
-            </canvas>
+          <div className="panel panel-primary constraints-container">
+            <div className="panel-heading"> 
+              <h3 className="panel-title">Constraints</h3>
+            </div>
+            <div className="panel-body">
+              <canvas id="constraints-canvas" width="375px" height="667px">
+              </canvas>
+            </div>
+          </div>
+          <div className="panel panel-primary designs-container">
+            <div className="panel-heading"> 
+              <h3 className="panel-title">Designs</h3>
+            </div>
+            <div className="panel-body design-body">
+            {designs}
+            </div>
           </div>
         </div>
       </div>
