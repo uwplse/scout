@@ -3,3 +3,23 @@
 	padding: 5px;
 	margin: 5px;
 }
+
+#content {
+	width: 100%;
+}
+
+.page-container {
+	display: flex;
+}
+
+.widgets-container {
+	padding-left: 10px;
+	border-right: 1px solid black;
+	width: 200px;
+}
+
+.constraints-container {
+	padding-left: 10px;
+	width: 70%;
+}
+

@@ -17,6 +17,10 @@ DEFAULT_APP_WIDTH = 375
 def index():
 	return render_template("index.html")
 
+@app.route("/home")
+def home(): 
+	return render_template("home.html")
+
 @app.route("/hello")
 def hello():
 	return "Hello World!"

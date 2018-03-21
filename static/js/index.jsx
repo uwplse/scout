@@ -1,6 +1,7 @@
 // index.jsx
 import React from "react";
 import ReactDOM from "react-dom";
-import CanvasContainer from "./CanvasContainer";
+import PageContainer from "./PageContainer";
+import 'fabric';
 
-ReactDOM.render(<CanvasContainer />, document.getElementById("content"));
+ReactDOM.render(<PageContainer />, document.getElementById("content"));
