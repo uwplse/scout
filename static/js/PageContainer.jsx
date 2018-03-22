@@ -14,6 +14,7 @@ export default class PageContainer extends React.Component {
     this.buttonClicked = this.buttonClicked.bind(this); 
     this.getDesigns = this.getDesigns.bind(this); 
     this.parseSolutions = this.parseSolutions.bind(this);
+    this.deleteShape = this.deleteShape.bind(this); 
 
     this.canvas = undefined; 
     this.constraintsTop = 10; 
@@ -29,7 +30,6 @@ export default class PageContainer extends React.Component {
     // Construct the intial canvas
     this.drawCanvas(); 
   }
-
 
   fieldClicked() {
     this.constraintsTop += 50; 
@@ -49,6 +49,9 @@ export default class PageContainer extends React.Component {
     }
 
     this.constraintsShapes.push(json); 
+
+    // Keep track of the currently selected shape 
+    field.on("selected", this.selectShape.bind(this, json)); 
   }
 
   textClicked() {
@@ -69,6 +72,9 @@ export default class PageContainer extends React.Component {
     }
 
     this.constraintsShapes.push(json); 
+
+    // Keep track of the currently selected shape 
+    text.on("selected", this.selectShape.bind(this, json)); 
   }
 
   buttonClicked() {
@@ -89,6 +95,27 @@ export default class PageContainer extends React.Component {
     }
 
     this.constraintsShapes.push(json);  
+
+    // Set up the event handlers
+    // button.on('mousedown', this.deleteShape.bind(this, json)); 
+
+    // Keep track of the currently selected shape 
+    button.on("selected", this.selectShape.bind(this, json)); 
+  }
+
+  deleteShape(shapeJSON) {
+    // Remove the shape from the canvas
+    this.constraintsCanvas.remove(shapeJSON.shape); 
+    let index = this.constraintsShapes.indexOf(shapeJSON); 
+    this.constraintsShapes.splice(index, 1); 
+  }
+
+  deleteSelectedShape(evt) {
+    this.deleteShape(this.selectedShape);
+  }
+
+  selectShape(shapeJSON) {
+    this.selectedShape = shapeJSON; 
   }
 
   drawCanvas() {
@@ -105,6 +132,8 @@ export default class PageContainer extends React.Component {
 
 
     this.constraintsCanvas = new fabric.Canvas('constraints-canvas'); 
+    let canvasElement = document.getElementById("constraints-canvas-container"); 
+    canvasElement.addEventListener("keydown", this.deleteSelectedShape.bind(this)); 
   }
 
   getShapesJSON() {
@@ -184,7 +213,7 @@ export default class PageContainer extends React.Component {
             <div className="panel-heading"> 
               <h3 className="panel-title">Constraints</h3>
             </div>
-            <div className="panel-body">
+            <div className="panel-body" id="constraints-canvas-container" tabIndex="1">
               <canvas id="constraints-canvas" width="375px" height="667px">
               </canvas>
             </div>
