@@ -2,6 +2,10 @@ div:focus {
 	outline: none;
 }
 
+.hidden {
+	display: none;
+}
+
 .canvas {
 	border: 1px solid gainsboro;
 	padding: 5px;
@@ -66,4 +70,31 @@ div:focus {
 .design-body {
 	height: 90%;
     overflow: auto;
+}
+
+.canvas-menu {
+	list-style-type: none;
+    padding: 0px;
+}
+
+.canvas-menu > li {
+	padding: 5px;
+}
+
+.canvas-menu > li:hover {
+	background-color: lightgray;
+	cursor: pointer; 
+}
+
+.canvas-menu-container {
+    position: absolute;
+    background: white;
+    z-index: 1000;
+    list-style-type: none;
+    width: 150px;
+    font-size: 12px;
+    border: 1px solid gray;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    padding-top: 5px;
 }
