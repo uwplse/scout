@@ -43,10 +43,15 @@ export default class Canvas extends React.Component {
   }
 
   // hideConstraintsContextMenu
+  hideMenu(evt) {
+  	this.setState({
+  		menuShown: false
+  	});
+  }
 
   componentDidMount() {
     this.canvas = new fabric.Canvas('design-canvas-' + this.id); 
-    this.canvas.on("mousedown", this.)
+    // this.canvas.on("mousedown", this.)
 
 	// When the component mounts, draw the shapes onto the canvas
 	for(var i=0; i<this.elements.length; i++) {
@@ -80,7 +85,7 @@ export default class Canvas extends React.Component {
  	let menuShown = this.state.menuShown; 
  	let menuPosition = this.state.menuPosition; 
     return  (<div className="canvas-container" id={"canvas-box-" + this.id}> 
-    			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>{menuShown ? <CanvasMenu /> : null}</div>
+    			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>{menuShown ? <CanvasMenu onClick={this.hideMenu.bind(this)} /> : null}</div>
 	    		<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width="187.5px" height="333px">
 	            </canvas>
 	         </div>); 

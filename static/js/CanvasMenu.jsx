@@ -7,8 +7,12 @@ class CanvasMenuItem extends React.Component {
   	this.text = props.text; 
   }
 
+  updateConstraint() {
+  	console.log("menu item clicked"); 
+  }
+
   render () {
-	return <li className="canvas-menu-item">{this.text}</li>; 
+	return <li className="canvas-menu-item" onClick={this.props.onClick} >{this.text}</li>; 
   }
 }
 
@@ -23,7 +27,7 @@ export default class CanvasMenu extends React.Component {
   	let menuItems = []; 
 	this.menuOptions.forEach((menu) => {
 	  menuItems.push(
-	    <CanvasMenuItem key={menu} text={menu} />
+	    <CanvasMenuItem onClick={this.props.onClick} key={menu} text={menu} />
 	  );
 	});
 
