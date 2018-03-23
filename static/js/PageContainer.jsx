@@ -170,10 +170,8 @@ export default class PageContainer extends React.Component {
     let shape_y = shapeJSON.shape.top; 
     let shape_width = shapeJSON.shape.width; 
     let shape_height = shapeJSON.shape.height;
-    if (shapeJSON.parent) {
-      return; 
-    }
 
+    let overlapping = false;
     for(let i=0; i<this.constraintsShapes.length; i++) {
       if(this.constraintsShapes[i].name != shapeJSON.name && this.constraintsShapes[i].type != "group") {
         let cShape_x = this.constraintsShapes[i].shape.left; 
@@ -181,40 +179,69 @@ export default class PageContainer extends React.Component {
         let cShape_width = this.constraintsShapes[i].shape.width; 
         let cShape_height = this.constraintsShapes[i].shape.height; 
         if (this.overlapping(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
-          if (this.constraintsShapes[i].parent) {
-            let parentGroup = this.constraintsShapes[i].parent; 
-            shapeJSON.parent = parentGroup; 
-            parentGroup.children.push(shapeJSON); 
-            
-            // Adjust the group bounding box
-            let groupShape = parentGroup.shape; 
-            let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
-            groupShape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
-          }
-          else {
-            // Create a new group for the parent container
-            let groupJSON = {
-              "name": _.uniqueId(),
-              "type": "group", 
-              "children": []
+          overlapping = true;
+          if(!shapeJSON.parent){
+            if (this.constraintsShapes[i].parent) {
+              let parentGroup = this.constraintsShapes[i].parent; 
+              shapeJSON.parent = parentGroup; 
+              parentGroup.children.push(shapeJSON); 
+              
+              // Adjust the group bounding box
+              let groupShape = parentGroup.shape; 
+              let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
+              groupShape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
+            }
+            else {
+              // Create a new group for the parent container
+              let groupJSON = {
+                "name": _.uniqueId(),
+                "type": "group", 
+                "children": []
+              }
+
+              this.constraintsShapes[i].parent = groupJSON; 
+              shapeJSON.parent = groupJSON; 
+              groupJSON.children.push(this.constraintsShapes[i]); 
+              groupJSON.children.push(shapeJSON); 
+
+              let groupBoundingBox = this.getGroupBoundingBox(groupJSON); 
+              let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10, {selectable: false});
+              groupJSON.shape = groupRect; 
+
+              this.constraintsCanvas.add(groupRect); 
+              this.constraintsShapes.push(groupJSON); 
+              this.constraintsCanvas.sendToBack(groupRect);
             }
 
-            this.constraintsShapes[i].parent = groupJSON; 
-            shapeJSON.parent = groupJSON; 
-            groupJSON.children.push(this.constraintsShapes[i]); 
-            groupJSON.children.push(shapeJSON); 
+            // Don't look at any more shapes 
+            break;
+          }
+        }
+      }
+    }
 
-            let groupBoundingBox = this.getGroupBoundingBox(groupJSON); 
-            let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10, {selectable: false});
-            groupJSON.shape = groupRect; 
+    console.log("overlapping: " + overlapping); 
 
-            this.constraintsCanvas.add(groupRect); 
-            this.constraintsShapes.push(groupJSON); 
-            this.constraintsCanvas.sendToBack(groupRect);
+    if(!overlapping) {
+      // If the shape was in a group and that group had only two children, remove the group 
+      if(shapeJSON.parent) {
+        let parentGroup = shapeJSON.parent; 
+        if(parentGroup.children.length <= 2) {
+          for(let i=0; i<parentGroup.children.length; i++) {
+            let child = parentGroup.children[i]; 
+            child.parent = undefined; 
           }
 
-          // Don't look at any more shapes 
-          break;
+          this.deleteShape(parentGroup); 
+        }else {
+          // Remove the child from this group and update the group bounds
+          shapeJSON.parent = undefined; 
+          let shapeIndex = parentGroup.children.indexOf(shapeJSON); 
+          parentGroup.children.splice(shapeIndex, 1); 
+
+          // Update the parent group bounding box
+          let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
+          parentGroup.shape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
         }
       }
     }
