@@ -167,10 +167,31 @@ What to do next?
 - Random ordering of variables and search - 10 results at a time? 
 
 
+3/21/2018
+- UI things to do 
+	- Remove things from the canvas
+	- Get more results from the server
+	- Grouping things in the UI (Not perfecting)
+	- Think about how saving will work a bit (infrastructure wise)
 
-
-
-
+- Constraints canvsa
+	- Groups
+		- Specifying order 
+		- Specifying type
+	- Labels
+	- Prominence
+		- Mark shapes as important/unimportant
+- Designs canvas
+	- Feedback constraints on individual elements
+		- Right click menu? (options will be based on the type of element)
+		- Each constraint gets resolved in the server and check for conflicts
+		- Constraints are reflected somewhere once added (in the constraints canvas or on the output) 
+- Workflow
+	- Save a state of the design (checkpoints)
+	- Changes in the output reflect in the canvas
+- Request new layouts
+	- More refined queries for layouts (unlike these, more like this, not like these)
+- Undo/Redo for a constraint
 
 
 

@@ -4,6 +4,7 @@ import '../css/Canvas.css';
 import 'whatwg-fetch'; 
 import Canvas from "./Canvas"; 
 import FabricHelpers from './FabricHelpers.js';
+import 'context-menu';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -37,7 +38,7 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new field to the constraints canvas
-    let field = FabricHelpers.getField(left, top,120,40);
+    let field = FabricHelpers.getField(left, top, 120, 40, {'selectable': true});
     this.constraintsCanvas.add(field); 
 
     // Set up the JSON object
@@ -52,6 +53,7 @@ export default class PageContainer extends React.Component {
 
     // Keep track of the currently selected shape 
     field.on("selected", this.selectShape.bind(this, json)); 
+    field.on("moving", this.createGroupOnMove.bind(this, json)); 
   }
 
   textClicked() {
@@ -60,7 +62,8 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new text to the constraints canvas
-    let text = FabricHelpers.getInteractiveText(left, top);
+    let fontSize = 40; 
+    let text = FabricHelpers.getInteractiveText(left, top, 40, {'selectable': true});
     this.constraintsCanvas.add(text); 
 
     // Set up the JSON object
@@ -75,6 +78,7 @@ export default class PageContainer extends React.Component {
 
     // Keep track of the currently selected shape 
     text.on("selected", this.selectShape.bind(this, json)); 
+    text.on("moving", this.createGroupOnMove.bind(this, json)); 
   }
 
   buttonClicked() {
@@ -83,7 +87,7 @@ export default class PageContainer extends React.Component {
     let left = 20; 
 
     // Add a new field to the constraints canvas
-    let button = FabricHelpers.getButton(left, top,120,40);
+    let button = FabricHelpers.getButton(left, top, 120, 40, {'selectable': true});
     this.constraintsCanvas.add(button); 
 
     // Set up the JSON object
@@ -91,7 +95,7 @@ export default class PageContainer extends React.Component {
       "name": _.uniqueId(),
       "label": "button", 
       "type": "button", 
-      "shape": button
+      "shape": button, 
     }
 
     this.constraintsShapes.push(json);  
@@ -111,18 +115,94 @@ export default class PageContainer extends React.Component {
   }
 
   deleteSelectedShape(evt) {
-    this.deleteShape(this.selectedShape);
+    if (evt.keyCode == 8 || evt.keyCode == 46) {
+      this.deleteShape(this.selectedShape);      
+    }
   }
 
   selectShape(shapeJSON) {
     this.selectedShape = shapeJSON; 
   }
 
+  overlapping(x1,y1,width1,height1,x2,y2,width2,height2) {
+    // return the distance between the shapes 
+    if(!(x1 > (x2 + width2) || y1 > (y2 + height2) || x2 > (x1 + width1) || y2 > (y1 + height1))) {
+      // They are overlapping 
+      return true;
+    }
+
+    return false;
+  }
+
+  getGroupBoundingBox(x1,y1,width1,height1,x2,y2,width2,height2) {
+      let groupX = x1 < x2 ? x1 : x2; 
+      let groupY = y1 < y2 ? y1 : y2; 
+      let right1 = x1 + width1; 
+      let right2 = x2 + width2; 
+      let bottom1 = y1 + height1; 
+      let bottom2 = y2 + height2; 
+      let groupWidth = (right1 > right2) ? (right1 - groupX) : (right2 - groupX); 
+      let groupHeight = (bottom1 > bottom2) ? (bottom1 - groupY) : (bottom2 - groupY); 
+      return { x: groupX, y: groupY, width: groupWidth, height: groupHeight }; 
+  }
+
+  createGroupOnMove(shapeJSON) {
+    // Check proximity of the shape to other elements 
+    let shape_x = shapeJSON.shape.left; 
+    let shape_y = shapeJSON.shape.top; 
+    let shape_width = shapeJSON.shape.width; 
+    let shape_height = shapeJSON.shape.height;
+
+    for(let i=0; i<this.constraintsShapes.length; i++) {
+      if(this.constraintsShapes[i].name != shapeJSON.name && this.constraintsShapes[i].type != "group") {
+        let cShape_x = this.constraintsShapes[i].shape.left; 
+        let cShape_y = this.constraintsShapes[i].shape.top; 
+        let cShape_width = this.constraintsShapes[i].shape.width; 
+        let cShape_height = this.constraintsShapes[i].shape.height; 
+        if (this.overlapping(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
+          if (this.constraintsShapes[i].parent) {
+            let groupBoundingBox = this.getGroupBoundingBox(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height); 
+            let parentGroup = this.constraintsShapes[i].parent; 
+            shapeJSON.parent = parentGroup; 
+            parentGroup.children.push(shapeJSON); 
+            
+            // Adjust the group bounding box
+            let groupShape = parentGroup.shape; 
+            groupShape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
+          }
+          else {
+            let groupBoundingBox = this.getGroupBoundingBox(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height); 
+            let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10)
+
+            // Create a new group for the parent container
+            let groupJSON = {
+              "name": _.uniqueId(),
+              "type": "group", 
+              "shape": groupRect, 
+              "children": []
+            }
+
+            this.constraintsShapes[i].parent = groupJSON; 
+            shapeJSON.parent = groupJSON; 
+            groupJSON.children.push(this.constraintsShapes[i]); 
+            groupJSON.children.push(shapeJSON); 
+            this.constraintsCanvas.add(groupRect); 
+            this.constraintsShapes.push(groupJSON); 
+            this.constraintsCanvas.sendToBack(groupRect);
+          }
+
+          // Don't look at any more shapes 
+          break;
+        }
+      }
+    }
+   }
+
   drawCanvas() {
     this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
-    let field = FabricHelpers.getField(20,50,120,40,'hand',false); 
-    let text = FabricHelpers.getText(20,150,'hand',false); 
-    let button = FabricHelpers.getButton(20,250,120,40,'hand',false); 
+    let field = FabricHelpers.getField(20,50,120,40,{'cursor': 'hand', 'selectable': false}); 
+    let text = FabricHelpers.getText(20,150,40,{'cursor': 'hand', 'selectable': false}); 
+    let button = FabricHelpers.getButton(20,250,120,40,{'cursor': 'hand', 'selectable': false}); 
     field.on('mousedown', this.fieldClicked); 
     text.on('mousedown', this.textClicked); 
     button.on('mousedown', this.buttonClicked); 
@@ -153,9 +233,11 @@ export default class PageContainer extends React.Component {
         "y": fabricShape.top
       }
 
+      let roundedWidth = Math.round(fabricShape.width); 
+      let roundedHeight = Math.round(fabricShape.height); 
       jsonShape["size"] = {
-        "width": fabricShape.width, 
-        "height": fabricShape.height
+        "width": roundedWidth, 
+        "height": roundedHeight
 
       }
 

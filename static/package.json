@@ -39,6 +39,7 @@
     ]
   },
   "dependencies": {
+    "context-menu": "^2.0.0",
     "whatwg-fetch": "^2.0.3"
   }
 }

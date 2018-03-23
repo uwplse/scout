@@ -1,5 +1,18 @@
 class FabricHelpers {
- 	static getButton(left, top, width, height, cursor, selectable=true) {
+	static getGroup(left, top, width, height, options={}) {
+	    var rect = new fabric.Rect({
+	    	top: top, 
+	    	left: left,
+	        width : width,
+	        height : height,
+	        fill : '#fff', 
+	        stroke: 'blue'
+	    });
+
+	    return rect; 
+	} 
+
+ 	static getButton(left, top, width, height, options={}) {
 	    var rect = new fabric.Rect({
 	        width : width,
 	        height : height,
@@ -19,44 +32,44 @@ class FabricHelpers {
 	        left: left, 
 	        top: top, 
 	        selectable: false, 
-	        hoverCursor: cursor, 
-	        selectable: selectable
+	        hoverCursor: options.cursor, 
+	        selectable: options.selectable
 	      });
 
 	    return group; 
 	}
 
-  	static getText(left, top, cursor, selectable=true) {
+  	static getText(left, top, fontSize, options={}) {
 	    var text = new fabric.Text('Text', {
-	      fontSize: 60,
+	      fontSize: fontSize,
 	      left: left,
 	      top: top,
 	      fontFamily: 'Georgia',
 	      fill: '#000', 
 	      lockRotation: true, 
-	      hoverCursor: cursor, 
-	      selectable: selectable
+	      hoverCursor: options.cursor, 
+	      selectable: options.selectable
 	    });
 
 	    return text; 
 	}
 
-    static getInteractiveText(left, top, cursor, selectable=true) {
+    static getInteractiveText(left, top, fontSize, options={}) {
 	    var text = new fabric.IText('Text', {
-	      fontSize: 60,
+	      fontSize: fontSize,
 	      left: left,
 	      top: top,
 	      fontFamily: 'Georgia',
 	      fill: '#000', 
 	      lockRotation: true, 
-	      hoverCursor: cursor, 
-	      selectable: selectable
+	      hoverCursor: options.cursor, 
+	      selectable: options.selectable
 	    });
 
 	    return text; 
 	}
 
-  	static getField(left, top, width, height, cursor, selectable=true) {
+  	static getField(left, top, width, height, options={}) {
 	    var rect = new fabric.Rect({
 	        width : width,
 	        height : height,
@@ -65,7 +78,7 @@ class FabricHelpers {
 	        strokeWidth: 1
 	    });
 
-	    var text = new fabric.Text('Field', {
+	    var text = new fabric.IText('Field', {
 	      fontSize: 20, 
 	      fontFamily: 'Georgia', 
 	      strokeWidth:0, 
@@ -77,8 +90,8 @@ class FabricHelpers {
 	    var group = new fabric.Group([ rect, text ], { 
 	        left: left, 
 	        top: top,
-	        hoverCursor: cursor, 
-	        selectable: selectable
+	        hoverCursor: options.cursor, 
+	        selectable: options.selectable
 	      });
 
 	    return group;
