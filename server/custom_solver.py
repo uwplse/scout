@@ -64,74 +64,55 @@ class Solver(object):
 
 		# Root will contain the root  level shapes (just below the canvas)
 		for element in self.elements:
-			element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
-			locked = False
-			if "locked" in element:
-				locked = element["locked"]
+			if element["type"] != "group": 
+				element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
+				locked = False
+				if "locked" in element:
+					locked = element["locked"]
 
-			order = None
-			if "order" in element: 
-				order = element["order"]
+				order = None
+				if "order" in element: 
+					order = element["order"]
 
-			element_shape = shape_classes.LeafShape(element["name"], element_orig_bounds, locked, order)
-			shapes.append(element_shape)
-			root.add_child(element_shape)
+				element_shape = shape_classes.LeafShape(element["name"], element_orig_bounds, locked, order)
+				shapes.append(element_shape)
+				root.add_child(element_shape)
+		
+		for element in self.elements: 
+			if element["type"] == "group": 
+				group_name = element["name"]
+				group_shape = shape_classes.ContainerShape(group_name, order=order)
+				for child_id in element["children"]: 
+					child_shape = [shp for shp in root.children if shp.shape_id == child_id][0]
+					group_shape.add_child(child_shape)
+					root.remove_child(child_shape)
+				shapes.append(group_shape)
+				root.add_child(group_shape)
 
-		for element in self.elements:
-			element_name = element["name"]
-			if "labels" in element:
-				# Find the shape & the corresponding labeled shape
-				# TODO: Find better way to do this (using dictionary)
-				label_shape = [shp for shp in root.children if shp.shape_id == element_name]
-				labeled_shape = [shp for shp in root.children if shp.shape_id == element["labels"]]
-				label_shape = label_shape[0]
-				labeled_shape = labeled_shape[0]
+		self.elements = [elt for elt in self.elements if elt["type"] != "group"]
 
-				# Make a container for them to go into
-				container_id = uuid.uuid4().hex
-				container_shape = shape_classes.ContainerShape(container_id)
-				container_shape.children.append(label_shape)
-				container_shape.children.append(labeled_shape)
-				root.add_child(container_shape)
-				shapes.append(container_shape)
+		# for element in self.elements:
+		# 	element_name = element["name"]
+		# 	if "labels" in element:
+		# 		# Find the shape & the corresponding labeled shape
+		# 		# TODO: Find better way to do this (using dictionary)
+		# 		label_shape = [shp for shp in root.children if shp.shape_id == element_name]
+		# 		labeled_shape = [shp for shp in root.children if shp.shape_id == element["labels"]]
+		# 		label_shape = label_shape[0]
+		# 		labeled_shape = labeled_shape[0]
 
-				# Remove the entries from the dictionary
-				root.remove_child(label_shape)
-				root.remove_child(labeled_shape)
+		# 		# Make a container for them to go into
+		# 		container_id = uuid.uuid4().hex
+		# 		container_shape = shape_classes.ContainerShape(container_id)
+		# 		container_shape.children.append(label_shape)
+		# 		container_shape.children.append(labeled_shape)
+		# 		root.add_child(container_shape)
+		# 		shapes.append(container_shape)
 
-		grouped_elements = dict()
-		for element in self.elements:
-			if "group" in element:
-				group_name = element["group"]
-				if group_name in grouped_elements:
-					grouped_elements[group_name].append(element)
-				else:
-					grouped_elements[group_name] = [element]
+		# 		# Remove the entries from the dictionary
+		# 		root.remove_child(label_shape)
+		# 		root.remove_child(labeled_shape)
 
-		group_metadata = dict()
-		for group in self.groups: 
-			if "name" in group: 
-				group_metadata[group["name"]] = group
-
-		for group_name,group_items in grouped_elements.items():
-			group_id = uuid.uuid4().hex
-
-			order = None
-			if group_name in group_metadata: 
-				group_props = group_metadata[group_name]
-				if "order" in group_props: 
-					order = group_props["order"]
-
-			group_shape = shape_classes.ContainerShape(group_name, order=order)
-			for element in group_items:
-				element_name = element["name"]
-				element_shape = [shp for shp in root.children if shp.shape_id == element_name][0]
-				group_shape.add_child(element_shape)
-				root.remove_child(element_shape)
-			shapes.append(group_shape)
-			root.add_child(group_shape)
-
-		# Shapes left in the dictionary are at the root level
 		return shapes, root
 
 	# initialize domains

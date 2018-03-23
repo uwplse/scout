@@ -105,6 +105,7 @@ export default class PageContainer extends React.Component {
 
     // Keep track of the currently selected shape 
     button.on("selected", this.selectShape.bind(this, json)); 
+    button.on("moving", this.createGroupOnMove.bind(this, json)); 
   }
 
   deleteShape(shapeJSON) {
@@ -134,16 +135,33 @@ export default class PageContainer extends React.Component {
     return false;
   }
 
-  getGroupBoundingBox(x1,y1,width1,height1,x2,y2,width2,height2) {
-      let groupX = x1 < x2 ? x1 : x2; 
-      let groupY = y1 < y2 ? y1 : y2; 
-      let right1 = x1 + width1; 
-      let right2 = x2 + width2; 
-      let bottom1 = y1 + height1; 
-      let bottom2 = y2 + height2; 
-      let groupWidth = (right1 > right2) ? (right1 - groupX) : (right2 - groupX); 
-      let groupHeight = (bottom1 > bottom2) ? (bottom1 - groupY) : (bottom2 - groupY); 
-      return { x: groupX, y: groupY, width: groupWidth, height: groupHeight }; 
+  getGroupBoundingBox(group) {
+    let x = -1; 
+    let y = -1; 
+    let bottom = -1; 
+    let right = -1; 
+    for(let i=0; i<group.children.length; i++) {
+      let child = group.children[i];  
+      if (x==-1 || child.shape.left < x) {
+        x = child.shape.left; 
+      }
+
+      if (y==-1 || child.shape.top < y) {
+        y = child.shape.top; 
+      }
+
+      let childBottom = child.shape.top + child.shape.height; 
+      if (bottom==-1 || childBottom > bottom) {
+        bottom = childBottom; 
+      }
+
+      let childRight = child.shape.left + child.shape.width; 
+      if (right==-1 || childRight > right) {
+        right = childRight; 
+      }
+    }
+
+    return { x: x, y: y, width: right-x, height: bottom-y }; 
   }
 
   createGroupOnMove(shapeJSON) {
@@ -152,6 +170,9 @@ export default class PageContainer extends React.Component {
     let shape_y = shapeJSON.shape.top; 
     let shape_width = shapeJSON.shape.width; 
     let shape_height = shapeJSON.shape.height;
+    if (shapeJSON.parent) {
+      return; 
+    }
 
     for(let i=0; i<this.constraintsShapes.length; i++) {
       if(this.constraintsShapes[i].name != shapeJSON.name && this.constraintsShapes[i].type != "group") {
@@ -161,24 +182,20 @@ export default class PageContainer extends React.Component {
         let cShape_height = this.constraintsShapes[i].shape.height; 
         if (this.overlapping(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
           if (this.constraintsShapes[i].parent) {
-            let groupBoundingBox = this.getGroupBoundingBox(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height); 
             let parentGroup = this.constraintsShapes[i].parent; 
             shapeJSON.parent = parentGroup; 
             parentGroup.children.push(shapeJSON); 
             
             // Adjust the group bounding box
             let groupShape = parentGroup.shape; 
+            let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
             groupShape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
           }
           else {
-            let groupBoundingBox = this.getGroupBoundingBox(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height); 
-            let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10)
-
             // Create a new group for the parent container
             let groupJSON = {
               "name": _.uniqueId(),
               "type": "group", 
-              "shape": groupRect, 
               "children": []
             }
 
@@ -186,6 +203,11 @@ export default class PageContainer extends React.Component {
             shapeJSON.parent = groupJSON; 
             groupJSON.children.push(this.constraintsShapes[i]); 
             groupJSON.children.push(shapeJSON); 
+
+            let groupBoundingBox = this.getGroupBoundingBox(groupJSON); 
+            let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10, {selectable: false});
+            groupJSON.shape = groupRect; 
+
             this.constraintsCanvas.add(groupRect); 
             this.constraintsShapes.push(groupJSON); 
             this.constraintsCanvas.sendToBack(groupRect);
@@ -239,6 +261,13 @@ export default class PageContainer extends React.Component {
         "width": roundedWidth, 
         "height": roundedHeight
 
+      }
+
+      if (shape.children) {
+        jsonShape.children = []; 
+        for(let i=0; i<shape.children.length; i++) {
+          jsonShape.children.push(shape.children[i].name); 
+        }
       }
 
       shapeJSON.push(jsonShape); 
