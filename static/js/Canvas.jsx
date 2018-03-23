@@ -1,6 +1,7 @@
 // App.jsx
 import React from "react";
-import FabricHelpers from "./FabricHelpers.js"
+import FabricHelpers from "./FabricHelpers.js"; 
+import '../css/jquery.auderoContextMenu.min.css'; 
 
 export default class Canvas extends React.Component {
   constructor(props) {
@@ -20,10 +21,6 @@ export default class Canvas extends React.Component {
 
   componentDidMount() {
     this.canvas = new fabric.Canvas('design-canvas-' + this.id); 
-
-   	var items = [
-	    { name: 'A menu item', fn: function(target) { console.log('menu', target); }}
-	];
 
 	// When the component mounts, draw the shapes onto the canvas
 	for(var i=0; i<this.elements.length; i++) {
@@ -48,10 +45,18 @@ export default class Canvas extends React.Component {
 			this.canvas.add(field); 
 		}
 	}
+
+	// intialize the context menu
+	$('#canvas-box-' + this.id).auderoContextMenu({idMenu: 'context-menu-' + this.id, bindLeftClick: true}); 
   }
 
   render () {
-    return  <canvas className="design-canvas" id={"design-canvas-" + this.id} width="187.5px" height="333px">
-            </canvas>; 
+    return  (<div className="canvas-container" id={"canvas-box-" + this.id} ><ul id={"context-menu-" + this.id} className="audero-context-menu">
+			   <li><a href="http://www.audero.it" target="_blank">Audero</a></li>
+			   <li><a href="https://twitter.com/AurelioDeRosa" target="_blank">Aurelio De Rosa on Twitter</a></li>
+			   <li><a href="https://github.com/AurelioDeRosa" target="_blank">Aurelio De Rosa on GitHub</a></li>
+			</ul>
+    		<canvas className="design-canvas" id={"design-canvas-" + this.id} width="187.5px" height="333px">
+            </canvas></div>); 
   }
 }

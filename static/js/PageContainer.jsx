@@ -4,7 +4,6 @@ import '../css/Canvas.css';
 import 'whatwg-fetch'; 
 import Canvas from "./Canvas"; 
 import FabricHelpers from './FabricHelpers.js';
-import 'context-menu';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -361,7 +360,7 @@ export default class PageContainer extends React.Component {
               <h3 className="panel-title">Designs</h3>
             </div>
             <div className="panel-body design-body">
-            {designs}
+              {designs}
             </div>
           </div>
         </div>

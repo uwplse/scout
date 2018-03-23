@@ -39,7 +39,7 @@
     ]
   },
   "dependencies": {
-    "context-menu": "^2.0.0",
+    "audero-context-menu": "^2.4.2",
     "whatwg-fetch": "^2.0.3"
   }
 }
