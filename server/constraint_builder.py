@@ -68,8 +68,8 @@ class ConstraintBuilder(object):
 	def init_shape_constraints(self, shape): 
 		print("locking shape: " + str(shape.locked)) 
 		if shape.locked: 
-			self.solver.add(shape.x.z3 == shape.orig_x)
-			self.solver.add(shape.y.z3 == shape.orig_y)
+			self.solver.add(shape.x.z3 == shape.orig_x, shape.shape_id + " locked to position x")
+			self.solver.add(shape.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
 
 	def non_overlapping(self, container): 
 		child_shapes = container.children 
@@ -83,7 +83,7 @@ class ConstraintBuilder(object):
 					right = shape2.x.z3 + shape2.width + container.proximity.z3 <= shape1.x.z3
 					top = shape1.y.z3 + shape1.height + container.proximity.z3 <= shape2.y.z3
 					bottom = shape2.y.z3 + shape2.height + container.proximity.z3 <= shape1.y.z3
-					self.solver.add(Or(left,right,top,bottom))
+					self.solver.add(Or(left,right,top,bottom), "Non-overlapping shapes")
 
 	def get_max_width_constraint(self, child_i, widest_i, child_shapes): 
 		if child_i < len(child_shapes): 
@@ -168,7 +168,7 @@ class ConstraintBuilder(object):
 				# The bottom of the shape is the bottom of the container
 				is_bottom = (child.y.z3 + child.height) == (container.y.z3 + container.height)
 				is_right = (child.x.z3 + child.width) == (container.x.z3 + container.width)
-				self.solver.add(If(is_vertical, is_bottom, is_right))
+				self.solver.add(If(is_vertical, is_bottom, is_right), "Order last")
 
 			if child.order == "first":
 				is_top = (child.y.z3 == container.y.z3)

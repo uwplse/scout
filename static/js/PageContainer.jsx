@@ -315,20 +315,17 @@ export default class PageContainer extends React.Component {
     return elements; 
   }
 
-  updateConstraintsCanvasShape(jsonShape, selectedOption) {
+  updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, selectedOption) {
     // At least one constraint has been changed 
     // The button to get more designs should be disabled
     this.setState({
       constraintModified: true
     }); 
 
+    selectedOption.action(constraintsCanvasShape, designCanvasShape); 
 
-    // Update the property on shape according to the selected option
-    let label = selectedOption.label; 
-    let value = selectedOption.value; 
-    jsonShape[label] = value; 
-
-    // Show some indicator of the changes that were made 
+    // Force the canvas to re-render
+    this.constraintsCanvas.renderAll();
   }
 
   parseSolutions(requestData) {

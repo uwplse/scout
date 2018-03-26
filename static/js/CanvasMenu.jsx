@@ -3,8 +3,14 @@ import React from "react";
 
 const menuTextToProperty = {
 	'Keep position here.': {
-		'label': 'locked_position', 
-		'value': true
+		'action': function keepPosition(constraintsCanvasShape, designCanvasShape) {
+		    // Update the property on shape according to the selected option
+		    // Use the server key for locking a shape into a specific location
+		    constraintsCanvasShape['locked_position'] = true; 
+
+		    // Then update the location of the constraints canvas shape to that of the design canvas shape
+		    constraintsCanvasShape.shape.set({left: designCanvasShape.shape.left, top: designCanvasShape.shape.top }); 
+		}
 	},
 	'Unlock position.': {
 		'label': 'locked_position',

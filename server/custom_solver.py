@@ -129,18 +129,18 @@ class Solver(object):
 		last = []
 		first = []
 		variables = []
-		last.append(self.canvas_shape.alignment)
-		last.append(self.canvas_shape.justification)
+		# last.append(self.canvas_shape.alignment)
+		# last.append(self.canvas_shape.justification)
 
 		for child in self.root.children:
 			if child.type == "container" and len(child.children):
 				first.append(child.arrangement)
-				last.append(child.alignment)
-				last.append(child.proximity)
+				# last.append(child.alignment)
+				# last.append(child.proximity)
 
 		first.append(self.root.arrangement)
-		last.append(self.root.alignment)
-		last.append(self.root.proximity)
+		# last.append(self.root.alignment)
+		# last.append(self.root.proximity)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
@@ -410,8 +410,9 @@ class Solver(object):
 		return 
 
 	def branch_and_bound_n_solutions(self, time_start): 
-		while self.num_solutions < NUM_SOLUTIONS: 
-			sln = self.branch_and_bound_random(time_start)
+		while self.num_solutions < NUM_SOLUTIONS:
+			state = sh.Solution()
+			sln = self.branch_and_bound_random(time_start, state)
 			if sln is not None: 
 				self.solutions.append(sln)
 				self.num_solutions += 1
@@ -434,10 +435,12 @@ class Solver(object):
 		for i in range(0, len(self.variables)):
 			self.solver.pop()
 
-	def branch_and_bound_random(self, time_start, state=sh.Solution()):
+	def branch_and_bound_random(self, time_start, state):
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
-			result = self.solver.check();
+			result = self.solver.check()
+			constraints = self.solver.sexpr()
+			unsat_core = self.solver.unsat_core()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -481,6 +484,8 @@ class Solver(object):
 				# GGet a solution
 				time_z3_start = time.time()
 				result = self.solver.check()
+				unsat_core = self.solver.unsat_core()
+				sexpr = self.solver.sexpr()
 				self.z3_calls += 1
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start
