@@ -12,18 +12,21 @@ export default class PageContainer extends React.Component {
     this.fieldClicked = this.fieldClicked.bind(this); 
     this.textClicked = this.textClicked.bind(this); 
     this.buttonClicked = this.buttonClicked.bind(this); 
-    this.getDesigns = this.getDesigns.bind(this); 
+    this.getMoreDesigns = this.getMoreDesigns.bind(this); 
+    this.getDesignsWithNewConstraints = this.getDesignsWithNewConstraints.bind(this); 
     this.parseSolutions = this.parseSolutions.bind(this);
     this.deleteShape = this.deleteShape.bind(this); 
+    this.updateConstraintsCanvasShape = this.updateConstraintsCanvasShape.bind(this); 
 
     this.canvas = undefined; 
     this.constraintsTop = 10; 
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapes = []; 
+    this.constraintsShapesByName = {}; // Dictionary collection of shapes for key-value access
 
     // This is the set of design canvases in the design window
-    this.state = { designCanvases: [] }; 
+    this.state = { designCanvases: [], constraintModified: false }; 
   }
 
   componentDidMount() {
@@ -49,6 +52,7 @@ export default class PageContainer extends React.Component {
     }
 
     this.constraintsShapes.push(json); 
+    this.constraintsShapesByName[json["name"]] = json; 
 
     // Keep track of the currently selected shape 
     field.on("selected", this.selectShape.bind(this, json)); 
@@ -74,6 +78,7 @@ export default class PageContainer extends React.Component {
     }
 
     this.constraintsShapes.push(json); 
+    this.constraintsShapesByName[json["name"]] = json; 
 
     // Keep track of the currently selected shape 
     text.on("selected", this.selectShape.bind(this, json)); 
@@ -98,6 +103,7 @@ export default class PageContainer extends React.Component {
     }
 
     this.constraintsShapes.push(json);  
+    this.constraintsShapesByName[json["name"]] = json; 
 
     // Set up the event handlers
     // button.on('mousedown', this.deleteShape.bind(this, json)); 
@@ -269,12 +275,10 @@ export default class PageContainer extends React.Component {
     let shapeJSON = []; 
     for(var i=0; i<this.constraintsShapes.length; i++) {
       let shape = this.constraintsShapes[i]; 
-      let jsonShape = {}; 
-      let fabricShape = shape.shape; 
+      let jsonShape = Object.assign({}, shape); 
+      jsonShape.shape = undefined; 
 
-      jsonShape["name"] = shape.name; 
-      jsonShape["label"] = shape.label;
-      jsonShape["type"] = shape.type;
+      let fabricShape = shape.shape; 
 
       jsonShape["location"] = {
         "x": fabricShape.left, 
@@ -299,7 +303,32 @@ export default class PageContainer extends React.Component {
       shapeJSON.push(jsonShape); 
     }  
 
-    return JSON.stringify(shapeJSON)
+    return JSON.stringify(shapeJSON); 
+  }
+
+  linkSolutionShapesToConstraints(elements) {
+    for(var i=0; i<elements.length; i++) {
+      let element = elements[i]; 
+      let elementName = element["name"]; 
+      element.constraintsCanvasShape = this.constraintsShapesByName[elementName];
+    }
+    return elements; 
+  }
+
+  updateConstraintsCanvasShape(jsonShape, selectedOption) {
+    // At least one constraint has been changed 
+    // The button to get more designs should be disabled
+    this.setState({
+      constraintModified: true
+    }); 
+
+
+    // Update the property on shape according to the selected option
+    let label = selectedOption.label; 
+    let value = selectedOption.value; 
+    jsonShape[label] = value; 
+
+    // Show some indicator of the changes that were made 
   }
 
   parseSolutions(requestData) {
@@ -309,7 +338,10 @@ export default class PageContainer extends React.Component {
     for(let i=0; i<solutions.length; i++) {
       let solution = solutions[i]; 
       let elements = solution.elements; 
-      designCanvasList.push(<Canvas key={solution.id} id={solution.id} elements={elements} />); 
+      
+      // Attach the JSON shapes for this canvas instance to the corresponding constraints canvas shapes
+      this.linkSolutionShapesToConstraints(elements); 
+      designCanvasList.push(<Canvas key={solution.id} id={solution.id} elements={elements} updateConstraintsCanvas={this.updateConstraintsCanvasShape}/>); 
     }
 
     this.setState({
@@ -317,7 +349,9 @@ export default class PageContainer extends React.Component {
     });
   }
 
-  getDesigns() {
+  getMoreDesigns() {
+    // get more designs
+    // without changing any new constraints
     let jsonShapes = this.getShapesJSON(); 
    
    // Send an ajax request to the server 
@@ -325,14 +359,30 @@ export default class PageContainer extends React.Component {
     $.post("/solve", {"elements": jsonShapes}, this.parseSolutions, 'text');
   }
 
+  getDesignsWithNewConstraints() {
+    // Clear out the current set of designs 
+    // TODO: Need some way of ensuring the same set of designs do not get brought back again
+    // this has to be handled in the server
+    this.state.designCanvases = []; // Don't need to setState here since we will call it when rendering the new designs?
+ 
+    // Get designs with new constraints
+    let jsonShapes = this.getShapesJSON(); 
+
+    // Send an ajax request to the server 
+    // Solve for the new designs
+    $.post("/solve", {"elements": jsonShapes}, this.parseSolutions, 'text');
+ }
+
   render () {
     const designs = this.state.designCanvases;
+    const constraintModified = this.state.constraintModified; 
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
-            <button type="button" className="btn btn-default navbar-btn" onClick={this.getDesigns}>Get Designs</button>
+            <button type="button" className="btn btn-default navbar-btn" disabled={constraintModified} onClick={this.getMoreDesigns}>Get More Designs</button>
+            <button type="button" className="btn btn-default navbar-btn" disabled={!constraintModified} onClick={this.getDesignsWithNewConstraints}>Update Designs from Constraints</button>
           </div>
          </div>
         </nav>

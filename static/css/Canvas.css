@@ -1,3 +1,6 @@
+/** 
+  Page level styles
+ **/
 div:focus {
 	outline: none;
 }
@@ -6,6 +9,20 @@ div:focus {
 	display: none;
 }
 
+/**
+  Overrides of bootstrap styles 
+  **/ 
+.navbar {
+	margin-bottom: 0px;
+}
+
+.navbar-btn {
+	margin-left: 10px; 
+}
+
+/**
+  General styles
+ **/
 .canvas {
 	border: 1px solid gainsboro;
 	padding: 5px;
@@ -54,10 +71,6 @@ div:focus {
     padding-left: 10px;
 }
 
-.navbar {
-	margin-bottom: 0px;
-}
-
 .design-canvas {
 	border: 1px solid #ccc;
 }
@@ -68,7 +81,7 @@ div:focus {
 }
 
 .design-body {
-	height: 90%;
+	height: 84%;
     overflow: auto;
 }
 

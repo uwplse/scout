@@ -14,8 +14,12 @@ export default class Canvas extends React.Component {
 
   	this.state = {
   		menuShown: false, 
-  		menuPosition: { x: 0, y: 0 }
+  		menuPosition: { x: 0, y: 0 }, 
+  		activeCanvasMenu: undefined
   	}; 
+
+  	// a callback method to update the constraints canvas when a menu item is selected
+  	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
   } 
 
   drawShapes() {
@@ -26,13 +30,17 @@ export default class Canvas extends React.Component {
   	return [x/2,y/2,width/2,height/2]; 
   }
 
-  showConstraintsContextMenu(shape,evt) {
+  showConstraintsContextMenu(jsonShape,evt) {
   	if(evt.button == 1) {
   		// evt.stopPropagation(); // Prevent it from bubbling to the canvas
 
   		// Show the context menu. 
-  		let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect(); 
+  		let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
+
+  		// The menuTrigger is the JSON of the shape that triggered the open
+  		let shape = jsonShape.shape; 
 	    this.setState({
+	      activeCanvasMenu: <CanvasMenu menuTrigger={jsonShape} onClick={this.hideMenu.bind(this)} />,
 	      menuShown: true, 
 	      menuPosition: {
 	      	x: componentBoundingBox.x + shape.left + (shape.width/2), 
@@ -43,9 +51,14 @@ export default class Canvas extends React.Component {
   }
 
   // hideConstraintsContextMenu
-  hideMenu(evt) {
+  hideMenu(menuTrigger, selectedText, evt) {
+  	// Shape and option clicked on should be the arguments here
+  	// The linked shape in the constraints canvas
+  	let constraintsCanvasShape = menuTrigger.constraintsCanvasShape; 
+  	this.updateConstraintsCanvas(constraintsCanvasShape, selectedText); 
   	this.setState({
-  		menuShown: false
+  		menuShown: false, 
+  		activeCanvasMenu: undefined
   	});
   }
 
@@ -62,20 +75,24 @@ export default class Canvas extends React.Component {
 		let y = element.location.y/2; 
 		let width = element.size.width/2; 
 		let height = element.size.height/2; 
+
 		if(element.type == "button") {
 			let button = FabricHelpers.getButton(x,y,width,height,{'cursor': 'hand', 'selectable': false}); 
-			button.on("mousedown", this.showConstraintsContextMenu.bind(this,button));
+			button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+			element.shape = button; 
 			this.canvas.add(button); 
 		}
 		else if (element.type == "text") {
 			let fontSize = height/2; // TODO: Hack. Fix this later
 			let text = FabricHelpers.getText(x,y,fontSize,{'cursor': 'hand', 'selectable': false}); 
-			text.on("mousedown", this.showConstraintsContextMenu.bind(this,text));
+			text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+			element.shape = text; 
 			this.canvas.add(text); 
 		}
 		else if (element.type == "field") {
 			let field = FabricHelpers.getField(x,y,width,height,{'cursor': 'hand', 'selectable': false}); 
-			field.on("mousedown", this.showConstraintsContextMenu.bind(this,field));
+			field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+			element.shape = field; 
 			this.canvas.add(field); 
 		}
 	}
@@ -84,10 +101,24 @@ export default class Canvas extends React.Component {
   render () {
  	let menuShown = this.state.menuShown; 
  	let menuPosition = this.state.menuPosition; 
+ 	let activeCanvasMenu = this.state.activeCanvasMenu; 
     return  (<div className="canvas-container" id={"canvas-box-" + this.id}> 
-    			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>{menuShown ? <CanvasMenu onClick={this.hideMenu.bind(this)} /> : null}</div>
+    			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
+    				{activeCanvasMenu}
+    			</div>
 	    		<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width="187.5px" height="333px">
 	            </canvas>
 	         </div>); 
   }
 }
+
+
+
+
+
+
+
+
+
+
+

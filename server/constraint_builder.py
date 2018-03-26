@@ -66,6 +66,7 @@ class ConstraintBuilder(object):
 		self.non_overlapping(container)
 
 	def init_shape_constraints(self, shape): 
+		print("locking shape: " + str(shape.locked)) 
 		if shape.locked: 
 			self.solver.add(shape.x.z3 == shape.orig_x)
 			self.solver.add(shape.y.z3 == shape.orig_y)

@@ -67,8 +67,8 @@ class Solver(object):
 			if element["type"] != "group": 
 				element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
 				locked = False
-				if "locked" in element:
-					locked = element["locked"]
+				if "locked_position" in element:
+					locked = element["locked_position"]
 
 				order = None
 				if "order" in element: 
