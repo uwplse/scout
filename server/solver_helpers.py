@@ -114,6 +114,16 @@ class Solution(object):
 					element["size"]["width"] = width
 					element["size"]["height"] = height
 
+					# Also include the container properties in the element object for each container shape 
+					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
+					# so we don't have to edit this place every time we add a property
+					arrangement = model[shape.arrangement.z3].as_string()
+					alignment = model[shape.alignment.z3].as_string()
+					proximity = model[shape.proximity.z3].as_string()
+					element["arrangement"] = int(arrangement)
+					element["alignment"] = int(alignment)
+					element["proximity"] = int(proximity)
+
 				# update the cost matrix
 				cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
 

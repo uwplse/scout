@@ -2,7 +2,7 @@
 import React from "react";
 import FabricHelpers from "./FabricHelpers.js"; 
 import CanvasMenu from "./CanvasMenu"; 
-import Constants from "./Constants"; 
+import Constants from "./Constants"
 
 export default class Canvas extends React.Component {
   constructor(props) {
@@ -80,10 +80,10 @@ export default class Canvas extends React.Component {
   		this.elementDict[element.id] = element; 
 
   		// Scale down the values to fit into the design canvases
-  		let x = element.location.x/Constants.designCanvasScalingFactor; 
-  		let y = element.location.y/Constants.designCanvasScalingFactor; 
-  		let width = element.size.width/Constants.designCanvasScalingFactor; 
-  		let height = element.size.height/Constants.designCanvasScalingFactor; 
+  		let x = element.location.x/Constants.designCanvasScalingFactor(); 
+  		let y = element.location.y/Constants.designCanvasScalingFactor(); 
+  		let width = element.size.width/Constants.designCanvasScalingFactor(); 
+  		let height = element.size.height/Constants.designCanvasScalingFactor(); 
 
   		if(element.type == "button") {
   			let button = FabricHelpers.getButton(x,y,width,height,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 

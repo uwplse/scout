@@ -66,21 +66,24 @@ class Solver(object):
 		for element in self.elements:
 			if element["type"] != "group": 
 				element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
-				locked = False
-				if "locked_position" in element:
-					locked = element["locked_position"]
+				locks = []
+				if "locks" in element:
+					locks = element["locks"]
 
 				order = None
 				if "order" in element: 
 					order = element["order"]
 
-				element_shape = shape_classes.LeafShape(element["name"], element, element_orig_bounds, locked, order)
+				element_shape = shape_classes.LeafShape(element["name"], element, element_orig_bounds, locks, order)
 				shapes.append(element_shape)
 				root.add_child(element_shape)
 		
 		for element in self.elements: 
 			if element["type"] == "group": 
-				group_shape = shape_classes.ContainerShape(element["name"], element, order=order)
+				if "locks" in element:
+					locks = element["locks"]
+
+				group_shape = shape_classes.ContainerShape(element["name"], element, locks=locks)
 				for child_id in element["children"]: 
 					child_shape = [shp for shp in root.children if shp.shape_id == child_id][0]
 					group_shape.add_child(child_shape)

@@ -64,12 +64,27 @@ class ConstraintBuilder(object):
 		self.arrange_container(container)
 		self.align_container(container)
 		self.non_overlapping(container)
+		self.init_container_locks(container)
+
+	def init_container_locks(self, container): 
+		# Add constraints for all of the locked properties
+		# TODO: Make generic at some point
+		if container.locks is not None: 
+			for lock in container.locks: 
+				if lock == "arrangement": 
+					self.solver.add(container.arrangement.z3 == container.arrangement_value)
+				elif lock == "proximity": 
+					self.solver.add(container.proximity.z3 == container.proximity_value)
+				elif lock == "alignment": 
+					self.solver.add(container.alignment.z3 == container.alignment_value)
 
 	def init_shape_constraints(self, shape): 
-		print("locking shape: " + str(shape.locked)) 
-		if shape.locked: 
-			self.solver.add(shape.x.z3 == shape.orig_x, shape.shape_id + " locked to position x")
-			self.solver.add(shape.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
+		if shape.locks is not None:
+			for lock in shape.locks: 
+				if lock == "position": 
+					self.solver.add(shape.x.z3 == shape.orig_x, shape.shape_id + " locked to position x")
+					self.solver.add(shape.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
+				# Others TBD
 
 	def non_overlapping(self, container): 
 		child_shapes = container.children 
@@ -208,4 +223,8 @@ class ConstraintBuilder(object):
 			# self.solver.assert_and_track(If(is_vertical, vertical, horizontal), "alignment_constraint_" + container.shape_id + "_" + child.shape_id)
 			self.solver.add(If(is_vertical, vertical, horizontal), container.shape_id + " " + child.shape_id + " alignment")
 			
+
+
+
+
 
