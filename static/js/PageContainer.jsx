@@ -39,20 +39,20 @@ export default class PageContainer extends React.Component {
     let top = this.constraintsTop; 
     let left = 20; 
 
-    // Add a new field to the constraints canvas
-    let field = FabricHelpers.getField(left, top, 120, 40, {'selectable': true});
-    this.constraintsCanvas.add(field); 
-
     // Set up the JSON object
     let json = {
       "name": _.uniqueId(),
       "label": "field", 
-      "type": "field", 
-      "shape": field
+      "type": "field"
     }
 
     this.constraintsShapes.push(json); 
     this.constraintsShapesByName[json["name"]] = json; 
+
+    // Add a new field to the constraints canvas
+    let field = FabricHelpers.getField(left, top, 120, 40, {'selectable': true, 'text': json["name"]});
+    json.shape = field; 
+    this.constraintsCanvas.add(field); 
 
     // Keep track of the currently selected shape 
     field.on("selected", this.selectShape.bind(this, json)); 
@@ -66,16 +66,17 @@ export default class PageContainer extends React.Component {
 
     // Add a new text to the constraints canvas
     let fontSize = 40; 
-    let text = FabricHelpers.getInteractiveText(left, top, 40, {'selectable': true});
-    this.constraintsCanvas.add(text); 
 
     // Set up the JSON object
     let json = {
       "name": _.uniqueId(),
       "label": "text", 
-      "type": "text", 
-      "shape": text
+      "type": "text"
     }
+
+    let text = FabricHelpers.getInteractiveText(left, top, fontSize, {'selectable': true, 'text': json["name"]});
+    json.shape = text; 
+    this.constraintsCanvas.add(text); 
 
     this.constraintsShapes.push(json); 
     this.constraintsShapesByName[json["name"]] = json; 
@@ -90,17 +91,18 @@ export default class PageContainer extends React.Component {
     let top = this.constraintsTop; 
     let left = 20; 
 
-    // Add a new field to the constraints canvas
-    let button = FabricHelpers.getButton(left, top, 120, 40, {'selectable': true});
-    this.constraintsCanvas.add(button); 
-
     // Set up the JSON object
     let json = {
       "name": _.uniqueId(),
       "label": "button", 
-      "type": "button", 
-      "shape": button, 
+      "type": "button"
     }
+
+    // Add a new field to the constraints canvas
+    let button = FabricHelpers.getButton(left, top, 120, 40, {'selectable': true, 'text': json["name"]});
+    json.shape = button;
+    this.constraintsCanvas.add(button); 
+
 
     this.constraintsShapes.push(json);  
     this.constraintsShapesByName[json["name"]] = json; 
@@ -315,14 +317,15 @@ export default class PageContainer extends React.Component {
     return elements; 
   }
 
-  updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, selectedOption) {
+  updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action) {
     // At least one constraint has been changed 
     // The button to get more designs should be disabled
     this.setState({
       constraintModified: true
     }); 
 
-    selectedOption.action(constraintsCanvasShape, designCanvasShape); 
+    // Call the menu action callback to perform the action
+    action.callback(constraintsCanvasShape, designCanvasShape); 
 
     // Force the canvas to re-render
     this.constraintsCanvas.renderAll();

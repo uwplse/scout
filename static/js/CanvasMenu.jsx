@@ -1,53 +1,59 @@
 // App.jsx
 import React from "react";
-
-const menuTextToProperty = {
-	'Keep position here.': {
-		'action': function keepPosition(constraintsCanvasShape, designCanvasShape) {
-		    // Update the property on shape according to the selected option
-		    // Use the server key for locking a shape into a specific location
-		    constraintsCanvasShape['locked_position'] = true; 
-
-		    // Then update the location of the constraints canvas shape to that of the design canvas shape
-		    constraintsCanvasShape.shape.set({left: designCanvasShape.shape.left, top: designCanvasShape.shape.top }); 
-		}
-	},
-	'Unlock position.': {
-		'label': 'locked_position',
-		'value': false
-	}
-}
+import CanvasMenuActions from "./CanvasMenuActions"; 
 
 class CanvasMenuItem extends React.Component {
   constructor(props) {
   	super(props); 
-  	this.text = props.text; 
   	this.menuTrigger = props.menuTrigger;  // Pass this along from parent so we can return the shape/selected menu item combination when the menu closes
+  	this.action = props.action; 
+  	this.property = props.property; 
   }
 
   render () {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
-	let menuProperty = menuTextToProperty[this.text]; 
-	return <li className="canvas-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, menuProperty)} >{this.text}</li>; 
+	// let menuProperty = menuTextToProperty[this.text]; 
+	let menuText = this.action.label; 
+	return <li className="canvas-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action)} >{menuText}</li>; 
   }
 }
 
 export default class CanvasMenu extends React.Component {
   constructor(props) {
   	super(props); 
-  	this.menuOptions = ["Keep position here."]; 
   	this.menuShown = props.menuShown; 
   	this.menuTrigger = props.menuTrigger; // This is the JSON of the shape that triggered the menu open 
   }
 
-  render () {
+  constructMenuOptions() {
   	let menuItems = []; 
-	this.menuOptions.forEach((menu) => {
-	  menuItems.push(
-	    <CanvasMenuItem onClick={this.props.onClick} menuTrigger={this.menuTrigger} key={menu} text={menu} />
-	  );
-	});
+  	for(let constraint in CanvasMenuActions.elementConstraints) {
+  		if(CanvasMenuActions.elementConstraints.hasOwnProperty(constraint)) {
+  			// Check if this property is set on the menu trigger already to 
+  			// Decide whether to show the do or undo option 
+  			let action = undefined; 
+  			if(this.menuTrigger[constraint]) {
+  				// The constraint is active and set to true, show the undo option
+  				action = CanvasMenuActions.elementConstraints[constraint]["undo"]; 
+  			}else {
+  				// Show the do option
+	  			action = CanvasMenuActions.elementConstraints[constraint]["do"]; 
+  			}
+	  		
+	  		menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={action} menuTrigger={this.menuTrigger} key={constraint} />);
+  		}
+  	}
+
+  	return menuItems; 
+  }
+
+  render () {
+  	let menuItems = this.constructMenuOptions();
 
 	return <ul className="canvas-menu">{menuItems}</ul>; 
   }
 }
+
+
+// Menu items
+// - Element cl

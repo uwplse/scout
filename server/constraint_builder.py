@@ -83,7 +83,7 @@ class ConstraintBuilder(object):
 					right = shape2.x.z3 + shape2.width + container.proximity.z3 <= shape1.x.z3
 					top = shape1.y.z3 + shape1.height + container.proximity.z3 <= shape2.y.z3
 					bottom = shape2.y.z3 + shape2.height + container.proximity.z3 <= shape1.y.z3
-					self.solver.add(Or(left,right,top,bottom), "Non-overlapping shapes")
+					self.solver.add(Or(left,right,top,bottom), "Non-overlapping shapes " + shape1.shape_id + " " + shape2.shape_id)
 
 	def get_max_width_constraint(self, child_i, widest_i, child_shapes): 
 		if child_i < len(child_shapes): 

@@ -19,7 +19,8 @@ class FabricHelpers {
 	        fill : '#44ACB1'
 	    });
 
-	    var text = new fabric.IText('Button', {
+	    let textValue = options.text ? options.text : "Button"; 
+	    var text = new fabric.IText(textValue, {
 	      fontSize: 20, 
 	      fontFamily: 'Georgia', 
 	      strokeWidth:0, 
@@ -40,7 +41,8 @@ class FabricHelpers {
 	}
 
   	static getText(left, top, fontSize, options={}) {
-	    var text = new fabric.Text('Text', {
+  	    let textValue = options.text ? options.text : "Text"; 
+	    var text = new fabric.Text(textValue, {
 	      fontSize: fontSize,
 	      left: left,
 	      top: top,
@@ -78,7 +80,8 @@ class FabricHelpers {
 	        strokeWidth: 1
 	    });
 
-	    var text = new fabric.IText('Field', {
+	    let textValue = options.text ? options.text : "Field"; 
+	    var text = new fabric.IText(textValue, {
 	      fontSize: 20, 
 	      fontFamily: 'Georgia', 
 	      strokeWidth:0, 
