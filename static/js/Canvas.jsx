@@ -8,6 +8,7 @@ export default class Canvas extends React.Component {
   constructor(props) {
   	super(props);
   	this.showConstraintsContextMenu.bind(this); 
+    this.showGroupHoveredState.bind(this); 
 
   	// Shapes to be drawn onto the canvas
   	this.elements = props.elements; 
@@ -50,6 +51,11 @@ export default class Canvas extends React.Component {
 	      }
 	    });
     }
+  }
+
+  showGroupHoveredState(jsonShape,evt) {
+    // Do something here to show that the group is being hovered over
+    console.log("i am being hovered"); 
   }
 
   // hideConstraintsContextMenu
@@ -98,6 +104,21 @@ export default class Canvas extends React.Component {
   			element.shape = field; 
   			this.canvas.add(field); 
   		}
+      else if (element.type == "group") {
+        let groupPadding = 0; // TODO: make constant for this
+        let group = FabricHelpers.getGroup(x-groupPadding,y-groupPadding,width+(groupPadding*2), height+(groupPadding*2), {
+          cursor: 'hand', 
+          selectable: false, 
+          opacity: 0, 
+          stroke: undefined
+        }); 
+
+        group.on("mouseover", this.showGroupHoveredState.bind(this, element)); 
+        group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+        element.shape = group; 
+        this.canvas.add(group);
+        this.canvas.sendToBack(group); 
+      }
   	}
   }
 

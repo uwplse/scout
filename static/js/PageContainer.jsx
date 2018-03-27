@@ -212,11 +212,12 @@ export default class PageContainer extends React.Component {
               groupJSON.children.push(shapeJSON); 
 
               let groupBoundingBox = this.getGroupBoundingBox(groupJSON); 
-              let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10, {selectable: false});
+              let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10, {selectable: false, stroke: 'blue'});
               groupJSON.shape = groupRect; 
 
               this.constraintsCanvas.add(groupRect); 
               this.constraintsShapes.push(groupJSON); 
+              this.constraintsShapesByName[groupJSON["name"]] = groupJSON; 
               this.constraintsCanvas.sendToBack(groupRect);
             }
 
@@ -302,6 +303,8 @@ export default class PageContainer extends React.Component {
         }
       }
 
+      jsonShape.parent = undefined; 
+
       shapeJSON.push(jsonShape); 
     }  
 
@@ -326,7 +329,6 @@ export default class PageContainer extends React.Component {
 
     // Call the menu action callback to perform the action & update the canvas
     action.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
-    action.updateDesignCanvasShape(designCanvasShape);  
 
     // Force the canvas to re-render
     this.constraintsCanvas.renderAll();

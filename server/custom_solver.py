@@ -74,14 +74,13 @@ class Solver(object):
 				if "order" in element: 
 					order = element["order"]
 
-				element_shape = shape_classes.LeafShape(element["name"], element_orig_bounds, locked, order)
+				element_shape = shape_classes.LeafShape(element["name"], element, element_orig_bounds, locked, order)
 				shapes.append(element_shape)
 				root.add_child(element_shape)
 		
 		for element in self.elements: 
 			if element["type"] == "group": 
-				group_name = element["name"]
-				group_shape = shape_classes.ContainerShape(group_name, order=order)
+				group_shape = shape_classes.ContainerShape(element["name"], element, order=order)
 				for child_id in element["children"]: 
 					child_shape = [shp for shp in root.children if shp.shape_id == child_id][0]
 					group_shape.add_child(child_shape)
@@ -89,29 +88,7 @@ class Solver(object):
 				shapes.append(group_shape)
 				root.add_child(group_shape)
 
-		self.elements = [elt for elt in self.elements if elt["type"] != "group"]
-
-		# for element in self.elements:
-		# 	element_name = element["name"]
-		# 	if "labels" in element:
-		# 		# Find the shape & the corresponding labeled shape
-		# 		# TODO: Find better way to do this (using dictionary)
-		# 		label_shape = [shp for shp in root.children if shp.shape_id == element_name]
-		# 		labeled_shape = [shp for shp in root.children if shp.shape_id == element["labels"]]
-		# 		label_shape = label_shape[0]
-		# 		labeled_shape = labeled_shape[0]
-
-		# 		# Make a container for them to go into
-		# 		container_id = uuid.uuid4().hex
-		# 		container_shape = shape_classes.ContainerShape(container_id)
-		# 		container_shape.children.append(label_shape)
-		# 		container_shape.children.append(labeled_shape)
-		# 		root.add_child(container_shape)
-		# 		shapes.append(container_shape)
-
-		# 		# Remove the entries from the dictionary
-		# 		root.remove_child(label_shape)
-		# 		root.remove_child(labeled_shape)
+		# self.elements = [elt for elt in self.elements if elt["type"] != "group"]
 
 		return shapes, root
 
@@ -129,18 +106,18 @@ class Solver(object):
 		last = []
 		first = []
 		variables = []
-		# last.append(self.canvas_shape.alignment)
-		# last.append(self.canvas_shape.justification)
+		last.append(self.canvas_shape.alignment)
+		last.append(self.canvas_shape.justification)
 
 		for child in self.root.children:
 			if child.type == "container" and len(child.children):
 				first.append(child.arrangement)
-				# last.append(child.alignment)
-				# last.append(child.proximity)
+				last.append(child.alignment)
+				last.append(child.proximity)
 
 		first.append(self.root.arrangement)
-		# last.append(self.root.alignment)
-		# last.append(self.root.proximity)
+		last.append(self.root.alignment)
+		last.append(self.root.proximity)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
@@ -318,7 +295,7 @@ class Solver(object):
 				time_z3_total = time_z3_end - time_z3_start
 				self.time_z3 += time_z3_total
 
-				sln = state.convert_to_json(self.elements, self.shapes, model)
+				sln = state.convert_to_json(self.shapes, model)
 				self.solutions.append(sln)
 
 				# Encode a conjunction into the solver
@@ -360,7 +337,7 @@ class Solver(object):
 				self.time_z3 += time_z3_total
 
 				# Keep the solution & convert to json
-				sln = state.convert_to_json(self.elements, self.shapes, model)
+				sln = state.convert_to_json(self.shapes, model)
 				self.solutions.append(sln)
 				if len(self.solutions) == NUM_SOLUTIONS:
 					time_end = time.time()
@@ -457,7 +434,7 @@ class Solver(object):
 				# Keep the solution & convert to json
 				self.print_solution()
 
-				sln = state.convert_to_json(self.elements, self.shapes, model)
+				sln = state.convert_to_json(self.shapes, model)
 				self.restore_state()
 				return sln
 			else:

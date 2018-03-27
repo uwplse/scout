@@ -3,16 +3,17 @@ import solver_helpers as sh
 
 # Shape classes for constructing the element hierarchy 
 class Shape(object):
-	def __init__(self, shape_id, locked=False, order=None): 
+	def __init__(self, shape_id, element=None, locked=False, order=None): 
 		self.shape_id = shape_id
+		self.element = element
 		self.x = sh.Variable(shape_id, "x")
 		self.y = sh.Variable(shape_id, "y")
 		self.locked = locked
 		self.order = order
 
 class LeafShape(Shape): 
-	def __init__(self, shape_id, orig_bounds, locked=False, order=None): 
-		Shape.__init__(self, shape_id, locked, order)
+	def __init__(self, shape_id, element, orig_bounds, locked=False, order=None): 
+		Shape.__init__(self, shape_id, element, locked, order)
 		self.type = "leaf"
 
 		orig_x,orig_y,orig_width,orig_height = orig_bounds
@@ -22,8 +23,8 @@ class LeafShape(Shape):
 		self.orig_y = orig_y
 
 class ContainerShape(Shape): 
-	def __init__(self, shape_id, locked=False, order=None): 
-		Shape.__init__(self, shape_id, locked, order)
+	def __init__(self, shape_id, element=None, locked=False, order=None): 
+		Shape.__init__(self, shape_id, element, locked, order)
 		self.type = "container"
 		self.children = []
 		self.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])

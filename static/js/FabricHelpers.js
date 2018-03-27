@@ -1,12 +1,17 @@
 class FabricHelpers {
 	static getGroup(left, top, width, height, options={}) {
+		let opacity = options.opacity != undefined ? options.opacity : 1;
+		let selectable = options.selectable != undefined ? options.selectable : true;  
 	    var rect = new fabric.Rect({
 	    	top: top, 
 	    	left: left,
 	        width : width,
 	        height : height,
 	        fill : '#fff', 
-	        stroke: 'blue'
+	        stroke: options.stroke, 
+	        opacity: opacity, 
+	        selectable: selectable, 
+	        hoverCursor: options.cursor
 	    });
 
 	    return rect; 

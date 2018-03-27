@@ -1,7 +1,11 @@
-import Constants from "./Constants.js"; 
+// import Constants from "./Constants"; 
+class Constants {}
+Constants.designCanvasScalingFactor = 2; 
+
 
 class CanvasMenuActions {}
 CanvasMenuActions.locked_position_key = 'locked_position'; 
+CanvasMenuActions.locked_arrangement_key = 'locked_arrangement'; 
 CanvasMenuActions.elementConstraints = {
 	"locked_position" : {
 		"do": {
@@ -26,6 +30,27 @@ CanvasMenuActions.elementConstraints = {
 			}
 		} 
 	}
+}
+
+CanvasMenuActions.groupConstraints = {
+	"locked_arrangement": // Should this be contextual? (Say Horizontal/Vertical instead of just arrangment)
+		{
+			"do": {
+				"label": "Lock arrangment. ", 
+				"updateConstraintsCanvasShape": function keepArrangment(constraintsCanvasShape, designCanvasShape) {
+					constraintsCanvasShape[CanvasMenuActions.locked_arrangement_key] = true; 
+
+					// Also should the constraints canvas arrange itself in the way of the designs canvas?
+				}
+			}, 
+			"undo": {
+				"label": "Unlock arrangement. ",
+				"updateConstraintsCanvasShape": function undoLockArrangment(constraintsCanvasShape, designCanvasShape) {
+					// TODO: What does undo do?
+					constraintsCanvasShape[CanvasMenuActions.locked_arrangement_key] = false;
+				}
+			}
+		}
 }
 
 export default CanvasMenuActions; 

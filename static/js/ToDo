@@ -1,7 +1,6 @@
 Things to do 
-- The same elements across canvases should probably be linked somehow so that the menu items show up consistently in the right state for the same element
- - Make sure UNDO is actually undoing because the results don't look right
-- Should probably do at least one other constraint type next to check the framework will work for different types of constraints
+- The group was not working because the constraintsShapesByName dictionary was not being updated when creating new groups
+
 
 OTHER
 - multiple menus opening at a time

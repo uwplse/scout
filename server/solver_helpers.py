@@ -57,7 +57,7 @@ class Solution(object):
 		total = total_lr # + total_tb
 		return int(total)
 
-	def convert_to_json(self, elements, shapes, model):
+	def convert_to_json(self, shapes, model):
 		# for shape in shapes:
 		# 	if shape.type == "container":
 		# 		print(shape.shape_id)
@@ -83,9 +83,9 @@ class Solution(object):
 		# 		print(adj_prox)
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
-		for e_index in range(0, len(elements)):  
-			element = elements[e_index]
-			shape = [shp for shp in shapes if shp.shape_id == element["name"]][0]
+		new_elements = []
+		for s_index in range(0, len(shapes)):  
+			shape = shapes[s_index]
 
 			f_x = model[shape.x.z3]
 			f_y = model[shape.y.z3]
@@ -95,16 +95,31 @@ class Solution(object):
 			adj_y = int(adj_y)
 
 			# Copy the solved info back into the JSON shape
-			element["location"]["x"] = adj_x
-			element["location"]["y"] = adj_y
+			if shape.element is not None: 
+				# Dont add any JSON for the canvas_root shape to the results
+				# TODO: Figure out whether we should
+				element = copy.deepcopy(shape.element)
+				element["location"]["x"] = adj_x
+				element["location"]["y"] = adj_y
+				new_elements.append(element)
 
-			# update the cost matrix 
-			cost_matrix[adj_y:(adj_y+shape.height-1),adj_x:(adj_x+shape.width-1)] = 1
+				height = shape.height
+				width = shape.width
+				if shape.type == "container": 
+					# For containers, retrieve the solved for height and width from the model 
+					height = model[shape.height].as_string()
+					width = model[shape.width].as_string()
+					height = int(height)
+					width = int(width)
+					element["size"]["width"] = width
+					element["size"]["height"] = height
+
+				# update the cost matrix
+				cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
 
 		cost = self.compute_symmetry_cost(cost_matrix)
-		# print("Total cost: " + str(cost))
 
-		new_elements = copy.deepcopy(elements);
+		# print("Total cost: " + str(cost))
 		sln["elements"] = new_elements
 		sln["id"] = uuid.uuid4().hex
 		sln["cost"] = cost

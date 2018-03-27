@@ -25,28 +25,39 @@ export default class CanvasMenu extends React.Component {
   	this.menuTrigger = props.menuTrigger; // This is the JSON of the shape that triggered the menu open 
   }
 
+  getAction(constraint, constraintsMenu) {
+      // Find the corresponding shape on the cosntraints canvas for the menu trigger shape
+      // Use the state of that shape to determine what shows up
+      let constraintsCanvasShape = this.menuTrigger.constraintsCanvasShape; 
+      if(constraintsCanvasShape[constraint]) {
+        // The constraint is active and set to true, show the undo option
+        return constraintsMenu[constraint]["undo"]; 
+      } else {
+        // Show the do option
+        return constraintsMenu[constraint]["do"]; 
+      }    
+  }
+
   constructMenuOptions() {
   	let menuItems = []; 
-  	for(let constraint in CanvasMenuActions.elementConstraints) {
-  		if(CanvasMenuActions.elementConstraints.hasOwnProperty(constraint)) {
+  	for(let elementConstraint in CanvasMenuActions.elementConstraints) {
+  		if(CanvasMenuActions.elementConstraints.hasOwnProperty(elementConstraint)) {
   			// Check if this property is set on the menu trigger already to 
   			// Decide whether to show the do or undo option 
-  			let action = undefined; 
-
-  			// Find the corresponding shape on the cosntraints canvas for the menu trigger shape
-  			// Use the state of that shape to determine what shows up
-  			let constraintsCanvasShape = this.menuTrigger.constraintsCanvasShape; 
-  			if(constraintsCanvasShape[constraint]) {
-  				// The constraint is active and set to true, show the undo option
-  				action = CanvasMenuActions.elementConstraints[constraint]["undo"]; 
-  			}else {
-  				// Show the do option
-	  			action = CanvasMenuActions.elementConstraints[constraint]["do"]; 
-  			}
-	  		
-	  		menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={action} menuTrigger={this.menuTrigger} key={constraint} />);
+  			let elementAction = this.getAction(elementConstraint, CanvasMenuActions.elementConstraints); 
+	  		menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={elementAction} menuTrigger={this.menuTrigger} key={elementConstraint} />);
   		}
   	}
+
+    // Group constraints
+    if (this.menuTrigger.type == "group") {
+      for(let groupConstraint in CanvasMenuActions.groupConstraints) {
+        if(CanvasMenuActions.groupConstraints.hasOwnProperty(groupConstraint)) {
+          let groupAction = this.getAction(groupConstraint, CanvasMenuActions.groupConstraints); 
+          menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={groupAction} menuTrigger={this.menuTrigger} key={groupConstraint} />);
+        }
+      }
+    }
 
   	return menuItems; 
   }
