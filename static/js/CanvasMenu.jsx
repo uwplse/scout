@@ -32,7 +32,11 @@ export default class CanvasMenu extends React.Component {
   			// Check if this property is set on the menu trigger already to 
   			// Decide whether to show the do or undo option 
   			let action = undefined; 
-  			if(this.menuTrigger[constraint]) {
+
+  			// Find the corresponding shape on the cosntraints canvas for the menu trigger shape
+  			// Use the state of that shape to determine what shows up
+  			let constraintsCanvasShape = this.menuTrigger.constraintsCanvasShape; 
+  			if(constraintsCanvasShape[constraint]) {
   				// The constraint is active and set to true, show the undo option
   				action = CanvasMenuActions.elementConstraints[constraint]["undo"]; 
   			}else {
@@ -49,7 +53,6 @@ export default class CanvasMenu extends React.Component {
 
   render () {
   	let menuItems = this.constructMenuOptions();
-
 	return <ul className="canvas-menu">{menuItems}</ul>; 
   }
 }

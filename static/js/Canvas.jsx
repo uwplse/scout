@@ -12,6 +12,7 @@ export default class Canvas extends React.Component {
   	// Shapes to be drawn onto the canvas
   	this.elements = props.elements; 
   	this.id = props.id; 
+  	this.elementDict = {}; 
 
   	this.state = {
   		menuShown: false, 
@@ -22,10 +23,6 @@ export default class Canvas extends React.Component {
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
   } 
-
-  drawShapes() {
-  	// Draw each shape in the collection
-  }
 
   showConstraintsContextMenu(jsonShape,evt) {
   	if(evt.button == 1) {
@@ -45,7 +42,7 @@ export default class Canvas extends React.Component {
   		// The menuTrigger is the JSON of the shape that triggered the open
   		let shape = jsonShape.shape; 
 	    this.setState({
-	      activeCanvasMenu: <CanvasMenu menuTrigger={jsonShape} onClick={this.hideMenu.bind(this)} />,
+	      activeCanvasMenu: <CanvasMenu menuTrigger={jsonShape} onClick={this.performActionAndCloseMenu.bind(this)} />,
 	      menuShown: true, 
 	      menuPosition: {
 	      	x: componentBoundingBox.x + shape.left + (shape.width/2), 
@@ -56,7 +53,7 @@ export default class Canvas extends React.Component {
   }
 
   // hideConstraintsContextMenu
-  hideMenu(menuTriggerShape, action, evt) {
+  performActionAndCloseMenu(menuTriggerShape, action, evt) {
   	// Shape and option clicked on should be the arguments here
   	// The linked shape in the constraints canvas
   	let constraintsCanvasShape = menuTriggerShape.constraintsCanvasShape; 
@@ -71,42 +68,43 @@ export default class Canvas extends React.Component {
     this.canvas = new fabric.Canvas('design-canvas-' + this.id); 
     // this.canvas.on("mousedown", this.)
 
-	// When the component mounts, draw the shapes onto the canvas
-	for(var i=0; i<this.elements.length; i++) {
-		let element = this.elements[i]; 
+	  // When the component mounts, draw the shapes onto the canvas
+  	for(var i=0; i<this.elements.length; i++) {
+  		let element = this.elements[i]; 
+  		this.elementDict[element.id] = element; 
 
-		// Scale down the values to fit into the design canvases
-		let x = element.location.x/Constants.designCanvasScalingFactor; 
-		let y = element.location.y/Constants.designCanvasScalingFactor; 
-		let width = element.size.width/Constants.designCanvasScalingFactor; 
-		let height = element.size.height/Constants.designCanvasScalingFactor; 
+  		// Scale down the values to fit into the design canvases
+  		let x = element.location.x/Constants.designCanvasScalingFactor; 
+  		let y = element.location.y/Constants.designCanvasScalingFactor; 
+  		let width = element.size.width/Constants.designCanvasScalingFactor; 
+  		let height = element.size.height/Constants.designCanvasScalingFactor; 
 
-		if(element.type == "button") {
-			let button = FabricHelpers.getButton(x,y,width,height,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
-			button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-			element.shape = button; 
-			this.canvas.add(button); 
-		}
-		else if (element.type == "text") {
-			let fontSize = height/2; // TODO: Hack. Fix this later
-			let text = FabricHelpers.getText(x,y,fontSize,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
-			text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-			element.shape = text; 
-			this.canvas.add(text); 
-		}
-		else if (element.type == "field") {
-			let field = FabricHelpers.getField(x,y,width,height,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
-			field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-			element.shape = field; 
-			this.canvas.add(field); 
-		}
-	}
+  		if(element.type == "button") {
+  			let button = FabricHelpers.getButton(x,y,width,height,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
+  			button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+  			element.shape = button; 
+  			this.canvas.add(button); 
+  		}
+  		else if (element.type == "text") {
+  			let fontSize = height/Constants.designCanvasScalingFactor; // TODO: Hack. Fix this later
+  			let text = FabricHelpers.getText(x,y,fontSize,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
+  			text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+  			element.shape = text; 
+  			this.canvas.add(text); 
+  		}
+  		else if (element.type == "field") {
+  			let field = FabricHelpers.getField(x,y,width,height,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
+  			field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+  			element.shape = field; 
+  			this.canvas.add(field); 
+  		}
+  	}
   }
 
   render () {
- 	let menuShown = this.state.menuShown; 
- 	let menuPosition = this.state.menuPosition; 
- 	let activeCanvasMenu = this.state.activeCanvasMenu; 
+   	let menuShown = this.state.menuShown; 
+   	let menuPosition = this.state.menuPosition; 
+   	let activeCanvasMenu = this.state.activeCanvasMenu; 
     return  (<div className="canvas-container" id={"canvas-box-" + this.id}> 
     			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
     				{activeCanvasMenu}

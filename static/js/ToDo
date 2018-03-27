@@ -1,9 +1,6 @@
 Things to do 
-
-
-- Two elements and more is not working - server crash
-- Make sure UNDO is actually undoing because the results don't look right
 - The same elements across canvases should probably be linked somehow so that the menu items show up consistently in the right state for the same element
+ - Make sure UNDO is actually undoing because the results don't look right
 - Should probably do at least one other constraint type next to check the framework will work for different types of constraints
 
 OTHER

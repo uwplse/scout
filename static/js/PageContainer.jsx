@@ -324,8 +324,9 @@ export default class PageContainer extends React.Component {
       constraintModified: true
     }); 
 
-    // Call the menu action callback to perform the action
-    action.callback(constraintsCanvasShape, designCanvasShape); 
+    // Call the menu action callback to perform the action & update the canvas
+    action.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
+    action.updateDesignCanvasShape(designCanvasShape);  
 
     // Force the canvas to re-render
     this.constraintsCanvas.renderAll();
