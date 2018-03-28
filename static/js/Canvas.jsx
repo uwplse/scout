@@ -57,11 +57,11 @@ export default class Canvas extends React.Component {
   }
 
   // hideConstraintsContextMenu
-  performActionAndCloseMenu(menuTriggerShape, action, evt) {
+  performActionAndCloseMenu(menuTriggerShape, action, undoAction, evt) {
   	// Shape and option clicked on should be the arguments here
   	// The linked shape in the constraints canvas
   	let constraintsCanvasShape = menuTriggerShape.constraintsCanvasShape; 
-  	this.updateConstraintsCanvas(constraintsCanvasShape, menuTriggerShape, action); 
+  	this.updateConstraintsCanvas(constraintsCanvasShape, menuTriggerShape, action, undoAction); 
   	this.setState({
   		menuShown: false, 
   		activeCanvasMenu: undefined

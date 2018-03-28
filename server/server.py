@@ -30,52 +30,39 @@ def hello():
 def solve(): 
 	print("solving!")
 	print(request.form)
+	form_data = request.form
+
+	if "elements" in form_data:
+		elements_json = form_data["elements"]
+		elements = json.loads(elements_json)
+		solutions = get_solution_from_custom_solver(elements)
+
+		# Output dictionary 
+		output = dict() 
+		output["size"] = dict() 
+		output["size"]["width"] = DEFAULT_APP_WIDTH
+		output["size"]["height"] = DEFAULT_APP_HEIGHT
+		output["elements"] = solutions
+
+		return json.dumps(output).encode('utf-8')
+	return ""
+
+@app.route('/check', methods=['POST','GET'])
+def check(): 
+	print("checking!")
 
 	canvas_width = DEFAULT_APP_WIDTH
 	canvas_height = DEFAULT_APP_HEIGHT
 	form_data = request.form
 
 	if "elements" in form_data:
-		groups = dict()
 		elements_json = form_data["elements"]
 		elements = json.loads(elements_json)
-		solutions = get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height)
+		result = check_solution_exists_from_custom_solver(elements)
 
-		# Output dictionary 
-		output = dict() 
-		output["size"] = dict() 
-		output["size"]["width"] = canvas_width
-		output["size"]["height"] = canvas_height
-		output["elements"] = solutions
-
-		return json.dumps(output).encode('utf-8')
-	return ""
-
-# @app.route("/get_elements")
-# def get_elements(): 
-# 	# Configuration
-# 	elements = dict()
-# 	canvas_width = DEFAULT_APP_WIDTH
-# 	canvas_height = DEFAULT_APP_HEIGHT
-# 	groups = dict()
-# 	with open('../specification/facebook_simple.json') as data_file:
-# 		config = json.load(data_file)
-# 		elements = config["elements"]
-# 		tags = None
-# 		if "tags" in config: 
-# 			tags = config["tags"]
-
-# 		for element in elements: 
-# 			if element["type"] == "logo" or element["type"] == "image": 
-# 				element["source"] = read_image_data(element["path"])
-
-# 		canvas_width = config["canvas_size"]["width"]
-# 		canvas_height = config["canvas_size"]["height"]
-# 		background = config["background"]
-
-# 		if "groups" in config: 
-# 			groups = config["groups"]
-
+		# Don't return back any results, just the status of whether it could be solved or not
+		return str(result)
+	return False
 
 # 	# Simulated annealing search 
 # 	# solutions = get_solution_annealing(elements, canvas_width, canvas_height)
@@ -96,8 +83,13 @@ def solve():
 
 # 	return json.dumps(output).encode('utf-8')
 
-def get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height): 
-	solver = custom_solver.Solver(elements, groups, canvas_width, canvas_height)
+def check_solution_exists_from_custom_solver(elements): 
+	solver = custom_solver.Solver(elements, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
+	solutions = solver.check()
+	return solutions
+
+def get_solution_from_custom_solver(elements): 
+	solver = custom_solver.Solver(elements, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
 	solutions = solver.solve()
 	return solutions
 
@@ -117,14 +109,14 @@ def get_initial_state(elements):
 	return shapes
 
 def randomize_initial_positions(state, box_width, box_height): 
-    for shape in state: 
-        max_x = box_width - shape[2]
-        max_y = box_height - shape[3]
-        rand_x = random.randint(0, max_x)
-        rand_y = random.randint(0, max_y)
-        shape[0] = rand_x
-        shape[1] = rand_y 
-    return state
+	for shape in state: 
+		max_x = box_width - shape[2]
+		max_y = box_height - shape[3]
+		rand_x = random.randint(0, max_x)
+		rand_y = random.randint(0, max_y)
+		shape[0] = rand_x
+		shape[1] = rand_y 
+	return state
 
 def convert_state(elements, state): 
 	for i in range(0, len(state)): 

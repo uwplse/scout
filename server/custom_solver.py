@@ -15,11 +15,10 @@ NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
 class Solver(object): 
-	def __init__(self, elements, groups, canvas_width, canvas_height): 
+	def __init__(self, elements, canvas_width, canvas_height): 
 		self.solutions = [] # Initialize the variables somewhere
 		self.unassigned = []
 		self.elements = elements
-		self.groups = groups
 		self.canvas_width = canvas_width
 		self.canvas_height = canvas_height
 		self.shapes, self.root = self.init_shape_hierarchy(canvas_width, canvas_height)
@@ -140,6 +139,18 @@ class Solver(object):
 	# 	# Stay in bounds of the canvas
 	# 	for shape in self.shapes:
 	# 		self.solver_helper.add_bounds_constraints(shape)
+
+	# This function just checks for satisfiability of the current set of constraints
+	# Doesn't return any solutions back 
+	def check(self): 
+		self.unassigned = copy.copy(self.variables)
+
+		start_time = time.time()
+
+		# Branch and bound get one solution at a time
+		result = self.branch_and_bound_check(start_time)
+
+		return result
 
 	def solve(self):
 		self.unassigned = copy.copy(self.variables)
@@ -403,6 +414,23 @@ class Solver(object):
 		time_end = time.time()
 		total_time = time_end - time_start
 		print("Total time to " + str(NUM_SOLUTIONS) + ": " + str(total_time))
+
+
+	def branch_and_bound_check(self, time_start): 
+		state = sh.Solution()
+		sln = self.branch_and_bound_random(time_start, state)
+		if sln is not None: 
+			print("Solution could be found.")
+			self.solutions.append(sln)
+			self.num_solutions += 1
+		else: 
+			print("Solution could not be found.")
+
+		time_end = time.time()
+		total_time = time_end - time_start
+		print("Total time to check satisfiability: " + str(total_time))
+
+		return sln is not None
 
 	def restore_state(self): 
 		# Unassign and reset the variables

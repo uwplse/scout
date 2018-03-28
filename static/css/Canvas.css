@@ -111,3 +111,13 @@ div:focus {
     border-radius: 3px;
     padding-top: 5px;
 }
+
+.constraint-error-message {
+	display: inline-block;
+	margin-left: 10px;
+	margin-top: 10px;
+}
+
+
+
+

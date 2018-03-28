@@ -35,7 +35,7 @@ export default class PageContainer extends React.Component {
     this.drawCanvas(); 
   }
 
-  displayConstraintsInMenu(jsonShape) {
+  displayConstraintsMenu(jsonShape) {
     // check whether the current menu needs to be closed
     if(this.state.menuShown) {
       this.setState({
@@ -98,7 +98,7 @@ export default class PageContainer extends React.Component {
     fabricShape.on("moving", this.createGroupOnMove.bind(this, shapeJSON)); 
 
     // Register a mouseover handler to display a dialog with the current constraints
-    fabricShape.on("mousedown", this.displayConstraintsInMenu.bind(this, shapeJSON)); 
+    fabricShape.on("mousedown", this.displayConstraintsMenu.bind(this, shapeJSON)); 
   }
 
   fieldClicked() {
@@ -189,6 +189,14 @@ export default class PageContainer extends React.Component {
   }
 
   createGroupOnMove(shapeJSON) {
+    // check whether the current menu needs to be closed
+    if(this.state.menuShown) {
+      this.setState({
+        activeCanvasMenu: undefined, 
+        menuShown: false
+      }); 
+    }
+
     // Check proximity of the shape to other elements 
     let shape_x = shapeJSON.shape.left; 
     let shape_y = shapeJSON.shape.top; 
@@ -231,7 +239,7 @@ export default class PageContainer extends React.Component {
               let groupBoundingBox = this.getGroupBoundingBox(groupJSON); 
               let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-10, groupBoundingBox.y-10, groupBoundingBox.width+20, groupBoundingBox.height+20, {selectable: false, stroke: 'blue'});
               groupJSON.shape = groupRect; 
-              groupRect.on("mousedown", this.displayConstraintsInMenu.bind(this, groupJSON)); 
+              groupRect.on("mousedown", this.displayConstraintsMenu.bind(this, groupJSON)); 
 
               this.constraintsCanvas.add(groupRect); 
               this.constraintsShapes.push(groupJSON); 
@@ -336,18 +344,34 @@ export default class PageContainer extends React.Component {
     return elements; 
   }
 
-  updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action) {
-    // At least one constraint has been changed 
-    // The button to get more designs should be disabled
-    this.setState({
-      constraintModified: true
-    }); 
+  updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action, undoAction) {
+    // First check with the solver that the constraint can be applied
+    // If it can be applied, update the corresponding property in the constraints canvas
 
-    // Call the menu action callback to perform the action & update the canvas
+    // This will make the changes first, then check if the constriant could be applied
+    // Consider refactoring so we don't have to do and undo the action
     action.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
 
-    // Force the canvas to re-render
-    this.constraintsCanvas.renderAll();
+    let jsonShapes = this.getShapesJSON(); 
+    var self = this;
+    $.post("/check", {"elements": jsonShapes}, function(requestData) {
+      if(requestData == "True") {
+        // At least one constraint has been changed 
+        // The button to get more designs with the current set of constraints should be disabled. 
+        self.setState({
+          constraintModified: true, 
+          errorMessageShown: false
+        });  
+      } else {
+        // Display an error message somewhere (?)
+        console.log("couldn't apply the constraint. Undoing the action. ");
+        undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
+
+        self.setState({
+          errorMessageShown: true
+        });
+      }
+    }, 'text');
   }
 
   parseSolutions(requestData) {
@@ -364,7 +388,8 @@ export default class PageContainer extends React.Component {
     }
 
     this.setState({
-      designCanvases: designCanvasList
+      designCanvases: designCanvasList, 
+      errorMessageShown: false
     });
   }
 
@@ -398,6 +423,7 @@ export default class PageContainer extends React.Component {
     const menuPosition = this.state.menuPosition; 
     const menuShown = this.state.menuShown; 
     const activeCanvasMenu = this.state.activeCanvasMenu; 
+    const errorMessageShown = this.state.errorMessageShown; 
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
@@ -405,6 +431,7 @@ export default class PageContainer extends React.Component {
           <div className="navbar-header">
             <button type="button" className="btn btn-default navbar-btn" disabled={constraintModified} onClick={this.getMoreDesigns}>Get More Designs</button>
             <button type="button" className="btn btn-default navbar-btn" disabled={!constraintModified} onClick={this.getDesignsWithNewConstraints}>Update Designs from Constraints</button>
+            { errorMessageShown ? <div class="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
           </div>
          </div>
         </nav>
