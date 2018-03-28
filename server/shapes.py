@@ -23,7 +23,7 @@ class LeafShape(Shape):
 		self.orig_y = orig_y
 
 class ContainerShape(Shape): 
-	def __init__(self, shape_id, element=None, order=None, locks=None): 
+	def __init__(self, shape_id, element=None, order="important", locks=None): 
 		Shape.__init__(self, shape_id, element, locks, order)
 		self.type = "container"
 		self.children = []

@@ -25,8 +25,9 @@ class FabricHelpers {
 	    });
 
 	    let textValue = options.text ? options.text : "Button"; 
+	    let fontSize = options.fontSize ? options.fontSize : 12; 
 	    var text = new fabric.IText(textValue, {
-	      fontSize: 20, 
+	      fontSize: fontSize, 
 	      fontFamily: 'Georgia', 
 	      strokeWidth:0, 
 	      fill: 'white', 

@@ -86,20 +86,36 @@ export default class Canvas extends React.Component {
   		let height = element.size.height/Constants.designCanvasScalingFactor(); 
 
   		if(element.type == "button") {
-  			let button = FabricHelpers.getButton(x,y,width,height,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
+        let fontSize = height/Constants.designCanvasScalingFactor; 
+  			let button = FabricHelpers.getButton(x,y,width,height,{
+            'cursor': 'hand', 
+            'selectable': false, 
+            'text': element["name"], 
+            'fontSize': fontSize
+        }); 
   			button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
   			element.shape = button; 
   			this.canvas.add(button); 
   		}
   		else if (element.type == "text") {
   			let fontSize = height/Constants.designCanvasScalingFactor; // TODO: Hack. Fix this later
-  			let text = FabricHelpers.getText(x,y,fontSize,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
+  			let text = FabricHelpers.getText(x,y,fontSize,{
+          'cursor': 'hand', 
+          'selectable': false, 
+          'text': element["name"]
+        }); 
   			text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
   			element.shape = text; 
   			this.canvas.add(text); 
   		}
   		else if (element.type == "field") {
-  			let field = FabricHelpers.getField(x,y,width,height,{'cursor': 'hand', 'selectable': false, 'text': element["name"]}); 
+        let fontSize = height/Constants.designCanvasScalingFactor;
+  			let field = FabricHelpers.getField(x,y,width,height,{
+          'cursor': 'hand', 
+          'selectable': false, 
+          'text': element["name"], 
+          'fontSize': fontSize
+        }); 
   			field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
   			element.shape = field; 
   			this.canvas.add(field); 

@@ -50,7 +50,7 @@ export default class PageContainer extends React.Component {
     this.constraintsShapesByName[json["name"]] = json; 
 
     // Add a new field to the constraints canvas
-    let field = FabricHelpers.getField(left, top, 120, 40, {'selectable': true, 'text': json["name"]});
+    let field = FabricHelpers.getField(left, top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': json["name"]});
     json.shape = field; 
     this.constraintsCanvas.add(field); 
 
@@ -99,7 +99,7 @@ export default class PageContainer extends React.Component {
     }
 
     // Add a new field to the constraints canvas
-    let button = FabricHelpers.getButton(left, top, 120, 40, {'selectable': true, 'text': json["name"]});
+    let button = FabricHelpers.getButton(left, top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': json["name"]});
     json.shape = button;
     this.constraintsCanvas.add(button); 
 
@@ -257,9 +257,9 @@ export default class PageContainer extends React.Component {
 
   drawCanvas() {
     this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
-    let field = FabricHelpers.getField(20,50,120,40,{'cursor': 'hand', 'selectable': false}); 
+    let field = FabricHelpers.getField(20,50,120,40,{'fontSize': 20, 'cursor': 'hand', 'selectable': false}); 
     let text = FabricHelpers.getText(20,150,40,{'cursor': 'hand', 'selectable': false}); 
-    let button = FabricHelpers.getButton(20,250,120,40,{'cursor': 'hand', 'selectable': false}); 
+    let button = FabricHelpers.getButton(20,250,120,40,{'fontSize': 20, 'cursor': 'hand', 'selectable': false}); 
     field.on('mousedown', this.fieldClicked); 
     text.on('mousedown', this.textClicked); 
     button.on('mousedown', this.buttonClicked); 
