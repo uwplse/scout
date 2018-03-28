@@ -9,7 +9,7 @@ import ConstraintsCanvasMenu from './ConstraintsCanvasMenu';
 export default class PageContainer extends React.Component {
   constructor(props) {
   	super(props); 
-    this.drawCanvas = this.drawCanvas.bind(this); 
+    this.drawWidgetCanvas = this.drawWidgetCanvas.bind(this); 
     this.fieldClicked = this.fieldClicked.bind(this); 
     this.textClicked = this.textClicked.bind(this); 
     this.buttonClicked = this.buttonClicked.bind(this); 
@@ -25,14 +25,27 @@ export default class PageContainer extends React.Component {
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapes = []; 
     this.constraintsShapesByName = {}; // Dictionary collection of shapes for key-value access
+    this.pageLevelShape = undefined; 
 
     // This is the set of design canvases in the design window
     this.state = { designCanvases: [], constraintModified: false, menuShown: false, activeCanvasMenu: undefined, menuPosition: { x: 0, y: 0 } }; 
   }
 
   componentDidMount() {
-    // Construct the intial canvas
-    this.drawCanvas(); 
+    // Draw the canvas for adding new widgets to the constraints canvas
+    this.drawWidgetCanvas(); 
+
+    // Create an object to represent the page level object
+    // these will be where we keep the page level constraints
+    let pageJSON = {
+      "name": _.uniqueId(),
+      "type": "page", 
+      "children": []
+    }
+
+    this.constraintsShapes.push(pageJSON); 
+    this.constraintsShapesByName[pageJSON["name"]] = pageJSON; 
+    this.pageLevelShape = pageJSON; 
   }
 
   displayConstraintsMenu(jsonShape) {
@@ -85,6 +98,9 @@ export default class PageContainer extends React.Component {
 
     this.constraintsShapes.push(json); 
     this.constraintsShapesByName[json["name"]] = json; 
+
+    // Also need to push the shape onto the children of the page level object
+    this.pageLevelShape.children.push(json); 
 
     return json;
   }
@@ -143,6 +159,11 @@ export default class PageContainer extends React.Component {
     if (evt.keyCode == 8 || evt.keyCode == 46) {
       this.deleteShape(this.selectedShape);      
     }
+  }
+
+  deleteShapeFromObjectChildren(shapeJSON, objectJSON) {
+    let index = objectJSON.children.indexOf(shapeJSON); 
+    objectJSON.children.splice(index, 1);   
   }
 
   selectShape(shapeJSON) {
@@ -205,7 +226,8 @@ export default class PageContainer extends React.Component {
 
     let overlapping = false;
     for(let i=0; i<this.constraintsShapes.length; i++) {
-      if(this.constraintsShapes[i].name != shapeJSON.name && this.constraintsShapes[i].type != "group") {
+      if(this.constraintsShapes[i].name != shapeJSON.name && this.constraintsShapes[i].type != "group" 
+        && this.constraintsShapes[i].type != "page") {
         let cShape_x = this.constraintsShapes[i].shape.left; 
         let cShape_y = this.constraintsShapes[i].shape.top; 
         let cShape_width = this.constraintsShapes[i].shape.width; 
@@ -217,6 +239,9 @@ export default class PageContainer extends React.Component {
               let parentGroup = this.constraintsShapes[i].parent; 
               shapeJSON.parent = parentGroup; 
               parentGroup.children.push(shapeJSON); 
+
+              // Delete it from the page level children
+              this.deleteShapeFromObjectChildren(shapeJSON, this.pageLevelShape); 
               
               // Adjust the group bounding box
               let groupShape = parentGroup.shape; 
@@ -236,14 +261,23 @@ export default class PageContainer extends React.Component {
               groupJSON.children.push(this.constraintsShapes[i]); 
               groupJSON.children.push(shapeJSON); 
 
+              // Remove both children from the page level object
+              this.deleteShapeFromObjectChildren(shapeJSON, this.pageLevelShape); 
+              this.deleteShapeFromObjectChildren(this.constraintsShapes[i], this.pageLevelShape); 
+              this.pageLevelShape.children.push(groupJSON); 
+
+              // Reconfigure the bounding box
               let groupBoundingBox = this.getGroupBoundingBox(groupJSON); 
               let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-10, groupBoundingBox.y-10, groupBoundingBox.width+20, groupBoundingBox.height+20, {selectable: false, stroke: 'blue'});
               groupJSON.shape = groupRect; 
               groupRect.on("mousedown", this.displayConstraintsMenu.bind(this, groupJSON)); 
 
+              // Add them to the page collection of shape objects
               this.constraintsCanvas.add(groupRect); 
               this.constraintsShapes.push(groupJSON); 
               this.constraintsShapesByName[groupJSON["name"]] = groupJSON; 
+
+              // Move the group to the back layer
               this.constraintsCanvas.sendToBack(groupRect);
             }
 
@@ -262,14 +296,20 @@ export default class PageContainer extends React.Component {
           for(let i=0; i<parentGroup.children.length; i++) {
             let child = parentGroup.children[i]; 
             child.parent = undefined; 
+
+            // TODO: hierarchies of groups
+            this.pageLevelShape.children.append(child); 
           }
 
           this.deleteShape(parentGroup); 
-        }else {
+        } else {
           // Remove the child from this group and update the group bounds
           shapeJSON.parent = undefined; 
           let shapeIndex = parentGroup.children.indexOf(shapeJSON); 
           parentGroup.children.splice(shapeIndex, 1); 
+
+          // Append it back to the page level object children for now (Until we support hierarchies of groups)
+          this.pageLevelShape.children.append(shapeJSON); 
 
           // Update the parent group bounding box
           let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
@@ -279,7 +319,7 @@ export default class PageContainer extends React.Component {
     }
    }
 
-  drawCanvas() {
+  drawWidgetCanvas() {
     this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
     let field = FabricHelpers.getField(20,50,120,40,{'fontSize': 20, 'cursor': 'hand', 'selectable': false}); 
     let text = FabricHelpers.getText(20,150,40,{'cursor': 'hand', 'selectable': false}); 
@@ -306,20 +346,22 @@ export default class PageContainer extends React.Component {
       jsonShape.shape = undefined; 
 
       let fabricShape = shape.shape; 
+      if(fabricShape) {
+        jsonShape["location"] = {
+          "x": fabricShape.left, 
+          "y": fabricShape.top
+        }
 
-      jsonShape["location"] = {
-        "x": fabricShape.left, 
-        "y": fabricShape.top
+        let roundedWidth = Math.round(fabricShape.width); 
+        let roundedHeight = Math.round(fabricShape.height); 
+        jsonShape["size"] = {
+          "width": roundedWidth, 
+          "height": roundedHeight
+
+        }        
       }
 
-      let roundedWidth = Math.round(fabricShape.width); 
-      let roundedHeight = Math.round(fabricShape.height); 
-      jsonShape["size"] = {
-        "width": roundedWidth, 
-        "height": roundedHeight
-
-      }
-
+      // Replace the child references with their IDs before sending them to the server
       if (shape.children) {
         jsonShape.children = []; 
         for(let i=0; i<shape.children.length; i++) {
@@ -328,7 +370,6 @@ export default class PageContainer extends React.Component {
       }
 
       jsonShape.parent = undefined; 
-
       shapeJSON.push(jsonShape); 
     }  
 
@@ -364,7 +405,6 @@ export default class PageContainer extends React.Component {
         });  
       } else {
         // Display an error message somewhere (?)
-        console.log("couldn't apply the constraint. Undoing the action. ");
         undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
 
         self.setState({
