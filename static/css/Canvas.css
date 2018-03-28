@@ -85,18 +85,27 @@ div:focus {
     overflow: auto;
 }
 
-.canvas-menu {
+.canvas-menu-list {
 	list-style-type: none;
     padding: 0px;
 }
 
-.canvas-menu > li, {
+.canvas-menu-list > li, {
 	padding: 5px;
 }
 
-.canvas-menu > li:hover {
+.canvas-menu-list > li:hover {
 	background-color: lightgray;
 	cursor: pointer; 
+}
+
+.canvas-menu-item {
+	padding-left: 10px;
+}
+
+.canvas-menu-label {
+	font-weight: bold;
+	padding-left: 5px; 
 }
 
 .canvas-menu-container {

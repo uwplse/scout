@@ -8,7 +8,7 @@ CanvasMenuActions.locksKey = 'locks';
 CanvasMenuActions.elementConstraints = {
 	"position" : {
 		"do": {
-			"label": "Lock position.",
+			"label": "Keep position.",
 			"updateConstraintsCanvasShape": function lockPosition(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
 			    // Use the server key for locking a shape into a specific location
@@ -43,7 +43,7 @@ CanvasMenuActions.groupConstraints = {
 	"arrangement": 
 		{
 			"do": {
-				"label": "Lock arrangment. ", 
+				"label": "Keep arrangement. ", 
 				"updateConstraintsCanvasShape": function keepArrangment(constraintsCanvasShape, designCanvasShape) {
 				  	if(constraintsCanvasShape[CanvasMenuActions.locksKey] == undefined) {
 						constraintsCanvasShape[CanvasMenuActions.locksKey] = []; 

@@ -431,7 +431,7 @@ export default class PageContainer extends React.Component {
           <div className="navbar-header">
             <button type="button" className="btn btn-default navbar-btn" disabled={constraintModified} onClick={this.getMoreDesigns}>Get More Designs</button>
             <button type="button" className="btn btn-default navbar-btn" disabled={!constraintModified} onClick={this.getDesignsWithNewConstraints}>Update Designs from Constraints</button>
-            { errorMessageShown ? <div class="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
+            { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
           </div>
          </div>
         </nav>
