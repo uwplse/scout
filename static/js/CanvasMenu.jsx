@@ -12,9 +12,9 @@ class CanvasMenuItem extends React.Component {
 
   render () {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
-	// let menuProperty = menuTextToProperty[this.text]; 
-	let menuText = this.action.label; 
-	return <li className="canvas-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action)} >{menuText}</li>; 
+	  // let menuProperty = menuTextToProperty[this.text]; 
+	  let menuText = this.action.label; 
+	  return <li className="canvas-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action)} >{menuText}</li>; 
   }
 }
 
@@ -65,7 +65,7 @@ export default class CanvasMenu extends React.Component {
 
   render () {
   	let menuItems = this.constructMenuOptions();
-	return <ul className="canvas-menu">{menuItems}</ul>; 
+	  return <ul className="canvas-menu">{menuItems}</ul>; 
   }
 }
 

@@ -4,6 +4,7 @@ import '../css/Canvas.css';
 import 'whatwg-fetch'; 
 import Canvas from "./Canvas"; 
 import FabricHelpers from './FabricHelpers.js';
+import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -26,7 +27,7 @@ export default class PageContainer extends React.Component {
     this.constraintsShapesByName = {}; // Dictionary collection of shapes for key-value access
 
     // This is the set of design canvases in the design window
-    this.state = { designCanvases: [], constraintModified: false }; 
+    this.state = { designCanvases: [], constraintModified: false, menuShown: false, activeCanvasMenu: undefined, menuPosition: { x: 0, y: 0 } }; 
   }
 
   componentDidMount() {
@@ -34,85 +35,101 @@ export default class PageContainer extends React.Component {
     this.drawCanvas(); 
   }
 
-  fieldClicked() {
+  displayConstraintsInMenu(jsonShape) {
+    // check whether the current menu needs to be closed
+    if(this.state.menuShown) {
+      this.setState({
+        activeCanvasMenu: undefined, 
+        menuShown: false
+      }); 
+    }
+
+    // Show the context menu. 
+    let componentBoundingBox = this.refs["constraints-canvas"].getBoundingClientRect();
+
+    let shape = jsonShape.shape; 
+    this.setState({
+        activeCanvasMenu: <ConstraintsCanvasMenu menuTrigger={jsonShape} />,
+        menuShown: true, 
+        menuPosition: {
+          x: componentBoundingBox.x + shape.left + shape.width + 5, 
+          y: componentBoundingBox.y + shape.top
+        }
+    });
+  }
+
+  hideConstraintsMenu() {
+    if(this.state.menuShown) {
+      this.setState({
+        activeCanvasMenu: undefined, 
+        menuShown: false
+      }); 
+    }
+  }
+
+  getConstraintsCanvasShapeLocation() {
     this.constraintsTop += 50; 
     let top = this.constraintsTop; 
-    let left = 20; 
+    let left = 20;  
+    return { top: top, left: left }; 
+  }
 
-    // Set up the JSON object
+  createConstraintsCanvasShapeObject(type) {  
+    // Set up the object that will keep the current state of this shape
+    // And be passed with a set of information to the server for solving
     let json = {
       "name": _.uniqueId(),
-      "label": "field", 
-      "type": "field"
+      "label": type, 
+      "type": type
     }
 
     this.constraintsShapes.push(json); 
     this.constraintsShapesByName[json["name"]] = json; 
 
-    // Add a new field to the constraints canvas
-    let field = FabricHelpers.getField(left, top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': json["name"]});
-    json.shape = field; 
-    this.constraintsCanvas.add(field); 
+    return json;
+  }
+
+  addShapeToConstraintsCanvas(shapeJSON, fabricShape) {
+    shapeJSON.shape = fabricShape; 
+    this.constraintsCanvas.add(fabricShape); 
 
     // Keep track of the currently selected shape 
-    field.on("selected", this.selectShape.bind(this, json)); 
-    field.on("moving", this.createGroupOnMove.bind(this, json)); 
+    fabricShape.on("selected", this.selectShape.bind(this, shapeJSON)); 
+    fabricShape.on("moving", this.createGroupOnMove.bind(this, shapeJSON)); 
+
+    // Register a mouseover handler to display a dialog with the current constraints
+    fabricShape.on("mousedown", this.displayConstraintsInMenu.bind(this, shapeJSON)); 
+  }
+
+  fieldClicked() {
+    let shapeJSON = this.createConstraintsCanvasShapeObject("field"); 
+
+    // Add a new field to the constraints canvas
+    let location = this.getConstraintsCanvasShapeLocation()
+    let field = FabricHelpers.getField(location.left, location.top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': shapeJSON["name"]});
+
+    this.addShapeToConstraintsCanvas(shapeJSON, field); 
   }
 
   textClicked() {
-    this.constraintsTop += 50; 
-    let top = this.constraintsTop; 
-    let left = 20; 
-
     // Add a new text to the constraints canvas
+    let shapeJSON = this.createConstraintsCanvasShapeObject("text");
+
+    let location = this.getConstraintsCanvasShapeLocation(); 
     let fontSize = 40; 
-
-    // Set up the JSON object
-    let json = {
-      "name": _.uniqueId(),
-      "label": "text", 
-      "type": "text"
-    }
-
-    let text = FabricHelpers.getInteractiveText(left, top, fontSize, {'selectable': true, 'text': json["name"]});
-    json.shape = text; 
-    this.constraintsCanvas.add(text); 
-
-    this.constraintsShapes.push(json); 
-    this.constraintsShapesByName[json["name"]] = json; 
-
-    // Keep track of the currently selected shape 
-    text.on("selected", this.selectShape.bind(this, json)); 
-    text.on("moving", this.createGroupOnMove.bind(this, json)); 
+    let text = FabricHelpers.getInteractiveText(location.left, location.top, fontSize, {'selectable': true, 'text': shapeJSON["name"]});
+   
+    this.addShapeToConstraintsCanvas(shapeJSON, text);
   }
 
   buttonClicked() {
-    this.constraintsTop += 50; 
-    let top = this.constraintsTop; 
-    let left = 20; 
-
-    // Set up the JSON object
-    let json = {
-      "name": _.uniqueId(),
-      "label": "button", 
-      "type": "button"
-    }
+    let shapeJSON = this.createConstraintsCanvasShapeObject("button"); 
 
     // Add a new field to the constraints canvas
-    let button = FabricHelpers.getButton(left, top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': json["name"]});
-    json.shape = button;
-    this.constraintsCanvas.add(button); 
-
-
-    this.constraintsShapes.push(json);  
-    this.constraintsShapesByName[json["name"]] = json; 
-
-    // Set up the event handlers
-    // button.on('mousedown', this.deleteShape.bind(this, json)); 
-
-    // Keep track of the currently selected shape 
-    button.on("selected", this.selectShape.bind(this, json)); 
-    button.on("moving", this.createGroupOnMove.bind(this, json)); 
+    let location = this.getConstraintsCanvasShapeLocation(); 
+    let button = FabricHelpers.getButton(location.left, location.top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': shapeJSON["name"]});
+    
+    this.addShapeToConstraintsCanvas(shapeJSON, button); 
   }
 
   deleteShape(shapeJSON) {
@@ -196,7 +213,7 @@ export default class PageContainer extends React.Component {
               // Adjust the group bounding box
               let groupShape = parentGroup.shape; 
               let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
-              groupShape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
+              groupShape.set({left: groupBoundingBox.x-10, top: groupBoundingBox.y-10, width: groupBoundingBox.width+20, height: groupBoundingBox.height+20}); 
             }
             else {
               // Create a new group for the parent container
@@ -212,8 +229,9 @@ export default class PageContainer extends React.Component {
               groupJSON.children.push(shapeJSON); 
 
               let groupBoundingBox = this.getGroupBoundingBox(groupJSON); 
-              let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-5, groupBoundingBox.y-5, groupBoundingBox.width+10, groupBoundingBox.height+10, {selectable: false, stroke: 'blue'});
+              let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-10, groupBoundingBox.y-10, groupBoundingBox.width+20, groupBoundingBox.height+20, {selectable: false, stroke: 'blue'});
               groupJSON.shape = groupRect; 
+              groupRect.on("mousedown", this.displayConstraintsInMenu.bind(this, groupJSON)); 
 
               this.constraintsCanvas.add(groupRect); 
               this.constraintsShapes.push(groupJSON); 
@@ -227,8 +245,6 @@ export default class PageContainer extends React.Component {
         }
       }
     }
-
-    console.log("overlapping: " + overlapping); 
 
     if(!overlapping) {
       // If the shape was in a group and that group had only two children, remove the group 
@@ -379,6 +395,9 @@ export default class PageContainer extends React.Component {
   render () {
     const designs = this.state.designCanvases;
     const constraintModified = this.state.constraintModified; 
+    const menuPosition = this.state.menuPosition; 
+    const menuShown = this.state.menuShown; 
+    const activeCanvasMenu = this.state.activeCanvasMenu; 
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
@@ -404,7 +423,10 @@ export default class PageContainer extends React.Component {
               <h3 className="panel-title">Constraints</h3>
             </div>
             <div className="panel-body" id="constraints-canvas-container" tabIndex="1">
-              <canvas id="constraints-canvas" width="375px" height="667px">
+              <div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
+                {activeCanvasMenu}
+              </div>
+              <canvas ref="constraints-canvas" id="constraints-canvas" width="375px" height="667px">
               </canvas>
             </div>
           </div>

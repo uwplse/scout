@@ -27,8 +27,6 @@ export default class Canvas extends React.Component {
 
   showConstraintsContextMenu(jsonShape,evt) {
   	if(evt.button == 1) {
-  		// evt.stopPropagation(); // Prevent it from bubbling to the canvas
-
   		// Check for the status of menuShown to see if we need to close out another menu before opening this one
   		if(this.state.menuShown) {
   			this.setState({

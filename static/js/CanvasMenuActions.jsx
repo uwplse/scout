@@ -17,12 +17,13 @@ CanvasMenuActions.elementConstraints = {
 			    } 
 
 			    constraintsCanvasShape[CanvasMenuActions.locksKey].push(CanvasMenuActions.locked_position_key); 
+			    constraintsCanvasShape[CanvasMenuActions.locked_position_key] = "x: " + designCanvasShape["location"]["x"] + ", y: " + designCanvasShape["location"]["y"]; 
 
 			    // Then update the location of the constraints canvas shape to that of the design canvas shape
-			    constraintsCanvasShape.shape.set({
-			    	left: designCanvasShape.shape.left * Constants.designCanvasScalingFactor(), 
-			    	top: designCanvasShape.shape.top * Constants.designCanvasScalingFactor() 
-			    }); 
+			    // constraintsCanvasShape.shape.set({
+			    // 	left: designCanvasShape.shape.left * Constants.designCanvasScalingFactor(), 
+			    // 	top: designCanvasShape.shape.top * Constants.designCanvasScalingFactor() 
+			    // }); 
 			}
 		}, 
 		"undo": {
