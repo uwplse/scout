@@ -38,6 +38,6 @@ export default class ConstraintsCanvasMenu extends React.Component {
         menuItems.push(<ConstraintsCanvasMenuItem label="None." key="none" />);
     }
 
-	  return <ul className="canvas-menu">{menuItems}</ul>; 
+	  return <ul className="canvas-menu-list">{menuItems}</ul>; 
   }
 }

@@ -8,7 +8,6 @@ export default class Canvas extends React.Component {
   constructor(props) {
   	super(props);
   	this.showConstraintsContextMenu.bind(this); 
-    this.showGroupHoveredState.bind(this); 
 
   	// Shapes to be drawn onto the canvas
   	this.elements = props.elements; 
@@ -23,6 +22,9 @@ export default class Canvas extends React.Component {
 
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
+
+    this.canvasWidth = 187.5; 
+    this.canvasHeight = 333; 
   } 
 
   showConstraintsContextMenu(jsonShape,evt) {
@@ -51,11 +53,6 @@ export default class Canvas extends React.Component {
     }
   }
 
-  showGroupHoveredState(jsonShape,evt) {
-    // Do something here to show that the group is being hovered over
-    console.log("i am being hovered"); 
-  }
-
   // hideConstraintsContextMenu
   performActionAndCloseMenu(menuTriggerShape, action, undoAction, evt) {
   	// Shape and option clicked on should be the arguments here
@@ -70,7 +67,6 @@ export default class Canvas extends React.Component {
 
   componentDidMount() {
     this.canvas = new fabric.Canvas('design-canvas-' + this.id); 
-    // this.canvas.on("mousedown", this.)
 
 	  // When the component mounts, draw the shapes onto the canvas
   	for(var i=0; i<this.elements.length; i++) {
@@ -78,60 +74,79 @@ export default class Canvas extends React.Component {
   		this.elementDict[element.id] = element; 
 
   		// Scale down the values to fit into the design canvases
-  		let x = element.location.x/Constants.designCanvasScalingFactor(); 
-  		let y = element.location.y/Constants.designCanvasScalingFactor(); 
-  		let width = element.size.width/Constants.designCanvasScalingFactor(); 
-  		let height = element.size.height/Constants.designCanvasScalingFactor(); 
-
-  		if(element.type == "button") {
-        let fontSize = height/Constants.designCanvasScalingFactor; 
-  			let button = FabricHelpers.getButton(x,y,width,height,{
-            'cursor': 'hand', 
-            'selectable': false, 
-            'text': element["name"], 
-            'fontSize': fontSize
-        }); 
-  			button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-  			element.shape = button; 
-  			this.canvas.add(button); 
-  		}
-  		else if (element.type == "text") {
-  			let fontSize = height/Constants.designCanvasScalingFactor; // TODO: Hack. Fix this later
-  			let text = FabricHelpers.getText(x,y,fontSize,{
-          'cursor': 'hand', 
-          'selectable': false, 
-          'text': element["name"]
-        }); 
-  			text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-  			element.shape = text; 
-  			this.canvas.add(text); 
-  		}
-  		else if (element.type == "field") {
-        let fontSize = height/Constants.designCanvasScalingFactor;
-  			let field = FabricHelpers.getField(x,y,width,height,{
-          'cursor': 'hand', 
-          'selectable': false, 
-          'text': element["name"], 
-          'fontSize': fontSize
-        }); 
-  			field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-  			element.shape = field; 
-  			this.canvas.add(field); 
-  		}
-      else if (element.type == "group") {
-        let groupPadding = 0; // TODO: make constant for this
-        let group = FabricHelpers.getGroup(x-groupPadding,y-groupPadding,width+(groupPadding*2), height+(groupPadding*2), {
+      if(element.type == "page") {
+        let x = 0; 
+        let y = 0; 
+        let width = this.canvasWidth; 
+        let height = this.canvasHeight; 
+        
+        // Make a white rectangle of this size to serve as the background layer
+        let pageGroup = FabricHelpers.getGroup(x,y,width,height, {
           cursor: 'hand', 
           selectable: false, 
           opacity: 0, 
           stroke: undefined
         }); 
 
-        group.on("mouseover", this.showGroupHoveredState.bind(this, element)); 
-        group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
-        element.shape = group; 
-        this.canvas.add(group);
-        this.canvas.sendToBack(group); 
+        pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+        element.shape = pageGroup; 
+        this.canvas.add(pageGroup);
+        this.canvas.sendToBack(pageGroup);      
+      } else {
+        let x = element.location.x/Constants.designCanvasScalingFactor(); 
+        let y = element.location.y/Constants.designCanvasScalingFactor(); 
+        let width = element.size.width/Constants.designCanvasScalingFactor(); 
+        let height = element.size.height/Constants.designCanvasScalingFactor(); 
+
+        if(element.type == "button") {
+          let fontSize = height/Constants.designCanvasScalingFactor; 
+          let button = FabricHelpers.getButton(x,y,width,height,{
+              'cursor': 'hand', 
+              'selectable': false, 
+              'text': element["name"], 
+              'fontSize': fontSize
+          }); 
+          button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+          element.shape = button; 
+          this.canvas.add(button); 
+        }
+        else if (element.type == "text") {
+          let fontSize = height/Constants.designCanvasScalingFactor; // TODO: Hack. Fix this later
+          let text = FabricHelpers.getText(x,y,fontSize,{
+            'cursor': 'hand', 
+            'selectable': false, 
+            'text': element["name"]
+          }); 
+          text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+          element.shape = text; 
+          this.canvas.add(text); 
+        }
+        else if (element.type == "field") {
+          let fontSize = height/Constants.designCanvasScalingFactor;
+          let field = FabricHelpers.getField(x,y,width,height,{
+            'cursor': 'hand', 
+            'selectable': false, 
+            'text': element["name"], 
+            'fontSize': fontSize
+          }); 
+          field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+          element.shape = field; 
+          this.canvas.add(field); 
+        }
+        else if (element.type == "group") {
+          let groupPadding = 0; // TODO: make constant for this
+          let group = FabricHelpers.getGroup(x-groupPadding,y-groupPadding,width+(groupPadding*2), height+(groupPadding*2), {
+            cursor: 'hand', 
+            selectable: false, 
+            opacity: 0, 
+            stroke: undefined
+          }); 
+
+          group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+          element.shape = group; 
+          this.canvas.add(group);
+          this.canvas.sendToBack(group); 
+        }
       }
   	}
   }
@@ -144,7 +159,7 @@ export default class Canvas extends React.Component {
     			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
     				{activeCanvasMenu}
     			</div>
-	    		<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width="187.5px" height="333px">
+	    		<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width={this.canvasWidth} height={this.canvasHeight}>
 	            </canvas>
 	         </div>); 
   }

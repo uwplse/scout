@@ -99,21 +99,15 @@ class Solution(object):
 				# Dont add any JSON for the canvas_root shape to the results
 				# TODO: Figure out whether we should
 				element = copy.deepcopy(shape.element)
-				element["location"]["x"] = adj_x
-				element["location"]["y"] = adj_y
 				new_elements.append(element)
+
+				if "location" in element: 
+					element["location"]["x"] = adj_x
+					element["location"]["y"] = adj_y
 
 				height = shape.height
 				width = shape.width
 				if shape.type == "container": 
-					# For containers, retrieve the solved for height and width from the model 
-					height = model[shape.height].as_string()
-					width = model[shape.width].as_string()
-					height = int(height)
-					width = int(width)
-					element["size"]["width"] = width
-					element["size"]["height"] = height
-
 					# Also include the container properties in the element object for each container shape 
 					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
 					# so we don't have to edit this place every time we add a property
@@ -124,8 +118,17 @@ class Solution(object):
 					element["alignment"] = int(alignment)
 					element["proximity"] = int(proximity)
 
-				# update the cost matrix
-				cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
+					# For containers, retrieve the solved for height and width from the model 
+					if "size" in element: 
+						height = model[shape.height].as_string()
+						width = model[shape.width].as_string()
+						height = int(height)
+						width = int(width)
+						element["size"]["width"] = width
+						element["size"]["height"] = height
+
+				if "size" in element and "location" in element: 
+					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
 
 		cost = self.compute_symmetry_cost(cost_matrix)
 

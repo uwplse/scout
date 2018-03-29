@@ -55,15 +55,13 @@ class Solver(object):
 	def init_shape_hierarchy(self, canvas_width, canvas_height):
 		shapes = []
 
-		# Place all the elements directly on the canvas in a group that is sizing to contents
-		# This will make it easier to manipulate alignment/justification at the canvas level
-		root_id = uuid.uuid4().hex
-		root = shape_classes.ContainerShape("canvas_root")
-		shapes.append(root)
-
 		# Root will contain the root  level shapes (just below the canvas)
 		for element in self.elements:
-			if element["type"] != "group" and element["type"] != "page": 
+			if element["type"] == "page":	
+				root_id = uuid.uuid4().hex
+				root = shape_classes.ContainerShape(element["name"], element)
+				shapes.append(root)
+			else: 
 				element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
 				locks = []
 				if "locks" in element:
@@ -76,16 +74,17 @@ class Solver(object):
 				element_shape = shape_classes.LeafShape(element["name"], element, element_orig_bounds, locks, order)
 				shapes.append(element_shape)
 				root.add_child(element_shape)
-			else: 
+
+		for element in self.elements: 
+			if element["type"] == "group":
 				locks = []
 				if "locks" in element:
 					locks = element["locks"]
 
 				group_shape = shape_classes.ContainerShape(element["name"], element, locks=locks)
 
-		
-		for element in self.elements: 
-			if element["type"] == "group":
+				# Do some reparenting of the children for solving
+				# TODO: Refactor for group hierarchies
 				children = element["children"] 
 				for child_id in children: 
 					child_shape = [shp for shp in root.children if shp.shape_id == child_id][0]
