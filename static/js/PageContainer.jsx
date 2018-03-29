@@ -105,6 +105,10 @@ export default class PageContainer extends React.Component {
     return json;
   }
 
+  testScaling(shapeJSON) {
+    console.log("scaling"); 
+  }
+
   addShapeToConstraintsCanvas(shapeJSON, fabricShape) {
     shapeJSON.shape = fabricShape; 
     this.constraintsCanvas.add(fabricShape); 
@@ -115,6 +119,8 @@ export default class PageContainer extends React.Component {
 
     // Register a mouseover handler to display a dialog with the current constraints
     fabricShape.on("mousedown", this.displayConstraintsMenu.bind(this, shapeJSON)); 
+
+    fabricShape.on("scaling", this.testScaling.bind(this, shapeJSON)); 
   }
 
   fieldClicked() {
@@ -355,8 +361,8 @@ export default class PageContainer extends React.Component {
           "y": fabricShape.top
         }
 
-        let roundedWidth = Math.round(fabricShape.width); 
-        let roundedHeight = Math.round(fabricShape.height); 
+        let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
+        let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
         jsonShape["size"] = {
           "width": roundedWidth, 
           "height": roundedHeight
