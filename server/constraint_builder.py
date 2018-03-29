@@ -147,7 +147,7 @@ class ConstraintBuilder(object):
 	# Sets up the arrangment constrains for a given container
 	def arrange_container(self, container): 
 		# ====== Arrangement constraints =======
-		# Vertical and horizontal arrangments 
+		# Vertical and horizontal arrangments
 		# In order that elements were defined
 		v_index = container.arrangement.domain.index("vertical")
 		is_vertical = container.arrangement.z3 == v_index

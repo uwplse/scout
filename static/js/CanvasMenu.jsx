@@ -1,6 +1,6 @@
 // App.jsx
 import React from "react";
-import CanvasMenuActions from "./CanvasMenuActions"; 
+import ConstraintActions from "./ConstraintActions"; 
 
 class CanvasMenuItem extends React.Component {
   constructor(props) {
@@ -30,8 +30,8 @@ export default class CanvasMenu extends React.Component {
       // Find the corresponding shape on the cosntraints canvas for the menu trigger shape
       // Use the state of that shape to determine what shows up
       let constraintsCanvasShape = this.menuTrigger.constraintsCanvasShape; 
-      if(constraintsCanvasShape[CanvasMenuActions.locksKey] 
-        && constraintsCanvasShape[CanvasMenuActions.locksKey].indexOf(constraint) >= 0) {
+      if(constraintsCanvasShape[ConstraintActions.locksKey] 
+        && constraintsCanvasShape[ConstraintActions.locksKey].indexOf(constraint) >= 0) {
         // The constraint is active and set to true, show the undo option
         return { do: constraintsMenu[constraint]["undo"], undo: constraintsMenu[constraint]["do"] }; 
       } else {
@@ -40,38 +40,30 @@ export default class CanvasMenu extends React.Component {
       }    
   }
 
-  getGroupMenuItems() {
+  getMenuItems(menuCollection) {
     let menuItems = []; 
-    // Group constraints
-    for(let groupConstraint in CanvasMenuActions.groupConstraints) {
-      if(CanvasMenuActions.groupConstraints.hasOwnProperty(groupConstraint)) {
-        let groupAction = this.getAction(groupConstraint, CanvasMenuActions.groupConstraints); 
-        menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={groupAction.do} undoAction={groupAction.undo} menuTrigger={this.menuTrigger} key={groupConstraint} />);
-      }
-    }
-
-  	return menuItems; 
-  }
-
-  getElementMenuItems() {
-    let menuItems = []; 
-    for(let elementConstraint in CanvasMenuActions.elementConstraints) {
-      if(CanvasMenuActions.elementConstraints.hasOwnProperty(elementConstraint)) {
+    for(let constraint in menuCollection) {
+      if(menuCollection.hasOwnProperty(constraint)) {
         // Check if this property is set on the menu trigger already to 
         // Decide whether to show the do or undo option 
-        let elementAction = this.getAction(elementConstraint, CanvasMenuActions.elementConstraints); 
-        menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={elementAction.do} undoAction={elementAction.undo} menuTrigger={this.menuTrigger} key={elementConstraint} />);
+        let action = this.getAction(constraint, menuCollection); 
+        menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={action.do} undoAction={action.undo} menuTrigger={this.menuTrigger} key={constraint} />);
       }
     }
-    
+
     return menuItems; 
   }
 
   render () {
-  	let elementItems = this.getElementMenuItems();
+  	let elementItems = this.getMenuItems(ConstraintActions.elementConstraints);
     let groupItems = null; 
+    let pageItems = null; 
     if(this.menuTrigger.type == "group") {
-      groupItems = this.getGroupMenuItems(); 
+      groupItems = this.getMenuItems(ConstraintActions.groupConstraints); 
+    }
+
+    if(this.menuTrigger.type == "page") {
+      pageItems = this.getMenuItems(ConstraintActions.pageConstraints); 
     }
 
 	  return (
@@ -80,6 +72,8 @@ export default class CanvasMenu extends React.Component {
         <ul className="canvas-menu-list">{elementItems}</ul>
         { groupItems ? <span className="canvas-menu-label">Group</span> : null }
         { groupItems ? <ul className="canvas-menu-list">{groupItems}</ul> : null }
+        { pageItems ? <span className="canvas-menu-label">Page</span> : null }
+        { pageItems ? <ul className="canvas-menu-list">{pageItems}</ul> : null}
       </div>
     );
   }

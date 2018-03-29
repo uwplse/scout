@@ -159,6 +159,9 @@ export default class PageContainer extends React.Component {
     if (evt.keyCode == 8 || evt.keyCode == 46) {
       this.deleteShape(this.selectedShape);      
     }
+
+    // Also close the menu
+    this.hideConstraintsMenu();
   }
 
   deleteShapeFromObjectChildren(shapeJSON, objectJSON) {
@@ -298,7 +301,7 @@ export default class PageContainer extends React.Component {
             child.parent = undefined; 
 
             // TODO: hierarchies of groups
-            this.pageLevelShape.children.append(child); 
+            this.pageLevelShape.children.push(child); 
           }
 
           this.deleteShape(parentGroup); 
@@ -309,7 +312,7 @@ export default class PageContainer extends React.Component {
           parentGroup.children.splice(shapeIndex, 1); 
 
           // Append it back to the page level object children for now (Until we support hierarchies of groups)
-          this.pageLevelShape.children.append(shapeJSON); 
+          this.pageLevelShape.children.push(shapeJSON); 
 
           // Update the parent group bounding box
           let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 

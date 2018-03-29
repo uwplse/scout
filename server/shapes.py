@@ -47,7 +47,7 @@ class ContainerShape(Shape):
 					self.arrangement_value = element["arrangement"]
 				elif lock == "proximity": 
 					self.proximity_value = element["proximity"]
-				elif lock == "alignemnt": 
+				elif lock == "alignment":
 					self.alignment_value = element["alignment"]
 
 	def add_child(self, child): 

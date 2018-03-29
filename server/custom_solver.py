@@ -57,23 +57,25 @@ class Solver(object):
 
 		# Root will contain the root  level shapes (just below the canvas)
 		for element in self.elements:
+			locks = []
+			if "locks" in element:
+				locks = element["locks"]
+
 			if element["type"] == "page":	
 				root_id = uuid.uuid4().hex
-				root = shape_classes.ContainerShape(element["name"], element)
+				root = shape_classes.ContainerShape(element["name"], element, locks=locks)
 				shapes.append(root)
-			else: 
-				element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
-				locks = []
-				if "locks" in element:
-					locks = element["locks"]
+			else:
+				if element["type"] != "group":
+					element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
 
-				order = None
-				if "order" in element: 
-					order = element["order"]
+					order = None
+					if "order" in element:
+						order = element["order"]
 
-				element_shape = shape_classes.LeafShape(element["name"], element, element_orig_bounds, locks, order)
-				shapes.append(element_shape)
-				root.add_child(element_shape)
+					element_shape = shape_classes.LeafShape(element["name"], element, element_orig_bounds, locks=locks, order=order)
+					shapes.append(element_shape)
+					root.add_child(element_shape)
 
 		for element in self.elements: 
 			if element["type"] == "group":

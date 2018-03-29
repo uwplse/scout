@@ -69,6 +69,7 @@ export default class Canvas extends React.Component {
     this.canvas = new fabric.Canvas('design-canvas-' + this.id); 
 
 	  // When the component mounts, draw the shapes onto the canvas
+    let pageFabricShape = null;
   	for(var i=0; i<this.elements.length; i++) {
   		let element = this.elements[i]; 
   		this.elementDict[element.id] = element; 
@@ -91,7 +92,7 @@ export default class Canvas extends React.Component {
         pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
         element.shape = pageGroup; 
         this.canvas.add(pageGroup);
-        this.canvas.sendToBack(pageGroup);      
+        pageFabricShape = pageGroup; 
       } else {
         let x = element.location.x/Constants.designCanvasScalingFactor(); 
         let y = element.location.y/Constants.designCanvasScalingFactor(); 
@@ -149,6 +150,9 @@ export default class Canvas extends React.Component {
         }
       }
   	}
+
+    // Make sure to send the page fabric shape to the back layer
+    this.canvas.sendToBack(pageFabricShape); 
   }
 
   render () {
