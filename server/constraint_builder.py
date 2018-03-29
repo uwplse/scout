@@ -81,7 +81,7 @@ class ConstraintBuilder(object):
 	def init_shape_constraints(self, shape): 
 		if shape.locks is not None:
 			for lock in shape.locks: 
-				if lock == "position": 
+				if lock == "location": 
 					self.solver.add(shape.x.z3 == shape.orig_x, shape.shape_id + " locked to position x")
 					self.solver.add(shape.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
 				# Others TBD

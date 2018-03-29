@@ -1,13 +1,13 @@
 import Constants from "./Constants"; 
 
 class ConstraintActions {}
-ConstraintActions.locked_position_key = 'position'; 
+ConstraintActions.locked_location_key = 'location'; 
 ConstraintActions.locked_arrangement_key = 'arrangement'; 
 ConstraintActions.locked_proximity_key = 'proximity'; 
 ConstraintActions.locksKey = 'locks'; 
 
 ConstraintActions.elementConstraints = {
-	"position" : {
+	"location" : {
 		"do": {
 			"label": "Keep position.",
 			"updateConstraintsCanvasShape": function keepPosition(constraintsCanvasShape, designCanvasShape) {
@@ -17,8 +17,11 @@ ConstraintActions.elementConstraints = {
 			    	constraintsCanvasShape[ConstraintActions.locksKey] = []; 
 			    } 
 
-			    constraintsCanvasShape[ConstraintActions.locksKey].push(ConstraintActions.locked_position_key); 
-			    constraintsCanvasShape[ConstraintActions.locked_position_key] = "x: " + designCanvasShape["location"]["x"] + ", y: " + designCanvasShape["location"]["y"]; 
+			    constraintsCanvasShape[ConstraintActions.locksKey].push(ConstraintActions.locked_location_key); 
+			    constraintsCanvasShape[ConstraintActions.locked_location_key] = {
+			    	x: designCanvasShape["location"]["x"], 
+			    	y: designCanvasShape["location"]["y"]
+			    }
 
 			    // Then update the location of the constraints canvas shape to that of the design canvas shape
 			    // constraintsCanvasShape.shape.set({
@@ -30,11 +33,13 @@ ConstraintActions.elementConstraints = {
 		"undo": {
 			"label": "Unlock position.", 
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
-				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_position_key); 
+				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_location_key); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
 				}
+
+				delete constraintsCanvasShape[ConstraintActions.locked_location_key]; 
 			}
 		} 
 	}
@@ -64,7 +69,9 @@ ConstraintActions.groupConstraints = {
 					constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 					if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 						delete constraintsCanvasShape[ConstraintActions.locksKey]; 
-					}
+					}s
+
+					delete constraintsCanvasShape[ConstraintActions.locked_arrangement_key]; 
 				}
 			}
 		}
@@ -95,9 +102,15 @@ ConstraintActions.pageConstraints = {
 					if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 						delete constraintsCanvasShape[ConstraintActions.locksKey]; 
 					}
+
+					delete constraintsCanvasShape[ConstraintActions.locked_proximity_key]; 
 				}
 			}
 		}
 }
+
+// ConstraintActions.relationalConstraints = {
+// 	"position": 
+// }
 
 export default ConstraintActions; 

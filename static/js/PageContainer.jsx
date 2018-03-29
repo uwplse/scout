@@ -356,9 +356,11 @@ export default class PageContainer extends React.Component {
 
       let fabricShape = shape.shape; 
       if(fabricShape) {
-        jsonShape["location"] = {
-          "x": fabricShape.left, 
-          "y": fabricShape.top
+        if(!jsonShape["location"]) {
+          jsonShape["location"] = {
+            "x": fabricShape.left, 
+            "y": fabricShape.top
+          }
         }
 
         let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 

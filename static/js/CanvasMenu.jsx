@@ -54,6 +54,12 @@ export default class CanvasMenu extends React.Component {
     return menuItems; 
   }
 
+  getRelationalMenuItems() {
+    let menuCollection = ConstraintActions.relationalConstraints; 
+
+    
+  }
+
   render () {
   	let elementItems = this.getMenuItems(ConstraintActions.elementConstraints);
     let groupItems = null; 
@@ -64,6 +70,11 @@ export default class CanvasMenu extends React.Component {
 
     if(this.menuTrigger.type == "page") {
       pageItems = this.getMenuItems(ConstraintActions.pageConstraints); 
+    }
+
+    if(this.menuTrigger.type == "element" || this.menuTrigger.type == "group") {
+      // Relational constraints
+      relationalItems = this.getRelationalMenuItems(); 
     }
 
 	  return (
