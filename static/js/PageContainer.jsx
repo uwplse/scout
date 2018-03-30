@@ -116,7 +116,7 @@ export default class PageContainer extends React.Component {
     fabricShape.on("moving", this.createGroupOnMove.bind(this, shapeJSON)); 
 
     // Register a mouseover handler to display a dialog with the current constraints
-    fabricShape.on("mousedown", this.displayConstraintsMenu.bind(this, shapeJSON)); 
+    // fabricShape.on("mousedown", this.displayConstraintsMenu.bind(this, shapeJSON)); 
   }
 
   fieldClicked() {
@@ -133,6 +133,8 @@ export default class PageContainer extends React.Component {
     shapeJSON["label"] = field.field.text; 
     this.constraintsCanvas.add(field.line); 
     this.constraintsCanvas.bringToFront(field.line); 
+
+    field.line.on("selected", this.selectShape.bind(this, shapeJSON)); 
 
     field.field.on("moving", function(evt){
       // Update the position of the line to follow the position of the label 
@@ -180,16 +182,16 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvas.bringToFront(button.label); 
 
     button.button.on("moving", function() {
-      let left = button.button.left + (button.button.width - button.label.width)/2; 
-      let top = button.button.top + (button.button.height - button.label.height)/2; 
+      let left = button.button.left + (button.button.width * button.button.scaleX - button.label.width * button.label.scaleX)/2; 
+      let top = button.button.top + (button.button.height * button.button.scaleY - button.label.height * button.label.scaleY)/2; 
       button.label.set({ left: left, top: top}); 
     }); 
 
-    button.label.on("moving", function() {
-      let left = button.label.left - (button.button.width - button.label.width)/2; 
-      let top = button.label.top - (button.button.height - button.label.height)/2; 
-      button.button.set({ left: left, top: top}); 
-    }); 
+    // button.label.on("moving", function() {
+    //   let left = button.label.left - (button.button.width - button.label.width)/2; 
+    //   let top = button.label.top - (button.button.height - button.label.height)/2; 
+    //   button.button.set({ left: left, top: top}); 
+    // }); 
 
     var self = this;
     button.button.on("selected", function() {
@@ -206,6 +208,10 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvas.remove(shapeJSON.shape); 
     let index = this.constraintsShapes.indexOf(shapeJSON); 
     this.constraintsShapes.splice(index, 1); 
+
+    if (shapeJSON.type == "field") {
+      this.constraintsCanvas.remove(shapeJSON.lineShape);
+    }
   }
 
   deleteSelectedShape(evt) {
@@ -252,11 +258,19 @@ export default class PageContainer extends React.Component {
       }
 
       let childBottom = child.shape.top + child.shape.height; 
+      if(child.type == "field") {
+        childBottom = child.lineShape.top; 
+      }
+
       if (bottom==-1 || childBottom > bottom) {
         bottom = childBottom; 
       }
 
       let childRight = child.shape.left + child.shape.width; 
+      if(child.type == "field") {
+        childRight = child.lineShape.left + child.lineShape.width;
+      }
+
       if (right==-1 || childRight > right) {
         right = childRight; 
       }
@@ -288,6 +302,12 @@ export default class PageContainer extends React.Component {
         let cShape_y = this.constraintsShapes[i].shape.top; 
         let cShape_width = this.constraintsShapes[i].shape.width; 
         let cShape_height = this.constraintsShapes[i].shape.height; 
+
+        if(this.constraintsShapes[i].type == "field") {
+          cShape_width = this.constraintsShapes[i].lineShape.width; 
+          cShape_height = this.constraintsShapes[i].lineShape.top - cShape_y; 
+        }
+
         if (this.overlapping(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
           overlapping = true;
           if(!shapeJSON.parent){
@@ -391,6 +411,8 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvas = new fabric.Canvas('constraints-canvas'); 
     let canvasElement = document.getElementById("constraints-canvas-container"); 
     canvasElement.addEventListener("keydown", this.deleteSelectedShape.bind(this)); 
+
+    this.constraintsCanvas.on("mousedown", this.hideConstraintsMenu.bind(this)); 
   }
 
   getShapesJSON() {
@@ -412,6 +434,11 @@ export default class PageContainer extends React.Component {
 
         let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
         let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
+        if(shape.type == "field"){
+          roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX); 
+          roundedHeight = Math.round((shape.lineShape.top * shape.lineShape.scaleY) - fabricShape.top); 
+        }
+
         jsonShape["size"] = {
           "width": roundedWidth, 
           "height": roundedHeight

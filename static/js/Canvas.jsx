@@ -100,19 +100,25 @@ export default class Canvas extends React.Component {
         let height = element.size.height/Constants.designCanvasScalingFactor(); 
 
         if(element.type == "button") {
-          let fontSize = height/Constants.designCanvasScalingFactor; 
+          let fontSize = height/Constants.designCanvasScalingFactor(); 
+
+          // TODO: Figure out how to make a factor of the label size
+          let left = 20/Constants.designCanvasScalingFactor(); 
+          let top = 10/Constants.designCanvasScalingFactor();
           let button = FabricHelpers.getButton(x,y,width,height,{
               'cursor': 'hand', 
               'selectable': false, 
               'text': element["label"], 
               'fontSize': fontSize, 
+              'leftOffset': left, 
+              'topOffset': top
           }); 
           button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = button; 
           this.canvas.add(button); 
         }
         else if (element.type == "text") {
-          let fontSize = height/Constants.designCanvasScalingFactor; // TODO: Hack. Fix this later
+          let fontSize = height/Constants.designCanvasScalingFactor(); // TODO: Hack. Fix this later
           let text = FabricHelpers.getText(x,y,fontSize,{
             'cursor': 'hand', 
             'selectable': false, 
@@ -123,12 +129,13 @@ export default class Canvas extends React.Component {
           this.canvas.add(text); 
         }
         else if (element.type == "field") {
-          let fontSize = height/Constants.designCanvasScalingFactor;
+          let lineDistance = 25/Constants.designCanvasScalingFactor(); 
           let field = FabricHelpers.getField(x,y,width,height,{
             'cursor': 'hand', 
             'selectable': false, 
             'text': element["label"], 
-            'fontSize': fontSize
+            'fontSize': height - 3, 
+            'lineDistance': lineDistance
           }); 
           field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = field; 

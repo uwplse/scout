@@ -58,6 +58,8 @@ class FabricHelpers {
 
 	    let textValue = options.text ? options.text : "BUTTON"; 
 	    let fontSize = options.fontSize ? options.fontSize : 20; 
+	    let leftOffset = options.leftOffset ? options.leftOffset : 20; 
+	    let topOffset = options.topOffset ? options.topOffset : 10; 
 	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize, 
 	      fontFamily: 'Helvetica Neue', 
@@ -66,8 +68,8 @@ class FabricHelpers {
 	      letterSpacing: 0.42,
 	      letterSpacing: ".03em",
 	      fill: 'white', 
-	      left: 20, 
-	      top: 10, 
+	      left: leftOffset, 
+	      top: topOffset, 
 	    });
 
 	    var group = new fabric.Group([ rect, text ], { 
@@ -138,7 +140,8 @@ class FabricHelpers {
 	}
 
   	static getField(left, top, width, height, options={}) {
-	    var line = new fabric.Line([ 0, 25, width, 25 ],{
+  		let lineDistance = options.lineDistance ? options.lineDistance : 25; 
+	    var line = new fabric.Line([ 0, lineDistance, width, lineDistance ],{
 	    	fill: 'rgba(0,0,0,.26)',
 	        stroke: 'rgba(0,0,0,.26)', 
 	        strokeWidth: 1
