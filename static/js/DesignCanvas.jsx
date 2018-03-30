@@ -4,7 +4,7 @@ import FabricHelpers from "./FabricHelpers.js";
 import CanvasMenu from "./CanvasMenu"; 
 import Constants from "./Constants"
 
-export default class Canvas extends React.Component {
+export default class DesignCanvas extends React.Component {
   constructor(props) {
   	super(props);
   	this.showConstraintsContextMenu.bind(this); 
