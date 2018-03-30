@@ -104,8 +104,8 @@ export default class Canvas extends React.Component {
           let button = FabricHelpers.getButton(x,y,width,height,{
               'cursor': 'hand', 
               'selectable': false, 
-              'text': element["name"], 
-              'fontSize': fontSize
+              'text': element["label"], 
+              'fontSize': fontSize, 
           }); 
           button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = button; 
@@ -116,7 +116,7 @@ export default class Canvas extends React.Component {
           let text = FabricHelpers.getText(x,y,fontSize,{
             'cursor': 'hand', 
             'selectable': false, 
-            'text': element["name"]
+            'text': element["label"]
           }); 
           text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = text; 
@@ -127,7 +127,7 @@ export default class Canvas extends React.Component {
           let field = FabricHelpers.getField(x,y,width,height,{
             'cursor': 'hand', 
             'selectable': false, 
-            'text': element["name"], 
+            'text': element["label"], 
             'fontSize': fontSize
           }); 
           field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));

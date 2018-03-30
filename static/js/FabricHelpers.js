@@ -144,7 +144,7 @@ class FabricHelpers {
 	        strokeWidth: 1
 	    });
 
-	    let textValue = "Field..."; 
+	    let textValue = options.text ? options.text : "Field..."; 
 	    let fontSize = options.fontSize ? options.fontSize : 16; 
 	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize, 

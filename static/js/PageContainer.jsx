@@ -143,6 +143,10 @@ export default class PageContainer extends React.Component {
       // Update the position of the line to follow the position of the label 
       field.field.set({left: field.line.left, top: field.line.top - 25}); 
     });
+
+    field.field.on("modified", function() {
+      shapeJSON["label"] = field.field.text; 
+    }); 
   }
 
   textClicked() {
@@ -154,6 +158,10 @@ export default class PageContainer extends React.Component {
     let text = FabricHelpers.getInteractiveText(location.left, location.top, fontSize, {'selectable': true});
    
     this.addShapeToConstraintsCanvas(shapeJSON, text);
+
+    text.on("modified", function() {
+      shapeJSON["label"] = text.text;
+    }); 
   }
 
   buttonClicked() {
@@ -183,9 +191,14 @@ export default class PageContainer extends React.Component {
       button.button.set({ left: left, top: top}); 
     }); 
 
+    var self = this;
     button.button.on("selected", function() {
-      this.constraintsCanvas.sendToBack(button.button); 
+      self.constraintsCanvas.sendToBack(button.button); 
     });  
+
+    button.label.on("modified", function() {
+      shapeJSON["label"] = button.label.text;
+    }); 
   }
 
   deleteShape(shapeJSON) {
