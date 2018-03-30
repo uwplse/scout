@@ -110,7 +110,17 @@ ConstraintActions.pageConstraints = {
 }
 
 // ConstraintActions.relationalConstraints = {
-// 	"position": 
+// 	"relative_alignment": {
+// 		"types": ["left", "right", "x-center", "y-center", "top", "bottom"], 
+// 		"do": {
+// 			"label": function getLabel(type, id) {
+
+// 			},
+// 			"updateConstraintsCanvasShape": keepRelativeAlignment(type, des)
+
+// 		}, 
+// 		"undo":
+// 	}
 // }
 
 export default ConstraintActions; 

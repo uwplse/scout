@@ -105,7 +105,7 @@ export default class PageContainer extends React.Component {
     return json;
   }
 
-  testScaling(shapeJSON) {
+  testScaling() {
     console.log("scaling"); 
   }
 

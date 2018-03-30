@@ -19,6 +19,14 @@ class CanvasMenuItem extends React.Component {
   }
 }
 
+// TODO: Implementation for relational constraints
+// MOve all object update logic to an onClick in the MenuItem class (we have the objects we need to update on the menuTrigger)
+// Then make notifyCanvas method to notify the parent canvas of the update
+// Then make a notifyPage method to notify the parent container to resolve the constraints
+// Make two different types of menu items
+// One is relational (updates 2 or more shapes and the constraint canvs shape)
+// One is singular (updates only one shape)
+
 export default class CanvasMenu extends React.Component {
   constructor(props) {
   	super(props); 
@@ -57,7 +65,7 @@ export default class CanvasMenu extends React.Component {
   getRelationalMenuItems() {
     let menuCollection = ConstraintActions.relationalConstraints; 
 
-    
+
   }
 
   render () {

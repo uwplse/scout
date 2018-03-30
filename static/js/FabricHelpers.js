@@ -21,18 +21,23 @@ class FabricHelpers {
 	    var rect = new fabric.Rect({
 	        width : width,
 	        height : height,
-	        fill : '#44ACB1'
+	        fill : '#39a1f4', 
+	        rx: 2, 
+	        ry: 2
 	    });
 
-	    let textValue = options.text ? options.text : "Button"; 
-	    let fontSize = options.fontSize ? options.fontSize : 12; 
+	    let textValue = options.text ? options.text : "BUTTON"; 
+	    let fontSize = options.fontSize ? options.fontSize : 14; 
 	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize, 
-	      fontFamily: 'Georgia', 
+	      fontFamily: 'Helvetica Neue', 
+	      fontWeight: 400,
 	      strokeWidth:0, 
+	      letterSpacing: 0.42,
+	      letterSpacing: ".03em",
 	      fill: 'white', 
-	      left: 25, 
-	      top: 10
+	      left: 20, 
+	      top: 10, 
 	    });
 
 	    var group = new fabric.Group([ rect, text ], { 
@@ -52,7 +57,7 @@ class FabricHelpers {
 	      fontSize: fontSize,
 	      left: left,
 	      top: top,
-	      fontFamily: 'Georgia',
+	      fontFamily: 'Helvetica Neue',
 	      fill: '#000', 
 	      lockRotation: true, 
 	      hoverCursor: options.cursor, 
@@ -67,8 +72,9 @@ class FabricHelpers {
 	      fontSize: fontSize,
 	      left: left,
 	      top: top,
-	      fontFamily: 'Georgia',
-	      fill: '#000', 
+	      fontFamily: 'Helvetica Neue',
+	      fontWeight: 400,
+	      fill: 'rgba(0,0,0,.87)', 
 	      lockRotation: true, 
 	      hoverCursor: options.cursor, 
 	      selectable: options.selectable
@@ -78,30 +84,28 @@ class FabricHelpers {
 	}
 
   	static getField(left, top, width, height, options={}) {
-	    var rect = new fabric.Rect({
-	        width : width,
-	        height : height,
-	        fill: 'white', 
-	        stroke: 'black', 
+	    var line = new fabric.Line([ left-20, top-25, left-20+width, top-25 ],{
+	    	fill: 'rgba(0,0,0,.26)',
+	        stroke: 'rgba(0,0,0,.26)', 
 	        strokeWidth: 1
 	    });
 
-	    let textValue = options.text ? options.text : "Field"; 
+	    let textValue = options.text ? options.text : "Placeholder..."; 
 	    var text = new fabric.IText(textValue, {
-	      fontSize: 20, 
-	      fontFamily: 'Georgia', 
+	      fontSize: 16, 
+	      fontFamily: 'Helvetica Neue', 
+	      fontWeight: 400,
 	      strokeWidth:0, 
-	      fill: 'black', 
-	      top: 10, 
-	      left: 25
+	      fill: 'rgba(0,0,0,.26)'
 	    });
 
-	    var group = new fabric.Group([ rect, text ], { 
+	    var group = new fabric.Group([ text, line ], { 
 	        left: left, 
 	        top: top,
 	        hoverCursor: options.cursor, 
 	        selectable: options.selectable
 	      });
+
 
 	    return group;
 	}
