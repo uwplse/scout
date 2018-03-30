@@ -17,6 +17,36 @@ class FabricHelpers {
 	    return rect; 
 	} 
 
+	static getInteractiveButton(left, top, width, height, options={}) { 
+		var rect = new fabric.Rect({
+	        width : width,
+	        height : height,
+	        fill : '#39a1f4', 
+	        rx: 2, 
+	        ry: 2, 
+	        left: left, 
+	        top: top, 
+	        selectable: options.selectable
+	    });
+
+	    let textValue = options.text ? options.text : "BUTTON"; 
+	    let fontSize = options.fontSize ? options.fontSize : 20; 
+	    var text = new fabric.IText(textValue, {
+	      fontSize: fontSize, 
+	      fontFamily: 'Helvetica Neue', 
+	      fontWeight: 400,
+	      strokeWidth:0, 
+	      letterSpacing: 0.42,
+	      letterSpacing: ".03em",
+	      fill: 'white', 
+	      left: left + 20, 
+	      top: top + 10, 
+	      selectable: options.selectable
+	    });
+
+	    return { button: rect, label: text }; 	
+	}
+
  	static getButton(left, top, width, height, options={}) {
 	    var rect = new fabric.Rect({
 	        width : width,
@@ -27,7 +57,7 @@ class FabricHelpers {
 	    });
 
 	    let textValue = options.text ? options.text : "BUTTON"; 
-	    let fontSize = options.fontSize ? options.fontSize : 14; 
+	    let fontSize = options.fontSize ? options.fontSize : 20; 
 	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize, 
 	      fontFamily: 'Helvetica Neue', 
@@ -83,20 +113,46 @@ class FabricHelpers {
 	    return text; 
 	}
 
+	static getInteractiveField(left, top, width, height, options={}){
+	    var line = new fabric.Line([ left, top+25, left+width, top+25 ],{
+	    	fill: 'rgba(0,0,0,.26)',
+	        stroke: 'rgba(0,0,0,.26)', 
+	        strokeWidth: 1, 
+	        selectable: options.selectable
+	    });
+
+	    let textValue = "Field..."; 
+	    let fontSize = options.fontSize ? options.fontSize : 16; 
+	    var text = new fabric.IText(textValue, {
+	      fontSize: fontSize, 
+	      fontFamily: 'Helvetica Neue', 
+	      fontWeight: 400,
+	      strokeWidth:0, 
+	      fill: 'rgba(0,0,0,.26)', 
+	      selectable: options.selectable, 
+	      left: left, 
+	      top: top
+	    });
+
+	    return { field: text, line: line };
+	}
+
   	static getField(left, top, width, height, options={}) {
-	    var line = new fabric.Line([ left-20, top-25, left-20+width, top-25 ],{
+	    var line = new fabric.Line([ 0, 25, width, 25 ],{
 	    	fill: 'rgba(0,0,0,.26)',
 	        stroke: 'rgba(0,0,0,.26)', 
 	        strokeWidth: 1
 	    });
 
-	    let textValue = options.text ? options.text : "Placeholder..."; 
+	    let textValue = "Field..."; 
+	    let fontSize = options.fontSize ? options.fontSize : 16; 
 	    var text = new fabric.IText(textValue, {
-	      fontSize: 16, 
+	      fontSize: fontSize, 
 	      fontFamily: 'Helvetica Neue', 
 	      fontWeight: 400,
 	      strokeWidth:0, 
-	      fill: 'rgba(0,0,0,.26)'
+	      fill: 'rgba(0,0,0,.26)', 
+	      selectable: true
 	    });
 
 	    var group = new fabric.Group([ text, line ], { 
@@ -105,7 +161,6 @@ class FabricHelpers {
 	        hoverCursor: options.cursor, 
 	        selectable: options.selectable
 	      });
-
 
 	    return group;
 	}

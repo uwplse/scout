@@ -29,6 +29,8 @@ export default class PageContainer extends React.Component {
 
     // This is the set of design canvases in the design window
     this.state = { designCanvases: [], constraintModified: false, menuShown: false, activeCanvasMenu: undefined, menuPosition: { x: 0, y: 0 } }; 
+  
+    this.unparentedShapes = [];
   }
 
   componentDidMount() {
@@ -105,10 +107,6 @@ export default class PageContainer extends React.Component {
     return json;
   }
 
-  testScaling() {
-    console.log("scaling"); 
-  }
-
   addShapeToConstraintsCanvas(shapeJSON, fabricShape) {
     shapeJSON.shape = fabricShape; 
     this.constraintsCanvas.add(fabricShape); 
@@ -119,8 +117,6 @@ export default class PageContainer extends React.Component {
 
     // Register a mouseover handler to display a dialog with the current constraints
     fabricShape.on("mousedown", this.displayConstraintsMenu.bind(this, shapeJSON)); 
-
-    fabricShape.on("scaling", this.testScaling.bind(this, shapeJSON)); 
   }
 
   fieldClicked() {
@@ -128,9 +124,25 @@ export default class PageContainer extends React.Component {
 
     // Add a new field to the constraints canvas
     let location = this.getConstraintsCanvasShapeLocation()
-    let field = FabricHelpers.getField(location.left, location.top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': shapeJSON["name"]});
+    let field = FabricHelpers.getInteractiveField(location.left, location.top, 120, 40, {'selectable': true});
 
-    this.addShapeToConstraintsCanvas(shapeJSON, field); 
+
+    this.addShapeToConstraintsCanvas(shapeJSON, field.field); 
+
+    shapeJSON.lineShape = field.line; 
+    shapeJSON["label"] = field.field.text; 
+    this.constraintsCanvas.add(field.line); 
+    this.constraintsCanvas.bringToFront(field.line); 
+
+    field.field.on("moving", function(evt){
+      // Update the position of the line to follow the position of the label 
+      field.line.set({left: field.field.left, top: field.field.top + 25}); 
+    });
+
+    field.line.on("moving", function(evt){
+      // Update the position of the line to follow the position of the label 
+      field.field.set({left: field.line.left, top: field.line.top - 25}); 
+    });
   }
 
   textClicked() {
@@ -139,7 +151,7 @@ export default class PageContainer extends React.Component {
 
     let location = this.getConstraintsCanvasShapeLocation(); 
     let fontSize = 40; 
-    let text = FabricHelpers.getInteractiveText(location.left, location.top, fontSize, {'selectable': true, 'text': shapeJSON["name"]});
+    let text = FabricHelpers.getInteractiveText(location.left, location.top, fontSize, {'selectable': true});
    
     this.addShapeToConstraintsCanvas(shapeJSON, text);
   }
@@ -149,9 +161,31 @@ export default class PageContainer extends React.Component {
 
     // Add a new field to the constraints canvas
     let location = this.getConstraintsCanvasShapeLocation(); 
-    let button = FabricHelpers.getButton(location.left, location.top, 120, 40, {'fontSize': 20, 'selectable': true, 'text': shapeJSON["name"]});
+    let button = FabricHelpers.getInteractiveButton(location.left, location.top, 120, 40, {'selectable': true});
     
-    this.addShapeToConstraintsCanvas(shapeJSON, button); 
+    this.addShapeToConstraintsCanvas(shapeJSON, button.button);
+
+    // Add the text of the label as a property on the button JSON 
+    shapeJSON.labelShape = button.label; 
+    shapeJSON["label"] = button.label.text; 
+    this.constraintsCanvas.add(button.label); 
+    this.constraintsCanvas.bringToFront(button.label); 
+
+    button.button.on("moving", function() {
+      let left = button.button.left + (button.button.width - button.label.width)/2; 
+      let top = button.button.top + (button.button.height - button.label.height)/2; 
+      button.label.set({ left: left, top: top}); 
+    }); 
+
+    button.label.on("moving", function() {
+      let left = button.label.left - (button.button.width - button.label.width)/2; 
+      let top = button.label.top - (button.button.height - button.label.height)/2; 
+      button.button.set({ left: left, top: top}); 
+    }); 
+
+    button.button.on("selected", function() {
+      this.constraintsCanvas.sendToBack(button.button); 
+    });  
   }
 
   deleteShape(shapeJSON) {
@@ -330,9 +364,9 @@ export default class PageContainer extends React.Component {
 
   drawWidgetCanvas() {
     this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
-    let field = FabricHelpers.getField(20,50,120,40,{'fontSize': 20, 'cursor': 'hand', 'selectable': false}); 
+    let field = FabricHelpers.getField(20,50,120,40,{'cursor': 'hand', 'selectable': false}); 
     let text = FabricHelpers.getText(20,150,40,{'cursor': 'hand', 'selectable': false}); 
-    let button = FabricHelpers.getButton(20,250,120,40,{'fontSize': 20, 'cursor': 'hand', 'selectable': false}); 
+    let button = FabricHelpers.getButton(20,250,120,40,{'cursor': 'hand', 'selectable': false}); 
     field.on('mousedown', this.fieldClicked); 
     text.on('mousedown', this.textClicked); 
     button.on('mousedown', this.buttonClicked); 
