@@ -17,6 +17,9 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsTop = 10;  
     this.unparentedShapes = [];
 
+    this.canvasHeight = 667; 
+    this.canvasWidth = 375; 
+
     this.state = { 
       constraintModified: false, 
       menuShown: false, 
@@ -40,12 +43,20 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsCanvas.on("mousedown", this.hideConstraintsMenu.bind(this)); 
 
     // Create an object to represent the page level object
-    // these will be where we keep the page level constraints
     let page = {
       "name": _.uniqueId(),
       "type": "page", 
-      "children": []
+      "children": [],
+      "location": {
+        x: 0, 
+        y: 0
+      }, 
+      "size": {
+        width: this.canvasWidth, 
+        height: this.canvasHeight
+      }
     }
+
 
     this.constraintsShapes.push(page); 
     this.constraintsShapesByName[page["name"]] = page; 
@@ -58,6 +69,15 @@ export default class ConstraintsCanvas extends React.Component {
 
   addShapeOfTypeToCanvas(type) {
     this.shapeAddHandlers[type]();
+  }
+
+  linkSolutionShapesToConstraintShapes(elements) {
+    for(var i=0; i<elements.length; i++) {
+      let element = elements[i]; 
+      let elementName = element["name"]; 
+      element.constraintsCanvasShape = this.constraintsShapesByName[elementName];
+    }
+    return elements; 
   }
 
   addFieldToCanvas() {
@@ -232,9 +252,27 @@ export default class ConstraintsCanvas extends React.Component {
 
   overlapping(x1,y1,width1,height1,x2,y2,width2,height2) {
     // return the distance between the shapes 
-    if(!(x1 > (x2 + width2) || y1 > (y2 + height2) || x2 > (x1 + width1) || y2 > (y1 + height1))) {
+    let padding = 10; 
+    if(!(x1 > (x2 + width2 + padding) || y1 > (y2 + height2 + padding) || x2 > (x1 + width1 + padding) || y2 > (y1 + height1 + padding))) {
       // They are overlapping 
       return true;
+    }
+
+    return false;
+  }
+
+  toLeft(x1,y1,width1,height1,x2,y2,width2,height2) {
+    let padding = 20;
+    let right1 = x1 + width1; 
+    let bottom2 = y2 + height2; 
+    let bottom1 = y1 + height1; 
+    if(right1 > (x2 - padding) && right1 <= x2) {
+      // The shape is to the left hand side within the range for creating the labels constraint
+      if((y1 >= y2 && y1 <= bottom2) || (bottom1 >= y2 && bottom1 <= bottom2) 
+        || ((y1 <= y2) && (bottom1 >= bottom2 ))) {
+        // The bottom or top is overlapping with the shape as well
+        return true;
+      }
     }
 
     return false;
@@ -256,6 +294,7 @@ export default class ConstraintsCanvas extends React.Component {
     let shape_height = shape.shape.height;
 
     let overlapping = false;
+    let toLeft = false;
     for(let i=0; i<this.constraintsShapes.length; i++) {
       if(this.constraintsShapes[i].name != shape.name && this.constraintsShapes[i].type != "group" 
         && this.constraintsShapes[i].type != "page") {
@@ -269,7 +308,17 @@ export default class ConstraintsCanvas extends React.Component {
           cShape_height = this.constraintsShapes[i].lineShape.top - cShape_y; 
         }
 
-        if (this.overlapping(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
+        if (this.toLeft(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height)) {
+          if (shape.type == "text") {
+            // A labels relationship can only be created with a text element
+            // Here is where we should create the labels relationship
+            toLeft = true;
+            if(!shape.labels) {
+              this.addShapeToLabelsGroup(shape, this.constraintsShapes[i]);            
+            }
+          }
+        }
+        else if (this.overlapping(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
           overlapping = true;
           if(!shape.parent){
             if (this.constraintsShapes[i].parent) {
@@ -286,6 +335,13 @@ export default class ConstraintsCanvas extends React.Component {
           }
         }
       }
+    }
+
+    if(!toLeft && shape.type == "text" && shape.labels) {
+      // Delete the group shape from the canvas
+      this.constraintsCanvas.remove(shape.labelsGroup); 
+      delete shape.labels; 
+      delete shape.labelsGroup; 
     }
 
     if(!overlapping) {
@@ -376,6 +432,35 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
   }
 
+  addShapeToLabelsGroup(shape, labeledShape) {
+    shape.labels = labeledShape; 
+
+    // Make a new group shape
+    // It wont' be added to the page, but just used to calculate the bounding box
+    let group = {
+      "children": []
+    }
+
+    group.children.push(shape); 
+    group.children.push(labeledShape);
+
+    // Create a new group shape to be the bounding box 
+    let groupBoundingBox = this.getGroupBoundingBox(group); 
+    let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-10, groupBoundingBox.y-10, groupBoundingBox.width+20, groupBoundingBox.height+20, {
+      selectable: false, 
+      stroke: 'red'
+    }); 
+
+    // TODO: Enable constraints menu. It will need to have one at some point
+    // groupRect.on("mousedown", this.displayConstraintsMenu.bind(this, group)); 
+    // Add them to the page collection of shape objects
+    shape.labelsGroup = groupRect; 
+    this.constraintsCanvas.add(groupRect); 
+
+    // Move the group to the back layer
+    this.constraintsCanvas.sendToBack(groupRect);
+  }
+
   // Adds two shapes into a new group and adds the new group to the canvas
   addShapeToNewGroup(shape1, shape2) {
     // Create a new group for the parent container
@@ -425,7 +510,7 @@ export default class ConstraintsCanvas extends React.Component {
         <div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
           {activeCanvasMenu}
         </div>
-        <canvas id="constraints-canvas" width="375px" height="667px">
+        <canvas id="constraints-canvas" width={this.canvasWidth + "px"} height={this.canvasHeight + "px"}>
         </canvas>
       </div>
     );

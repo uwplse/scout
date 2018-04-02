@@ -85,20 +85,16 @@ export default class PageContainer extends React.Component {
         }
       }
 
+      if(shape.labels) {
+        jsonShape.labels = shape.labels.name;
+        delete jsonShape.labelsGroup; 
+      }
+
       jsonShape.parent = undefined; 
       shapeJSON.push(jsonShape); 
     }  
 
     return JSON.stringify(shapeJSON); 
-  }
-
-  linkSolutionShapesToConstraints(elements) {
-    for(var i=0; i<elements.length; i++) {
-      let element = elements[i]; 
-      let elementName = element["name"]; 
-      element.constraintsCanvasShape = this.constraintsShapesByName[elementName];
-    }
-    return elements; 
   }
 
   updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action, undoAction) {
@@ -139,7 +135,7 @@ export default class PageContainer extends React.Component {
       let elements = solution.elements; 
       
       // Attach the JSON shapes for this canvas instance to the corresponding constraints canvas shapes
-      // this.linkSolutionShapesToConstraints(elements); 
+      this.refs.constraintsCanvas.linkSolutionShapesToConstraintShapes(elements); 
       designCanvasList.push(<DesignCanvas key={solution.id} id={solution.id} elements={elements} updateConstraintsCanvas={this.updateConstraintsCanvasShape}/>); 
     }
 
