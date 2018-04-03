@@ -116,20 +116,21 @@ export default class DesignCanvas extends React.Component {
           let text = FabricHelpers.getText(x,y,fontSize,{
             'cursor': 'hand', 
             'selectable': false, 
-            'text': element["label"]
+            'text': element["label"], 
+            'scaleX': 1/Constants.designCanvasScalingFactor(), 
+            'scaleY': 1/Constants.designCanvasScalingFactor()
           }); 
           text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = text; 
           this.canvas.add(text); 
         }
         else if (element.type == "field") {
-          let lineDistance = 25/Constants.designCanvasScalingFactor(); 
-          let field = FabricHelpers.getField(x,y,width,height,{
+          let field = FabricHelpers.getField(x,y,element.size.width,element.size.height,{
             'cursor': 'hand', 
             'selectable': false, 
-            'text': element["label"], 
-            'fontSize': height - 3, 
-            'lineDistance': lineDistance
+            'text': element["label"],
+            'scaleX': 1/Constants.designCanvasScalingFactor(), 
+            'scaleY': 1/Constants.designCanvasScalingFactor()
           }); 
           field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = field; 
@@ -137,7 +138,7 @@ export default class DesignCanvas extends React.Component {
         }
         else if (element.type == "group") {
           let groupPadding = 0; // TODO: make constant for this
-          let group = FabricHelpers.getGroup(x-groupPadding,y-groupPadding,width+(groupPadding*2), height+(groupPadding*2), {
+          let group = FabricHelpers.getGroup(x-groupPadding,y-groupPadding,element.size.width+(groupPadding*2), element.size.height+(groupPadding*2), {
             cursor: 'hand', 
             selectable: false, 
             opacity: 0, 

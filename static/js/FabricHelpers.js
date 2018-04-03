@@ -94,9 +94,11 @@ class FabricHelpers {
 	}
 
   	static getText(left, top, fontSize, options={}) {
+    	let scaleX = options.scaleX ? options.scaleX : 1; 
+  		let scaleY = options.scaleY ? options.scaleY : 1;
   	    let textValue = options.text ? options.text : "Text"; 
 	    var text = new fabric.Text(textValue, {
-	      fontSize: fontSize,
+	      fontSize: fontSize * scaleY,
 	      left: left,
 	      top: top,
 	      fontFamily: 'Helvetica Neue',
@@ -110,6 +112,7 @@ class FabricHelpers {
 	}
 
     static getInteractiveText(left, top, fontSize, options={}) {
+
 	    var text = new fabric.IText('Text', {
 	      fontSize: fontSize,
 	      left: left,
@@ -150,11 +153,18 @@ class FabricHelpers {
 	}
 
   	static getField(left, top, width, height, options={}) {
-  		let lineDistance = options.lineDistance ? options.lineDistance : 25; 
-	    var line = new fabric.Line([ 0, lineDistance, width, lineDistance ],{
+  		let scaleX = options.scaleX ? options.scaleX : 1; 
+  		let scaleY = options.scaleY ? options.scaleY : 1;
+  		let lineDistance = 25; 
+  		let scaledLineDistance = lineDistance * (scaleY);
+
+
+	    var line = new fabric.Line([ 0, scaledLineDistance, width, scaledLineDistance ],{
 	    	fill: 'rgba(0,0,0,.26)',
 	        stroke: 'rgba(0,0,0,.26)', 
-	        strokeWidth: 1
+	        strokeWidth: 1, 
+	        scaleX: scaleX, 
+	        scaleY: scaleY
 	    });
 
 	    let textValue = options.text ? options.text : "Field..."; 
@@ -165,7 +175,9 @@ class FabricHelpers {
 	      fontWeight: 400,
 	      strokeWidth:0, 
 	      fill: 'rgba(0,0,0,.26)', 
-	      selectable: true
+	      selectable: true, 
+	      scaleX: scaleX, 
+	      scaleY: scaleY
 	    });
 
 	    var group = new fabric.Group([ text, line ], { 
