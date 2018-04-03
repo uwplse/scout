@@ -48,18 +48,25 @@ class FabricHelpers {
 	}
 
  	static getButton(left, top, width, height, options={}) {
+	    let textValue = options.text ? options.text : "BUTTON"; 
+	    let fontSize = options.fontSize ? options.fontSize : 20; 
+	    let leftOffset = options.leftOffset ? options.leftOffset : 20; 
+	    let topOffset = options.topOffset ? options.topOffset : 10; 
+	    let scaleX = options.scaleX ? options.scaleX : 1; 
+	    let scaleY = options.scaleY ? options.scaleY : 1;
+
 	    var rect = new fabric.Rect({
 	        width : width,
 	        height : height,
 	        fill : '#39a1f4', 
 	        rx: 2, 
-	        ry: 2
+	        ry: 2, 
+	        scaleX: scaleX, 
+	        scaleY: scaleY, 
+	        originX: 'center',
+	        originY: 'center'
 	    });
-
-	    let textValue = options.text ? options.text : "BUTTON"; 
-	    let fontSize = options.fontSize ? options.fontSize : 20; 
-	    let leftOffset = options.leftOffset ? options.leftOffset : 20; 
-	    let topOffset = options.topOffset ? options.topOffset : 10; 
+ 
 	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize, 
 	      fontFamily: 'Helvetica Neue', 
@@ -67,9 +74,11 @@ class FabricHelpers {
 	      strokeWidth:0, 
 	      letterSpacing: 0.42,
 	      letterSpacing: ".03em",
-	      fill: 'white', 
-	      left: leftOffset, 
-	      top: topOffset, 
+	      fill: 'white',
+	      scaleX: scaleX, 
+	      scaleY: scaleY, 
+	      originX: 'center',
+	      originY: 'center'
 	    });
 
 	    var group = new fabric.Group([ rect, text ], { 
@@ -77,7 +86,8 @@ class FabricHelpers {
 	        top: top, 
 	        selectable: false, 
 	        hoverCursor: options.cursor, 
-	        selectable: options.selectable
+	        selectable: options.selectable, 
+	        originY: 'center'
 	      });
 
 	    return group; 

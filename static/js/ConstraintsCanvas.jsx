@@ -193,6 +193,10 @@ export default class ConstraintsCanvas extends React.Component {
     if (shape.type == "field") {
       this.constraintsCanvas.remove(shape.lineShape);
     }
+
+    if(shape.type == "button"){
+      this.constraintsCanvas.remove(shape.labelShape);
+    }
   }
 
   deleteSelectedShape(evt) {
@@ -388,7 +392,7 @@ export default class ConstraintsCanvas extends React.Component {
         y = child.shape.top; 
       }
 
-      let childBottom = child.shape.top + child.shape.height; 
+      let childBottom = child.shape.top + child.shape.height * child.shape.scaleY; 
       if(child.type == "field") {
         childBottom = child.lineShape.top; 
       }
@@ -397,9 +401,9 @@ export default class ConstraintsCanvas extends React.Component {
         bottom = childBottom; 
       }
 
-      let childRight = child.shape.left + child.shape.width; 
+      let childRight = child.shape.left + child.shape.width * child.shape.scaleX; 
       if(child.type == "field") {
-        childRight = child.lineShape.left + child.lineShape.width;
+        childRight = child.lineShape.left + child.lineShape.width * child.lineShape.scaleX;
       }
 
       if (right==-1 || childRight > right) {

@@ -96,22 +96,16 @@ export default class DesignCanvas extends React.Component {
       } else {
         let x = element.location.x/Constants.designCanvasScalingFactor(); 
         let y = element.location.y/Constants.designCanvasScalingFactor(); 
-        let width = element.size.width/Constants.designCanvasScalingFactor(); 
-        let height = element.size.height/Constants.designCanvasScalingFactor(); 
 
         if(element.type == "button") {
-          let fontSize = height/Constants.designCanvasScalingFactor(); 
-
           // TODO: Figure out how to make a factor of the label size
-          let left = 20/Constants.designCanvasScalingFactor(); 
-          let top = 10/Constants.designCanvasScalingFactor();
-          let button = FabricHelpers.getButton(x,y,width,height,{
+
+          let button = FabricHelpers.getButton(x,y,element.size.width,element.size.height,{
               'cursor': 'hand', 
               'selectable': false, 
               'text': element["label"], 
-              'fontSize': fontSize, 
-              'leftOffset': left, 
-              'topOffset': top
+              'scaleX': 1/Constants.designCanvasScalingFactor(), 
+              'scaleY': 1/Constants.designCanvasScalingFactor()
           }); 
           button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = button; 
