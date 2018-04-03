@@ -11,7 +11,6 @@ export default class PageContainer extends React.Component {
   	super(props); 
     this.drawWidgetCanvas = this.drawWidgetCanvas.bind(this); 
     this.getMoreDesigns = this.getMoreDesigns.bind(this); 
-    this.getDesignsWithNewConstraints = this.getDesignsWithNewConstraints.bind(this); 
     this.parseSolutions = this.parseSolutions.bind(this);
     this.updateConstraintsCanvasShape = this.updateConstraintsCanvasShape.bind(this); 
 
@@ -109,25 +108,24 @@ export default class PageContainer extends React.Component {
     this.refs.constraintsCanvas.updateConstraintsCanvasShape(constraintsCanvasShape)
 
 
-    // let jsonShapes = this.getShapesJSON(); 
-    // var self = this;
-    // $.post("/check", {"elements": jsonShapes}, function(requestData) {
-    //   if(requestData == "True") {
-    //     // At least one constraint has been changed 
-    //     // The button to get more designs with the current set of constraints should be disabled. 
-    //     self.setState({
-    //       constraintModified: true, 
-    //       errorMessageShown: false
-    //     });  
-    //   } else {
-    //     // Display an error message somewhere (?)
-    //     undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
+    let jsonShapes = this.getShapesJSON(); 
+    var self = this;
+    $.post("/check", {"elements": jsonShapes}, function(requestData) {
+      if(requestData == "True") {
+        // At least one constraint has been changed 
+        // The button to get more designs with the current set of constraints should be disabled. 
+        self.setState({
+          errorMessageShown: false
+        });  
+      } else {
+        // Display an error message somewhere (?)
+        undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
 
-    //     self.setState({
-    //       errorMessageShown: true
-    //     });
-    //   }
-    // }, 'text');
+        self.setState({
+          errorMessageShown: true
+        });
+      }
+    }, 'text');
   }
 
   parseSolutions(requestData) {
@@ -150,6 +148,8 @@ export default class PageContainer extends React.Component {
   }
 
   getMoreDesigns() {
+    this.state.designCanvases = [];
+
     // get more designs
     // without changing any new constraints
     let jsonShapes = this.getShapesJSON(); 
@@ -159,23 +159,8 @@ export default class PageContainer extends React.Component {
     $.post("/solve", {"elements": jsonShapes}, this.parseSolutions, 'text');
   }
 
-  getDesignsWithNewConstraints() {
-    // Clear out the current set of designs 
-    // TODO: Need some way of ensuring the same set of designs do not get brought back again
-    // this has to be handled in the server
-    this.state.designCanvases = []; // Don't need to setState here since we will call it when rendering the new designs?
- 
-    // Get designs with new constraints
-    let jsonShapes = this.getShapesJSON(); 
-
-    // Send an ajax request to the server 
-    // Solve for the new designs
-    $.post("/solve", {"elements": jsonShapes}, this.parseSolutions, 'text');
- }
-
   render () {
     const designs = this.state.designCanvases;
-    const constraintModified = this.state.constraintModified; 
     const errorMessageShown = this.state.errorMessageShown; 
     const addedShapes = this.state.addedShapesQueue; 
     return (
@@ -183,8 +168,7 @@ export default class PageContainer extends React.Component {
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
-            <button type="button" className="btn btn-default navbar-btn" disabled={constraintModified} onClick={this.getMoreDesigns}>Get More Designs</button>
-            <button type="button" className="btn btn-default navbar-btn" disabled={!constraintModified} onClick={this.getDesignsWithNewConstraints}>Update Designs from Constraints</button>
+            <button type="button" className="btn btn-default navbar-btn" onClick={this.getMoreDesigns}>Get Designs</button>
             { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
           </div>
          </div>

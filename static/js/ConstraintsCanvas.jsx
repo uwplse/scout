@@ -244,7 +244,7 @@ export default class ConstraintsCanvas extends React.Component {
     });
   }
 
-  overlapping(x1,y1,width1,height1,x2,y2,width2,height2) {
+  distanceWithinGroupingThreshold(x1,y1,width1,height1,x2,y2,width2,height2) {
     // return the distance between the shapes 
     let padding = 10; 
     if(!(x1 > (x2 + width2 + padding) || y1 > (y2 + height2 + padding) || x2 > (x1 + width1 + padding) || y2 > (y1 + height1 + padding))) {
@@ -255,22 +255,33 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  toLeft(x1,y1,width1,height1,x2,y2,width2,height2) {
-    let padding = 20;
-    let right1 = x1 + width1; 
-    let bottom2 = y2 + height2; 
-    let bottom1 = y1 + height1; 
-    if(right1 > (x2 - padding) && right1 <= x2) {
-      // The shape is to the left hand side within the range for creating the labels constraint
-      if((y1 >= y2 && y1 <= bottom2) || (bottom1 >= y2 && bottom1 <= bottom2) 
-        || ((y1 <= y2) && (bottom1 >= bottom2 ))) {
-        // The bottom or top is overlapping with the shape as well
-        return true;
-      }
+  distanceWithinLabelsThreshold(x1,y1,width1,height1,x2,y2,width2,height2) {
+    // return the distance between the shapes 
+    let padding = 20; 
+    if(!(x1 > (x2 + width2 + padding) || y1 > (y2 + height2 + padding) || x2 > (x1 + width1 + padding) || y2 > (y1 + height1 + padding))) {
+      // They are overlapping 
+      return true;
     }
 
-    return false;
+    return false; 
   }
+
+  // toLeft(x1,y1,width1,height1,x2,y2,width2,height2) {
+  //   let padding = 20;
+  //   let right1 = x1 + width1; 
+  //   let bottom2 = y2 + height2; 
+  //   let bottom1 = y1 + height1; 
+  //   if(right1 > (x2 - padding) && right1 <= x2) {
+  //     // The shape is to the left hand side within the range for creating the labels constraint
+  //     if((y1 >= y2 && y1 <= bottom2) || (bottom1 >= y2 && bottom1 <= bottom2) 
+  //       || ((y1 <= y2) && (bottom1 >= bottom2 ))) {
+  //       // The bottom or top is overlapping with the shape as well
+  //       return true;
+  //     }
+  //   }
+
+  //   return false;
+  // }
 
   moveShape(shape) {
     // Check proximity of the shape to other elements 
@@ -279,11 +290,10 @@ export default class ConstraintsCanvas extends React.Component {
     let shape_width = shape.shape.width; 
     let shape_height = shape.shape.height;
 
-    let overlapping = false;
-    let toLeft = false;
+    let grouping = false;
+    let labels = false;
     for(let i=0; i<this.constraintsShapes.length; i++) {
-      if(this.constraintsShapes[i].name != shape.name && this.constraintsShapes[i].type != "group" 
-        && this.constraintsShapes[i].type != "page") {
+      if(this.constraintsShapes[i].name != shape.name && this.constraintsShapes[i].type != "page") {
         let cShape_x = this.constraintsShapes[i].shape.left; 
         let cShape_y = this.constraintsShapes[i].shape.top; 
         let cShape_width = this.constraintsShapes[i].shape.width; 
@@ -294,18 +304,9 @@ export default class ConstraintsCanvas extends React.Component {
           cShape_height = this.constraintsShapes[i].lineShape.top - cShape_y; 
         }
 
-        if (this.toLeft(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height)) {
-          if (shape.type == "text") {
-            // A labels relationship can only be created with a text element
-            // Here is where we should create the labels relationship
-            toLeft = true;
-            if(!shape.labels) {
-              this.addShapeToLabelsGroup(shape, this.constraintsShapes[i]);            
-            }
-          }
-        }
-        else if (this.overlapping(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
-          overlapping = true;
+        if (this.constraintsShapes[i].type != "group" 
+          && this.distanceWithinGroupingThreshold(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
+          grouping = true;
           if(!shape.parent){
             if (this.constraintsShapes[i].parent) {
               let parentGroup = this.constraintsShapes[i].parent; 
@@ -316,21 +317,31 @@ export default class ConstraintsCanvas extends React.Component {
               this.addShapeToNewGroup(this.constraintsShapes[i], shape); 
 
               // Don't look at any more shapes 
-              break;
             }
           }
+          break;
+        }
+        else if (shape.type == "text" && this.distanceWithinLabelsThreshold(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height)) {
+          labels = true;
+          // A labels relationship can only be created with a text element
+          // Here is where we should create the labels relationship
+          if(!shape.labels) {
+            this.addShapeToLabelsGroup(shape, this.constraintsShapes[i]);            
+          }
+
+          break;
         }
       }
     }
 
-    if(!toLeft && shape.type == "text" && shape.labels) {
+    if(!labels && shape.type == "text" && shape.labels) {
       // Delete the group shape from the canvas
       this.constraintsCanvas.remove(shape.labelsGroup); 
       delete shape.labels; 
       delete shape.labelsGroup; 
     }
 
-    if(!overlapping) {
+    if(!grouping) {
       // If the shape was in a group and that group had only two children, remove the group 
       if(shape.parent) {
         let parentGroup = shape.parent; 
@@ -419,7 +430,12 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   addShapeToLabelsGroup(shape, labeledShape) {
-    shape.labels = labeledShape; 
+    let shapeToLabel = labeledShape; 
+    if(shape.parent) {
+      shapeToLabel = shape.parent; 
+    }
+
+    shape.labels = shapeToLabel; 
 
     // Make a new group shape
     // It wont' be added to the page, but just used to calculate the bounding box
@@ -428,7 +444,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     group.children.push(shape); 
-    group.children.push(labeledShape);
+    group.children.push(shapeToLabel);
 
     // Create a new group shape to be the bounding box 
     let groupBoundingBox = this.getGroupBoundingBox(group); 
@@ -499,8 +515,32 @@ export default class ConstraintsCanvas extends React.Component {
       top = constraintsCanvasBoundingBox.y + fabricShape.top;       
     }
 
+    if(shape.type == "field"){
+      left = constraintsCanvasBoundingBox.x + shape.lineShape.left + shape.lineShape.width + 5;
+    }
+
     return <ConstraintsCanvasMenu key={shape.name} menuID={shape.name} left={left} top={top} 
                                       menuShown={this.state.menuShown[shape.name]} menuTrigger={shape} />; 
+  }
+
+  closeActiveMenus(){
+    let menuClosed = false;
+    for (var key in this.state.menuShown) {
+      // check if the property/key is defined in the object itself, not in parent
+      if (this.state.menuShown.hasOwnProperty(key)) {           
+          if(this.state.menuShown[key]) {
+            this.state.menuShown[key] = false;
+            menuClosed = true;
+          }
+      }
+    }
+
+    if(menuClosed){
+      let menuState = this.state.menuShown; 
+      this.setState({
+        menuShown: menuState
+      });    
+    }
   }
 
   render () {

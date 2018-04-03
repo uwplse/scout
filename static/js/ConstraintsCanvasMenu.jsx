@@ -20,16 +20,16 @@ export default class ConstraintsCanvasMenu extends React.Component {
     this.top = props.top; 
     this.id = props.menuID; 
 
-    this.state = {
-      menuShown: props.menuShown
-    };
+    // this.state = {
+    //   menuShown: props.menuShown
+    // };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if(nextProps.menuShown !== this.props.menuShown){
-        this.setState({menuShown:nextProps.menuShown});
-    }  
-  }
+  // componentWillReceiveProps(nextProps) {
+  //   if(nextProps.menuShown !== this.props.menuShown){
+  //       this.setState({menuShown:nextProps.menuShown});
+  //   }  
+  // }
 
   constructConstraintsMenu() {
   	let menuItems = []; 
@@ -45,18 +45,15 @@ export default class ConstraintsCanvasMenu extends React.Component {
 
         menuItems.push(<ConstraintsCanvasMenuItem label={lock + " " + label} key={lock} />); 
       }      
-    } else {
-      menuItems.push(<ConstraintsCanvasMenuItem label="none." key="none" />);
-    }
+    } 
 
   	return menuItems; 
   }
 
   render () {
   	const menuItems = this.constructConstraintsMenu();
-    const menuShown = this.state.menuShown;
     return (
-      <div style={{left: this.left, top: this.top}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
+      <div style={{left: this.left, top: this.top}} className={"canvas-menu-container " + (menuItems.length ? "" : "hidden")}>
         <ul className="canvas-menu-list">{menuItems}</ul>
       </div>); 
   }
