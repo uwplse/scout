@@ -105,25 +105,29 @@ export default class PageContainer extends React.Component {
     // Consider refactoring so we don't have to do and undo the action
     action.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
 
-    let jsonShapes = this.getShapesJSON(); 
-    var self = this;
-    $.post("/check", {"elements": jsonShapes}, function(requestData) {
-      if(requestData == "True") {
-        // At least one constraint has been changed 
-        // The button to get more designs with the current set of constraints should be disabled. 
-        self.setState({
-          constraintModified: true, 
-          errorMessageShown: false
-        });  
-      } else {
-        // Display an error message somewhere (?)
-        undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
+    // Notify the constraintss canvas
+    this.refs.constraintsCanvas.updateConstraintsCanvasShape(constraintsCanvasShape)
 
-        self.setState({
-          errorMessageShown: true
-        });
-      }
-    }, 'text');
+
+    // let jsonShapes = this.getShapesJSON(); 
+    // var self = this;
+    // $.post("/check", {"elements": jsonShapes}, function(requestData) {
+    //   if(requestData == "True") {
+    //     // At least one constraint has been changed 
+    //     // The button to get more designs with the current set of constraints should be disabled. 
+    //     self.setState({
+    //       constraintModified: true, 
+    //       errorMessageShown: false
+    //     });  
+    //   } else {
+    //     // Display an error message somewhere (?)
+    //     undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
+
+    //     self.setState({
+    //       errorMessageShown: true
+    //     });
+    //   }
+    // }, 'text');
   }
 
   parseSolutions(requestData) {
@@ -199,7 +203,7 @@ export default class PageContainer extends React.Component {
             <div className="panel-heading"> 
               <h3 className="panel-title">Constraints</h3>
             </div>
-            <ConstraintsCanvas ref="constraintsCanvas" addedShapes={addedShapes} />
+            <ConstraintsCanvas ref="constraintsCanvas" />
           </div>
           <div className="panel panel-default designs-container">
             <div className="panel-heading"> 

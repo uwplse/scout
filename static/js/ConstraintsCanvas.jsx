@@ -22,9 +22,8 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.state = { 
       constraintModified: false, 
-      menuShown: false, 
-      activeCanvasMenu: undefined, 
-      menuPosition: { x: 0, y: 0 } 
+      activeCanvasMenus: [], 
+      menuShown:{},
     }; 
 
     // mapping of shape types to handler functions
@@ -39,8 +38,6 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsCanvas = new fabric.Canvas('constraints-canvas'); 
     let canvasElement = document.getElementById("constraints-canvas-container"); 
     canvasElement.addEventListener("keydown", this.deleteSelectedShape.bind(this)); 
-
-    this.constraintsCanvas.on("mousedown", this.hideConstraintsMenu.bind(this)); 
 
     // Create an object to represent the page level object
     let page = {
@@ -170,6 +167,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.constraintsShapes.push(shape); 
     this.constraintsShapesByName[shape["name"]] = shape; 
+    this.state.menuShown[shape.name] = false;
 
     // Also need to push the shape onto the children of the page level object
     this.pageLevelShape.children.push(shape); 
@@ -184,9 +182,6 @@ export default class ConstraintsCanvas extends React.Component {
     // Keep track of the currently selected shape 
     fabricShape.on("selected", this.selectShape.bind(this, shape)); 
     fabricShape.on("moving", this.moveShape.bind(this, shape)); 
-
-    // Register a mouseover handler to display a dialog with the current constraints
-    // fabricShape.on("mousedown", this.displayConstraintsMenu.bind(this, shapeJSON)); 
   }
 
   deleteShape(shape) {
@@ -206,7 +201,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     // Also close the menu
-    this.hideConstraintsMenu();
+    this.deleteConstraintsMenu(this.selectedShape);
   }
 
   deleteShapeFromObjectChildren(shape, objectJSON) {
@@ -218,36 +213,35 @@ export default class ConstraintsCanvas extends React.Component {
     this.selectedShape = shape; 
   }
 
-  displayConstraintsMenu(shape) {
-    // check whether the current menu needs to be closed
-    if(this.state.menuShown) {
-      this.setState({
-        activeCanvasMenu: undefined, 
-        menuShown: false
-      }); 
-    }
+  updateConstraintsCanvasShape(shape) {    
+    // Update the state of the menu associated with the shape
+    let newMenuState = this.state.menuShown; 
+    newMenuState[shape.name] = true;
 
-    // Show the context menu. 
-    let componentBoundingBox = this.refs["constraints-canvas"].getBoundingClientRect();
-
-    let fabricShape = shape.shape; 
     this.setState({
-        activeCanvasMenu: <ConstraintsCanvasMenu menuTrigger={shape} />,
-        menuShown: true, 
-        menuPosition: {
-          x: componentBoundingBox.x + fabricShape.left + fabricShape.width + 5, 
-          y: componentBoundingBox.y + fabricShape.top
-        }
-    });
+      menuShown: newMenuState
+    }); 
   }
 
-  hideConstraintsMenu() {
-    if(this.state.menuShown) {
-      this.setState({
-        activeCanvasMenu: undefined, 
-        menuShown: false
-      }); 
+  deleteConstraintsMenu(shape){
+    let delete_i = -1; 
+    for(var i=0; i<this.state.activeCanvasMenus.length; i++){
+      if(shape == this.state.activeCanvasMenus[i].props.menuTrigger) {
+        delete_i = i; 
+      }
     }
+
+    if (delete_i != -1) {
+      this.state.activeCanvasMenus.splice(delete_i,1); 
+    }
+
+    // Remove the state of its menu from the map of menu states
+    delete this.state.menuShown[shape.name];
+ 
+    this.setState({
+      activeCanvasMenus: this.state.activeCanvasMenus,
+      menuShown: this.state.menuShown
+    });
   }
 
   overlapping(x1,y1,width1,height1,x2,y2,width2,height2) {
@@ -279,14 +273,6 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   moveShape(shape) {
-    // check whether the current menu needs to be closed
-    if(this.state.menuShown) {
-      this.setState({
-        activeCanvasMenu: undefined, 
-        menuShown: false
-      }); 
-    }
-
     // Check proximity of the shape to other elements 
     let shape_x = shape.shape.left; 
     let shape_y = shape.shape.top; 
@@ -451,8 +437,6 @@ export default class ConstraintsCanvas extends React.Component {
       stroke: 'red'
     }); 
 
-    // TODO: Enable constraints menu. It will need to have one at some point
-    // groupRect.on("mousedown", this.displayConstraintsMenu.bind(this, group)); 
     // Add them to the page collection of shape objects
     shape.labelsGroup = groupRect; 
     this.constraintsCanvas.add(groupRect); 
@@ -488,7 +472,6 @@ export default class ConstraintsCanvas extends React.Component {
     });
 
     group.shape = groupRect; 
-    groupRect.on("mousedown", this.displayConstraintsMenu.bind(this, group)); 
 
     // Add them to the page collection of shape objects
     this.constraintsCanvas.add(groupRect); 
@@ -499,16 +482,37 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsCanvas.sendToBack(groupRect);
   }
 
-  render () {
-    const menuPosition = this.state.menuPosition; 
-    const menuShown = this.state.menuShown; 
-    const activeCanvasMenu = this.state.activeCanvasMenu; 
+  createConstraintsCanvasShapeMenu(shape){
+    // Show the context menu. 
+    let constraintsCanvasBoundingBox = document.getElementById("constraints-canvas").getBoundingClientRect();
 
+    let left = 0; 
+    let top = 0; 
+    if(shape.location) {
+      left = constraintsCanvasBoundingBox.x + shape.location.x; 
+      top = constraintsCanvasBoundingBox.y + shape.location.y;
+    }
+
+    let fabricShape = shape.shape; 
+    if(fabricShape){
+      left = constraintsCanvasBoundingBox.x + fabricShape.left + fabricShape.width + 5; 
+      top = constraintsCanvasBoundingBox.y + fabricShape.top;       
+    }
+
+    return <ConstraintsCanvasMenu key={shape.name} menuID={shape.name} left={left} top={top} 
+                                      menuShown={this.state.menuShown[shape.name]} menuTrigger={shape} />; 
+  }
+
+  render () {
+    const shapes = this.constraintsShapes; 
     // Process the queue of shapes to add to the canvas
 	  return (
       <div className="panel-body" id="constraints-canvas-container" tabIndex="1">
-        <div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
-          {activeCanvasMenu}
+        <div className="constraints-canvas-menus">
+        {shapes.map(function(shape, index){
+             return this.createConstraintsCanvasShapeMenu(shape);
+          }.bind(this))
+        }
         </div>
         <canvas id="constraints-canvas" width={this.canvasWidth + "px"} height={this.canvasHeight + "px"}>
         </canvas>
