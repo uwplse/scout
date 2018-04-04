@@ -127,7 +127,11 @@ class Solution(object):
 						element["size"]["width"] = width
 						element["size"]["height"] = height
 
-				if "size" in element and "location" in element: 
+				if "size" in element and "location" in element:
+					print(adj_y)
+					print(adj_x)
+					print(width)
+					print(height) 
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
 
 		cost = self.compute_symmetry_cost(cost_matrix)

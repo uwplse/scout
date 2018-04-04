@@ -112,8 +112,7 @@ export default class DesignCanvas extends React.Component {
           this.canvas.add(button); 
         }
         else if (element.type == "text") {
-          let fontSize = height/Constants.designCanvasScalingFactor(); // TODO: Hack. Fix this later
-          let text = FabricHelpers.getText(x,y,fontSize,{
+          let text = FabricHelpers.getText(x,y,element.size.height,{
             'cursor': 'hand', 
             'selectable': false, 
             'text': element["label"], 

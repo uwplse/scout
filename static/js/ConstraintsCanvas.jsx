@@ -185,6 +185,14 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   deleteShape(shape) {
+    if(shape.parent){
+      // Check if the group needs removed
+      if(shape.parent.children.length <= 2){
+        this.unparentGroup(shape.parent);
+        this.deleteShapeFromObjectChildren(shape, this.pageLevelShape);
+      }
+    }
+
     // Remove the shape from the canvas
     this.constraintsCanvas.remove(shape.shape); 
     let index = this.constraintsShapes.indexOf(shape); 
@@ -270,29 +278,25 @@ export default class ConstraintsCanvas extends React.Component {
     return false; 
   }
 
-  // toLeft(x1,y1,width1,height1,x2,y2,width2,height2) {
-  //   let padding = 20;
-  //   let right1 = x1 + width1; 
-  //   let bottom2 = y2 + height2; 
-  //   let bottom1 = y1 + height1; 
-  //   if(right1 > (x2 - padding) && right1 <= x2) {
-  //     // The shape is to the left hand side within the range for creating the labels constraint
-  //     if((y1 >= y2 && y1 <= bottom2) || (bottom1 >= y2 && bottom1 <= bottom2) 
-  //       || ((y1 <= y2) && (bottom1 >= bottom2 ))) {
-  //       // The bottom or top is overlapping with the shape as well
-  //       return true;
-  //     }
-  //   }
+  unparentGroup(group){
+    for(let i=0; i<group.children.length; i++) {
+      let child = group.children[i]; 
+      child.parent = undefined; 
 
-  //   return false;
-  // }
+      // TODO: hierarchies of groups
+      this.pageLevelShape.children.push(child); 
+    }
+
+    this.deleteShape(group);  
+    this.deleteShapeFromObjectChildren(group, this.pageLevelShape);     
+  }
 
   moveShape(shape) {
     // Check proximity of the shape to other elements 
     let shape_x = shape.shape.left; 
     let shape_y = shape.shape.top; 
-    let shape_width = shape.shape.width; 
-    let shape_height = shape.shape.height;
+    let shape_width = shape.shape.width * shape.shape.scaleX; 
+    let shape_height = shape.shape.height * shape.shape.scaleY;
 
     let grouping = false;
     let labels = false;
@@ -300,11 +304,11 @@ export default class ConstraintsCanvas extends React.Component {
       if(this.constraintsShapes[i].name != shape.name && this.constraintsShapes[i].type != "page") {
         let cShape_x = this.constraintsShapes[i].shape.left; 
         let cShape_y = this.constraintsShapes[i].shape.top; 
-        let cShape_width = this.constraintsShapes[i].shape.width; 
-        let cShape_height = this.constraintsShapes[i].shape.height; 
+        let cShape_width = this.constraintsShapes[i].shape.width * this.constraintsShapes[i].shape.scaleX; 
+        let cShape_height = this.constraintsShapes[i].shape.height * this.constraintsShapes[i].shape.scaleY; 
 
         if(this.constraintsShapes[i].type == "field") {
-          cShape_width = this.constraintsShapes[i].lineShape.width; 
+          cShape_width = this.constraintsShapes[i].lineShape.width * this.constraintsShapes[i].lineShape.scaleX; 
           cShape_height = this.constraintsShapes[i].lineShape.top - cShape_y; 
         }
 
@@ -350,15 +354,7 @@ export default class ConstraintsCanvas extends React.Component {
       if(shape.parent) {
         let parentGroup = shape.parent; 
         if(parentGroup.children.length <= 2) {
-          for(let i=0; i<parentGroup.children.length; i++) {
-            let child = parentGroup.children[i]; 
-            child.parent = undefined; 
-
-            // TODO: hierarchies of groups
-            this.pageLevelShape.children.push(child); 
-          }
-
-          this.deleteShape(parentGroup); 
+          this.unparentGroup(parentGroup);
         } else {
           // Remove the child from this group and update the group bounds
           shape.parent = undefined; 

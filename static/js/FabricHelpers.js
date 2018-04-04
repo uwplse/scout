@@ -26,7 +26,8 @@ class FabricHelpers {
 	        ry: 2, 
 	        left: left, 
 	        top: top, 
-	        selectable: options.selectable
+	        selectable: options.selectable, 
+	        lockScalingY: true
 	    });
 
 	    let textValue = options.text ? options.text : "BUTTON"; 
@@ -41,7 +42,9 @@ class FabricHelpers {
 	      fill: 'white', 
 	      left: left + 20, 
 	      top: top + 10, 
-	      selectable: options.selectable
+	      selectable: options.selectable,
+	      lockScalingY: true, 
+	      lockScalingX: true
 	    });
 
 	    return { button: rect, label: text }; 	
@@ -86,8 +89,7 @@ class FabricHelpers {
 	        top: top, 
 	        selectable: false, 
 	        hoverCursor: options.cursor, 
-	        selectable: options.selectable, 
-	        originY: 'center'
+	        selectable: options.selectable
 	      });
 
 	    return group; 
@@ -132,8 +134,9 @@ class FabricHelpers {
 	    var line = new fabric.Line([ left, top+25, left+width, top+25 ],{
 	    	fill: 'rgba(0,0,0,.26)',
 	        stroke: 'rgba(0,0,0,.26)', 
-	        strokeWidth: 1, 
-	        selectable: options.selectable
+	        strokeWidth: 2, 
+	        selectable: options.selectable, 
+	        lockScalingY: true
 	    });
 
 	    let textValue = "Field..."; 
@@ -146,7 +149,9 @@ class FabricHelpers {
 	      fill: 'rgba(0,0,0,.26)', 
 	      selectable: options.selectable, 
 	      left: left, 
-	      top: top
+	      top: top, 
+	      lockScalingX: true, 
+	      lockScalingY: true
 	    });
 
 	    return { field: text, line: line };
@@ -162,7 +167,7 @@ class FabricHelpers {
 	    var line = new fabric.Line([ 0, scaledLineDistance, width, scaledLineDistance ],{
 	    	fill: 'rgba(0,0,0,.26)',
 	        stroke: 'rgba(0,0,0,.26)', 
-	        strokeWidth: 1, 
+	        strokeWidth: 2, 
 	        scaleX: scaleX, 
 	        scaleY: scaleY
 	    });

@@ -3,28 +3,37 @@ import solver_helpers as sh
 
 # Shape classes for constructing the element hierarchy 
 class Shape(object):
-	def __init__(self, shape_id, element=None, locks=None, order=None): 
+	def __init__(self, shape_id, element=None): 
 		self.shape_id = shape_id
 		self.element = element
 		self.x = sh.Variable(shape_id, "x")
 		self.y = sh.Variable(shape_id, "y")
-		self.locks = locks
-		self.order = order
+		self.order = "important"
+		self.locks = None
+
+		if element is not None:
+			if "locks" in element:
+				self.locks = element["locks"]
+
+			if "order" in element:
+				self.order = element["order"]
+
+			if "size" in element:
+				self.width = element["size"]["width"]
+				self.height = element["size"]["height"]
+
+			if "location" in element:
+				self.orig_x = element["location"]["x"]
+				self.orig_y = element["location"]["y"]
 
 class LeafShape(Shape): 
-	def __init__(self, shape_id, element, orig_bounds, locks=None, order=None): 
-		Shape.__init__(self, shape_id, element, locks, order)
+	def __init__(self, shape_id, element): 
+		Shape.__init__(self, shape_id, element)
 		self.type = "leaf"
 
-		orig_x,orig_y,orig_width,orig_height = orig_bounds
-		self.width = orig_width 
-		self.height = orig_height
-		self.orig_x = orig_x
-		self.orig_y = orig_y
-
 class ContainerShape(Shape): 
-	def __init__(self, shape_id, element=None, order="important", locks=None): 
-		Shape.__init__(self, shape_id, element, locks, order)
+	def __init__(self, shape_id, element=None): 
+		Shape.__init__(self, shape_id, element)
 		self.type = "container"
 		self.children = []
 		self.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
@@ -41,7 +50,7 @@ class ContainerShape(Shape):
 		self.height = Int(shape_id + "_height")
 
 		if self.locks is not None: 
-			for lock in locks: 
+			for lock in self.locks:
 				# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
 				if lock == "arrangement": 
 					self.arrangement_value = element["arrangement"]
@@ -53,22 +62,23 @@ class ContainerShape(Shape):
 	def add_child(self, child): 
 		self.children.append(child)
 
+	def add_children(self, children):
+		self.children.extend(children)
+
 	def remove_child(self, child):
 		self.children.remove(child)
 
 class CanvasShape(Shape):
-	def __init__(self, shape_id, orig_bounds): 
+	def __init__(self, shape_id, width, height): 
 		Shape.__init__(self, shape_id)
 		self.children = []
 		self.type = "canvas"
 		self.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-
-		orig_x,orig_y,orig_width,orig_height = orig_bounds
-		self.width = orig_width 
-		self.height = orig_height
-		self.orig_x = orig_x
-		self.orig_y = orig_y
+		self.width = width
+		self.height = width
+		self.orig_x = 0
+		self.orig_y = 0
 
 	def add_child(self, child): 
 		self.children.append(child)

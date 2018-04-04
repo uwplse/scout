@@ -17,7 +17,7 @@ export default class PageContainer extends React.Component {
     this.canvas = undefined; 
 
     // This is the set of design canvases in the design window
-    this.state = { designCanvases: [], addedShapesQueue: [] };   
+    this.state = { designCanvases: [], constraintChanged: false };   
   }
 
   componentDidMount() {
@@ -65,14 +65,13 @@ export default class PageContainer extends React.Component {
         let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
         let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
         if(shape.type == "field"){
-          roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX); 
-          roundedHeight = Math.round((shape.lineShape.top * shape.lineShape.scaleY) - fabricShape.top); 
+          roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX);
+          roundedHeight = shape.lineShape.top - fabricShape.top; 
         }
 
         jsonShape["size"] = {
           "width": roundedWidth, 
           "height": roundedHeight
-
         }        
       }
 
@@ -107,6 +106,9 @@ export default class PageContainer extends React.Component {
     // Notify the constraintss canvas
     this.refs.constraintsCanvas.updateConstraintsCanvasShape(constraintsCanvasShape)
 
+    this.setState({
+      constraintChanged: true
+    });
 
     let jsonShapes = this.getShapesJSON(); 
     var self = this;
@@ -157,12 +159,17 @@ export default class PageContainer extends React.Component {
    // Send an ajax request to the server 
    // Solve for the new designs
     $.post("/solve", {"elements": jsonShapes}, this.parseSolutions, 'text');
+
+    // Reset the state of the designs canvas
+    this.setState({
+      constraintChanged: false
+    });
   }
 
   render () {
     const designs = this.state.designCanvases;
     const errorMessageShown = this.state.errorMessageShown; 
-    const addedShapes = this.state.addedShapesQueue; 
+    const constraintChanged = this.state.constraintChanged;
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
@@ -189,7 +196,7 @@ export default class PageContainer extends React.Component {
             </div>
             <ConstraintsCanvas ref="constraintsCanvas" />
           </div>
-          <div className="panel panel-default designs-container">
+          <div className={"panel designs-container " + (constraintChanged ? "panel-danger" : "panel-default")}>
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs</h3>
             </div>

@@ -21,10 +21,11 @@ class Solver(object):
 		self.elements = elements
 		self.canvas_width = canvas_width
 		self.canvas_height = canvas_height
-		self.shapes, self.root = self.init_shape_hierarchy(canvas_width, canvas_height)
+		self.shapes, self.root = self.build_shape_hierarchy()
+		self.root = self.root[0]
 
 		# Canvas contains all the elements as direct children for now
-		self.canvas_shape = shape_classes.CanvasShape("canvas", [0, 0, canvas_width, canvas_height])	
+		self.canvas_shape = shape_classes.CanvasShape("canvas", canvas_width, canvas_height)
 		self.canvas_shape.add_child(self.root)
 		self.variables = self.init_variables()
 		self.previous_solution = IntVector('PrevSolution', len(self.variables))
@@ -52,50 +53,69 @@ class Solver(object):
 		self.branches_pruned = 0
 		self.z3_calls = 0
 
-	def init_shape_hierarchy(self, canvas_width, canvas_height):
+	def build_shape_hierarchy(self): 
+		elements_queue = self.elements[:]
+
+		for i in range(0, len(self.elements)):
+			element = self.elements[i]
+
+			# Process any elements with children first
+			if "children" in element and not "processed" in element: 
+				children = element["children"]
+				self.process_children(element, children, elements_queue)
+
+		# After reparenting of children is complete, process the remaining elements in 
+		# elements queue to create the shape hierarchy
 		shapes = []
+		root = self.construct_shape_hierarchy(elements_queue, shapes)
+		return shapes,root
 
-		# Root will contain the root  level shapes (just below the canvas)
-		for element in self.elements:
-			locks = []
-			if "locks" in element:
-				locks = element["locks"]
+	def process_children(self, element, children, elements): 
+		new_children = []
+		for child_id in children: 
+			# Find the element with this id 
+			child_element = [child for child in elements if child["name"] == child_id][0]
+			new_children.append(child_element)
 
+			# If it does not have any children of its own, remove it from the queue
+			if "children" in child_element: 
+				self.process_children(child_element, child_element["children"], elements)
+
+			# then remove the element from the elements queue
+			child_index = elements.index(child_element)
+			elements.pop(child_index)
+
+			child_element["processed"] = True
+
+		element["children"] = new_children	
+
+	def construct_shape_hierarchy(self, elements, shapes):
+		shape_hierarchy = []
+		for i in range(0, len(elements)): 
+			element = elements[i]
+
+			sub_hierarchy = None
+			if "children" in element: 
+				children = element["children"]
+				sub_hierarchy = self.construct_shape_hierarchy(children, shapes)
+
+			shape_object = None
 			if element["type"] == "page":	
-				root_id = uuid.uuid4().hex
-				root = shape_classes.ContainerShape(element["name"], element, locks=locks)
-				shapes.append(root)
+				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shapes.append(shape_object)
+			elif element["type"] == "group":
+				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shapes.append(shape_object)
 			else:
-				if element["type"] != "group":
-					element_orig_bounds = [element["location"]["x"],element["location"]["y"],element["size"]["width"],element["size"]["height"]]
+				shape_object = shape_classes.LeafShape(element["name"], element)
+				shapes.append(shape_object)
 
-					order = None
-					if "order" in element:
-						order = element["order"]
+			if sub_hierarchy is not None: 
+				shape_object.add_children(sub_hierarchy)
 
-					element_shape = shape_classes.LeafShape(element["name"], element, element_orig_bounds, locks=locks, order=order)
-					shapes.append(element_shape)
-					root.add_child(element_shape)
+			shape_hierarchy.append(shape_object)
 
-		for element in self.elements: 
-			if element["type"] == "group":
-				locks = []
-				if "locks" in element:
-					locks = element["locks"]
-
-				group_shape = shape_classes.ContainerShape(element["name"], element, locks=locks)
-
-				# Do some reparenting of the children for solving
-				# TODO: Refactor for group hierarchies
-				children = element["children"] 
-				for child_id in children: 
-					child_shape = [shp for shp in root.children if shp.shape_id == child_id][0]
-					group_shape.add_child(child_shape)
-					root.remove_child(child_shape)
-				shapes.append(group_shape)
-				root.add_child(group_shape)
-
-		return shapes, root
+		return shape_hierarchy
 
 	# initialize domains
 	def init_domains(self):
