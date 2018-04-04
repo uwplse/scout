@@ -103,7 +103,7 @@ class Solver(object):
 			if element["type"] == "page":	
 				shape_object = shape_classes.ContainerShape(element["name"], element)
 				shapes.append(shape_object)
-			elif element["type"] == "group":
+			elif element["type"] == "group" or element["type"] == "labels":
 				shape_object = shape_classes.ContainerShape(element["name"], element)
 				shapes.append(shape_object)
 			else:

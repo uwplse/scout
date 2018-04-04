@@ -256,26 +256,14 @@ export default class ConstraintsCanvas extends React.Component {
     });
   }
 
-  distanceWithinGroupingThreshold(x1,y1,width1,height1,x2,y2,width2,height2) {
+  distanceWithin(x1,y1,width1,height1,x2,y2,width2,height2,padding){
     // return the distance between the shapes 
-    let padding = 10; 
     if(!(x1 > (x2 + width2 + padding) || y1 > (y2 + height2 + padding) || x2 > (x1 + width1 + padding) || y2 > (y1 + height1 + padding))) {
       // They are overlapping 
       return true;
     }
 
-    return false;
-  }
-
-  distanceWithinLabelsThreshold(x1,y1,width1,height1,x2,y2,width2,height2) {
-    // return the distance between the shapes 
-    let padding = 20; 
-    if(!(x1 > (x2 + width2 + padding) || y1 > (y2 + height2 + padding) || x2 > (x1 + width1 + padding) || y2 > (y1 + height1 + padding))) {
-      // They are overlapping 
-      return true;
-    }
-
-    return false; 
+    return false;  
   }
 
   unparentGroup(group){
@@ -291,6 +279,19 @@ export default class ConstraintsCanvas extends React.Component {
     this.deleteShapeFromObjectChildren(group, this.pageLevelShape);     
   }
 
+  createNewHierarchy(shape, constraintsShape, groupType="group"){
+    if(!shape.parent){
+      if (constraintsShape.parent) {
+        let parentGroup = constraintsShape.parent; 
+        // Move this shape into the group and update the group bounding box
+        this.addShapeToGroup(shape, parentGroup);              
+      }
+      else {
+        this.addShapeToNewGroup(constraintsShape, shape, groupType); 
+      }
+    } 
+  }
+
   moveShape(shape) {
     // Check proximity of the shape to other elements 
     let shape_x = shape.shape.left; 
@@ -299,54 +300,40 @@ export default class ConstraintsCanvas extends React.Component {
     let shape_height = shape.shape.height * shape.shape.scaleY;
 
     let grouping = false;
-    let labels = false;
     for(let i=0; i<this.constraintsShapes.length; i++) {
-      if(this.constraintsShapes[i].name != shape.name && this.constraintsShapes[i].type != "page") {
-        let cShape_x = this.constraintsShapes[i].shape.left; 
-        let cShape_y = this.constraintsShapes[i].shape.top; 
-        let cShape_width = this.constraintsShapes[i].shape.width * this.constraintsShapes[i].shape.scaleX; 
-        let cShape_height = this.constraintsShapes[i].shape.height * this.constraintsShapes[i].shape.scaleY; 
+      let constraintsShape = this.constraintsShapes[i];
+      if(constraintsShape.name != shape.name && constraintsShape.type != "page") {
+        let cShape_x = constraintsShape.shape.left; 
+        let cShape_y = constraintsShape.shape.top; 
+        let cShape_width = constraintsShape.shape.width * constraintsShape.shape.scaleX; 
+        let cShape_height = constraintsShape.shape.height * constraintsShape.shape.scaleY; 
 
         if(this.constraintsShapes[i].type == "field") {
-          cShape_width = this.constraintsShapes[i].lineShape.width * this.constraintsShapes[i].lineShape.scaleX; 
-          cShape_height = this.constraintsShapes[i].lineShape.top - cShape_y; 
+          cShape_width = constraintsShape.lineShape.width * constraintsShape.lineShape.scaleX; 
+          cShape_height = constraintsShape.lineShape.top - cShape_y; 
         }
 
-        if (this.constraintsShapes[i].type != "group" 
-          && this.distanceWithinGroupingThreshold(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height)) {
-          grouping = true;
-          if(!shape.parent){
-            if (this.constraintsShapes[i].parent) {
-              let parentGroup = this.constraintsShapes[i].parent; 
-              // Move this shape into the group and update the group bounding box
-              this.addShapeToGroup(shape, parentGroup);              
-            }
-            else {
-              this.addShapeToNewGroup(this.constraintsShapes[i], shape); 
+        // The element is not already in an existing group 
+        let overlapping_threshold = 0; 
+        let grouping_threshold = 10; 
+        let labeling_threshold = 20;
 
-              // Don't look at any more shapes 
-            }
+        if (shape.type == "text" && this.distanceWithin(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height,labeling_threshold)) {
+          grouping = true;
+          // Only text elements can be a label
+          if(!shape.parent && !constraintsShape.parent){
+            this.addShapeToNewGroup(shape, constraintsShape, "labels");
           }
+
           break;
         }
-        else if (shape.type == "text" && this.distanceWithinLabelsThreshold(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height)) {
-          labels = true;
-          // A labels relationship can only be created with a text element
-          // Here is where we should create the labels relationship
-          if(!shape.labels) {
-            this.addShapeToLabelsGroup(shape, this.constraintsShapes[i]);            
-          }
-
+        else if (constraintsShape.type != "group" && this.distanceWithin(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height,grouping_threshold)) {
+          // Overlapping add it into the current group
+          grouping = true;
+          this.createNewHierarchy(shape, constraintsShape);
           break;
         }
       }
-    }
-
-    if(!labels && shape.type == "text" && shape.labels) {
-      // Delete the group shape from the canvas
-      this.constraintsCanvas.remove(shape.labelsGroup); 
-      delete shape.labels; 
-      delete shape.labelsGroup; 
     }
 
     if(!grouping) {
@@ -356,18 +343,8 @@ export default class ConstraintsCanvas extends React.Component {
         if(parentGroup.children.length <= 2) {
           this.unparentGroup(parentGroup);
         } else {
-          // Remove the child from this group and update the group bounds
-          shape.parent = undefined; 
-          let shapeIndex = parentGroup.children.indexOf(shape); 
-          parentGroup.children.splice(shapeIndex, 1); 
-
-          // Append it back to the page level object children for now (Until we support hierarchies of groups)
-          this.pageLevelShape.children.push(shape); 
-
-          // Update the parent group bounding box
-          let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
-          parentGroup.shape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
-        }
+          this.removeShapeFromGroup(shape, parentGroup);
+        } 
       }
     }
   }
@@ -429,44 +406,12 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
   }
 
-  addShapeToLabelsGroup(shape, labeledShape) {
-    let shapeToLabel = labeledShape; 
-    if(shape.parent) {
-      shapeToLabel = shape.parent; 
-    }
-
-    shape.labels = shapeToLabel; 
-
-    // Make a new group shape
-    // It wont' be added to the page, but just used to calculate the bounding box
-    let group = {
-      "children": []
-    }
-
-    group.children.push(shape); 
-    group.children.push(shapeToLabel);
-
-    // Create a new group shape to be the bounding box 
-    let groupBoundingBox = this.getGroupBoundingBox(group); 
-    let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-10, groupBoundingBox.y-10, groupBoundingBox.width+20, groupBoundingBox.height+20, {
-      selectable: false, 
-      stroke: 'red'
-    }); 
-
-    // Add them to the page collection of shape objects
-    shape.labelsGroup = groupRect; 
-    this.constraintsCanvas.add(groupRect); 
-
-    // Move the group to the back layer
-    this.constraintsCanvas.sendToBack(groupRect);
-  }
-
   // Adds two shapes into a new group and adds the new group to the canvas
-  addShapeToNewGroup(shape1, shape2) {
+  addShapeToNewGroup(shape1, shape2, groupType="group") {
     // Create a new group for the parent container
     let group = {
       "name": _.uniqueId(),
-      "type": "group", 
+      "type": groupType, 
       "children": []
     }
 
@@ -481,10 +426,11 @@ export default class ConstraintsCanvas extends React.Component {
     this.pageLevelShape.children.push(group); 
 
     // Create a new group shape to be the bounding box 
+    let color = groupType == "labels" ? "red" : "blue";
     let groupBoundingBox = this.getGroupBoundingBox(group); 
     let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-10, groupBoundingBox.y-10, groupBoundingBox.width+20, groupBoundingBox.height+20, {
       selectable: false, 
-      stroke: 'blue'
+      stroke: color
     });
 
     group.shape = groupRect; 
@@ -496,6 +442,20 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Move the group to the back layer
     this.constraintsCanvas.sendToBack(groupRect);
+  }
+
+  removeShapeFromGroup(shape, parentGroup){
+    // Remove the child from this group and update the group bounds
+    shape.parent = undefined; 
+    let shapeIndex = parentGroup.children.indexOf(shape); 
+    parentGroup.children.splice(shapeIndex, 1); 
+
+    // Append it back to the page level object children for now (Until we support hierarchies of groups)
+    this.pageLevelShape.children.push(shape); 
+
+    // Update the parent group bounding box
+    let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
+    parentGroup.shape.set({left: groupBoundingBox.x-5, top: groupBoundingBox.y-5, width: groupBoundingBox.width+10, height: groupBoundingBox.height+10}); 
   }
 
   createConstraintsCanvasShapeMenu(shape){
