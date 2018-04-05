@@ -20,6 +20,10 @@ div:focus {
 	margin-left: 10px; 
 }
 
+.panel-body {
+	padding: 5;
+}
+
 /**
   General styles
  **/
@@ -58,7 +62,7 @@ div:focus {
 	border-right: 1px solid #ccc;
 }
 
-.designs-container {
+.design-canvas-container {
 	flex: 1 1 0px;
     align-self: stretch;
     margin-right: 10px;
@@ -75,6 +79,15 @@ div:focus {
 	border: 1px solid #ccc;
 }
 
+.design-canvas-header > a {
+	color: #000;
+	text-decoration: none; 
+}
+
+.design-canvas-header > a:hover {
+	text-decoration: none;
+}
+
 .design-body > .canvas-container {
 	display: inline-block;
 	margin: 5px;
@@ -83,6 +96,19 @@ div:focus {
 .design-body {
 	height: 84%;
     overflow: auto;
+}
+
+.panel-heading .accordion-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings'; 
+    content: "\e114";
+    float: right;
+    color: grey;
+}
+
+.panel-heading .accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
 
 .canvas-menu-list {

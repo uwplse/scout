@@ -3,11 +3,13 @@ import React from "react";
 import FabricHelpers from "./FabricHelpers.js"; 
 import CanvasMenu from "./CanvasMenu"; 
 import Constants from "./Constants"
+import SaveMenu from "./SaveMenu";
 
 export default class DesignCanvas extends React.Component {
   constructor(props) {
   	super(props);
   	this.showConstraintsContextMenu.bind(this); 
+    this.saveOrTrashDesignCanvas.bind(this);
 
   	// Shapes to be drawn onto the canvas
   	this.elements = props.elements; 
@@ -20,7 +22,9 @@ export default class DesignCanvas extends React.Component {
   	this.state = {
   		menuShown: false, 
   		menuPosition: { x: 0, y: 0 }, 
-  		activeCanvasMenu: undefined
+  		activeCanvasMenu: undefined,
+      saveMenu: undefined, 
+      saveMenuShown: false
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -159,12 +163,32 @@ export default class DesignCanvas extends React.Component {
     this.canvas.sendToBack(pageFabricShape); 
   }
 
+  saveOrTrashDesignCanvas(action) {
+    if(action == "save") {
+      this.props.saveDesignCanvas(this.id);
+    }
+    else {
+      this.props.trashDesignCanvas(this.id);
+    }
+  }
+
   onRightClick(e){
     // show a menu 
     e.preventDefault();
 
-    // Then save the design to the list of saved canvases
-    this.props.saveDesignCanvas(this.id); 
+    // Check for the status of menuShown to see if we need to close out another menu before opening this one
+    if(this.state.saveMenuShown) {
+      this.setState({
+        saveMenu: undefined, 
+        saveMenuShown: false
+      }); 
+    }
+
+    // The menuTrigger is the JSON of the shape that triggered the open
+    this.setState({
+      saveMenu: <SaveMenu left={e.clientX} top={e.clientY} menuAction={this.saveOrTrashDesignCanvas.bind(this)} />,
+      saveMenuShown: true
+    });
   }
 
   render () {
@@ -172,11 +196,16 @@ export default class DesignCanvas extends React.Component {
    	let menuPosition = this.state.menuPosition; 
    	let activeCanvasMenu = this.state.activeCanvasMenu; 
     let contextMenu = this.onRightClick;
+    let saveMenuShown = this.state.saveMenuShown; 
+    let saveMenu = this.state.saveMenu; 
     return  (
       <div onContextMenu={(this.saved ? undefined : contextMenu.bind(this))} className="canvas-container" id={"canvas-box-" + this.id}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
   			</div>
+        <div> 
+          {saveMenu}
+        </div>
 	    	<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width={this.canvasWidth} height={this.canvasHeight}>
 	     </canvas>
 	    </div>); 
