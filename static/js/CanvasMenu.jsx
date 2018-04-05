@@ -80,10 +80,10 @@ export default class CanvasMenu extends React.Component {
       pageItems = this.getMenuItems(ConstraintActions.pageConstraints); 
     }
 
-    if(this.menuTrigger.type == "element" || this.menuTrigger.type == "group") {
-      // Relational constraints
-      relationalItems = this.getRelationalMenuItems(); 
-    }
+    // if(this.menuTrigger.type == "element" || this.menuTrigger.type == "group") {
+    //   // Relational constraints
+    //   relationalItems = this.getRelationalMenuItems(); 
+    // }
 
 	  return (
       <div className="canvas-menu">

@@ -14,6 +14,9 @@ export default class DesignCanvas extends React.Component {
   	this.id = props.id; 
   	this.elementDict = {}; 
 
+    // Is this a saved design canvas?
+    this.saved = props.saved; 
+
   	this.state = {
   		menuShown: false, 
   		menuPosition: { x: 0, y: 0 }, 
@@ -156,17 +159,27 @@ export default class DesignCanvas extends React.Component {
     this.canvas.sendToBack(pageFabricShape); 
   }
 
+  onRightClick(e){
+    // show a menu 
+    e.preventDefault();
+
+    // Then save the design to the list of saved canvases
+    this.props.saveDesignCanvas(this.id); 
+  }
+
   render () {
    	let menuShown = this.state.menuShown; 
    	let menuPosition = this.state.menuPosition; 
    	let activeCanvasMenu = this.state.activeCanvasMenu; 
-    return  (<div className="canvas-container" id={"canvas-box-" + this.id}> 
-    			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
-    				{activeCanvasMenu}
-    			</div>
-	    		<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width={this.canvasWidth} height={this.canvasHeight}>
-	            </canvas>
-	         </div>); 
+    let contextMenu = this.onRightClick;
+    return  (
+      <div onContextMenu={(this.saved ? undefined : contextMenu.bind(this))} className="canvas-container" id={"canvas-box-" + this.id}> 
+  			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
+  				{activeCanvasMenu}
+  			</div>
+	    	<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width={this.canvasWidth} height={this.canvasHeight}>
+	     </canvas>
+	    </div>); 
   }
 }
 

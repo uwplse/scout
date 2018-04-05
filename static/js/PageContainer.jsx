@@ -17,7 +17,9 @@ export default class PageContainer extends React.Component {
     this.canvas = undefined; 
 
     // This is the set of design canvases in the design window
-    this.state = { designCanvases: [], constraintChanged: false };   
+    this.state = { designCanvases: [], savedDesignCanvases: [], constraintChanged: false };   
+    this.designCanvasMap = {}; 
+    this.savedDesignCanvasesMap = {};
   }
 
   componentDidMount() {
@@ -130,6 +132,27 @@ export default class PageContainer extends React.Component {
     }, 'text');
   }
 
+  saveDesignCanvas(designCanvasID){
+    // Retrieve a design canvas by its ID
+    let designCanvas = this.designCanvasMap[designCanvasID]; 
+
+    // Remove it from the list of design canvas components and from the map 
+    let designCanvasIndex = this.state.designCanvases.indexOf(designCanvas); 
+    this.state.designCanvases.splice(designCanvasIndex, 1); 
+    delete this.designCanvasMap[designCanvasID]; 
+
+    // Move the design into the collection of saved design canvas components
+    this.state.savedDesignCanvases.push(designCanvas);  
+    this.savedDesignCanvasesMap[designCanvasID] = designCanvas; 
+
+
+    // Update the state
+    this.setState({
+      designCanvases: this.state.designCanvases, 
+      savedDesignCanvases: this.state.savedDesignCanvases
+    }); 
+  }
+
   parseSolutions(requestData) {
     let resultsParsed = JSON.parse(requestData); 
     let solutions = resultsParsed.elements;
@@ -140,7 +163,12 @@ export default class PageContainer extends React.Component {
       
       // Attach the JSON shapes for this canvas instance to the corresponding constraints canvas shapes
       this.refs.constraintsCanvas.linkSolutionShapesToConstraintShapes(elements); 
-      designCanvasList.push(<DesignCanvas key={solution.id} id={solution.id} elements={elements} updateConstraintsCanvas={this.updateConstraintsCanvasShape}/>); 
+
+      let designCanvas = <DesignCanvas key={solution.id} id={solution.id} elements={elements} 
+                              updateConstraintsCanvas={this.updateConstraintsCanvasShape}
+                              saveDesignCanvas={this.saveDesignCanvas.bind(this)} />; 
+      designCanvasList.push(designCanvas); 
+      this.designCanvasMap[solution.id] = designCanvas; 
     }
 
     this.setState({
@@ -170,6 +198,10 @@ export default class PageContainer extends React.Component {
     const designs = this.state.designCanvases;
     const errorMessageShown = this.state.errorMessageShown; 
     const constraintChanged = this.state.constraintChanged;
+    const saved = this.state.savedDesignCanvases; 
+    const numSaved = this.state.savedDesignCanvases.length; 
+    const trashed = this.state.trashedDesignCanvases; 
+    
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
@@ -196,12 +228,36 @@ export default class PageContainer extends React.Component {
             </div>
             <ConstraintsCanvas ref="constraintsCanvas" />
           </div>
-          <div className={"panel designs-container " + (constraintChanged ? "panel-danger" : "panel-default")}>
-            <div className="panel-heading"> 
-              <h3 className="panel-title">Designs</h3>
+          <div className="panel-group design-canvas-container" id="accordion">
+            <div className="panel designs-container panel-default">
+              <div className="panel-heading design-canvas-header"> 
+                <h3 className="panel-title">
+                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseOne" href="#collapseOne">Saved Designs</a>
+                  <span className="saved-design-canvas-count"> ({numSaved})</span>
+                </h3>
+              </div>
+              <div id="collapseOne" className="panel-collapse collapse" data-parent="#accordion">
+                <div className="panel-body design-body">
+                  {saved}
+                </div>
+              </div>
             </div>
-            <div className="panel-body design-body">
-              {designs}
+            <div className={"panel designs-container " + (constraintChanged ? "panel-danger" : "panel-default")}>
+              <div className="panel-heading design-canvas-header"> 
+                <h3 className="panel-title">
+                  <a className="accordion-toggle" data-toggle="collapse" href="#collapseTwo">Designs</a>
+                </h3>
+              </div>
+              <div id="collapseTwo" className="panel-collapse collapse" data-parent="#accordion" >
+                <div className="panel-body design-body">
+                  {designs}
+                </div>
+              </div>
+              <div id="collapseThree" className="panel-collapse collapse show" data-parent="#accordion" >
+                <div className="panel-body design-body">
+                  {designs}
+                </div>
+              </div>
             </div>
           </div>
         </div>
