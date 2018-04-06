@@ -238,8 +238,7 @@ export default class PageContainer extends React.Component {
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
-            <button type="button" className="btn btn-default navbar-btn" onClick={this.getMoreDesigns}>Get Designs</button>
-            { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
+            Project Layout
           </div>
          </div>
         </nav>
@@ -276,7 +275,7 @@ export default class PageContainer extends React.Component {
             <div className="panel designs-container panel-default">
               <div className="panel-heading design-canvas-header"> 
                 <h3 className="panel-title">
-                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseTWo" href="#collapseTwo">Trashed Designs</a>
+                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseTwo" href="#collapseTwo">Trashed Designs</a>
                   <span className="saved-design-canvas-count"> ({numTrashed})</span>
                 </h3>
               </div>
@@ -291,6 +290,8 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">
                   <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseThree" href="#collapseThree">Design Ideas</a>
                   <span className="saved-design-canvas-count"> ({numDesigns})</span>
+                  <button type="button" className="btn btn-default navbar-btn" onClick={this.getMoreDesigns}>{(numDesigns == 0 ? "Get Designs" : "Show More")}</button>
+                  { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
                 </h3>
               </div>
               <div id="collapseThree" className="panel-collapse collapse show" data-parent="#accordion" >
