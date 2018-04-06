@@ -45,7 +45,7 @@ class Solver(object):
 			self.cb.init_location_locks(shape)
 
 		# Initialize the previous solution constraints
-		# self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
 
 		# Timing variables to measure performance for various parts
 		self.time_z3 = 0
@@ -103,7 +103,7 @@ class Solver(object):
 
 			shape_object = None
 			if element["type"] == "canvas": 
-				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shape_object = shape_classes.CanvasShape(element["name"], element)
 				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "page":	
 				shape_object = shape_classes.ContainerShape(element["name"], element)
@@ -145,7 +145,7 @@ class Solver(object):
 			
 			if shape.type == "canvas":
 				last.append(shape.variables.alignment)
-				last.append(shape.variables.Justification)
+				last.append(shape.variables.justification)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)

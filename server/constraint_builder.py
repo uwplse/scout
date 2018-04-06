@@ -16,38 +16,48 @@ class ConstraintBuilder(object):
 		# So we can override the add method for debugging
 		self.solver = Solver(solver)
 
-	# def init_previous_solution_constraints(self, previous_solutions, shapes): 
-	# 	# Saved solutions should not appear again in the results
-	# 	saved = previous_solutions["saved"]
-	# 	for saved_solution in saved: 
-	# 		elements = saved_solution["elements"]
+	def init_previous_solution_constraints(self, previous_solutions, shapes): 
+		# Saved solutions should not appear again in the results
+		saved = previous_solutions["saved"]
+		for saved_solution in saved: 
+			elements = saved_solution["elements"]
+			all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
+			self.solver.add(Not(And(all_values)))
 
+		designs = previous_solutions["designs"]
+		for design_solution in designs: 
+			elements = design_solution["elements"]
+			all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
+			self.solver.add(Not(And(all_values)))
 
-				# The next solution cannot be the exact same set of assignments as the current solution
-		# These are cumulative
-		# all_values = []
-		# previous_solution_values = []
-		# for v_i in range(0, len(self.variables)): 
-		# 	variable = self.variables[v_i]
-		# 	# Get the value of the variable out of the model 
-		# 	variable_value = model[variable.z3]
-		# 	variable_value = variable_value.as_string()
-		# 	variable_value = int(variable_value)
-		# 	all_values.append(variable.z3 == variable_value)
-		# 	previous_solution_values.append(self.previous_solution[v_i] == variable_value)
+		trash = previous_solutions["trashed"]
+		for trashed_solution in trash: 
+			elements = trashed_solution["elements"]
+			all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
+			self.solver.add(Not(And(all_values)))
 
-		# self.solver.add(Not(And(all_values)))
+	def get_previous_solution_constraints_from_elements(self, shapes, elements):
+		all_values = []
+		for element in elements: 
+			# Get the shape corresponding to the element name
+			shape = shapes[element["name"]]
+			variables = shape.variables.toDict()
+			if element["type"] == "page" or element["type"] == "group" or element["type"] == "canvas": 
+				for variable_key in variables.keys(): 
+					variable = variables[variable]
+					all_values.append(variable.z3 == element[variable_key])
+		return all_values
 
 	def init_canvas_constraints(self, canvas): 
-		alignment = canvas.variables.alignment.z3
-		justification = canvas.variables.justification.z3
+		alignment = canvas.variables.alignment
+		justification = canvas.variables.justification
 		canvas_x = canvas.variables.x.z3
 		canvas_y = canvas.variables.y.z3
 
-		self.solver.add(alignment >= 0, 'canvas_alignment domain lowest')
-		self.solver.add(alignment < len(alignment.domain), 'canvas_alignment domain highest')
-		self.solver.add(justification >= 0, 'canvas_justification domain lowest')
-		self.solver.add(justification < len(justification.domain), 'canvas justification domain highest')
+		self.solver.add(alignment.z3 >= 0, 'canvas_alignment domain lowest')
+		self.solver.add(alignment.z3 < len(alignment.domain), 'canvas_alignment domain highest')
+		self.solver.add(justification.z3 >= 0, 'canvas_justification domain lowest')
+		self.solver.add(justification.z3 < len(justification.domain), 'canvas justification domain highest')
 
 		child_shapes = canvas.children
 		if len(child_shapes) > 0: 
@@ -99,7 +109,6 @@ class ConstraintBuilder(object):
 		self.arrange_container(container)
 		self.align_container(container)
 		self.non_overlapping(container)
-		self.init_container_locks(container)
 
 	def init_container_locks(self, container): 
 		# Add constraints for all of the locked properties
@@ -116,6 +125,7 @@ class ConstraintBuilder(object):
 					self.solver.add(shape.variables.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
 
 	def non_overlapping(self, container): 
+		proximity = container.variables.proximity.z3
 		child_shapes = container.children 
 		for i in range(0, len(child_shapes)): 
 			for j in range(0, len(child_shapes)): 
@@ -151,7 +161,7 @@ class ConstraintBuilder(object):
 			return child_shapes[tallest_i].height
 
 	def justify_canvas(self, canvas):
-		justification = canvas.variables.justification.z3
+		justification = canvas.variables.justification
 		canvas_y = canvas.variables.y.z3
 		
 		first_child = canvas.children[0]
@@ -160,8 +170,8 @@ class ConstraintBuilder(object):
 		# Canvas justification (because the canvas is the only type of container right now not sizing to its contents)
 		t_index = justification.domain.index("top")
 		c_index = justification.domain.index("center")
-		is_top = justification == t_index
-		is_center = justification == c_index
+		is_top = justification.z3 == t_index
+		is_center = justification.z3 == c_index
 		top_justified = child_y == canvas_y
 		bottom_justified = (child_y + first_child.height) == (canvas_y + canvas.height)
 		center_justified = (child_y + (first_child.height/2)) == (canvas_y + (canvas.height/2))
@@ -169,20 +179,18 @@ class ConstraintBuilder(object):
 		# self.solver.assert_and_track(If(is_top, top_justified, If(is_center, center_justified, bottom_justified)), "canvas_justification")
 
 	def align_canvas(self, canvas):
-		alignment = canvas.variables.alignment.z3
+		alignment = canvas.variables.alignment
 		canvas_x = canvas.variables.x.z3
-		canvas_y = canvas.variables.y.z3
 
 		first_child = canvas.children[0]
 		child_x = first_child.variables.x.z3
-		child_y = first_child.variables.y.z3
 
 		# Canvas aligment is different than other containers since there is no concept of arrangement
 		l_index = alignment.domain.index("left")
 		c_index = alignment.domain.index("center")
-		is_left = alignment == l_index
-		is_center = alignment == c_index
-		left_aligned = child_x == canvas.x.z3
+		is_left = alignment.z3 == l_index
+		is_center = alignment.z3 == c_index
+		left_aligned = child_x == canvas_x
 		center_aligned = (child_x + (first_child.width/2)) == (canvas_x + (canvas.width/2))
 		right_aligned = (child_x + first_child.width) == (canvas_x + canvas.width)
 		self.solver.add(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), 'canvas_alignment')
@@ -206,10 +214,14 @@ class ConstraintBuilder(object):
 			horizontal_pairs = []
 			child_shapes = container.children
 			for s_index in range(0, len(child_shapes)-1): 
+				shape1 = child_shapes[s_index]
 				shape1_x = shape1.variables.x.z3
 				shape1_y = shape1.variables.y.z3
-				shape1 = child_shapes[s_index]
+
 				shape2 = child_shapes[s_index+1]
+				shape2_x = shape2.variables.x.z3
+				shape2_y = shape2.variables.y.z3
+
 				vertical_pair_y = (shape1_y + shape1.height + proximity) == shape2_y
 				vertical_pairs.append(vertical_pair_y)
 				horizontal_pair_x = (shape1_x + shape1.width + proximity) == shape2_x

@@ -58,29 +58,6 @@ class Solution(object):
 		return int(total)
 
 	def convert_to_json(self, shapes, model):
-		# for shape in shapes:
-		# 	if shape.type == "container":
-		# 		print(shape.shape_id)
-		# 		f_x = model[shape.x.z3]
-		# 		f_y = model[shape.y.z3]
-		# 		f_width = model[shape.width]
-		# 		f_height = model[shape.height]
-		# 		prox = model[shape.proximity.z3]
-
-		# 		adj_x = f_x.as_string()
-		# 		adj_y = f_y.as_string()
-		# 		adj_prox = prox.as_string()
-		# 		adj_prox = int(adj_prox)
-
-		# 		adj_x = int(adj_x)
-		# 		adj_y = int(adj_y)
-		# 		adj_width = f_width.as_string()
-		# 		adj_height = f_height.as_string()
-		# 		adj_width = int(adj_width)
-		# 		adj_height = int(adj_height)
-
-		# 		print(adj_x,adj_y,adj_width,adj_height)
-		# 		print(adj_prox)
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
 		new_elements = []
@@ -124,6 +101,11 @@ class Solution(object):
 						width = int(width)
 						element["size"]["width"] = width
 						element["size"]["height"] = height
+				elif shape.type == "canvas": 
+					alignment = model[shape.variables.alignment.z3].as_string()
+					justification = model[shape.variables.justification.z3].as_string()
+					element["alignment"] = int(alignment)
+					element["justification"] = int(justification)
 
 				if "size" in element and "location" in element:
 					print(adj_y)

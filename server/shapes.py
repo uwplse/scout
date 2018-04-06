@@ -65,15 +65,12 @@ class ContainerShape(Shape):
 		self.children.remove(child)
 
 class CanvasShape(Shape):
-	def __init__(self, shape_id, width, height): 
-		Shape.__init__(self, shape_id)
+	def __init__(self, shape_id, element): 
+		Shape.__init__(self, shape_id, element)
 		self.children = []
 		self.type = "canvas"
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-
-		self.width = width
-		self.height = width
 		self.orig_x = 0
 		self.orig_y = 0
 
