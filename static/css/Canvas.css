@@ -94,8 +94,12 @@ div:focus {
 }
 
 .design-body {
-	height: 84%;
     overflow: auto;
+    min-height: 350px;
+}
+
+.design-canvas-button {
+	margin-left: 10px;
 }
 
 .panel-heading .accordion-toggle:after {

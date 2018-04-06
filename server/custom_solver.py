@@ -15,18 +15,16 @@ NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
 class Solver(object): 
-	def __init__(self, elements, canvas_width, canvas_height): 
+	def __init__(self, elements, solutions, canvas_width, canvas_height): 
 		self.solutions = [] # Initialize the variables somewhere
 		self.unassigned = []
 		self.elements = elements
+		self.previous_solutions = solutions
 		self.canvas_width = canvas_width
 		self.canvas_height = canvas_height
 		self.shapes, self.root = self.build_shape_hierarchy()
 		self.root = self.root[0]
 
-		# Canvas contains all the elements as direct children for now
-		self.canvas_shape = shape_classes.CanvasShape("canvas", canvas_width, canvas_height)
-		self.canvas_shape.add_child(self.root)
 		self.variables = self.init_variables()
 		self.previous_solution = IntVector('PrevSolution', len(self.variables))
 		self.variables_different = Int('VariablesDifferent')
@@ -37,13 +35,17 @@ class Solver(object):
 		self.cb = constraint_builder.ConstraintBuilder(self.solver)
 		self.init_domains()
 
-		# To Do : Move elswhere
-		self.cb.init_canvas_constraints(self.canvas_shape)
-		for shape in self.shapes: 
-			if shape.type == "container": 
+		# Initialize the set of constraints on shapes and containers
+		for shape in self.shapes.values(): 
+			if shape.type == "canvas": 
+				self.cb.init_canvas_constraints(shape)
+			elif shape.type == "container": 
 				self.cb.init_container_constraints(shape)
-			else: 
-				self.cb.init_shape_constraints(shape)
+				self.cb.init_container_locks(shape)
+			self.cb.init_location_locks(shape)
+
+		# Initialize the previous solution constraints
+		# self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
 
 		# Timing variables to measure performance for various parts
 		self.time_z3 = 0
@@ -66,7 +68,7 @@ class Solver(object):
 
 		# After reparenting of children is complete, process the remaining elements in 
 		# elements queue to create the shape hierarchy
-		shapes = []
+		shapes = dict()
 		root = self.construct_shape_hierarchy(elements_queue, shapes)
 		return shapes,root
 
@@ -100,15 +102,18 @@ class Solver(object):
 				sub_hierarchy = self.construct_shape_hierarchy(children, shapes)
 
 			shape_object = None
-			if element["type"] == "page":	
+			if element["type"] == "canvas": 
 				shape_object = shape_classes.ContainerShape(element["name"], element)
-				shapes.append(shape_object)
+				shapes[shape_object.shape_id] = shape_object
+			elif element["type"] == "page":	
+				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "group" or element["type"] == "labels":
 				shape_object = shape_classes.ContainerShape(element["name"], element)
-				shapes.append(shape_object)
+				shapes[shape_object.shape_id] = shape_object
 			else:
 				shape_object = shape_classes.LeafShape(element["name"], element)
-				shapes.append(shape_object)
+				shapes[shape_object.shape_id] = shape_object
 
 			if sub_hierarchy is not None: 
 				shape_object.add_children(sub_hierarchy)
@@ -119,30 +124,28 @@ class Solver(object):
 
 	# initialize domains
 	def init_domains(self):
-		for shape in self.shapes:
+		for shape in self.shapes.values():
 			# x_size = len(shape.x.domain)
 			# y_size = len(shape.y.domain)
-			self.solver.add(shape.x.z3 >= 0)
-			self.solver.add((shape.x.z3 + shape.width) <= self.canvas_width)
-			self.solver.add(shape.y.z3 >= 0)
-			self.solver.add((shape.y.z3 + shape.height) <= self.canvas_height)
+			self.solver.add(shape.variables.x.z3 >= 0)
+			self.solver.add((shape.variables.x.z3 + shape.width) <= self.canvas_width)
+			self.solver.add(shape.variables.y.z3 >= 0)
+			self.solver.add((shape.variables.y.z3 + shape.height) <= self.canvas_height)
 
 	def init_variables(self):
 		last = []
 		first = []
 		variables = []
-		last.append(self.canvas_shape.alignment)
-		last.append(self.canvas_shape.justification)
 
-		for child in self.root.children:
-			if child.type == "container" and len(child.children):
-				first.append(child.arrangement)
-				last.append(child.alignment)
-				last.append(child.proximity)
-
-		first.append(self.root.arrangement)
-		last.append(self.root.alignment)
-		last.append(self.root.proximity)
+		for shape in self.shapes.values():
+			if shape.type == "container": 
+				first.append(shape.variables.arrangement)
+				last.append(shape.variables.alignment)
+				last.append(shape.variables.proximity)
+			
+			if shape.type == "canvas":
+				last.append(shape.variables.alignment)
+				last.append(shape.variables.Justification)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)

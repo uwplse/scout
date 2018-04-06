@@ -32,17 +32,19 @@ def solve():
 	print(request.form)
 	form_data = request.form
 
-	if "elements" in form_data:
+	if "elements" in form_data and "solutions" in form_data:
 		elements_json = form_data["elements"]
+		solutions_json = form_data["solutions"]
 		elements = json.loads(elements_json)
-		solutions = get_solution_from_custom_solver(elements)
+		solutions = json.loads(solutions_json)
+		solutions = get_solution_from_custom_solver(elements, solutions)
 
 		# Output dictionary 
 		output = dict() 
 		output["size"] = dict() 
 		output["size"]["width"] = DEFAULT_APP_WIDTH
 		output["size"]["height"] = DEFAULT_APP_HEIGHT
-		output["elements"] = solutions
+		output["solutions"] = solutions
 
 		return json.dumps(output).encode('utf-8')
 	return ""
@@ -88,8 +90,8 @@ def check_solution_exists_from_custom_solver(elements):
 	solutions = solver.check()
 	return solutions
 
-def get_solution_from_custom_solver(elements): 
-	solver = custom_solver.Solver(elements, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
+def get_solution_from_custom_solver(elements, solutions): 
+	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
 	solutions = solver.solve()
 	return solutions
 

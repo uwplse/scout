@@ -11,10 +11,14 @@ export default class DesignCanvas extends React.Component {
   	this.showConstraintsContextMenu.bind(this); 
     this.saveOrTrashDesignCanvas.bind(this);
 
-  	// Shapes to be drawn onto the canvas
+  	// Object shapes to be drawn onto the canvas
   	this.elements = props.elements; 
   	this.id = props.id; 
   	this.elementDict = {}; 
+
+    // The original solution shapes from the solver
+    // Should remain by later feedback constraints
+    this.originalElements = props.originalElements; 
 
     // Is this a saved design canvas?
     this.saved = props.saved; 

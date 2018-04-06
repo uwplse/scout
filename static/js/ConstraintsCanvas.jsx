@@ -39,10 +39,10 @@ export default class ConstraintsCanvas extends React.Component {
     let canvasElement = document.getElementById("constraints-canvas-container"); 
     canvasElement.addEventListener("keydown", this.deleteSelectedShape.bind(this)); 
 
-    // Create an object to represent the page level object
-    let page = {
+    // Create an object to represent the canvas shape 
+    let canvas = {
       "name": _.uniqueId(),
-      "type": "page", 
+      "type": "canvas", 
       "children": [],
       "location": {
         x: 0, 
@@ -51,12 +51,22 @@ export default class ConstraintsCanvas extends React.Component {
       "size": {
         width: this.canvasWidth, 
         height: this.canvasHeight
-      }
+      }   
     }
 
+    this.constraintsShapes.push(canvas); 
+    this.constraintsShapesByName[canvas.name] = canvas; 
+ 
+    // Create an object to represent the page level object (A container for shapes at the root level)
+    let page = {
+      "name": _.uniqueId(),
+      "type": "page", 
+      "children": []
+    }
 
     this.constraintsShapes.push(page); 
-    this.constraintsShapesByName[page["name"]] = page; 
+    this.constraintsShapesByName[page.name] = page; 
+    canvas.children.push(page); 
     this.pageLevelShape = page; 
   }
 

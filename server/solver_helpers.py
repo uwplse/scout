@@ -84,11 +84,9 @@ class Solution(object):
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
 		new_elements = []
-		for s_index in range(0, len(shapes)):  
-			shape = shapes[s_index]
-
-			f_x = model[shape.x.z3]
-			f_y = model[shape.y.z3]
+		for shape in shapes.values():  
+			f_x = model[shape.variables.x.z3]
+			f_y = model[shape.variables.y.z3]
 			adj_x = f_x.as_string()
 			adj_y = f_y.as_string()
 			adj_x = int(adj_x)
@@ -111,9 +109,9 @@ class Solution(object):
 					# Also include the container properties in the element object for each container shape 
 					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
 					# so we don't have to edit this place every time we add a property
-					arrangement = model[shape.arrangement.z3].as_string()
-					alignment = model[shape.alignment.z3].as_string()
-					proximity = model[shape.proximity.z3].as_string()
+					arrangement = model[shape.variables.arrangement.z3].as_string()
+					alignment = model[shape.variables.alignment.z3].as_string()
+					proximity = model[shape.variables.proximity.z3].as_string()
 					element["arrangement"] = int(arrangement)
 					element["alignment"] = int(alignment)
 					element["proximity"] = int(proximity)

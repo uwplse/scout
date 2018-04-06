@@ -5,6 +5,7 @@ import ConstraintsCanvas from "./ConstraintsCanvas";
 import FabricHelpers from './FabricHelpers.js';
 import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import DesignCanvas from './DesignCanvas';
+import $ from 'jquery';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -52,57 +53,6 @@ export default class PageContainer extends React.Component {
     this.widgetsCanvas.add(field); 
     this.widgetsCanvas.add(text); 
     this.widgetsCanvas.add(button); 
-  }
-
-  getShapesJSON() {
-    // Get all of the shapes on the canvas into a collection 
-    let shapeJSON = []; 
-    let shapeObjects = this.refs.constraintsCanvas.getShapeObjects();
-    for(var i=0; i<shapeObjects.length; i++) {
-      let shape = shapeObjects[i]; 
-      let jsonShape = Object.assign({}, shape); 
-      jsonShape.shape = undefined; 
-
-      let fabricShape = shape.shape; 
-      if(fabricShape) {
-        if(!jsonShape["location"]) {
-          jsonShape["location"] = {
-            "x": fabricShape.left, 
-            "y": fabricShape.top
-          }
-        }
-
-        let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
-        let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
-        if(shape.type == "field"){
-          roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX);
-          roundedHeight = shape.lineShape.top - fabricShape.top; 
-        }
-
-        jsonShape["size"] = {
-          "width": roundedWidth, 
-          "height": roundedHeight
-        }        
-      }
-
-      // Replace the child references with their IDs before sending them to the server
-      if (shape.children) {
-        jsonShape.children = []; 
-        for(let i=0; i<shape.children.length; i++) {
-          jsonShape.children.push(shape.children[i].name); 
-        }
-      }
-
-      if(shape.labels) {
-        jsonShape.labels = shape.labels.name;
-        delete jsonShape.labelsGroup; 
-      }
-
-      jsonShape.parent = undefined; 
-      shapeJSON.push(jsonShape); 
-    }  
-
-    return JSON.stringify(shapeJSON); 
   }
 
   updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action, undoAction) {
@@ -153,7 +103,6 @@ export default class PageContainer extends React.Component {
     this.state.savedDesignCanvases.push(designCanvas);  
     this.savedDesignCanvasesMap[designCanvasID] = designCanvas; 
 
-
     // Update the state
     this.setState({
       designCanvases: this.state.designCanvases, 
@@ -174,7 +123,6 @@ export default class PageContainer extends React.Component {
     this.state.trashedDesignCanvases.push(designCanvas);  
     this.trashedDesignCanvasesMap[designCanvasID] = designCanvas; 
 
-
     // Update the state
     this.setState({
       designCanvases: this.state.designCanvases, 
@@ -182,18 +130,111 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  getShapesJSON() {
+    // Get all of the shapes on the canvas into a collection 
+    let shapeJSON = []; 
+    let shapeObjects = this.refs.constraintsCanvas.getShapeObjects();
+    for(var i=0; i<shapeObjects.length; i++) {
+      let shape = shapeObjects[i]; 
+      let jsonShape = {};
+
+      // Basic set of properties for each widget type
+      jsonShape.type = shape.type; 
+      jsonShape.label = shape.label; 
+      jsonShape.name = shape.name; 
+      jsonShape.locks = shape.locks; 
+      jsonShape.location = shape.location; 
+      jsonShape.size = shape.size; 
+
+      // Get the locations and sizes from the fabric shapes on the canvs
+      let fabricShape = shape.shape; 
+      if(fabricShape){
+
+        if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("location") < 0)) {
+          jsonShape.location = {
+            "x": fabricShape.left, 
+            "y": fabricShape.top
+          }    
+        }
+      
+
+        if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("size") < 0)) {
+          let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
+          let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
+          if(shape.type == "field"){
+            roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX);
+            roundedHeight = shape.lineShape.top - fabricShape.top; 
+          }
+
+          jsonShape.size = {
+            "width": roundedWidth, 
+            "height": roundedHeight
+          }   
+        }     
+      }
+
+      // Replace the child references with their IDs before sending them to the server
+      if (shape.children) {
+        jsonShape.children = []; 
+        for(let i=0; i<shape.children.length; i++) {
+          jsonShape.children.push(shape.children[i].name); 
+        }
+      }
+
+      shapeJSON.push(jsonShape); 
+    }  
+
+    return JSON.stringify(shapeJSON); 
+  }
+
+  getExploredSolutionsJSON() {
+    let solutions = {}; 
+
+    // Get saved solutions 
+    let savedCanvases = this.state.savedDesignCanvases; 
+    solutions.saved = []; 
+    for(var i=0; i<savedCanvases.length; i++){
+      solutions.saved.push({
+        elements: savedCanvases[i].props.originalElements
+      }); 
+    }
+
+    // Get trashed solutions 
+    let trashedCanvases = this.state.trashedDesignCanvases; 
+    solutions.trashed = []; 
+    for(var j=0; j<trashedCanvases.length; j++){
+      solutions.trashed.push({
+        elements: trashedCanvases[j].props.originalElements
+      }); 
+    }
+
+    // Get solutions in the design ideas panel 
+    let designIdeasCanvases = this.state.designCanvases; 
+    solutions.designs = []; 
+    for(var k=0; k<designIdeasCanvases.length; k++){
+      solutions.designs.push({
+        elements: designIdeasCanvases[k].props.originalElements
+      })
+    }
+
+    return JSON.stringify(solutions); 
+  }
+
   parseSolutions(requestData) {
     let resultsParsed = JSON.parse(requestData); 
-    let solutions = resultsParsed.elements;
+    let solutions = resultsParsed.solutions;
     let designCanvasList = this.state.designCanvases; 
     for(let i=0; i<solutions.length; i++) {
       let solution = solutions[i]; 
       let elements = solution.elements; 
-      
+
+      let originalElements = $.extend(true, {}, elements);
+
       // Attach the JSON shapes for this canvas instance to the corresponding constraints canvas shapes
       this.refs.constraintsCanvas.linkSolutionShapesToConstraintShapes(elements); 
 
-      let designCanvas = <DesignCanvas key={solution.id} id={solution.id} elements={elements} 
+      let designCanvas = <DesignCanvas key={solution.id} id={solution.id} 
+                              elements={elements} originalElements={originalElements}
                               updateConstraintsCanvas={this.updateConstraintsCanvasShape}
                               saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
                               trashDesignCanvas={this.trashDesignCanvas.bind(this)} />; 
@@ -208,15 +249,16 @@ export default class PageContainer extends React.Component {
   }
 
   getMoreDesigns() {
-    this.state.designCanvases = [];
-
     // get more designs
     // without changing any new constraints
     let jsonShapes = this.getShapesJSON(); 
+
+    // Get JSON for already retrieved designs/saved/trashed
+    let exploredSolutions = this.getExploredSolutionsJSON();
    
    // Send an ajax request to the server 
    // Solve for the new designs
-    $.post("/solve", {"elements": jsonShapes}, this.parseSolutions, 'text');
+    $.post("/solve", {"elements": jsonShapes, "solutions": exploredSolutions}, this.parseSolutions, 'text');
 
     // Reset the state of the designs canvas
     this.setState({
@@ -238,7 +280,7 @@ export default class PageContainer extends React.Component {
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
-            Project Layout
+            <h2>Cleverly Named Project</h2>
           </div>
          </div>
         </nav>
@@ -290,11 +332,11 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">
                   <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseThree" href="#collapseThree">Design Ideas</a>
                   <span className="saved-design-canvas-count"> ({numDesigns})</span>
-                  <button type="button" className="btn btn-default navbar-btn" onClick={this.getMoreDesigns}>{(numDesigns == 0 ? "Get Designs" : "Show More")}</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>{(numDesigns == 0 ? "Get Designs" : "Show More")}</button>
                   { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
                 </h3>
               </div>
-              <div id="collapseThree" className="panel-collapse collapse show" data-parent="#accordion" >
+              <div id="collapseThree" className="panel-collapse" data-parent="#accordion" >
                 <div className="panel-body design-body">
                   {designs}
                 </div>
