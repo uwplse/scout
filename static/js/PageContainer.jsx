@@ -228,7 +228,7 @@ export default class PageContainer extends React.Component {
       let solution = solutions[i]; 
       let elements = solution.elements; 
 
-      let originalElements = $.extend(true, {}, elements);
+      let originalElements = $.extend(true, [], elements);
 
       // Attach the JSON shapes for this canvas instance to the corresponding constraints canvas shapes
       this.refs.constraintsCanvas.linkSolutionShapesToConstraintShapes(elements); 

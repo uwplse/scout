@@ -42,10 +42,13 @@ class ConstraintBuilder(object):
 			# Get the shape corresponding to the element name
 			shape = shapes[element["name"]]
 			variables = shape.variables.toDict()
-			if element["type"] == "page" or element["type"] == "group" or element["type"] == "canvas": 
+			if element["type"] != "page" and element["type"] != "group" and element["type"] != "canvas":
 				for variable_key in variables.keys(): 
-					variable = variables[variable]
-					all_values.append(variable.z3 == element[variable_key])
+					variable = variables[variable_key]
+					if variable_key == "x" or variable_key == "y": 
+						all_values.append(variable.z3 == element["location"][variable_key])
+					elif variable_key in element:
+						all_values.append(variable.z3 == element[variable_key])
 		return all_values
 
 	def init_canvas_constraints(self, canvas): 

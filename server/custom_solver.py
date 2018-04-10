@@ -26,6 +26,7 @@ class Solver(object):
 		self.root = self.root[0]
 
 		self.variables = self.init_variables()
+		self.output_variables = self.init_output_variables()
 		self.previous_solution = IntVector('PrevSolution', len(self.variables))
 		self.variables_different = Int('VariablesDifferent')
 
@@ -154,6 +155,13 @@ class Solver(object):
 		# Later: Justification and alignment
 		return variables
 
+	def init_output_variables(self):
+		output_variables = []
+		for shape in self.shapes.values(): 
+			if shape.type != "container" and shape.type != "canvas": 
+				output_variables.append(shape.variables.x)
+				output_variables.append(shape.variables.y)
+		return output_variables
 
 	def compute_search_space(self):
 		total = 1
@@ -255,6 +263,21 @@ class Solver(object):
 			vars_diff += If(variable.z3 != self.previous_solution[var_i], 1, 0)
 		return vars_diff
 
+	def encode_previous_solution_from_model(self, model): 
+		# The next solution cannot be the exact same outputs as the previous assignment
+		# It may be possible for multiple solutions to have the same outputs (exact x,y coordinates for all shapes)
+		# So to restrict this, we encode the X,Y positions in the clauses to prevent these solutions
+		all_values = []
+		for v_i in range(0, len(self.output_variables)): 
+			variable = self.output_variables[v_i]
+			if variable.name == "x" or variable.name == "y": 
+				variable_value = model[variable.z3]
+				variable_value = variable_value.as_string() 
+				variable_value = int(variable_value)
+				all_values.append(variable.z3 == variable_value)
+
+		self.solver.add(Not(And(all_values)))	
+
 	def encode_solution_from_model(self, model): 
 		# The next solution cannot be the exact same set of assignments as the current solution
 		# These are cumulative
@@ -355,7 +378,7 @@ class Solver(object):
 
 		if len(self.unassigned) == 0:
 			# Ask the solver for a solution to the X,Y location varibles
-			# constraints = self.solver.sexpr()
+			constraints = self.solver.sexpr()
 			time_z3_start = time.time()
 			result = self.solver.check();
 			self.z3_calls += 1
@@ -493,6 +516,9 @@ class Solver(object):
 
 				sln = state.convert_to_json(self.shapes, model)
 				self.restore_state()
+
+				# Encode the previuos solution outputs into the model so we don't produce it again in the next iteration
+				self.encode_previous_solution_from_model(model)
 				return sln
 			else:
 				self.invalid_solutions += 1

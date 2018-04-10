@@ -76,9 +76,11 @@ class Solution(object):
 				element = copy.deepcopy(shape.element)
 				new_elements.append(element)
 
-				if "location" in element: 
-					element["location"]["x"] = adj_x
-					element["location"]["y"] = adj_y
+				if "location" not in element:
+					element["location"] = dict()
+
+				element["location"]["x"] = adj_x
+				element["location"]["y"] = adj_y
 
 				height = shape.height
 				width = shape.width
@@ -94,13 +96,15 @@ class Solution(object):
 					element["proximity"] = int(proximity)
 
 					# For containers, retrieve the solved for height and width from the model 
-					if "size" in element: 
-						height = model[shape.height].as_string()
-						width = model[shape.width].as_string()
-						height = int(height)
-						width = int(width)
-						element["size"]["width"] = width
-						element["size"]["height"] = height
+					if "size" not in element:
+						element["size"] = dict()
+
+					height = model[shape.height].as_string()
+					width = model[shape.width].as_string()
+					height = int(height)
+					width = int(width)
+					element["size"]["width"] = width
+					element["size"]["height"] = height
 				elif shape.type == "canvas": 
 					alignment = model[shape.variables.alignment.z3].as_string()
 					justification = model[shape.variables.justification.z3].as_string()
