@@ -53,7 +53,7 @@ div:focus {
 	flex-direction: column;
 }
 
-.widgets-container, .constraints-container, .designs-container {
+.widgets-container, .constraints-container, .designs-container, .containers-container {
 	margin-top: 10px;
 	margin-left: 10px;
 }

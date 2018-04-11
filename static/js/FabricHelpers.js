@@ -40,7 +40,7 @@ class FabricHelpers {
 	      letterSpacing: 0.42,
 	      letterSpacing: ".03em",
 	      fill: 'white', 
-	      left: left + 20, 
+	      left: left + 125, 
 	      top: top + 10, 
 	      selectable: options.selectable,
 	      lockScalingY: true, 
@@ -135,8 +135,7 @@ class FabricHelpers {
 	    	fill: 'rgba(0,0,0,.26)',
 	        stroke: 'rgba(0,0,0,.26)', 
 	        strokeWidth: 2, 
-	        selectable: options.selectable, 
-	        lockScalingY: true
+	        selectable: options.selectable
 	    });
 
 	    let textValue = "Field..."; 

@@ -11,6 +11,7 @@ export default class PageContainer extends React.Component {
   constructor(props) {
   	super(props); 
     this.drawWidgetCanvas = this.drawWidgetCanvas.bind(this); 
+    this.drawContainersCanvas = this.drawContainersCanvas.bind(this);
     this.getMoreDesigns = this.getMoreDesigns.bind(this); 
     this.parseSolutions = this.parseSolutions.bind(this);
     this.updateConstraintsCanvasShape = this.updateConstraintsCanvasShape.bind(this); 
@@ -34,6 +35,7 @@ export default class PageContainer extends React.Component {
   componentDidMount() {
     // Draw the canvas for adding new widgets to the constraints canvas
     this.drawWidgetCanvas(); 
+    this.drawContainersCanvas(); 
   }
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
@@ -45,14 +47,34 @@ export default class PageContainer extends React.Component {
   drawWidgetCanvas() {
     this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
     let field = FabricHelpers.getField(20,50,120,40,{'cursor': 'hand', 'selectable': false}); 
-    let text = FabricHelpers.getText(20,150,40,{'cursor': 'hand', 'selectable': false}); 
-    let button = FabricHelpers.getButton(20,250,120,40,{'cursor': 'hand', 'selectable': false}); 
+    let text = FabricHelpers.getText(20,100,20,{'cursor': 'hand', 'selectable': false}); 
+    let button = FabricHelpers.getButton(20,150,120,40,{'cursor': 'hand', 'selectable': false}); 
     field.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'field')); 
     text.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'text')); 
     button.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'button')); 
     this.widgetsCanvas.add(field); 
     this.widgetsCanvas.add(text); 
     this.widgetsCanvas.add(button); 
+  }
+
+  drawContainersCanvas() {
+    this.containersCanvas = new fabric.Canvas('containers-canvas');
+    let group = FabricHelpers.getGroup(10, 10, 100, 50, {
+      selectable: false, 
+      stroke: 'blue'
+    });
+
+    group.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'group'));
+
+    let label = FabricHelpers.getGroup(10, 70, 100, 50, {
+      selectable: false, 
+      stroke: 'red'
+    });
+
+    label.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'labelGroup')); 
+
+    this.containersCanvas.add(group); 
+    this.containersCanvas.add(label);
   }
 
   updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action, undoAction) {
@@ -285,13 +307,24 @@ export default class PageContainer extends React.Component {
          </div>
         </nav>
         <div className="bottom">
-          <div className="panel panel-default widgets-container">
-            <div className="panel-heading"> 
-              <h3 className="panel-title">Widgets</h3>
-            </div>  
-            <div className="panel-body">         
-              <canvas id="widgets-canvas" width="200px" height="667px">
-              </canvas>
+          <div className="components-container">
+            <div className="panel panel-default widgets-container">
+              <div className="panel-heading"> 
+                <h3 className="panel-title">Widgets</h3>
+              </div>  
+              <div className="panel-body">         
+                <canvas id="widgets-canvas" width="200px" height="333px">
+                </canvas>
+              </div>
+            </div>
+            <div className="panel panel-default containers-container">
+              <div className="panel-heading"> 
+                <h3 className="panel-title">Containers</h3>
+              </div>  
+              <div className="panel-body">         
+                <canvas id="containers-canvas" width="200px" height="260px">
+                </canvas>
+              </div>
             </div>
           </div>
           <div className="panel panel-default constraints-container">

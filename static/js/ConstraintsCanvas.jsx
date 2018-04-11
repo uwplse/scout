@@ -30,7 +30,9 @@ export default class ConstraintsCanvas extends React.Component {
     this.shapeAddHandlers = {
       'text': this.addTextToCanvas.bind(this), 
       'button': this.addButtonToCanvas.bind(this), 
-      'field': this.addFieldToCanvas.bind(this)
+      'field': this.addFieldToCanvas.bind(this), 
+      'labelGroup': this.addLabelGroupToCanvas.bind(this), 
+      'group': this.addGroupToCanvas.bind(this)
     }; 
   }
 
@@ -68,6 +70,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsShapesByName[page.name] = page; 
     canvas.children.push(page); 
     this.pageLevelShape = page; 
+    page.parent = canvas;
   }
 
   getShapeObjects() {
@@ -92,7 +95,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Add a new field to the constraints canvas
     let location = this.getConstraintsCanvasShapeLocation()
-    let field = FabricHelpers.getInteractiveField(location.left, location.top, 120, 40, {'selectable': true});
+    let field = FabricHelpers.getInteractiveField(location.left, location.top, this.canvasWidth-40, 40, {'selectable': true});
 
     this.addShapeToConstraintsCanvas(shape, field.field); 
 
@@ -138,7 +141,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Add a new field to the constraints canvas
     let location = this.getConstraintsCanvasShapeLocation(); 
-    let button = FabricHelpers.getInteractiveButton(location.left, location.top, 120, 40, {'selectable': true});
+    let button = FabricHelpers.getInteractiveButton(location.left, location.top, this.canvasWidth-40, 40, {'selectable': true});
     
     this.addShapeToConstraintsCanvas(shape, button.button);
 
@@ -159,6 +162,36 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
   }
 
+  addLabelGroupToCanvas() {
+    let label = this.createConstraintsCanvasShapeObject("labelGroup"); 
+
+    // Create a new group shape to be the bounding box 
+    let location = this.getConstraintsCanvasShapeLocation();
+    let groupRect = FabricHelpers.getGroup(location.left, location.top, 100, 50, {
+      stroke: 'red'
+    });
+
+    this.addShapeToConstraintsCanvas(label, groupRect);
+
+    // Move the group to the back layer
+    this.constraintsCanvas.sendToBack(groupRect);
+  }
+
+  addGroupToCanvas() {
+    let group = this.createConstraintsCanvasShapeObject("group"); 
+
+    // Create a new group shape to be the bounding box 
+    let location = this.getConstraintsCanvasShapeLocation();
+    let groupRect = FabricHelpers.getGroup(location.left, location.top, 100, 50, {
+      stroke: 'blue'
+    });
+
+    this.addShapeToConstraintsCanvas(group, groupRect);
+
+    // Move the group to the back layer
+    this.constraintsCanvas.sendToBack(groupRect);
+  }
+
   getConstraintsCanvasShapeLocation() {
     this.constraintsTop += 50; 
     let top = this.constraintsTop; 
@@ -175,12 +208,17 @@ export default class ConstraintsCanvas extends React.Component {
       "type": type
     }
 
+    if (type == "group" || type == "labelGroup") {
+      shape.children = []; 
+    }
+
     this.constraintsShapes.push(shape); 
     this.constraintsShapesByName[shape["name"]] = shape; 
     this.state.menuShown[shape.name] = false;
 
     // Also need to push the shape onto the children of the page level object
     this.pageLevelShape.children.push(shape); 
+    shape.parent = this.pageLevelShape; 
 
     return shape;
   }
@@ -302,62 +340,83 @@ export default class ConstraintsCanvas extends React.Component {
     } 
   }
 
-  moveShape(shape) {
+  moveShape(shape){
     // Check proximity of the shape to other elements 
     let shape_x = shape.shape.left; 
     let shape_y = shape.shape.top; 
     let shape_width = shape.shape.width * shape.shape.scaleX; 
     let shape_height = shape.shape.height * shape.shape.scaleY;
 
-    let grouping = false;
     for(let i=0; i<this.constraintsShapes.length; i++) {
       let constraintsShape = this.constraintsShapes[i];
-      if(constraintsShape.name != shape.name && constraintsShape.type != "page") {
+      if(constraintsShape.name != shape.name && (constraintsShape.type =="group" || constraintsShape.type == "labelGroup")) {
         let cShape_x = constraintsShape.shape.left; 
         let cShape_y = constraintsShape.shape.top; 
         let cShape_width = constraintsShape.shape.width * constraintsShape.shape.scaleX; 
         let cShape_height = constraintsShape.shape.height * constraintsShape.shape.scaleY; 
-
-        if(this.constraintsShapes[i].type == "field") {
-          cShape_width = constraintsShape.lineShape.width * constraintsShape.lineShape.scaleX; 
-          cShape_height = constraintsShape.lineShape.top - cShape_y; 
+        if(this.distanceWithin(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height,0)) {
+          this.addShapeToGroup(shape, constraintsShape); 
         }
-
-        // The element is not already in an existing group 
-        let overlapping_threshold = 0; 
-        let grouping_threshold = 10; 
-        let labeling_threshold = 20;
-
-        if (shape.type == "text" && this.distanceWithin(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height,labeling_threshold)) {
-          grouping = true;
-          // Only text elements can be a label
-          if(!shape.parent && !constraintsShape.parent){
-            this.addShapeToNewGroup(shape, constraintsShape, "labels");
-          }
-
-          break;
-        }
-        else if (constraintsShape.type != "group" && this.distanceWithin(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height,grouping_threshold)) {
-          // Overlapping add it into the current group
-          grouping = true;
-          this.createNewHierarchy(shape, constraintsShape);
-          break;
-        }
-      }
-    }
-
-    if(!grouping) {
-      // If the shape was in a group and that group had only two children, remove the group 
-      if(shape.parent) {
-        let parentGroup = shape.parent; 
-        if(parentGroup.children.length <= 2) {
-          this.unparentGroup(parentGroup);
-        } else {
-          this.removeShapeFromGroup(shape, parentGroup);
-        } 
       }
     }
   }
+
+  // moveShape(shape) {
+  //   // Check proximity of the shape to other elements 
+  //   let shape_x = shape.shape.left; 
+  //   let shape_y = shape.shape.top; 
+  //   let shape_width = shape.shape.width * shape.shape.scaleX; 
+  //   let shape_height = shape.shape.height * shape.shape.scaleY;
+
+  //   let grouping = false;
+  //   for(let i=0; i<this.constraintsShapes.length; i++) {
+  //     let constraintsShape = this.constraintsShapes[i];
+  //     if(constraintsShape.name != shape.name && constraintsShape.type != "page" && constraintsShape.type != "canvas") {
+  //       let cShape_x = constraintsShape.shape.left; 
+  //       let cShape_y = constraintsShape.shape.top; 
+  //       let cShape_width = constraintsShape.shape.width * constraintsShape.shape.scaleX; 
+  //       let cShape_height = constraintsShape.shape.height * constraintsShape.shape.scaleY; 
+
+  //       if(this.constraintsShapes[i].type == "field") {
+  //         cShape_width = constraintsShape.lineShape.width * constraintsShape.lineShape.scaleX; 
+  //         cShape_height = constraintsShape.lineShape.top - cShape_y; 
+  //       }
+
+  //       // The element is not already in an existing group 
+  //       let overlapping_threshold = 0; 
+  //       let grouping_threshold = 10; 
+  //       let labeling_threshold = 20;
+
+  //       if (shape.type == "text" && this.distanceWithin(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height,labeling_threshold)) {
+  //         grouping = true;
+  //         // Only text elements can be a label
+  //         if(!shape.parent && !constraintsShape.parent){
+  //           this.addShapeToNewGroup(shape, constraintsShape, "labels");
+  //         }
+
+  //         break;
+  //       }
+  //       else if (constraintsShape.type != "group" && this.distanceWithin(shape_x,shape_y,shape_width,shape_height,cShape_x,cShape_y,cShape_width,cShape_height,grouping_threshold)) {
+  //         // Overlapping add it into the current group
+  //         grouping = true;
+  //         this.createNewHierarchy(shape, constraintsShape);
+  //         break;
+  //       }
+  //     }
+  //   }
+
+  //   if(!grouping) {
+  //     // If the shape was in a group and that group had only two children, remove the group 
+  //     if(shape.parent) {
+  //       let parentGroup = shape.parent; 
+  //       if(parentGroup.children.length <= 2) {
+  //         this.unparentGroup(parentGroup);
+  //       } else {
+  //         this.removeShapeFromGroup(shape, parentGroup);
+  //       } 
+  //     }
+  //   }
+  // }
 
   // Returns the bounding box for a group from the location and sizes of its children
   getGroupBoundingBox(group) {
@@ -397,17 +456,37 @@ export default class ConstraintsCanvas extends React.Component {
     return { x: x, y: y, width: right-x, height: bottom-y }; 
   }
 
-  // Adds a new shape into an existing group
-  addShapeToGroup(shape, parentGroup) {
-    shape.parent = parentGroup; 
-    parentGroup.children.push(shape); 
+  // // Adds a new shape into an existing group
+  // addShapeToGroup(shape, parentGroup) {
+  //   shape.parent = parentGroup; 
+  //   parentGroup.children.push(shape); 
 
-    // Delete it from the page level children
-    this.deleteShapeFromObjectChildren(shape, this.pageLevelShape); 
+  //   // Delete it from the page level children
+  //   this.deleteShapeFromObjectChildren(shape, this.pageLevelShape); 
     
+  //   // Adjust the group bounding box
+  //   let groupShape = parentGroup.shape; 
+  //   let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
+  //   groupShape.set({
+  //     left: groupBoundingBox.x-10, 
+  //     top: groupBoundingBox.y-10, 
+  //     width: groupBoundingBox.width+20, 
+  //     height: groupBoundingBox.height+20
+  //   }); 
+  // }
+
+  addShapeToGroup(shape, parent) {
+    if(shape.parent){
+      // Delete it from the page level children
+      this.deleteShapeFromObjectChildren(shape, shape.parent);         
+    }
+
+    shape.parent = parent; 
+    parent.children.push(shape); 
+
     // Adjust the group bounding box
-    let groupShape = parentGroup.shape; 
-    let groupBoundingBox = this.getGroupBoundingBox(parentGroup); 
+    let groupShape = parent.shape; 
+    let groupBoundingBox = this.getGroupBoundingBox(parent); 
     groupShape.set({
       left: groupBoundingBox.x-10, 
       top: groupBoundingBox.y-10, 
