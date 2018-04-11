@@ -175,6 +175,11 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Move the group to the back layer
     this.constraintsCanvas.sendToBack(groupRect);
+
+    groupRect.on("moving", function(evt){
+      // Update the position of the line to follow the position of the label 
+      
+    });
   }
 
   addGroupToCanvas() {
@@ -235,10 +240,7 @@ export default class ConstraintsCanvas extends React.Component {
   deleteShape(shape) {
     if(shape.parent){
       // Check if the group needs removed
-      if(shape.parent.children.length <= 2){
-        this.unparentGroup(shape.parent);
-        this.deleteShapeFromObjectChildren(shape, this.pageLevelShape);
-      }
+      this.deleteShapeFromObjectChildren(shape, shape.parent);
     }
 
     // Remove the shape from the canvas
@@ -349,13 +351,25 @@ export default class ConstraintsCanvas extends React.Component {
 
     for(let i=0; i<this.constraintsShapes.length; i++) {
       let constraintsShape = this.constraintsShapes[i];
-      if(constraintsShape.name != shape.name && (constraintsShape.type =="group" || constraintsShape.type == "labelGroup")) {
+      if(constraintsShape.name != shape.name && constraintsShape.type != "page" && constraintsShape.type != "canvas") {
         let cShape_x = constraintsShape.shape.left; 
         let cShape_y = constraintsShape.shape.top; 
         let cShape_width = constraintsShape.shape.width * constraintsShape.shape.scaleX; 
         let cShape_height = constraintsShape.shape.height * constraintsShape.shape.scaleY; 
         if(this.distanceWithin(shape_x,shape_y,shape_width,shape_height, cShape_x, cShape_y, cShape_width, cShape_height,0)) {
-          this.addShapeToGroup(shape, constraintsShape); 
+          if(constraintsShape.type == "group") {
+            this.addShapeToGroup(shape, constraintsShape);
+          }
+          else if(constraintsShape.type == "labelGroup") {
+            if(constraintsShape.children.length == 1) {
+              this.addShapeToGroup(shape, constraintsShape); 
+            } 
+            else if(constraintsShape.children.length == 0) {
+              if(shape.type == "text") {
+                this.addShapeToGroup(shape, constraintsShape); 
+              }
+            }
+          }
         }
       }
     }

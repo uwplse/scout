@@ -71,6 +71,7 @@ class CanvasShape(Shape):
 		self.type = "canvas"
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
+		self.variables.margin = sh.Variable("canvas", "margin", [10,20,30,40,50])
 		self.orig_x = 0
 		self.orig_y = 0
 

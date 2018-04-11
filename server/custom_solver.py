@@ -147,6 +147,7 @@ class Solver(object):
 			if shape.type == "canvas":
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.justification)
+				last.append(shape.variables.margin)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
@@ -246,7 +247,7 @@ class Solver(object):
 
 	def encode_assigned_variable(self, variable):
 		time_encoding_start = time.time()
-		if variable.name == "proximity":
+		if variable.name == "proximity" or variable.name == "margin":
 			prox_value = variable.domain[variable.assigned]
 			self.solver.add(variable.z3 == prox_value)
 		else:

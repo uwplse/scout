@@ -108,8 +108,10 @@ class Solution(object):
 				elif shape.type == "canvas": 
 					alignment = model[shape.variables.alignment.z3].as_string()
 					justification = model[shape.variables.justification.z3].as_string()
+					margin = model[shape.variables.margin.z3].as_string()
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
+					element["margin"] = int(margin)
 
 				if "size" in element and "location" in element:
 					print(adj_y)

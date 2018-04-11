@@ -54,30 +54,33 @@ class ConstraintBuilder(object):
 	def init_canvas_constraints(self, canvas): 
 		alignment = canvas.variables.alignment
 		justification = canvas.variables.justification
+		margin = canvas.variables.margin
 		canvas_x = canvas.variables.x.z3
 		canvas_y = canvas.variables.y.z3
+
 
 		self.solver.add(alignment.z3 >= 0, 'canvas_alignment domain lowest')
 		self.solver.add(alignment.z3 < len(alignment.domain), 'canvas_alignment domain highest')
 		self.solver.add(justification.z3 >= 0, 'canvas_justification domain lowest')
 		self.solver.add(justification.z3 < len(justification.domain), 'canvas justification domain highest')
 
-		child_shapes = canvas.children
-		if len(child_shapes) > 0: 
-			# Every child shape should remain inside of its parent container
-			for s_index in range(0, len(child_shapes)): 
-				shape1 = child_shapes[s_index]
-				self.solver.add(shape1.variables.x.z3 >= canvas_x, shape1.shape_id + ' gt canvas_x')
-				self.solver.add(shape1.variables.y.z3 >= canvas_y, shape1.shape_id + ' gt canvas_y')
-				self.solver.add((shape1.variables.x.z3 + shape1.width) <= (canvas_x + canvas.width), shape1.shape_id + ' gt canvas_right')
-				self.solver.add((shape1.variables.y.z3 + shape1.height) <= (canvas_y + canvas.height), shape1.shape_id + ' gt canvas_bottom')	
+		or_values = []
+		for margin_value in margin.domain:
+			or_values.append(margin.z3 == margin_value)
+		self.solver.add(Or(or_values))
 
-			# Set the canvas X,Y to their original values
-			self.solver.add(canvas_x == canvas.orig_x, 'canvas orig x')
-			self.solver.add(canvas_y == canvas.orig_y, 'canvas orig y')
+		page_shape = canvas.children[0]
+		self.solver.add(page_shape.variables.x.z3 >= canvas_x, page_shape.shape_id + ' gt canvas_x')
+		self.solver.add(page_shape.variables.y.z3 >= canvas_y, page_shape.shape_id + ' gt canvas_y')
+		self.solver.add((page_shape.variables.x.z3 + page_shape.width) <= (canvas_x + canvas.width), page_shape.shape_id + ' gt canvas_right')
+		self.solver.add((page_shape.variables.y.z3 + page_shape.height) <= (canvas_y + canvas.height), page_shape.shape_id + ' gt canvas_bottom')	
 
-			self.justify_canvas(canvas)
-			self.align_canvas(canvas)
+		# Set the canvas X,Y to their original values
+		self.solver.add(canvas_x == canvas.orig_x, 'canvas orig x')
+		self.solver.add(canvas_y == canvas.orig_y, 'canvas orig y')
+
+		self.justify_canvas(canvas)
+		self.align_canvas(canvas)
 
 	def init_container_constraints(self, container):
 		arrangement = container.variables.arrangement.z3
@@ -165,6 +168,7 @@ class ConstraintBuilder(object):
 
 	def justify_canvas(self, canvas):
 		justification = canvas.variables.justification
+		margin = canvas.variables.margin
 		canvas_y = canvas.variables.y.z3
 		
 		first_child = canvas.children[0]
@@ -175,14 +179,15 @@ class ConstraintBuilder(object):
 		c_index = justification.domain.index("center")
 		is_top = justification.z3 == t_index
 		is_center = justification.z3 == c_index
-		top_justified = child_y == canvas_y
-		bottom_justified = (child_y + first_child.height) == (canvas_y + canvas.height)
+		top_justified = child_y == (canvas_y + margin.z3)
+		bottom_justified = (child_y + first_child.height) == (canvas_y + canvas.height - margin.z3)
 		center_justified = (child_y + (first_child.height/2)) == (canvas_y + (canvas.height/2))
 		self.solver.add(If(is_top, top_justified, If(is_center, center_justified, bottom_justified)), 'canvas_justification')
 		# self.solver.assert_and_track(If(is_top, top_justified, If(is_center, center_justified, bottom_justified)), "canvas_justification")
 
 	def align_canvas(self, canvas):
 		alignment = canvas.variables.alignment
+		margin = canvas.variables.margin
 		canvas_x = canvas.variables.x.z3
 
 		first_child = canvas.children[0]
@@ -193,9 +198,9 @@ class ConstraintBuilder(object):
 		c_index = alignment.domain.index("center")
 		is_left = alignment.z3 == l_index
 		is_center = alignment.z3 == c_index
-		left_aligned = child_x == canvas_x
+		left_aligned = child_x == (canvas_x + margin.z3)
 		center_aligned = (child_x + (first_child.width/2)) == (canvas_x + (canvas.width/2))
-		right_aligned = (child_x + first_child.width) == (canvas_x + canvas.width)
+		right_aligned = (child_x + first_child.width) == (canvas_x + canvas.width - margin.z3)
 		self.solver.add(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), 'canvas_alignment')
 		# self.solver.assert_and_track(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), "canvas_alignment")
 

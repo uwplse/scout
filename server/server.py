@@ -86,7 +86,11 @@ def check():
 # 	return json.dumps(output).encode('utf-8')
 
 def check_solution_exists_from_custom_solver(elements): 
-	solver = custom_solver.Solver(elements, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
+	solutions = dict()
+	solutions["saved"] = []
+	solutions["trashed"] = []
+	solutions["designs"] = []
+	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
 	solutions = solver.check()
 	return solutions
 
