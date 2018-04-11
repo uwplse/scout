@@ -98,6 +98,11 @@ div:focus {
     min-height: 350px;
 }
 
+.designs-message {
+	margin-bottom: 5px;
+	margin-top: 5px;
+}
+
 .design-canvas-button {
 	margin-left: 10px;
 }

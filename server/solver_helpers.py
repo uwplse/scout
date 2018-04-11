@@ -113,11 +113,8 @@ class Solution(object):
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
 
-				if "size" in element and "location" in element:
-					print(adj_y)
-					print(adj_x)
-					print(width)
-					print(height) 
+				if shape.type == "leaf": 
+					# Only the locations of leaf level shapes to compute the symmetry cost
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
 
 		cost = self.compute_symmetry_cost(cost_matrix)

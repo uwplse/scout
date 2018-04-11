@@ -70,12 +70,14 @@ class ConstraintBuilder(object):
 		self.solver.add(Or(or_values))
 
 		page_shape = canvas.children[0]
-		self.solver.add(page_shape.variables.x.z3 >= canvas_x, page_shape.shape_id + ' gt canvas_x')
-		self.solver.add(page_shape.variables.y.z3 >= canvas_y, page_shape.shape_id + ' gt canvas_y')
-		self.solver.add((page_shape.variables.x.z3 + page_shape.width) <= (canvas_x + canvas.width), page_shape.shape_id + ' gt canvas_right')
-		self.solver.add((page_shape.variables.y.z3 + page_shape.height) <= (canvas_y + canvas.height), page_shape.shape_id + ' gt canvas_bottom')	
+		# page shape should stay within the bounds of the canvas container
+		# minus the current margin value. 
+		self.solver.add(page_shape.variables.x.z3 >= (canvas_x + margin.z3), page_shape.shape_id + ' gt canvas_x')
+		self.solver.add(page_shape.variables.y.z3 >= (canvas_y + margin.z3), page_shape.shape_id + ' gt canvas_y')
+		self.solver.add((page_shape.variables.x.z3 + page_shape.width) <= (canvas_x + canvas.width - margin.z3), page_shape.shape_id + ' gt canvas_right')
+		self.solver.add((page_shape.variables.y.z3 + page_shape.height) <= (canvas_y + canvas.height - margin.z3), page_shape.shape_id + ' gt canvas_bottom')	
 
-		# Set the canvas X,Y to their original values
+		# Fix the canvas X,Y to their original valuess
 		self.solver.add(canvas_x == canvas.orig_x, 'canvas orig x')
 		self.solver.add(canvas_y == canvas.orig_y, 'canvas orig y')
 

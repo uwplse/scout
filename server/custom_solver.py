@@ -197,13 +197,13 @@ class Solver(object):
 		start_time = time.time()
 
 		# Z3 looping version
-		# self.z3_solve(start_time, size)
+		self.z3_solve(start_time, size)
 
 		# Branch and bound regular 
 		# self.branch_and_bound(start_time)
 
 		# Branch and bound get one solution at a time
-		self.branch_and_bound_n_solutions(start_time)
+		# self.branch_and_bound_n_solutions(start_time)
 
 		end_time = time.time()
 		print("number of solutions found: " + str(len(self.solutions)))
@@ -271,36 +271,43 @@ class Solver(object):
 		all_values = []
 		for v_i in range(0, len(self.output_variables)): 
 			variable = self.output_variables[v_i]
-			if variable.name == "x" or variable.name == "y": 
-				variable_value = model[variable.z3]
-				variable_value = variable_value.as_string() 
-				variable_value = int(variable_value)
-				all_values.append(variable.z3 == variable_value)
+			variable_value = model[variable.z3]
+			variable_value = variable_value.as_string() 
+			variable_value = int(variable_value)
+			all_values.append(variable.z3 == variable_value)
 
 		self.solver.add(Not(And(all_values)))	
 
 	def encode_solution_from_model(self, model): 
+		# Pop the previous 
+		if self.num_solutions > 1: 
+			# Remove the previous stack context
+			# Pop the stack context before adding the set of constraints to prevent the 
+			# Previous solution model from appearing again
+			self.solver.pop()
+
 		# The next solution cannot be the exact same set of assignments as the current solution
 		# These are cumulative
 		all_values = []
+		for v_i in range(0, len(self.output_variables)): 
+			variable = self.output_variables[v_i]
+			variable_value = model[variable.z3]
+			variable_value = variable_value.as_string() 
+			variable_value = int(variable_value)
+			all_values.append(variable.z3 == variable_value)
+
+		self.solver.add(Not(And(all_values)))
+			
+		# Build the vector to store the previous solution
 		previous_solution_values = []
 		for v_i in range(0, len(self.variables)): 
 			variable = self.variables[v_i]
-			# Get the value of the variable out of the model 
 			variable_value = model[variable.z3]
-			variable_value = variable_value.as_string()
+			variable_value = variable_value.as_string() 
 			variable_value = int(variable_value)
-			all_values.append(variable.z3 == variable_value)
 			previous_solution_values.append(self.previous_solution[v_i] == variable_value)
 
-		self.solver.add(Not(And(all_values)))
-
 		if self.num_solutions > 0: 
-			# Pop the previous 
-			if self.num_solutions > 1: 
-				# Remove the previous stack context
-				self.solver.pop()
-
 			self.solver.push()
 			
 			# Add the previous solution values for the cost function
@@ -498,7 +505,7 @@ class Solver(object):
 			time_z3_start = time.time()
 			result = self.solver.check()
 			constraints = self.solver.sexpr()
-			unsat_core = self.solver.unsat_core()
+			# unsat_core = self.solver.unsat_core()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -545,8 +552,7 @@ class Solver(object):
 				# GGet a solution
 				time_z3_start = time.time()
 				result = self.solver.check()
-				unsat_core = self.solver.unsat_core()
-				sexpr = self.solver.sexpr()
+				# unsat_core = self.solver.unsat_core()
 				self.z3_calls += 1
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start

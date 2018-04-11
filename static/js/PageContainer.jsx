@@ -23,7 +23,8 @@ export default class PageContainer extends React.Component {
       designCanvases: [], 
       savedDesignCanvases: [], 
       trashedDesignCanvases: [], 
-      constraintChanged: false 
+      constraintChanged: false , 
+      designsFound: -1
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -264,7 +265,9 @@ export default class PageContainer extends React.Component {
       this.designCanvasMap[solution.id] = designCanvas; 
     }
 
+    let designsFound = solutions.length;
     this.setState({
+      designsFound: designsFound,
       designCanvases: designCanvasList, 
       errorMessageShown: false
     });
@@ -290,6 +293,7 @@ export default class PageContainer extends React.Component {
 
   render () {
     const designs = this.state.designCanvases;
+    const designsFound = this.state.designsFound; 
     const numDesigns = this.state.designCanvases.length; 
     const errorMessageShown = this.state.errorMessageShown; 
     const constraintChanged = this.state.constraintChanged;
@@ -297,12 +301,13 @@ export default class PageContainer extends React.Component {
     const numSaved = this.state.savedDesignCanvases.length; 
     const trashed = this.state.trashedDesignCanvases; 
     const numTrashed = this.state.trashedDesignCanvases.length; 
+    const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
-            <h2>Cleverly Named Project</h2>
+            <h2>C.N.P.</h2>
           </div>
          </div>
         </nav>
@@ -365,13 +370,20 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">
                   <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseThree" href="#collapseThree">Design Ideas</a>
                   <span className="saved-design-canvas-count"> ({numDesigns})</span>
-                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>{(numDesigns == 0 ? "Get Designs" : "Show More")}</button>
+                  <button type="button" className="btn btn-default design-canvas-button" disabled={(designsFound > 0 || designsFound == -1) ? null : "disabled"} onClick={this.getMoreDesigns}>{(numDesigns == 0 ? "Get Designs" : "Show More")}</button>
                   { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
                 </h3>
               </div>
               <div id="collapseThree" className="panel-collapse" data-parent="#accordion" >
-                <div className="panel-body design-body">
-                  {designs}
+                <div className="panel-body">
+                  {(designsFound == -1 || constraintChanged) ? null : 
+                        (<div className={"alert " + (designsFound > 0 ? "alert-success" : "alert-warning") + " designs-message"}>
+                            {designsAlertMessage}
+                            {(designsFound > 0 ? <a onClick={this.getMoreDesigns} href="#">Show me more different designs.</a> : null)}
+                        </div>)}
+                  <div className="design-body">
+                    {designs}
+                  </div>
                 </div>
               </div>
             </div>
