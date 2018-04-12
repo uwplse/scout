@@ -15,13 +15,14 @@ NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
 class Solver(object): 
-	def __init__(self, elements, solutions, canvas_width, canvas_height): 
+	def __init__(self, elements, solutions, relative_designs, canvas_width, canvas_height): 
 		self.solutions = [] # Initialize the variables somewhere
 		self.unassigned = []
 		self.elements = elements
 		self.previous_solutions = solutions
 		self.canvas_width = canvas_width
 		self.canvas_height = canvas_height
+		self.relative_search = False
 		self.shapes, self.root = self.build_shape_hierarchy()
 		self.root = self.root[0]
 
@@ -47,6 +48,17 @@ class Solver(object):
 
 		# Initialize the previous solution constraints
 		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+
+		# Initialize any relative design constraints, if given 
+		# if "relative_design" in relative_designs: 
+		# 	self.relative_search = True
+		# 	relative_design_elements = relative_designs["relative_design"]
+		# 	relative_design_action = relative_design["relative_action"]
+
+		# 	if relative_design_action == "like": 
+		# 		self.cb.init_relative_design_constraints(relative_design_elements)
+		# 		# Set up constraints to get designs more like the relative design
+		# 		# This means any returned solution should only have 1 variable different than the relative design
 
 		# Timing variables to measure performance for various parts
 		self.time_z3 = 0
@@ -109,7 +121,7 @@ class Solver(object):
 			elif element["type"] == "page":	
 				shape_object = shape_classes.ContainerShape(element["name"], element)
 				shapes[shape_object.shape_id] = shape_object
-			elif element["type"] == "group" or element["type"] == "labels":
+			elif element["type"] == "group" or element["type"] == "labelGroup":
 				shape_object = shape_classes.ContainerShape(element["name"], element)
 				shapes[shape_object.shape_id] = shape_object
 			else:
@@ -197,13 +209,13 @@ class Solver(object):
 		start_time = time.time()
 
 		# Z3 looping version
-		self.z3_solve(start_time, size)
+		# self.z3_solve(start_time, size)
 
 		# Branch and bound regular 
 		# self.branch_and_bound(start_time)
 
 		# Branch and bound get one solution at a time
-		# self.branch_and_bound_n_solutions(start_time)
+		self.branch_and_bound_n_solutions(start_time)
 
 		end_time = time.time()
 		print("number of solutions found: " + str(len(self.solutions)))
@@ -278,7 +290,7 @@ class Solver(object):
 
 		self.solver.add(Not(And(all_values)))	
 
-	def encode_solution_from_model(self, model): 
+	def encode_constraints_for_model(self, model): 
 		# Pop the previous 
 		if self.num_solutions > 1: 
 			# Remove the previous stack context
@@ -288,15 +300,7 @@ class Solver(object):
 
 		# The next solution cannot be the exact same set of assignments as the current solution
 		# These are cumulative
-		all_values = []
-		for v_i in range(0, len(self.output_variables)): 
-			variable = self.output_variables[v_i]
-			variable_value = model[variable.z3]
-			variable_value = variable_value.as_string() 
-			variable_value = int(variable_value)
-			all_values.append(variable.z3 == variable_value)
-
-		self.solver.add(Not(And(all_values)))
+		self.encode_previous_solution_from_model(model)
 			
 		# Build the vector to store the previous solution
 		previous_solution_values = []
@@ -345,7 +349,7 @@ class Solver(object):
 
 
 	# Loop and solve until num solutions is reached
-	def z3_solve(self, time_start, search_space_size, state=sh.Solution()): 
+	def z3_solve(self, time_start, search_space_size, state=sh.Solution()):
 		print("num variables " + str(len(self.variables)))
 		while self.num_solutions < NUM_SOLUTIONS and (self.num_solutions + self.invalid_solutions) < search_space_size: 
 			# print("valid: " + str(self.num_solutions))
@@ -370,7 +374,13 @@ class Solver(object):
 				self.solutions.append(sln)
 
 				# Encode a conjunction into the solver
-				self.encode_solution_from_model(model)
+				if not self.relative_search: 
+					# Encodes the previous solution plus a cost function enforce the number of variables to be different by a certain amount each time. 
+					self.encode_constraints_for_model(model)
+				else:
+					# Encodes only the previous solution to prevent that solution from appearing again 
+					self.encode_previous_solution_from_model(model)
+
 				# self.print_solution_from_model(model)
 
 				if len(self.solutions) == NUM_SOLUTIONS:
@@ -525,7 +535,7 @@ class Solver(object):
 				sln = state.convert_to_json(self.shapes, model)
 				self.restore_state()
 
-				# Encode the previuos solution outputs into the model so we don't produce it again in the next iteration
+				# Encode the previous solution outputs into the model so we don't produce it again in the next iteration
 				self.encode_previous_solution_from_model(model)
 				return sln
 			else:

@@ -95,7 +95,8 @@ div:focus {
 
 .design-body {
     overflow: auto;
-    min-height: 350px;
+    min-height: 550px;
+    max-height: 550px;
 }
 
 .designs-message {

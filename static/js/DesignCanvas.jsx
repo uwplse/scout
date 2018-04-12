@@ -2,14 +2,14 @@
 import React from "react";
 import FabricHelpers from "./FabricHelpers.js"; 
 import CanvasMenu from "./CanvasMenu"; 
-import Constants from "./Constants"
-import SaveMenu from "./SaveMenu";
+import Constants from "./Constants";
+import DesignMenu from "./DesignMenu";
 
 export default class DesignCanvas extends React.Component {
   constructor(props) {
   	super(props);
   	this.showConstraintsContextMenu.bind(this); 
-    this.saveOrTrashDesignCanvas.bind(this);
+    this.performDesignCanvasMenuAction.bind(this);
 
   	// Object shapes to be drawn onto the canvas
   	this.elements = props.elements; 
@@ -27,15 +27,14 @@ export default class DesignCanvas extends React.Component {
   		menuShown: false, 
   		menuPosition: { x: 0, y: 0 }, 
   		activeCanvasMenu: undefined,
-      saveMenu: undefined, 
-      saveMenuShown: false
+      designMenu: undefined
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
 
-    this.canvasWidth = 187.5; 
-    this.canvasHeight = 333; 
+    this.canvasWidth = 375; 
+    this.canvasHeight = 667; 
   } 
 
   showConstraintsContextMenu(jsonShape,evt) {
@@ -105,18 +104,13 @@ export default class DesignCanvas extends React.Component {
         this.canvas.add(pageGroup);
         pageFabricShape = pageGroup; 
       } else {
-        let x = element.location.x/Constants.designCanvasScalingFactor(); 
-        let y = element.location.y/Constants.designCanvasScalingFactor(); 
-
+        let x = element.location.x; 
+        let y = element.location.y; 
         if(element.type == "button") {
-          // TODO: Figure out how to make a factor of the label size
-
           let button = FabricHelpers.getButton(x,y,element.size.width,element.size.height,{
               'cursor': 'hand', 
               'selectable': false, 
-              'text': element["label"], 
-              'scaleX': 1/Constants.designCanvasScalingFactor(), 
-              'scaleY': 1/Constants.designCanvasScalingFactor()
+              'text': element["label"]
           }); 
           button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = button; 
@@ -126,9 +120,7 @@ export default class DesignCanvas extends React.Component {
           let text = FabricHelpers.getText(x,y,element.size.height,{
             'cursor': 'hand', 
             'selectable': false, 
-            'text': element["label"], 
-            'scaleX': 1/Constants.designCanvasScalingFactor(), 
-            'scaleY': 1/Constants.designCanvasScalingFactor()
+            'text': element["label"]
           }); 
           text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = text; 
@@ -138,9 +130,7 @@ export default class DesignCanvas extends React.Component {
           let field = FabricHelpers.getField(x,y,element.size.width,element.size.height,{
             'cursor': 'hand', 
             'selectable': false, 
-            'text': element["label"],
-            'scaleX': 1/Constants.designCanvasScalingFactor(), 
-            'scaleY': 1/Constants.designCanvasScalingFactor()
+            'text': element["label"]
           }); 
           field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
           element.shape = field; 
@@ -165,15 +155,45 @@ export default class DesignCanvas extends React.Component {
 
     // Make sure to send the page fabric shape to the back layer
     this.canvas.sendToBack(pageFabricShape); 
+
+    let scaling = Constants.designCanvasScalingFactor(); 
+    this.canvas.setHeight(this.canvas.getHeight() * scaling);
+    this.canvas.setWidth(this.canvas.getWidth() * scaling); 
+    var obj = this.canvas.getObjects(); 
+    for (var i=0; i<obj.length; i++){
+      // let scaleHeight = obj[i].get('height'); 
+      // let scaleWidth = obj[i].get('width'); 
+      var left = obj[i].get('left');
+      var top = obj[i].get('top');
+
+      // obj[i].set('width', scaleWidth * scaling);
+      // obj[i].set('height', scaleHeight * scaling);
+      obj[i].set('left', left * scaling);
+      obj[i].set('top', top * scaling);
+      obj[i].set('scaleX', scaling);
+      obj[i].set('scaleY', scaling);
+
+      obj[i].setCoords();
+    }
+
+    this.canvas.renderAll();
   }
 
-  saveOrTrashDesignCanvas(action) {
+  performDesignCanvasMenuAction(action) {
     if(action == "save") {
       this.props.saveDesignCanvas(this.id);
     }
-    else {
+    else if(action == "trash") {
       this.props.trashDesignCanvas(this.id);
     }
+    else if(action == "like"){
+      // Do something here 
+      this.props.getRelativeDesigns(this.originalElements, "like"); 
+    }
+
+    this.setState({
+      designMenu: undefined
+    });
   }
 
   onRightClick(e){
@@ -181,17 +201,15 @@ export default class DesignCanvas extends React.Component {
     e.preventDefault();
 
     // Check for the status of menuShown to see if we need to close out another menu before opening this one
-    if(this.state.saveMenuShown) {
+    if(this.state.designMenu != undefined) {
       this.setState({
-        saveMenu: undefined, 
-        saveMenuShown: false
+        designMenu: undefined
       }); 
     }
 
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
-      saveMenu: <SaveMenu left={e.clientX} top={e.clientY} menuAction={this.saveOrTrashDesignCanvas.bind(this)} />,
-      saveMenuShown: true
+      designMenu: <DesignMenu left={e.pageX} top={e.pageY} menuAction={this.performDesignCanvasMenuAction.bind(this)} />
     });
   }
 
@@ -200,15 +218,14 @@ export default class DesignCanvas extends React.Component {
    	let menuPosition = this.state.menuPosition; 
    	let activeCanvasMenu = this.state.activeCanvasMenu; 
     let contextMenu = this.onRightClick;
-    let saveMenuShown = this.state.saveMenuShown; 
-    let saveMenu = this.state.saveMenu; 
+    let designMenu = this.state.designMenu; 
     return  (
       <div onContextMenu={(this.saved ? undefined : contextMenu.bind(this))} className="canvas-container" id={"canvas-box-" + this.id}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
   			</div>
-        <div> 
-          {saveMenu}
+        <div>
+          {designMenu}
         </div>
 	    	<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width={this.canvasWidth} height={this.canvasHeight}>
 	     </canvas>

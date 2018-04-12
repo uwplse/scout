@@ -1,6 +1,6 @@
 class Constants {
 	static designCanvasScalingFactor() {
-		return 2; 
+		return 0.5; 
 	}
 }
 

@@ -126,7 +126,7 @@ export default class ConstraintsCanvas extends React.Component {
     let shape = this.createConstraintsCanvasShapeObject("text");
 
     let location = this.getConstraintsCanvasShapeLocation(); 
-    let fontSize = 40; 
+    let fontSize = 20; 
     let text = FabricHelpers.getInteractiveText(location.left, location.top, fontSize, {'selectable': true});
    
     this.addShapeToConstraintsCanvas(shape, text);

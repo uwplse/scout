@@ -260,7 +260,8 @@ export default class PageContainer extends React.Component {
                               elements={elements} originalElements={originalElements}
                               updateConstraintsCanvas={this.updateConstraintsCanvasShape}
                               saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
-                              trashDesignCanvas={this.trashDesignCanvas.bind(this)} />; 
+                              trashDesignCanvas={this.trashDesignCanvas.bind(this)}
+                              getRelativeDesigns={this.getRelativeDesigns.bind(this)} />; 
       designCanvasList.push(designCanvas); 
       this.designCanvasMap[solution.id] = designCanvas; 
     }
@@ -284,6 +285,30 @@ export default class PageContainer extends React.Component {
    // Send an ajax request to the server 
    // Solve for the new designs
     $.post("/solve", {"elements": jsonShapes, "solutions": exploredSolutions}, this.parseSolutions, 'text');
+
+    // Reset the state of the designs canvas
+    this.setState({
+      constraintChanged: false
+    });
+  }
+
+  getRelativeDesigns(elements, action) {
+    // get more designs relative to a specific design
+    let jsonShapes = this.getShapesJSON(); 
+
+    // Get JSON for already retrieved designs/saved/trashed
+    let exploredSolutions = this.getExploredSolutionsJSON();
+   
+   // Send an ajax request to the server 
+   // Solve for the new designs
+    $.post("/solve", {
+      "elements": jsonShapes, 
+      "solutions": exploredSolutions, 
+      "relative_designs": {
+        "relative_design": elements, 
+        "relative_action": action
+      }
+    }, this.parseSolutions, 'text');
 
     // Reset the state of the designs canvas
     this.setState({

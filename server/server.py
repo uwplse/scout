@@ -37,7 +37,13 @@ def solve():
 		solutions_json = form_data["solutions"]
 		elements = json.loads(elements_json)
 		solutions = json.loads(solutions_json)
-		solutions = get_solution_from_custom_solver(elements, solutions)
+
+		relative_designs = dict() 
+		if "relative_designs" in form_data: 
+			relative_designs_json = form_data["relative_designs"]
+			relative_designs = json.loads(relative_designs_json)
+
+		solutions = get_solution_from_custom_solver(elements, solutions, relative_designs)
 
 		# Output dictionary 
 		output = dict() 
@@ -94,8 +100,8 @@ def check_solution_exists_from_custom_solver(elements):
 	solutions = solver.check()
 	return solutions
 
-def get_solution_from_custom_solver(elements, solutions): 
-	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
+def get_solution_from_custom_solver(elements, solutions, relative_designs): 
+	solver = custom_solver.Solver(elements, solutions, relative_designs, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
 	solutions = solver.solve()
 	return solutions
 

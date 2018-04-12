@@ -100,14 +100,16 @@ class FabricHelpers {
   		let scaleY = options.scaleY ? options.scaleY : 1;
   	    let textValue = options.text ? options.text : "Text"; 
 	    var text = new fabric.Text(textValue, {
-	      fontSize: fontSize * scaleY,
+	      fontSize: fontSize,
 	      left: left,
 	      top: top,
 	      fontFamily: 'Helvetica Neue',
 	      fill: '#000', 
 	      lockRotation: true, 
 	      hoverCursor: options.cursor, 
-	      selectable: options.selectable
+	      selectable: options.selectable, 
+	      scaleX: scaleX, 
+	      scaleY: scaleY
 	    });
 
 	    return text; 

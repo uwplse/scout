@@ -1,7 +1,7 @@
 // App.jsx
 import React from "react";
 
-class SaveMenuItem extends React.Component {
+class DesignMenuItem extends React.Component {
   constructor(props) {
   	super(props); 
   	this.label = props.label; 
@@ -16,7 +16,7 @@ class SaveMenuItem extends React.Component {
   }
 }
 
-export default class SaveMenu extends React.Component {
+export default class DesignMenu extends React.Component {
   constructor(props) {
   	super(props); 
     this.left = props.left; 
@@ -24,17 +24,18 @@ export default class SaveMenu extends React.Component {
     this.menuAction = props.menuAction; 
   }
 
-  constructSaveMenu() {
+  constructDesignMenu() {
   	let menuItems = []; 
 
-    menuItems.push(<SaveMenuItem key="save" onClick={this.menuAction} action="save" label="Save this design." />); 
-    menuItems.push(<SaveMenuItem key="trash" onClick={this.menuAction} action="trash" label="Trash this design." />); 
+    menuItems.push(<DesignMenuItem key="save" onClick={this.menuAction} action="save" label="Save this design." />); 
+    menuItems.push(<DesignMenuItem key="trash" onClick={this.menuAction} action="trash" label="Trash this design." />); 
+    menuItems.push(<DesignMenuItem key="like" onClick={this.menuAction} action="like" label="Show me more like this." />);
 
   	return menuItems; 
   }
 
   render () {
-  	const menuItems = this.constructSaveMenu();
+  	const menuItems = this.constructDesignMenu();
     return (
       <div style={{left: this.left, top: this.top}} className={"canvas-menu-container " + (menuItems.length ? "" : "hidden")}>
         <ul className="canvas-menu-list">{menuItems}</ul>
