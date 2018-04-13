@@ -171,8 +171,8 @@ div:focus {
 .widget-feedback-items {
     list-style-type: none;
     margin-top: 5px;
-    background-color: #d9d9d9;
-    border: lightgray;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
     padding: 5px;
     border-radius: 2px;
 }
@@ -189,6 +189,17 @@ div:focus {
 	padding-right: none;
 }
 
+.widgets-sortable-tree .rst__moveHandle, .widgets-sortable-tree .rst__loadingHandle {
+	height: 44px;
+}
+
+.widgets-sortable-tree .rst__rowTitleWithSubtitle {
+    height: inherit; 
+}
+
+.widgets-sortable-tree .rst__rowSubtitle {
+	font-size: inherit;
+}
 
 
 

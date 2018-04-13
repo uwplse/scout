@@ -1,6 +1,7 @@
 import React from "react";
 import FabricHelpers from './FabricHelpers.js';
 import Widget from './Widget';
+import WidgetFeedback from './WidgetFeedback';
 import SortableTree from 'react-sortable-tree';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
@@ -17,6 +18,10 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
+
+    this.defaultControlWidth = 120; 
+    this.defaultControlHeight = 40; 
+    this.defaultFeedbackHeight = 40; 
 
     this.state = { 
       constraintModified: false, 
@@ -59,12 +64,23 @@ export default class ConstraintsCanvas extends React.Component {
     let shape = this.createConstraintsCanvasShapeObject(type); 
 
     let shapeId = shape["name"];
-    let widget = <Widget key={shapeId} shape={shape} id={shapeId} type={type} />;
+    let widget = <Widget key={shapeId} shape={shape} id={shapeId} type={type} height={this.defaultControlHeight} width={this.defaultControlWidth}/>;
+    let widgetFeedback = <WidgetFeedback key={shapeId} />;
+    let widgetFeedback2 = <WidgetFeedback key={shapeId} />; 
     this.setState(state => ({
       treeData: this.state.treeData.concat({
-        title: widget
+        title: widget, 
+        subtitle: [widgetFeedback, widgetFeedback2]
       })
     }));
+  }
+
+  updateConstraintsCanvasShape(shape) {    
+    // The shape was already updated so we just need to re-render the tree to get the new sizes
+    // this.setState(state => ({
+    //   treeData: this.state.treeData
+    // }));
+    // Add more WidgetFeedback 
   }
 
   getShapeHierarchy() {
@@ -119,7 +135,7 @@ export default class ConstraintsCanvas extends React.Component {
     let shape = {
       "name": _.uniqueId(),
       "label": type, 
-      "type": type
+      "type": type 
     }
 
     if (type == "group" || type == "labelGroup") {
@@ -134,98 +150,15 @@ export default class ConstraintsCanvas extends React.Component {
     return shape;
   }
 
-  deleteShape(shape) {
-    // TODO 
+  calculateRowHeight({treeIndex, node, path}) {
+    let rowHeight = this.state.treeData[treeIndex].title.props.height; 
+
+    // Get the number of feedback rows from the shape object at this node
+    let nodeShape = this.state.treeData[treeIndex].title.props.shape; 
+
+    // Row height
+    return rowHeight + (nodeShape.feedback * this.defaultFeedbackHeight); 
   }
-
-  deleteShapeFromObjectChildren(shape, objectJSON) {
-    let index = objectJSON.children.indexOf(shape); 
-    objectJSON.children.splice(index, 1);   
-  }
-
-  selectShape(shape) {
-    this.selectedShape = shape; 
-  }
-
-  distanceWithin(x1,y1,width1,height1,x2,y2,width2,height2,padding){
-    // return the distance between the shapes 
-    if(!(x1 > (x2 + width2 + padding) || y1 > (y2 + height2 + padding) || x2 > (x1 + width1 + padding) || y2 > (y1 + height1 + padding))) {
-      // They are overlapping 
-      return true;
-    }
-
-    return false;  
-  }
-
-  unparentGroup(group){
-    for(let i=0; i<group.children.length; i++) {
-      let child = group.children[i]; 
-      child.parent = undefined; 
-
-      // TODO: hierarchies of groups
-      this.pageLevelShape.children.push(child); 
-    }
-
-    this.deleteShapeFromObjectChildren(group, this.pageLevelShape);     
-  }
-
-  addShapeToGroup(shape, parent) {
-    if(shape.parent){
-      // Delete it from the page level children
-      this.deleteShapeFromObjectChildren(shape, shape.parent);         
-    }
-
-    shape.parent = parent; 
-    parent.children.push(shape); 
-  }
-
-  // Adds two shapes into a new group and adds the new group to the canvas
-  addShapeToNewGroup(shape1, shape2, groupType="group") {
-    // // Create a new group for the parent container
-    // let group = {
-    //   "name": _.uniqueId(),
-    //   "type": groupType, 
-    //   "children": []
-    // }
-
-    // shape1.parent = group; 
-    // shape2.parent = group; 
-    // group.children.push(shape1); 
-    // group.children.push(shape2); 
-
-    // // Remove both children from the page level object
-    // this.deleteShapeFromObjectChildren(shape1, this.pageLevelShape); 
-    // this.deleteShapeFromObjectChildren(shape2, this.pageLevelShape); 
-    // this.pageLevelShape.children.push(group); 
-
-    // // Create a new group shape to be the bounding box 
-    // let color = groupType == "labels" ? "red" : "blue";
-    // let groupBoundingBox = this.getGroupBoundingBox(group); 
-    // let groupRect = FabricHelpers.getGroup(groupBoundingBox.x-10, groupBoundingBox.y-10, groupBoundingBox.width+20, groupBoundingBox.height+20, {
-    //   selectable: false, 
-    //   stroke: color
-    // });
-
-    // group.shape = groupRect; 
-
-    // // Add them to the page collection of shape objects
-    // this.constraintsCanvas.add(groupRect); 
-    // this.constraintsShapes.push(group); 
-    // this.constraintsShapesByName[group["name"]] = group; 
-
-    // // Move the group to the back layer
-    // this.constraintsCanvas.sendToBack(groupRect);
-  }
-
-  // removeShapeFromGroup(shape, parentGroup){
-  //   // Remove the child from this group and update the group bounds
-  //   shape.parent = undefined; 
-  //   let shapeIndex = parentGroup.children.indexOf(shape); 
-  //   parentGroup.children.splice(shapeIndex, 1); 
-
-  //   // Append it back to the page level object children for now (Until we support hierarchies of groups)
-  //   this.pageLevelShape.children.push(shape); 
-  // }
 
   canReparentWidgetNode({node, nextParent, prevPath, nextPath}) {
     if(nextParent == null || (nextParent && (nextParent.title.props.type == "group" || nextParent.title.props.type == "labelGroup"))) {
@@ -245,6 +178,7 @@ export default class ConstraintsCanvas extends React.Component {
             treeData={this.state.treeData}
             onChange={treeData => this.setState({ treeData })}
             canDrop={this.canReparentWidgetNode.bind(this)}
+            rowHeight={this.calculateRowHeight.bind(this)}
           />
         </div>
       </div>

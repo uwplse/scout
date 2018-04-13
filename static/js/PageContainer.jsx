@@ -96,24 +96,24 @@ export default class PageContainer extends React.Component {
       constraintChanged: true
     });
 
-    let jsonShapes = this.getShapesJSON(); 
-    var self = this;
-    $.post("/check", {"elements": jsonShapes}, function(requestData) {
-      if(requestData == "True") {
-        // At least one constraint has been changed 
-        // The button to get more designs with the current set of constraints should be disabled. 
-        self.setState({
-          errorMessageShown: false
-        });  
-      } else {
-        // Display an error message somewhere (?)
-        undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
+    // let jsonShapes = this.getShapesJSON(); 
+    // var self = this;
+    // $.post("/check", {"elements": jsonShapes}, function(requestData) {
+    //   if(requestData == "True") {
+    //     // At least one constraint has been changed 
+    //     // The button to get more designs with the current set of constraints should be disabled. 
+    //     self.setState({
+    //       errorMessageShown: false
+    //     });  
+    //   } else {
+    //     // Display an error message somewhere (?)
+    //     undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
 
-        self.setState({
-          errorMessageShown: true
-        });
-      }
-    }, 'text');
+    //     self.setState({
+    //       errorMessageShown: true
+    //     });
+    //   }
+    // }, 'text');
   }
 
   saveDesignCanvas(designCanvasID){

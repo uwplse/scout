@@ -9,8 +9,8 @@ export default class Widget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
 
-    this.defaultControlHeight = 40; 
-    this.defaultControlWidth = 120;
+    this.defaultControlHeight = props.height; 
+    this.defaultControlWidth = props.width;
 
     // mapping of shape types to handler functions
     this.shapeAddHandlers = {
@@ -100,13 +100,8 @@ export default class Widget extends React.Component {
 
   render () {
     return (
-      <div class="widget-container">
-        <canvas id={"widget-canvas-"  + this.id} className="widget-canvas" width="120px" height="40px"></canvas>
-        <div class="widget-feedback">
-          <ul className="widget-feedback-items">
-            <li>A sample piece of feedback</li>
-          </ul>
-        </div>
+      <div className="widget-container">
+        <canvas id={"widget-canvas-"  + this.id} className="widget-canvas" width={this.defaultControlWidth + "px"} height={this.defaultControlHeight + "px"}></canvas>
       </div>); 
   }
 

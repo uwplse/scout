@@ -23,7 +23,7 @@ ConstraintActions.elementConstraints = {
 			    	y: designCanvasShape["location"]["y"]
 			    }
 
-			    constraintsCanvasShape["hasConstraint"] = true;
+			    constraintsCanvasShape.feedback += 1; 
 
 			    // Then update the location of the constraints canvas shape to that of the design canvas shape
 			    // constraintsCanvasShape.shape.set({
