@@ -24,7 +24,8 @@ export default class PageContainer extends React.Component {
       savedDesignCanvases: [], 
       trashedDesignCanvases: [], 
       constraintChanged: false , 
-      designsFound: -1
+      designsFound: -1, 
+      treeData: []
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -155,59 +156,58 @@ export default class PageContainer extends React.Component {
 
   getShapesJSON() {
     // Get all of the shapes on the canvas into a collection 
-    let shapeJSON = []; 
-    let shapeObjects = this.refs.constraintsCanvas.getShapeObjects();
-    for(var i=0; i<shapeObjects.length; i++) {
-      let shape = shapeObjects[i]; 
-      let jsonShape = {};
+    let shapeObjects = this.refs.constraintsCanvas.getShapeHierarchy();
+    // for(var i=0; i<shapeObjects.length; i++) {
+    //   let shape = shapeObjects[i]; 
+    //   let jsonShape = {};
 
-      // Basic set of properties for each widget type
-      jsonShape.type = shape.type; 
-      jsonShape.label = shape.label; 
-      jsonShape.name = shape.name; 
-      jsonShape.locks = shape.locks; 
-      jsonShape.location = shape.location; 
-      jsonShape.size = shape.size; 
+    //   // Basic set of properties for each widget type
+    //   jsonShape.type = shape.type; 
+    //   jsonShape.label = shape.label; 
+    //   jsonShape.name = shape.name; 
+    //   jsonShape.locks = shape.locks; 
+    //   jsonShape.location = shape.location; 
+    //   jsonShape.size = shape.size; 
 
-      // Get the locations and sizes from the fabric shapes on the canvs
-      let fabricShape = shape.shape; 
-      if(fabricShape){
+    //   // Get the locations and sizes from the fabric shapes on the canvs
+    //   let fabricShape = shape.shape; 
+    //   if(fabricShape){
 
-        if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("location") < 0)) {
-          jsonShape.location = {
-            "x": fabricShape.left, 
-            "y": fabricShape.top
-          }    
-        }
+    //     if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("location") < 0)) {
+    //       jsonShape.location = {
+    //         "x": fabricShape.left, 
+    //         "y": fabricShape.top
+    //       }    
+    //     }
       
 
-        if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("size") < 0)) {
-          let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
-          let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
-          if(shape.type == "field"){
-            roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX);
-            roundedHeight = shape.lineShape.top - fabricShape.top; 
-          }
+    //     if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("size") < 0)) {
+    //       let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
+    //       let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
+    //       if(shape.type == "field"){
+    //         roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX);
+    //         roundedHeight = shape.lineShape.top - fabricShape.top; 
+    //       }
 
-          jsonShape.size = {
-            "width": roundedWidth, 
-            "height": roundedHeight
-          }   
-        }     
-      }
+    //       jsonShape.size = {
+    //         "width": roundedWidth, 
+    //         "height": roundedHeight
+    //       }   
+    //     }     
+    //   }
 
-      // Replace the child references with their IDs before sending them to the server
-      if (shape.children) {
-        jsonShape.children = []; 
-        for(let i=0; i<shape.children.length; i++) {
-          jsonShape.children.push(shape.children[i].name); 
-        }
-      }
+    //   // Replace the child references with their IDs before sending them to the server
+    //   if (shape.children) {
+    //     jsonShape.children = []; 
+    //     for(let i=0; i<shape.children.length; i++) {
+    //       jsonShape.children.push(shape.children[i].name); 
+    //     }
+    //   }
 
-      shapeJSON.push(jsonShape); 
-    }  
+    //   shapeJSON.push(jsonShape); 
+    // }  
 
-    return JSON.stringify(shapeJSON); 
+    return JSON.stringify(shapeObjects); 
   }
 
   getExploredSolutionsJSON() {
@@ -316,6 +316,21 @@ export default class PageContainer extends React.Component {
     });
   }
 
+  // onTreeNodeMoved(arg) {
+  //   console.log("test");
+  //   let constraintsTreeData = arg.treeData; 
+  //   this.setState(state => ({
+  //     constraintsTreeData: constraintsTreeData
+  //   }));
+  // }
+
+  // updateConstraintsTreeState(treeData){
+  //   let constraintsState = treeData; 
+  //   this.setState({
+  //     constraintsTreeData: constraintsState
+  //   });
+  // }
+
   render () {
     const designs = this.state.designCanvases;
     const designsFound = this.state.designsFound; 
@@ -361,7 +376,10 @@ export default class PageContainer extends React.Component {
             <div className="panel-heading"> 
               <h3 className="panel-title">Constraints</h3>
             </div>
-            <ConstraintsCanvas ref="constraintsCanvas" />
+            <div className="constraints-canvas-container"> 
+              <ConstraintsCanvas ref="constraintsCanvas" />
+            </div>
+           {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>
           <div className="panel-group design-canvas-container" id="accordion">
             <div className="panel designs-container panel-default">

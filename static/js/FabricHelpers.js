@@ -26,8 +26,7 @@ class FabricHelpers {
 	        ry: 2, 
 	        left: left, 
 	        top: top, 
-	        selectable: options.selectable, 
-	        lockScalingY: true
+	        selectable: false
 	    });
 
 	    let textValue = options.text ? options.text : "BUTTON"; 
@@ -40,11 +39,13 @@ class FabricHelpers {
 	      letterSpacing: 0.42,
 	      letterSpacing: ".03em",
 	      fill: 'white', 
-	      left: left + 125, 
+	      left: left + 20, 
 	      top: top + 10, 
-	      selectable: options.selectable,
+	      selectable: true,
 	      lockScalingY: true, 
-	      lockScalingX: true
+	      lockScalingX: true, 
+	      lockMovementX: true, 
+	      lockMovementY: true
 	    });
 
 	    return { button: rect, label: text }; 	
@@ -116,7 +117,6 @@ class FabricHelpers {
 	}
 
     static getInteractiveText(left, top, fontSize, options={}) {
-
 	    var text = new fabric.IText('Text', {
 	      fontSize: fontSize,
 	      left: left,
@@ -126,7 +126,11 @@ class FabricHelpers {
 	      fill: 'rgba(0,0,0,.87)', 
 	      lockRotation: true, 
 	      hoverCursor: options.cursor, 
-	      selectable: options.selectable
+	      selectable: true, 
+	      lockMovementX: true, 
+	      lockMovementY: true, 
+	      lockScalingX: true, 
+	      lockScalingY: true
 	    });
 
 	    return text; 
@@ -137,7 +141,7 @@ class FabricHelpers {
 	    	fill: 'rgba(0,0,0,.26)',
 	        stroke: 'rgba(0,0,0,.26)', 
 	        strokeWidth: 2, 
-	        selectable: options.selectable
+	        selectable: false
 	    });
 
 	    let textValue = "Field..."; 
@@ -148,11 +152,13 @@ class FabricHelpers {
 	      fontWeight: 400,
 	      strokeWidth:0, 
 	      fill: 'rgba(0,0,0,.26)', 
-	      selectable: options.selectable, 
+	      selectable: true, 
 	      left: left, 
 	      top: top, 
 	      lockScalingX: true, 
-	      lockScalingY: true
+	      lockScalingY: true, 
+	      lockMovementY: true, 
+	      lockMovementX: true
 	    });
 
 	    return { field: text, line: line };
