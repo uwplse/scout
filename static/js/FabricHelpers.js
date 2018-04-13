@@ -1,21 +1,50 @@
 class FabricHelpers {
-	static getGroup(left, top, width, height, options={}) {
-		let opacity = options.opacity != undefined ? options.opacity : 1;
-		let selectable = options.selectable != undefined ? options.selectable : true;  
+ 	static getGroup(left, top, width, height, options={}) {
+	    let textValue = (options.text != undefined) ? options.text : options.groupType; 
+	    let fontSize = options.fontSize ? options.fontSize : 20; 
+	    let leftOffset = options.leftOffset ? options.leftOffset : 20; 
+	    let topOffset = options.topOffset ? options.topOffset : 10; 
+	    let scaleX = options.scaleX ? options.scaleX : 1; 
+	    let scaleY = options.scaleY ? options.scaleY : 1;
+
 	    var rect = new fabric.Rect({
-	    	top: top, 
-	    	left: left,
-	        width : width,
-	        height : height,
-	        fill : '#fff', 
+	        width: width - 2,
+	        height: height - 2,
+	        fill: '#fff', 
+	        rx: 2, 
+	        ry: 2, 
+	        scaleX: scaleX, 
+	        scaleY: scaleY, 
+	        originX: 'center',
+	        originY: 'center', 
 	        stroke: options.stroke, 
-	        opacity: opacity, 
-	        selectable: selectable, 
-	        hoverCursor: options.cursor
+	        strokeDashArray: [5,5]
+	    });
+ 
+	    var text = new fabric.IText(textValue, {
+	      fontSize: fontSize, 
+	      fontFamily: 'Helvetica Neue', 
+	      fontWeight: 400,
+	      strokeWidth:0, 
+	      letterSpacing: 0.42,
+	      letterSpacing: ".03em",
+	      fill: options.stroke,
+	      scaleX: scaleX, 
+	      scaleY: scaleY, 
+	      originX: 'center',
+	      originY: 'center'
 	    });
 
-	    return rect; 
-	} 
+	    var group = new fabric.Group([ rect, text ], { 
+	        left: left, 
+	        top: top, 
+	        selectable: false, 
+	        hoverCursor: options.cursor, 
+	        selectable: options.selectable
+	      });
+
+	    return group; 
+	}
 
 	static getInteractiveButton(left, top, width, height, options={}) { 
 		var rect = new fabric.Rect({

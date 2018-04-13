@@ -61,16 +61,18 @@ export default class PageContainer extends React.Component {
 
   drawContainersCanvas() {
     this.containersCanvas = new fabric.Canvas('containers-canvas');
-    let group = FabricHelpers.getGroup(10, 10, 100, 50, {
+    let group = FabricHelpers.getGroup(10, 10, 120, 40, {
+      stroke: '#39a1f4',
       selectable: false, 
-      stroke: 'blue'
+      groupType: 'Group'
     });
 
     group.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'group'));
 
-    let label = FabricHelpers.getGroup(10, 70, 100, 50, {
+    let label = FabricHelpers.getGroup(10, 70, 120, 40, {
       selectable: false, 
-      stroke: 'red'
+      stroke: 'red', 
+      groupType: 'Label'
     });
 
     label.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'labelGroup')); 
@@ -157,56 +159,6 @@ export default class PageContainer extends React.Component {
   getShapesJSON() {
     // Get all of the shapes on the canvas into a collection 
     let shapeObjects = this.refs.constraintsCanvas.getShapeHierarchy();
-    // for(var i=0; i<shapeObjects.length; i++) {
-    //   let shape = shapeObjects[i]; 
-    //   let jsonShape = {};
-
-    //   // Basic set of properties for each widget type
-    //   jsonShape.type = shape.type; 
-    //   jsonShape.label = shape.label; 
-    //   jsonShape.name = shape.name; 
-    //   jsonShape.locks = shape.locks; 
-    //   jsonShape.location = shape.location; 
-    //   jsonShape.size = shape.size; 
-
-    //   // Get the locations and sizes from the fabric shapes on the canvs
-    //   let fabricShape = shape.shape; 
-    //   if(fabricShape){
-
-    //     if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("location") < 0)) {
-    //       jsonShape.location = {
-    //         "x": fabricShape.left, 
-    //         "y": fabricShape.top
-    //       }    
-    //     }
-      
-
-    //     if(!jsonShape.locks || (jsonShape.locks && jsonShape.locks.indexOf("size") < 0)) {
-    //       let roundedWidth = Math.round(fabricShape.width * fabricShape.scaleX); 
-    //       let roundedHeight = Math.round(fabricShape.height * fabricShape.scaleY); 
-    //       if(shape.type == "field"){
-    //         roundedWidth = Math.round(shape.lineShape.width * shape.lineShape.scaleX);
-    //         roundedHeight = shape.lineShape.top - fabricShape.top; 
-    //       }
-
-    //       jsonShape.size = {
-    //         "width": roundedWidth, 
-    //         "height": roundedHeight
-    //       }   
-    //     }     
-    //   }
-
-    //   // Replace the child references with their IDs before sending them to the server
-    //   if (shape.children) {
-    //     jsonShape.children = []; 
-    //     for(let i=0; i<shape.children.length; i++) {
-    //       jsonShape.children.push(shape.children[i].name); 
-    //     }
-    //   }
-
-    //   shapeJSON.push(jsonShape); 
-    // }  
-
     return JSON.stringify(shapeObjects); 
   }
 

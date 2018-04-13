@@ -69,18 +69,6 @@ class Solver(object):
 		self.z3_calls = 0
 
 	def build_shape_hierarchy(self): 
-		# elements_queue = self.elements[:]
-
-		# for i in range(0, len(self.elements)):
-		# 	element = self.elements[i]
-
-		# 	# Process any elements with children first
-		# 	if "children" in element and not "processed" in element: 
-		# 		children = element["children"]
-		# 		self.process_children(element, children, elements_queue)
-
-		# After reparenting of children is complete, process the remaining elements in 
-		# elements queue to create the shape hierarchy
 		shapes = dict()
 		root = self.construct_shape_hierarchy([self.elements], shapes)
 		return shapes,root

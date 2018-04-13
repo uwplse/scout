@@ -96,7 +96,8 @@ export default class DesignCanvas extends React.Component {
           cursor: 'hand', 
           selectable: false, 
           opacity: 0, 
-          stroke: undefined
+          stroke: undefined,
+          text: ""
         }); 
 
         pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
@@ -142,7 +143,8 @@ export default class DesignCanvas extends React.Component {
             cursor: 'hand', 
             selectable: false, 
             opacity: 0, 
-            stroke: undefined
+            stroke: undefined, 
+            text: ""
           }); 
 
           group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 

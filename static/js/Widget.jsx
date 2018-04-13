@@ -9,6 +9,9 @@ export default class Widget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
 
+    this.defaultControlHeight = 40; 
+    this.defaultControlWidth = 120;
+
     // mapping of shape types to handler functions
     this.shapeAddHandlers = {
       'text': this.addTextToCanvas.bind(this), 
@@ -33,16 +36,18 @@ export default class Widget extends React.Component {
   }
 
   addLabelGroupToCanvas() {
-    let groupRect = FabricHelpers.getGroup(0,0, 100, 35, {
-      stroke: 'red'
+    let groupRect = FabricHelpers.getGroup(0,0, this.defaultControlWidth, this.defaultControlHeight, {
+      stroke: 'red', 
+      groupType: 'Label'
     });
 
     this.canvas.add(groupRect)
   }
 
   addGroupToCanvas() {
-    let groupRect = FabricHelpers.getGroup(0, 0, 100, 35, {
-      stroke: 'blue'
+    let groupRect = FabricHelpers.getGroup(0, 0, this.defaultControlWidth, this.defaultControlHeight, {
+      stroke: '#39a1f4', 
+      groupType: 'Group'
     });
 
     this.canvas.add(groupRect); 
@@ -50,12 +55,12 @@ export default class Widget extends React.Component {
 
   addFieldToCanvas() {
     // Add a new field to the constraints canvas
-    let field = FabricHelpers.getInteractiveField(0,0, 120, 40, {'selectable': true});
+    let field = FabricHelpers.getInteractiveField(0,0, this.defaultControlWidth, this.defaultControlHeight, {'selectable': true});
     this.canvas.add(field.field); 
     this.canvas.add(field.line);
     this.element.size = {}; 
-    this.element.size.width = 120; 
-    this.element.size.height = 40;
+    this.element.size.width = this.defaultControlWidth; 
+    this.element.size.height = this.defaultControlHeight;
 
     let shape = this.element;
     field.field.on("modified", function() {
@@ -79,13 +84,13 @@ export default class Widget extends React.Component {
   }
 
   addButtonToCanvas() {
-    let button = FabricHelpers.getInteractiveButton(0, 0, 120, 40, {'selectable': true});
+    let button = FabricHelpers.getInteractiveButton(0, 0, this.defaultControlWidth, this.defaultControlHeight, {'selectable': true});
     this.canvas.add(button.button);
     this.canvas.add(button.label);   
 
     this.element.size = {}; 
-    this.element.size.width = 120; 
-    this.element.size.height = 40;
+    this.element.size.width = this.defaultControlWidth; 
+    this.element.size.height = this.defaultControlHeight;
 
     let shape = this.element; 
     button.label.on("modified", function() {
@@ -94,6 +99,28 @@ export default class Widget extends React.Component {
   }
 
   render () {
-    return (<canvas id={"widget-canvas-"  + this.id} className="widget-canvas" width="120px" height="40px"></canvas>); 
+    return (
+      <div class="widget-container">
+        <canvas id={"widget-canvas-"  + this.id} className="widget-canvas" width="120px" height="40px"></canvas>
+        <div class="widget-feedback">
+          <ul className="widget-feedback-items">
+            <li>A sample piece of feedback</li>
+          </ul>
+        </div>
+      </div>); 
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
