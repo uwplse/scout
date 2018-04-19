@@ -15,6 +15,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = [];
+    this.widgetTreeNodeMap = {};
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
@@ -22,6 +23,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultControlWidth = 120; 
     this.defaultControlHeight = 40; 
     this.defaultFeedbackHeight = 40; 
+    this.rowPadding = 10; 
 
     this.state = { 
       constraintModified: false, 
@@ -65,22 +67,35 @@ export default class ConstraintsCanvas extends React.Component {
 
     let shapeId = shape["name"];
     let widget = <Widget key={shapeId} shape={shape} id={shapeId} type={type} height={this.defaultControlHeight} width={this.defaultControlWidth}/>;
-    let widgetFeedback = <WidgetFeedback key={shapeId} />;
-    let widgetFeedback2 = <WidgetFeedback key={shapeId} />; 
-    this.setState(state => ({
-      treeData: this.state.treeData.concat({
+
+    let newTreeNode = {
         title: widget, 
-        subtitle: [widgetFeedback, widgetFeedback2]
-      })
+        subtitle: []
+    }; 
+
+    this.widgetTreeNodeMap[shapeId] = newTreeNode; 
+    this.setState(state => ({
+      treeData: this.state.treeData.concat(newTreeNode)
     }));
   }
 
   updateConstraintsCanvasShape(shape) {    
     // The shape was already updated so we just need to re-render the tree to get the new sizes
-    // this.setState(state => ({
-    //   treeData: this.state.treeData
-    // }));
-    // Add more WidgetFeedback 
+    // Add WidgetFeedbackItem to correct item in the tree
+
+    // Find the corresponding tree node
+    let shapeId = shape.name; 
+    let treeNode = this.widgetTreeNodeMap[shapeId]; 
+
+    // Add a new feedback item tto the tree node
+    let widgetFeedback = <WidgetFeedback key={shapeId} />; 
+    treeNode.subtitle.push(widgetFeedback); 
+
+    this.setState(state => ({
+      treeData: this.state.treeData
+    }));
+
+    this.forceUpdate();
   }
 
   getShapeHierarchy() {
@@ -153,11 +168,11 @@ export default class ConstraintsCanvas extends React.Component {
   calculateRowHeight({treeIndex, node, path}) {
     let rowHeight = this.state.treeData[treeIndex].title.props.height; 
 
-    // Get the number of feedback rows from the shape object at this node
-    let nodeShape = this.state.treeData[treeIndex].title.props.shape; 
-
     // Row height
-    return rowHeight + (nodeShape.feedback * this.defaultFeedbackHeight); 
+    let subtitles = this.state.treeData[treeIndex].subtitle; 
+    let numFeedback = subtitles ? subtitles.length : 0; 
+
+    return this.rowPadding + rowHeight + (numFeedback * this.defaultFeedbackHeight); 
   }
 
   canReparentWidgetNode({node, nextParent, prevPath, nextPath}) {
@@ -179,6 +194,7 @@ export default class ConstraintsCanvas extends React.Component {
             onChange={treeData => this.setState({ treeData })}
             canDrop={this.canReparentWidgetNode.bind(this)}
             rowHeight={this.calculateRowHeight.bind(this)}
+            isVirtualized={false}
           />
         </div>
       </div>

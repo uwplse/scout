@@ -185,13 +185,14 @@ div:focus {
 	min-width: initial;
 }
 
-.widgets-sortable-tree .rst__rowLabel {
-	padding-right: none;
+.widgets-sortable-tree .rst__rowWrapper {
+	padding: 0px;
 }
 
-.widgets-sortable-tree .rst__moveHandle, .widgets-sortable-tree .rst__loadingHandle {
+.widgets-sortable-tree .rst__moveHandle {
 	height: 44px;
 }
+
 
 .widgets-sortable-tree .rst__rowTitleWithSubtitle {
     height: inherit; 
