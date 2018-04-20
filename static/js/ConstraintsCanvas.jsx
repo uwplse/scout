@@ -23,7 +23,8 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.state = { 
       constraintModified: false, 
-      treeData: []
+      treeData: [], 
+      pageFeedbackWidgets: []
     }; 
   }
 
@@ -81,33 +82,60 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Find the corresponding tree node
     let shapeId = shape.name; 
-    let treeNode = this.widgetTreeNodeMap[shapeId]; 
-
-    // Check whether to remove or add a widget feedback item
     let uniqueId = _.uniqueId();
-    if(actionType == "do") {
-      let message = action.getFeedbackMessage(shape);
-      let widgetFeedback = <WidgetFeedback key={shapeId + "_" + uniqueId} feedbackKey={action.key} message={message} />; 
-      treeNode.subtitle.push(widgetFeedback);       
-    } else {
-      // Remove the corresponding widget feedback item
-      let feedbackItems = treeNode.subtitle; 
-      let feedbackIndex = -1; 
-      for(var i=0; i<feedbackItems.length; i++){
-        if(feedbackItems[i].props.feedbackKey == action.key) {
-          feedbackIndex = i; 
+
+    if(shape.type == "page") {
+      // Add the feedback widgets to the page level instead
+      if(actionType == "do") {
+        let message = action.getFeedbackMessage(shape);
+        let widgetFeedback = <WidgetFeedback key={shapeId + "_" + uniqueId} feedbackKey={action.key} message={message} />; 
+        this.state.pageFeedbackWidgets.push(widgetFeedback);   
+      }else {
+        // Remove the feedback widget from the page level
+        let feedbackItems = this.state.pageFeedbackWidgets; 
+        let feedbackIndex = -1; 
+        for(var i=0; i<feedbackItems.length; i++){
+          if(feedbackItems[i].props.feedbackKey == action.key) {
+            feedbackIndex = i; 
+          }
+        }
+
+        if(feedbackIndex > -1) {
+          this.state.pageFeedbackWidgets.splice(feedbackIndex, 1);
         }
       }
 
-      // Remove the item at that indexx
-      if(feedbackIndex > -1) {
-        treeNode.subtitle.splice(feedbackIndex);        
-      }
-    }
+      this.setState(state => ({
+        pageFeedbacks: this.state.pageFeedbackWidgets
+      })); 
+    } else {
+      let treeNode = this.widgetTreeNodeMap[shapeId]; 
 
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }));
+      // Check whether to remove or add a widget feedback item
+      if(actionType == "do") {
+        let message = action.getFeedbackMessage(shape);
+        let widgetFeedback = <WidgetFeedback key={shapeId + "_" + uniqueId} feedbackKey={action.key} message={message} />; 
+        treeNode.subtitle.push(widgetFeedback);       
+      } else {
+        // Remove the corresponding widget feedback item
+        let feedbackItems = treeNode.subtitle; 
+        let feedbackIndex = -1; 
+        for(var i=0; i<feedbackItems.length; i++){
+          if(feedbackItems[i].props.feedbackKey == action.key) {
+            feedbackIndex = i; 
+          }
+        }
+
+        // Remove the item at that indexx
+        if(feedbackIndex > -1) {
+          treeNode.subtitle.splice(feedbackIndex, 1);        
+        }
+      }
+
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }));      
+    }
   }
 
   getShapeHierarchy() {
@@ -219,11 +247,15 @@ export default class ConstraintsCanvas extends React.Component {
 
   render () {
     const shapes = this.constraintsShapes; 
+    const pageFeedbacks = this.state.pageFeedbackWidgets;
     var self = this;
 
     // Process the queue of shapes to add to the canvas
 	  return (
       <div className="panel-body" id="constraints-canvas-container" tabIndex="1">
+        <div className="constraints-canvas-page-feedback">
+          {pageFeedbacks}
+        </div>
         <div className="widgets-sortable-tree">
           <SortableTree
             treeData={this.state.treeData}

@@ -62,6 +62,10 @@ div:focus {
 	width: 400px;
 }
 
+.constraints-canvas-page-feedback {
+	display: inline-block;
+}
+
 .widgets-container {
 	border-right: 1px solid #ccc;
 }
@@ -220,6 +224,15 @@ div:focus {
 
 .widgets-sortable-tree .rst__rowLabel {
 	padding-right: 5px;
+}
+
+.widgets-sortable-tree .rst__collapseButton, 
+.widgets-sortable-tree .rst__expandButton {
+	top: 22px;
+}
+
+.widgets-sortable-tree .rst__lineChildren:after {
+	height: calc(100% - 44px); 
 }
 
 .widgets-sortable-tree-remove {
