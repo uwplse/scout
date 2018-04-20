@@ -107,6 +107,20 @@ div:focus {
     max-height: 550px;
 }
 
+.saved-body {
+	height: 75px;
+	display: flex; 
+	flex-direction: row;
+}
+
+.saved-body .canvas-container {
+	margin-right: 5px;
+}
+
+.trashed-body {
+	height: 75px;
+}
+
 .designs-message {
 	margin-bottom: 5px;
 	margin-top: 5px;
@@ -183,6 +197,10 @@ div:focus {
 
 
 /* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
+.widgets-sortable-tree {
+	height: 100%;
+}
+
 .widgets-sortable-tree .rst__rowContents {
 	border: none;
 	box-shadow: none;

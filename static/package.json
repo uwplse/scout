@@ -39,6 +39,7 @@
     ]
   },
   "dependencies": {
+    "react-sidebar": "^2.3.2",
     "react-sortable-tree": "file:../../react-sortable-tree/react-sortable-tree-2.1.0.tgz",
     "uuid": "^3.2.1",
     "whatwg-fetch": "^2.0.3"

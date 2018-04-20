@@ -5,6 +5,7 @@ import ConstraintsCanvas from "./ConstraintsCanvas";
 import FabricHelpers from './FabricHelpers.js';
 import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import DesignCanvas from './DesignCanvas';
+import Sidebar from 'react-sidebar';
 import $ from 'jquery';
 
 export default class PageContainer extends React.Component {
@@ -25,7 +26,8 @@ export default class PageContainer extends React.Component {
       trashedDesignCanvases: [], 
       constraintChanged: false , 
       designsFound: -1, 
-      treeData: []
+      treeData: [], 
+      sidebarOpen: true
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -116,6 +118,17 @@ export default class PageContainer extends React.Component {
     //     });
     //   }
     // }, 'text');
+  }
+
+  getDesignCanvasScalingFactor(designCanvasID) {
+    if(this.savedDesignCanvasesMap[designCanvasID]) {
+      return 0.10; 
+    } 
+    else if(this.trashedDesignCanvasesMap[designCanvasID]) {
+      return 0.10; 
+    }
+
+    return 0.5;
   }
 
   saveDesignCanvas(designCanvasID){
@@ -215,7 +228,8 @@ export default class PageContainer extends React.Component {
                               updateConstraintsCanvas={this.updateConstraintsCanvasShape}
                               saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
                               trashDesignCanvas={this.trashDesignCanvas.bind(this)}
-                              getRelativeDesigns={this.getRelativeDesigns.bind(this)} />; 
+                              getRelativeDesigns={this.getRelativeDesigns.bind(this)}
+                              scalingFactor={this.getDesignCanvasScalingFactor.bind(this)}/>; 
       designCanvasList.push(designCanvas); 
       this.designCanvasMap[solution.id] = designCanvas; 
     }
@@ -270,6 +284,10 @@ export default class PageContainer extends React.Component {
     });
   }
 
+  onSetSidebarOpen() {
+
+  }
+
   // onTreeNodeMoved(arg) {
   //   console.log("test");
   //   let constraintsTreeData = arg.treeData; 
@@ -296,6 +314,7 @@ export default class PageContainer extends React.Component {
     const trashed = this.state.trashedDesignCanvases; 
     const numTrashed = this.state.trashedDesignCanvases.length; 
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
+  
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
@@ -326,9 +345,11 @@ export default class PageContainer extends React.Component {
               </div>
             </div>
           </div>
-          <div className="panel panel-default constraints-container">
+         <div className="panel panel-default constraints-container">
             <div className="panel-heading"> 
-              <h3 className="panel-title">Constraints</h3>
+              <h3 className="panel-title">Constraints
+                <button type="button" className="btn btn-default design-canvas-button" disabled={(designsFound > 0 || designsFound == -1) ? null : "disabled"} onClick={this.getMoreDesigns}>{(numDesigns == 0 ? "Get Designs" : "Show More")}</button>
+              </h3>
             </div>
             <div className="constraints-canvas-container"> 
               <ConstraintsCanvas ref={this.constraintsCanvasRef} />
@@ -337,51 +358,42 @@ export default class PageContainer extends React.Component {
           </div>
           <div className="panel-group design-canvas-container" id="accordion">
             <div className="panel designs-container panel-default">
-              <div className="panel-heading design-canvas-header"> 
+              {/*<div className="panel-heading design-canvas-header"> 
                 <h3 className="panel-title">
                   <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseOne" href="#collapseOne">Saved Designs</a>
                   <span className="saved-design-canvas-count"> ({numSaved})</span>
                 </h3>
+              </div>*/}
+              <div className="panel-body saved-body">
+                {saved}
               </div>
-              <div id="collapseOne" className="panel-collapse collapse" data-parent="#accordion">
-                <div className="panel-body design-body">
-                  {saved}
-                </div>
+            </div>
+            <div className={"panel designs-container " + (constraintChanged ? "panel-danger" : "panel-default")}>
+              {/*<div className="panel-heading design-canvas-header"> 
+                <h3 className="panel-title">
+                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseThree" href="#collapseThree">Design Ideas</a>
+                  <span className="saved-design-canvas-count"> ({numDesigns})</span>
+                  { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
+                </h3>
+              </div>*/}
+              {/*(designsFound == -1 || constraintChanged) ? null : 
+                    (<div className={"alert " + (designsFound > 0 ? "alert-success" : "alert-warning") + " designs-message"}>
+                        {designsAlertMessage}
+                        {(designsFound > 0 ? <a onClick={this.getMoreDesigns} href="#">Show me more different designs.</a> : null)}
+                    </div>)*/}
+              <div className="design-body">
+                {designs}
               </div>
             </div>
             <div className="panel designs-container panel-default">
-              <div className="panel-heading design-canvas-header"> 
+              {/*<div className="panel-heading design-canvas-header"> 
                 <h3 className="panel-title">
                   <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseTwo" href="#collapseTwo">Trashed Designs</a>
                   <span className="saved-design-canvas-count"> ({numTrashed})</span>
                 </h3>
-              </div>
-              <div id="collapseTwo" className="panel-collapse collapse" data-parent="#accordion">
-                <div className="panel-body design-body">
-                  {trashed}
-                </div>
-              </div>
-            </div>
-            <div className={"panel designs-container " + (constraintChanged ? "panel-danger" : "panel-default")}>
-              <div className="panel-heading design-canvas-header"> 
-                <h3 className="panel-title">
-                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseThree" href="#collapseThree">Design Ideas</a>
-                  <span className="saved-design-canvas-count"> ({numDesigns})</span>
-                  <button type="button" className="btn btn-default design-canvas-button" disabled={(designsFound > 0 || designsFound == -1) ? null : "disabled"} onClick={this.getMoreDesigns}>{(numDesigns == 0 ? "Get Designs" : "Show More")}</button>
-                  { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
-                </h3>
-              </div>
-              <div id="collapseThree" className="panel-collapse" data-parent="#accordion" >
-                <div className="panel-body">
-                  {(designsFound == -1 || constraintChanged) ? null : 
-                        (<div className={"alert " + (designsFound > 0 ? "alert-success" : "alert-warning") + " designs-message"}>
-                            {designsAlertMessage}
-                            {(designsFound > 0 ? <a onClick={this.getMoreDesigns} href="#">Show me more different designs.</a> : null)}
-                        </div>)}
-                  <div className="design-body">
-                    {designs}
-                  </div>
-                </div>
+              </div>*/}
+              <div className="panel-body trashed-body">
+                {trashed}
               </div>
             </div>
           </div>

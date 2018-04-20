@@ -35,6 +35,9 @@ export default class DesignCanvas extends React.Component {
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
+
+    // Original scaling factor
+    this.scalingFactor = props.scalingFactor(this.id);
   } 
 
   showConstraintsContextMenu(jsonShape,evt) {
@@ -158,9 +161,16 @@ export default class DesignCanvas extends React.Component {
     // Make sure to send the page fabric shape to the back layer
     this.canvas.sendToBack(pageFabricShape); 
 
-    let scaling = Constants.designCanvasScalingFactor(); 
-    this.canvas.setHeight(this.canvas.getHeight() * scaling);
-    this.canvas.setWidth(this.canvas.getWidth() * scaling); 
+    // Rescale the canvas to the given scaling factor
+    this.rescaleCanvas();
+  }
+
+  rescaleCanvas() {
+    let scaling = this.scalingFactor;
+    let canvasHeight = this.canvas.getHeight(); 
+    let canvasWidth = this.canvas.getWidth();
+    this.canvas.setHeight(canvasHeight * scaling);
+    this.canvas.setWidth(canvasWidth * scaling); 
     var obj = this.canvas.getObjects(); 
     for (var i=0; i<obj.length; i++){
       // let scaleHeight = obj[i].get('height'); 
@@ -178,7 +188,7 @@ export default class DesignCanvas extends React.Component {
       obj[i].setCoords();
     }
 
-    this.canvas.renderAll();
+    this.canvas.renderAll(); 
   }
 
   performDesignCanvasMenuAction(action) {
