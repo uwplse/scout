@@ -22,9 +22,7 @@ ConstraintActions.elementConstraints = {
 			    	x: designCanvasShape["location"]["x"], 
 			    	y: designCanvasShape["location"]["y"]
 			    }
-
-			    constraintsCanvasShape.feedback += 1; 
-
+			    
 			    // Then update the location of the constraints canvas shape to that of the design canvas shape
 			    // constraintsCanvasShape.shape.set({
 			    // 	left: designCanvasShape.shape.left * Constants.designCanvasScalingFactor(), 

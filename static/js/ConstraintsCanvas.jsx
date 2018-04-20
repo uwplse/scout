@@ -94,8 +94,6 @@ export default class ConstraintsCanvas extends React.Component {
     this.setState(state => ({
       treeData: this.state.treeData
     }));
-
-    this.forceUpdate();
   }
 
   getShapeHierarchy() {
@@ -166,10 +164,10 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   calculateRowHeight({treeIndex, node, path}) {
-    let rowHeight = this.state.treeData[treeIndex].title.props.height; 
+    let rowHeight = node.title.props.height; 
 
     // Row height
-    let subtitles = this.state.treeData[treeIndex].subtitle; 
+    let subtitles = node.subtitle; 
     let numFeedback = subtitles ? subtitles.length : 0; 
 
     return this.rowPadding + rowHeight + (numFeedback * this.defaultFeedbackHeight); 
@@ -194,7 +192,6 @@ export default class ConstraintsCanvas extends React.Component {
             onChange={treeData => this.setState({ treeData })}
             canDrop={this.canReparentWidgetNode.bind(this)}
             rowHeight={this.calculateRowHeight.bind(this)}
-            isVirtualized={false}
           />
         </div>
       </div>
