@@ -218,6 +218,22 @@ div:focus {
 	height: 22px;
 }
 
+.widgets-sortable-tree .rst__rowLabel {
+	padding-right: 5px;
+}
+
+.widgets-sortable-tree-remove {
+	border: none;
+}
+
+.widgets-sortable-tree-remove:hover {
+	border: initial;
+}
+
+.widgets-sortable-tree-remove > span {
+	font-size: 18pt;
+}
+
 
 
 

@@ -2,7 +2,7 @@ import React from "react";
 import FabricHelpers from './FabricHelpers.js';
 import Widget from './Widget';
 import WidgetFeedback from './WidgetFeedback';
-import SortableTree from 'react-sortable-tree';
+import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
 export default class ConstraintsCanvas extends React.Component {
@@ -181,8 +181,32 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
+  removeWidgetNode(path){
+    const getNodeKey = ({ treeIndex }) => treeIndex;
+
+    // Remove the widget from the tree node map
+    let treeNode = getNodeAtPath({
+        treeData: this.state.treeData, 
+        path, 
+        getNodeKey,
+    }); 
+
+    let shapeID = treeNode.node.title.props.id; 
+    delete this.widgetTreeNodeMap[shapeID]; 
+
+    this.setState(state => ({
+      treeData: removeNodeAtPath({
+        treeData: this.state.treeData, 
+        path, 
+        getNodeKey,
+      })
+    })); 
+  }
+
   render () {
     const shapes = this.constraintsShapes; 
+    var self = this;
+
     // Process the queue of shapes to add to the canvas
 	  return (
       <div className="panel-body" id="constraints-canvas-container" tabIndex="1">
@@ -192,6 +216,13 @@ export default class ConstraintsCanvas extends React.Component {
             onChange={treeData => this.setState({ treeData })}
             canDrop={this.canReparentWidgetNode.bind(this)}
             rowHeight={this.calculateRowHeight.bind(this)}
+            generateNodeProps={({node, path}) => ({
+              buttons: [
+                <button className="widgets-sortable-tree-remove" onClick={function() { self.removeWidgetNode(path); }}>
+                  <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                </button>
+              ]
+            })}
           />
         </div>
       </div>
