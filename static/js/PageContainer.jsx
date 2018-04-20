@@ -32,6 +32,8 @@ export default class PageContainer extends React.Component {
     this.designCanvasMap = {}; 
     this.savedDesignCanvasesMap = {}; 
     this.trashedDesignCanvasesMap = {};
+
+    this.constraintsCanvasRef = React.createRef();
   }
 
   componentDidMount() {
@@ -43,7 +45,7 @@ export default class PageContainer extends React.Component {
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
   // for a shape of this type
   addShapeToConstraintsCanvas(type) {
-    this.refs.constraintsCanvas.addShapeOfTypeToCanvas(type);
+    this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type);
   }
 
   drawWidgetCanvas() {
@@ -81,7 +83,7 @@ export default class PageContainer extends React.Component {
     this.containersCanvas.add(label);
   }
 
-  updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action, undoAction) {
+  updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape, action, actionType) {
     // First check with the solver that the constraint can be applied
     // If it can be applied, update the corresponding property in the constraints canvas
 
@@ -90,7 +92,7 @@ export default class PageContainer extends React.Component {
     action.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
 
     // Notify the constraintss canvas
-    this.refs.constraintsCanvas.updateConstraintsCanvasShape(constraintsCanvasShape)
+    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
 
     this.setState({
       constraintChanged: true
@@ -158,7 +160,7 @@ export default class PageContainer extends React.Component {
 
   getShapesJSON() {
     // Get all of the shapes on the canvas into a collection 
-    let shapeObjects = this.refs.constraintsCanvas.getShapeHierarchy();
+    let shapeObjects = this.constraintsCanvasRef.current.getShapeHierarchy();
     return JSON.stringify(shapeObjects); 
   }
 
@@ -206,7 +208,7 @@ export default class PageContainer extends React.Component {
       let originalElements = $.extend(true, [], elements);
 
       // Attach the JSON shapes for this canvas instance to the corresponding constraints canvas shapes
-      this.refs.constraintsCanvas.linkSolutionShapesToConstraintShapes(elements); 
+      this.constraintsCanvasRef.current.linkSolutionShapesToConstraintShapes(elements); 
 
       let designCanvas = <DesignCanvas key={solution.id} id={solution.id} 
                               elements={elements} originalElements={originalElements}
@@ -329,7 +331,7 @@ export default class PageContainer extends React.Component {
               <h3 className="panel-title">Constraints</h3>
             </div>
             <div className="constraints-canvas-container"> 
-              <ConstraintsCanvas ref="constraintsCanvas" />
+              <ConstraintsCanvas ref={this.constraintsCanvasRef} />
             </div>
            {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>

@@ -9,10 +9,6 @@ export default class ConstraintsCanvas extends React.Component {
   constructor(props) {
   	super(props); 
 
-    // Bound functions
-    this.createConstraintsCanvasShapeObject.bind(this);
-    this.addShapeOfTypeToCanvas.bind(this);
-
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = [];
     this.widgetTreeNodeMap = {};
@@ -79,7 +75,7 @@ export default class ConstraintsCanvas extends React.Component {
     }));
   }
 
-  updateConstraintsCanvasShape(shape) {    
+  updateWidgetFeedbacks(shape, action, actionType) {    
     // The shape was already updated so we just need to re-render the tree to get the new sizes
     // Add WidgetFeedbackItem to correct item in the tree
 
@@ -87,9 +83,27 @@ export default class ConstraintsCanvas extends React.Component {
     let shapeId = shape.name; 
     let treeNode = this.widgetTreeNodeMap[shapeId]; 
 
-    // Add a new feedback item tto the tree node
-    let widgetFeedback = <WidgetFeedback key={shapeId} />; 
-    treeNode.subtitle.push(widgetFeedback); 
+    // Check whether to remove or add a widget feedback item
+    let uniqueId = _.uniqueId();
+    if(actionType == "do") {
+      let message = action.getFeedbackMessage(shape);
+      let widgetFeedback = <WidgetFeedback key={shapeId + "_" + uniqueId} feedbackKey={action.key} message={message} />; 
+      treeNode.subtitle.push(widgetFeedback);       
+    } else {
+      // Remove the corresponding widget feedback item
+      let feedbackItems = treeNode.subtitle; 
+      let feedbackIndex = -1; 
+      for(var i=0; i<feedbackItems.length; i++){
+        if(feedbackItems[i].props.feedbackKey == action.key) {
+          feedbackIndex = i; 
+        }
+      }
+
+      // Remove the item at that indexx
+      if(feedbackIndex > -1) {
+        treeNode.subtitle.splice(feedbackIndex);        
+      }
+    }
 
     this.setState(state => ({
       treeData: this.state.treeData
@@ -157,9 +171,6 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.constraintsShapesMap[shape["name"]] = shape; 
 
-    // Also need to push the shape onto the children of the page level object
-    this.pageLevelShape.children.push(shape); 
-
     return shape;
   }
 
@@ -193,6 +204,9 @@ export default class ConstraintsCanvas extends React.Component {
 
     let shapeID = treeNode.node.title.props.id; 
     delete this.widgetTreeNodeMap[shapeID]; 
+
+    // Delete the entry in the constraints canvas shape map 
+    delete this.constraintsShapesMap[shapeID];
 
     this.setState(state => ({
       treeData: removeNodeAtPath({

@@ -9,6 +9,7 @@ ConstraintActions.locksKey = 'locks';
 ConstraintActions.elementConstraints = {
 	"location" : {
 		"do": {
+			"key": "location",
 			"label": "Keep position.",
 			"updateConstraintsCanvasShape": function keepPosition(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
@@ -22,15 +23,13 @@ ConstraintActions.elementConstraints = {
 			    	x: designCanvasShape["location"]["x"], 
 			    	y: designCanvasShape["location"]["y"]
 			    }
-			    
-			    // Then update the location of the constraints canvas shape to that of the design canvas shape
-			    // constraintsCanvasShape.shape.set({
-			    // 	left: designCanvasShape.shape.left * Constants.designCanvasScalingFactor(), 
-			    // 	top: designCanvasShape.shape.top * Constants.designCanvasScalingFactor() 
-			    // }); 
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(constraintsCanvasShape) {
+				return "Keep position at X: " + constraintsCanvasShape["location"]["x"] + ", Y: " + constraintsCanvasShape["location"]["y"];
 			}
 		}, 
 		"undo": {
+			"key": "location",
 			"label": "Unlock position.", 
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
 				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_location_key); 

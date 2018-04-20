@@ -4,7 +4,8 @@ import FabricHelpers from './FabricHelpers';
 
 export default class WidgetFeedback extends React.Component {
   constructor(props) {
-  	super(props); 
+  	super(props);
+    this.feedbackMessage = props.message; 
   }
 
   render () {
@@ -12,7 +13,7 @@ export default class WidgetFeedback extends React.Component {
       <div className="widget-feedback-container">
         <div className="widget-feedback">
           <ul className="widget-feedback-items">
-            <li>A sample piece of feedback</li>
+            <li>{this.feedbackMessage}</li>
           </ul>
         </div>
       </div>); 
