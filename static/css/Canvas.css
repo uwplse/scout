@@ -58,6 +58,16 @@ div:focus {
 	margin-left: 10px;
 }
 
+.navbar-default {
+	background-color: #f8f8f8;
+    border-color: #e7e7e7;
+    border-bottom: 1px solid #ccc;
+    padding-left: 10px;
+}
+
+/** 
+	Constraints canvas 
+**/
 .constraints-canvas-container {
 	width: 400px;
 }
@@ -70,17 +80,17 @@ div:focus {
 	border-right: 1px solid #ccc;
 }
 
+/** 
+	Designs canvas 
+**/
+.designs-container {
+	display: flex;
+}
+
 .design-canvas-container {
 	flex: 1 1 0px;
     align-self: stretch;
     margin-right: 10px;
-}
-
-.navbar-default {
-	background-color: #f8f8f8;
-    border-color: #e7e7e7;
-    border-bottom: 1px solid #ccc;
-    padding-left: 10px;
 }
 
 .design-canvas {
@@ -117,6 +127,11 @@ div:focus {
 	margin-right: 5px;
 }
 
+.save-icon {
+	margin-left: 0.5em;
+	margin-top: 0.5em;
+}
+
 .trashed-body {
 	height: 75px;
 }
@@ -128,19 +143,6 @@ div:focus {
 
 .design-canvas-button {
 	margin-left: 10px;
-}
-
-.panel-heading .accordion-toggle:after {
-    /* symbol for "opening" panels */
-    font-family: 'Glyphicons Halflings'; 
-    content: "\e114";
-    float: right;
-    color: grey;
-}
-
-.panel-heading .accordion-toggle.collapsed:after {
-    /* symbol for "collapsed" panels */
-    content: "\e080";    /* adjust as needed, taken from bootstrap.css */
 }
 
 .canvas-menu-list {
@@ -184,6 +186,7 @@ div:focus {
 	margin-left: 10px;
 	margin-top: 10px;
 }
+
 
 /* Widgets tree feedback items */ 
 .widget-feedback-items {

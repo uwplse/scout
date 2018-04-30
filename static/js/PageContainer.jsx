@@ -357,45 +357,23 @@ export default class PageContainer extends React.Component {
            {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>
           <div className="panel-group design-canvas-container" id="accordion">
-            <div className="panel designs-container panel-default">
-              {/*<div className="panel-heading design-canvas-header"> 
-                <h3 className="panel-title">
-                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseOne" href="#collapseOne">Saved Designs</a>
-                  <span className="saved-design-canvas-count"> ({numSaved})</span>
-                </h3>
-              </div>*/}
+            { saved.length ? (<div className="panel designs-container panel-default">
+              <span class="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
               <div className="panel-body saved-body">
                 {saved}
               </div>
-            </div>
+            </div>) : null }
             <div className={"panel designs-container " + (constraintChanged ? "panel-danger" : "panel-default")}>
-              {/*<div className="panel-heading design-canvas-header"> 
-                <h3 className="panel-title">
-                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseThree" href="#collapseThree">Design Ideas</a>
-                  <span className="saved-design-canvas-count"> ({numDesigns})</span>
-                  { errorMessageShown ? <div className="alert alert-danger constraint-error-message">Constraint couldn't be applied. (HORRIBLE USER EXPERIENCE)</div> : null }
-                </h3>
-              </div>*/}
-              {/*(designsFound == -1 || constraintChanged) ? null : 
-                    (<div className={"alert " + (designsFound > 0 ? "alert-success" : "alert-warning") + " designs-message"}>
-                        {designsAlertMessage}
-                        {(designsFound > 0 ? <a onClick={this.getMoreDesigns} href="#">Show me more different designs.</a> : null)}
-                    </div>)*/}
               <div className="design-body">
                 {designs}
               </div>
             </div>
-            <div className="panel designs-container panel-default">
-              {/*<div className="panel-heading design-canvas-header"> 
-                <h3 className="panel-title">
-                  <a className="accordion-toggle" data-toggle="collapse" data-target="#collapseTwo" href="#collapseTwo">Trashed Designs</a>
-                  <span className="saved-design-canvas-count"> ({numTrashed})</span>
-                </h3>
-              </div>*/}
+            { trashed.length ? (<div className="panel designs-container panel-default">
+              <span class="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
               <div className="panel-body trashed-body">
                 {trashed}
               </div>
-            </div>
+            </div>) : null}
           </div>
         </div>
       </div>

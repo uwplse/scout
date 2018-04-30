@@ -163,6 +163,27 @@ export default class DesignCanvas extends React.Component {
 
     // Rescale the canvas to the given scaling factor
     this.rescaleCanvas();
+
+    this.invalidateCanvas();
+  }
+
+  invalidateCanvas() {     
+    var color1 = "#f5c6cb";
+    var numberOfStripes = 100;     
+    var drawingContext = this.canvas.getContext(); 
+    var thickness = this.canvasWidth / numberOfStripes;
+    for (var i=0;i < numberOfStripes*2;i++){
+      if((i % 2) == 0) {
+        drawingContext.beginPath();
+        drawingContext.strokeStyle = color1;
+        drawingContext.lineWidth = 1;
+        drawingContext.lineCap = 'round';
+         
+        drawingContext.moveTo(i*thickness + thickness/2 - this.canvasWidth,0);
+        drawingContext.lineTo(0 + i*thickness+thickness/2,this.canvasWidth);
+        drawingContext.stroke();          
+      }
+    }
   }
 
   rescaleCanvas() {
