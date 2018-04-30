@@ -38,7 +38,8 @@ export default class Widget extends React.Component {
   addLabelGroupToCanvas() {
     let groupRect = FabricHelpers.getGroup(0,0, this.defaultControlWidth, this.defaultControlHeight, {
       stroke: 'red', 
-      groupType: 'Label'
+      groupType: 'Label', 
+      strokeDashArray: [5,5]
     });
 
     this.canvas.add(groupRect)
@@ -47,7 +48,8 @@ export default class Widget extends React.Component {
   addGroupToCanvas() {
     let groupRect = FabricHelpers.getGroup(0, 0, this.defaultControlWidth, this.defaultControlHeight, {
       stroke: '#39a1f4', 
-      groupType: 'Group'
+      groupType: 'Group', 
+      strokeDashArray: [5,5]
     });
 
     this.canvas.add(groupRect); 

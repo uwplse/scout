@@ -68,7 +68,8 @@ export default class PageContainer extends React.Component {
     let group = FabricHelpers.getGroup(10, 10, 120, 40, {
       stroke: '#39a1f4',
       selectable: false, 
-      groupType: 'Group'
+      groupType: 'Group', 
+      strokeDashArray: [5,5]
     });
 
     group.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'group'));
@@ -76,7 +77,8 @@ export default class PageContainer extends React.Component {
     let label = FabricHelpers.getGroup(10, 70, 120, 40, {
       selectable: false, 
       stroke: 'red', 
-      groupType: 'Label'
+      groupType: 'Label', 
+      strokeDashArray: [5,5]
     });
 
     label.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'labelGroup')); 
@@ -283,7 +285,7 @@ export default class PageContainer extends React.Component {
       constraintChanged: false
     });
   }
-  
+
   render () {
     const designs = this.state.designCanvases;
     const designsFound = this.state.designsFound; 

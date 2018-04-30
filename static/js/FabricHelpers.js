@@ -6,6 +6,7 @@ class FabricHelpers {
 	    let topOffset = options.topOffset ? options.topOffset : 10; 
 	    let scaleX = options.scaleX ? options.scaleX : 1; 
 	    let scaleY = options.scaleY ? options.scaleY : 1;
+	    let padding = options.padding ? options.padding : undefined; 
 
 	    var rect = new fabric.Rect({
 	        width: width - 2,
@@ -18,7 +19,7 @@ class FabricHelpers {
 	        originX: 'center',
 	        originY: 'center', 
 	        stroke: options.stroke, 
-	        strokeDashArray: [5,5]
+	        strokeDashArray: options.strokeDashArray
 	    });
  
 	    var text = new fabric.IText(textValue, {
@@ -44,6 +45,29 @@ class FabricHelpers {
 	      });
 
 	    return group; 
+	}
+
+	static getDesignGroup(left, top, width, height, options={}) {
+	    let scaleX = options.scaleX ? options.scaleX : 1; 
+	    let scaleY = options.scaleY ? options.scaleY : 1;
+	    let padding = options.padding ? options.padding : undefined; 
+
+	    var rect = new fabric.Rect({
+	    	left: left - padding, 
+	    	top: top - padding,
+	    	width: width + (padding * 2), 
+	    	height: height + (padding * 2),
+	        fill: '#fff', 
+	        scaleX: scaleX, 
+	        scaleY: scaleY, 
+	        stroke: options.stroke, 
+	        strokeDashArray: options.strokeDashArray, 
+	        opacity: 0, 
+	        hoverCursor: options.cursor, 
+	        selectable: options.selectable
+	    });
+
+	    return rect;
 	}
 
 	static getInteractiveButton(left, top, width, height, options={}) { 

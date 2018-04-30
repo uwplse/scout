@@ -132,11 +132,6 @@ div:focus {
 	margin-top: 0.5em;
 }
 
-.save-icon, .trash-icon {
-	transform: scale(1.5);
-	display: inline-block;
-}
-
 .trashed-body {
 	height: 75px;
 }

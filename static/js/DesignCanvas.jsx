@@ -40,7 +40,7 @@ export default class DesignCanvas extends React.Component {
     this.scalingFactor = props.scalingFactor(this.id);
   } 
 
-  showConstraintsContextMenu(jsonShape,evt) {
+  showConstraintsContextMenu(element,evt) {
 		// Check for the status of menuShown to see if we need to close out another menu before opening this one
 		if(this.state.menuShown) {
 			this.setState({
@@ -53,12 +53,12 @@ export default class DesignCanvas extends React.Component {
 		let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
 
 		// The menuTrigger is the JSON of the shape that triggered the open
-		let shape = jsonShape.shape; 
+		let shape = element.shape; 
     let scaledWidth = shape.width * this.scalingFactor; 
     let scaledHeight = shape.height * this.scalingFactor; 
 
     this.setState({
-      activeCanvasMenu: <CanvasMenu menuTrigger={jsonShape} onClick={this.performActionAndCloseMenu.bind(this)} />,
+      activeCanvasMenu: <CanvasMenu menuTrigger={element} onClick={this.performActionAndCloseMenu.bind(this)} />,
       menuShown: true, 
       menuPosition: {
       	x: componentBoundingBox.x + shape.left + (scaledWidth/2), 
@@ -81,6 +81,26 @@ export default class DesignCanvas extends React.Component {
       menuShown: false, 
       activeCanvasMenu: undefined
     });  
+  }
+
+  showGroupIndicator(element) {
+    let shape = element.shape; 
+    if(shape) {
+      shape.set("stroke", "#000"); 
+      shape.set("strokeDashArray", [5,5]);
+      shape.set("opacity", 1); 
+      this.canvas.renderAll();
+    }
+  }
+
+  hideGroupIndicator(element) {
+    let shape = element.shape; 
+    if(shape){
+      shape.set("stroke", undefined); 
+      shape.set("strokeDashArray", undefined);
+      shape.set("opacity", 0);
+      this.canvas.renderAll(); 
+    }
   }
  
   componentDidMount() {
@@ -148,15 +168,17 @@ export default class DesignCanvas extends React.Component {
         }
         else if (element.type == "group") {
           let groupPadding = 0; // TODO: make constant for this
-          let group = FabricHelpers.getGroup(x-groupPadding,y-groupPadding,element.size.width+(groupPadding*2), element.size.height+(groupPadding*2), {
+          let group = FabricHelpers.getDesignGroup(x-groupPadding,y-groupPadding,element.size.width+(groupPadding*2), element.size.height+(groupPadding*2), {
             cursor: 'hand', 
             selectable: false, 
-            opacity: 0, 
-            stroke: undefined, 
-            text: ""
+            stroke: "#000",
+            strokeDashArray: [5,5],
+            padding: 20,  
           }); 
 
           group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+          group.on("mouseover", this.showGroupIndicator.bind(this, element)); 
+          group.on("mouseout", this.hideGroupIndicator.bind(this, element));
           element.shape = group; 
           this.canvas.add(group);
           this.canvas.sendToBack(group); 
