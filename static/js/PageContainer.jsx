@@ -283,26 +283,7 @@ export default class PageContainer extends React.Component {
       constraintChanged: false
     });
   }
-
-  onSetSidebarOpen() {
-
-  }
-
-  // onTreeNodeMoved(arg) {
-  //   console.log("test");
-  //   let constraintsTreeData = arg.treeData; 
-  //   this.setState(state => ({
-  //     constraintsTreeData: constraintsTreeData
-  //   }));
-  // }
-
-  // updateConstraintsTreeState(treeData){
-  //   let constraintsState = treeData; 
-  //   this.setState({
-  //     constraintsTreeData: constraintsState
-  //   });
-  // }
-
+  
   render () {
     const designs = this.state.designCanvases;
     const designsFound = this.state.designsFound; 

@@ -41,29 +41,30 @@ export default class DesignCanvas extends React.Component {
   } 
 
   showConstraintsContextMenu(jsonShape,evt) {
-  	if(evt.button == 1) {
-  		// Check for the status of menuShown to see if we need to close out another menu before opening this one
-  		if(this.state.menuShown) {
-  			this.setState({
-  				activeCanvasMenu: undefined, 
-  				menuShown: false
-  			}); 
-  		}
+		// Check for the status of menuShown to see if we need to close out another menu before opening this one
+		if(this.state.menuShown) {
+			this.setState({
+				activeCanvasMenu: undefined, 
+				menuShown: false
+			}); 
+		}
 
-  		// Show the context menu. 
-  		let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
+		// Show the context menu. 
+		let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
 
-  		// The menuTrigger is the JSON of the shape that triggered the open
-  		let shape = jsonShape.shape; 
-	    this.setState({
-	      activeCanvasMenu: <CanvasMenu menuTrigger={jsonShape} onClick={this.performActionAndCloseMenu.bind(this)} />,
-	      menuShown: true, 
-	      menuPosition: {
-	      	x: componentBoundingBox.x + shape.left + (shape.width/2), 
-	      	y: componentBoundingBox.y + shape.top + (shape.height/2)
-	      }
-	    });
-    }
+		// The menuTrigger is the JSON of the shape that triggered the open
+		let shape = jsonShape.shape; 
+    let scaledWidth = shape.width * this.scalingFactor; 
+    let scaledHeight = shape.height * this.scalingFactor; 
+
+    this.setState({
+      activeCanvasMenu: <CanvasMenu menuTrigger={jsonShape} onClick={this.performActionAndCloseMenu.bind(this)} />,
+      menuShown: true, 
+      menuPosition: {
+      	x: componentBoundingBox.x + shape.left + (scaledWidth/2), 
+      	y: componentBoundingBox.y + shape.top + (scaledHeight/2)
+      }
+    });
   }
 
   // hideConstraintsContextMenu
@@ -72,12 +73,16 @@ export default class DesignCanvas extends React.Component {
   	// The linked shape in the constraints canvass
   	let constraintsCanvasShape = menuTriggerShape.constraintsCanvasShape; 
   	this.updateConstraintsCanvas(constraintsCanvasShape, menuTriggerShape, action, actionType); 
-  	this.setState({
-  		menuShown: false, 
-  		activeCanvasMenu: undefined
-  	});
+  	this.hideMenu();
   }
 
+  hideMenu() {
+    this.setState({
+      menuShown: false, 
+      activeCanvasMenu: undefined
+    });  
+  }
+ 
   componentDidMount() {
     this.canvas = new fabric.Canvas('design-canvas-' + this.id); 
 
@@ -104,6 +109,7 @@ export default class DesignCanvas extends React.Component {
         }); 
 
         pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+        // pageGroup.on("mouseout", this.hideMenu.bind(this));
         element.shape = pageGroup; 
         this.canvas.add(pageGroup);
         pageFabricShape = pageGroup; 
@@ -270,7 +276,7 @@ export default class DesignCanvas extends React.Component {
       <div onMouseEnter={(this.saved ? undefined : openMenu.bind(this))} 
            onMouseOut={(this.saved ? undefined : closeMenu.bind(this))} 
            className="canvas-container" id={"canvas-box-" + this.id}> 
-  			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
+  			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-feedback-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
   			</div>
         <div>

@@ -12,7 +12,7 @@ class DesignMenuItem extends React.Component {
   render () {
     const menuAction = this.props.onClick;
     const action = this.props.action;
-	  return <li onClick={menuAction.bind(this,action)} className="canvas-menu-item">{this.label}</li>; 
+	  return <li onClick={menuAction.bind(this,action)} className="canvas-actions-menu-item">{this.label}</li>; 
   }
 }
 
@@ -39,8 +39,8 @@ export default class DesignMenu extends React.Component {
   render () {
   	const menuItems = this.constructDesignMenu();
     return (
-      <div style={{left: this.left, top: this.top}} className={"canvas-menu-container " + (menuItems.length ? "" : "hidden")}>
-        <ul className="canvas-menu-list">{menuItems}</ul>
+      <div style={{left: this.left, top: this.top}} className={"canvas-actions-menu-container " + (menuItems.length ? "" : "hidden")}>
+        <ul className="canvas-actions-menu">{menuItems}</ul>
       </div>); 
   }
 }

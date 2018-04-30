@@ -117,19 +117,28 @@ div:focus {
     max-height: 550px;
 }
 
-.saved-body, .trashed-body {
+.saved-body {
 	height: 75px;
 	display: flex; 
 	flex-direction: row;
 }
 
-.saved-body .canvas-container, .trashed-body .canvas-container {
+.saved-body .canvas-container {
 	margin-right: 5px;
 }
 
 .save-icon {
 	margin-left: 0.5em;
 	margin-top: 0.5em;
+}
+
+.save-icon, .trash-icon {
+	transform: scale(1.5);
+	display: inline-block;
+}
+
+.trashed-body {
+	height: 75px;
 }
 
 .designs-message {
@@ -141,39 +150,77 @@ div:focus {
 	margin-left: 10px;
 }
 
-.canvas-menu-list {
+/** 
+  Feedback menu that appears on design canvases 
+  */
+
+.canvas-feedback-menu {
 	list-style-type: none;
     padding: 0px;
 }
 
-.canvas-menu-list > li, {
-	padding: 5px;
+.canvas-feedback-menu > li, {
+	padding: 0.5em;
 }
 
-.canvas-menu-list > li:hover {
+.canvas-feedback-menu > li:hover {
+	background-color: lightgray;
 	cursor: pointer; 
 }
 
-.canvas-menu-item {
-	transform: scale(1.5);
-	display: inline-block;
-	margin-left: 1em;
-	margin-top: 0.5em;
+.canvas-feedback-menu-item {
+	padding-left: 1em;
 }
 
-.canvas-menu-label {
+.canvas-feedback-menu-label {
 	font-weight: bold;
-	padding-left: 5px; 
+	padding-left: 0.5em; 
 }
 
-.canvas-menu-container {
+.canvas-feedback-menu-container {
     position: absolute;
-    background: tran;
+    background: white;
     z-index: 1000;
     list-style-type: none;
+    width: 150px;
     font-size: 12px;
+    border: 1px solid gray;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
     padding-top: 5px;
 }
+
+/** 
+  Actions menu that appears on design canvas 
+
+ **/
+
+ .canvas-actions-menu-container {
+    position: absolute;
+    background: transparent;
+    z-index: 1000;
+}
+
+.canvas-actions-menu {
+	list-style-type: none;
+    padding: 0px;
+}
+
+.canvas-actions-menu > li, {
+	padding: 0.5em;
+}
+
+.canvas-actions-menu > li:hover {
+	cursor: pointer; 
+}
+
+.canvas-actions-menu-item {
+	display: inline-block;
+	transform: scale(1.5);
+	margin-left: 1em;
+	margin-top: 1em;
+}
+
 
 .constraint-error-message {
 	display: inline-block;
