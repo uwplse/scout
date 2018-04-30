@@ -26,10 +26,12 @@ export default class DesignMenu extends React.Component {
 
   constructDesignMenu() {
   	let menuItems = []; 
+    let save = (<span className="glyphicon glyphicon-star" aria-hidden="true"></span>); 
+    let trash = (<span className="glyphicon glyphicon-trash" aria-hidden="true"></span>);
 
-    menuItems.push(<DesignMenuItem key="save" onClick={this.menuAction} action="save" label="Save this design." />); 
-    menuItems.push(<DesignMenuItem key="trash" onClick={this.menuAction} action="trash" label="Trash this design." />); 
-    menuItems.push(<DesignMenuItem key="like" onClick={this.menuAction} action="like" label="Show me more like this." />);
+    menuItems.push(<DesignMenuItem key="save" onClick={this.menuAction} action="save" label={save} />); 
+    menuItems.push(<DesignMenuItem key="trash" onClick={this.menuAction} action="trash" label={trash} />); 
+    // menuItems.push(<DesignMenuItem key="like" onClick={this.menuAction} action="like" label="Show me more like this." />);
 
   	return menuItems; 
   }

@@ -358,7 +358,7 @@ export default class PageContainer extends React.Component {
           </div>
           <div className="panel-group design-canvas-container" id="accordion">
             { saved.length ? (<div className="panel designs-container panel-default">
-              <span class="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+              <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
               <div className="panel-body saved-body">
                 {saved}
               </div>
@@ -369,7 +369,7 @@ export default class PageContainer extends React.Component {
               </div>
             </div>
             { trashed.length ? (<div className="panel designs-container panel-default">
-              <span class="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+              <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
               <div className="panel-body trashed-body">
                 {trashed}
               </div>

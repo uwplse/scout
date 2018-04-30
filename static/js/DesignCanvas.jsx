@@ -229,10 +229,7 @@ export default class DesignCanvas extends React.Component {
     });
   }
 
-  onRightClick(e){
-    // show a menu 
-    e.preventDefault();
-
+  onMouseEnter(e){
     // Check for the status of menuShown to see if we need to close out another menu before opening this one
     if(this.state.designMenu != undefined) {
       this.setState({
@@ -240,20 +237,39 @@ export default class DesignCanvas extends React.Component {
       }); 
     }
 
+    let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
+    
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
-      designMenu: <DesignMenu left={e.pageX} top={e.pageY} menuAction={this.performDesignCanvasMenuAction.bind(this)} />
+      designMenu: <DesignMenu left={componentBoundingBox.x} top={componentBoundingBox.y} menuAction={this.performDesignCanvasMenuAction.bind(this)} />
     });
+  }
+
+  onMouseOut(e) {
+    // Close the menu if it is open 
+    let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
+    // Make sure the mouse is actually outside the div because mouse out can be triggered by child elements of this container. 
+    if(e.clientX <= componentBoundingBox.x || e.clientX >= (componentBoundingBox.x + componentBoundingBox.width) 
+      || e.clientY <= componentBoundingBox.y || e.clientY >= (componentBoundingBox.y + componentBoundingBox.height)) {
+      if(this.state.designMenu != undefined) {
+        this.setState({
+          designMenu: undefined
+        }); 
+      }      
+    }
   }
 
   render () {
    	let menuShown = this.state.menuShown; 
    	let menuPosition = this.state.menuPosition; 
    	let activeCanvasMenu = this.state.activeCanvasMenu; 
-    let contextMenu = this.onRightClick;
+    let openMenu = this.onMouseEnter;
+    let closeMenu = this.onMouseOut; 
     let designMenu = this.state.designMenu; 
     return  (
-      <div onContextMenu={(this.saved ? undefined : contextMenu.bind(this))} className="canvas-container" id={"canvas-box-" + this.id}> 
+      <div onMouseEnter={(this.saved ? undefined : openMenu.bind(this))} 
+           onMouseOut={(this.saved ? undefined : closeMenu.bind(this))} 
+           className="canvas-container" id={"canvas-box-" + this.id}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
   			</div>

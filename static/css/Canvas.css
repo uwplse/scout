@@ -117,23 +117,19 @@ div:focus {
     max-height: 550px;
 }
 
-.saved-body {
+.saved-body, .trashed-body {
 	height: 75px;
 	display: flex; 
 	flex-direction: row;
 }
 
-.saved-body .canvas-container {
+.saved-body .canvas-container, .trashed-body .canvas-container {
 	margin-right: 5px;
 }
 
 .save-icon {
 	margin-left: 0.5em;
 	margin-top: 0.5em;
-}
-
-.trashed-body {
-	height: 75px;
 }
 
 .designs-message {
@@ -155,12 +151,14 @@ div:focus {
 }
 
 .canvas-menu-list > li:hover {
-	background-color: lightgray;
 	cursor: pointer; 
 }
 
 .canvas-menu-item {
-	padding-left: 10px;
+	transform: scale(1.5);
+	display: inline-block;
+	margin-left: 1em;
+	margin-top: 0.5em;
 }
 
 .canvas-menu-label {
@@ -170,14 +168,10 @@ div:focus {
 
 .canvas-menu-container {
     position: absolute;
-    background: white;
+    background: tran;
     z-index: 1000;
     list-style-type: none;
-    width: 150px;
     font-size: 12px;
-    border: 1px solid gray;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
     padding-top: 5px;
 }
 
