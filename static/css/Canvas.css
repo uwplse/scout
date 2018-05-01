@@ -230,6 +230,15 @@ div:focus {
     border-radius: 2px;
 }
 
+.widget-feedback-items-list {
+	display: flex; 
+}
+
+.widget-feedback-items-remove {
+    background-color: #f5f5f5;
+    border: none;
+}
+
 
 /* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
 .widgets-sortable-tree {
@@ -288,16 +297,13 @@ div:focus {
 	height: calc(100% - 44px); 
 }
 
+.widgets-sortable-tree-remove .glyphicon-minus {
+	line-height: 0.5; 
+	font-size: 18pt;
+}
+
 .widgets-sortable-tree-remove {
 	border: none;
-}
-
-.widgets-sortable-tree-remove:hover {
-	border: initial;
-}
-
-.widgets-sortable-tree-remove > span {
-	font-size: 18pt;
 }
 
 

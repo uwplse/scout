@@ -15,7 +15,7 @@ NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
 class Solver(object): 
-	def __init__(self, elements, solutions, relative_designs, canvas_width, canvas_height): 
+	def __init__(self, elements, solutions, canvas_width, canvas_height, relative_designs=None): 
 		self.solutions = [] # Initialize the variables somewhere
 		self.unassigned = []
 		self.elements = elements

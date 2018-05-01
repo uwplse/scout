@@ -59,8 +59,6 @@ def solve():
 def check(): 
 	print("checking!")
 
-	canvas_width = DEFAULT_APP_WIDTH
-	canvas_height = DEFAULT_APP_HEIGHT
 	form_data = request.form
 
 	if "elements" in form_data:
@@ -101,7 +99,7 @@ def check_solution_exists_from_custom_solver(elements):
 	return solutions
 
 def get_solution_from_custom_solver(elements, solutions, relative_designs): 
-	solver = custom_solver.Solver(elements, solutions, relative_designs, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
+	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT, relative_designs=relative_designs)
 	solutions = solver.solve()
 	return solutions
 

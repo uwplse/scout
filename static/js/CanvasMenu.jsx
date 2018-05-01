@@ -14,7 +14,7 @@ class CanvasMenuItem extends React.Component {
   render () {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
 	  // let menuProperty = menuTextToProperty[this.text]; 
-	  let menuText = this.action.label; 
+	  let menuText = this.action[this.actionType].label; 
 	  return <li className="canvas-feedback-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action, this.actionType)} >{menuText}</li>; 
   }
 }
@@ -41,10 +41,10 @@ export default class CanvasMenu extends React.Component {
       if(constraintsCanvasShape[ConstraintActions.locksKey]
         && constraintsCanvasShape[ConstraintActions.locksKey].indexOf(constraint) >= 0) {
         // The constraint is active and set to true, show the undo option
-        return { type: "undo", action: constraintsMenu[constraint]["undo"] }; 
+        return { type: "undo", action: constraintsMenu[constraint]}; 
       } else {
         // Show the do option
-        return { type: "do", action: constraintsMenu[constraint]["do"] }; 
+        return { type: "do", action: constraintsMenu[constraint]}; 
       }    
   }
 

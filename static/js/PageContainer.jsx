@@ -103,7 +103,7 @@ export default class PageContainer extends React.Component {
 
     // This will make the changes first, then check if the constriant could be applied
     // Consider refactoring so we don't have to do and undo the action
-    action.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
+    action[actionType].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
 
     // Notify the constraintss canvas
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
@@ -131,7 +131,7 @@ export default class PageContainer extends React.Component {
       }
     }, 'text');
   }
-  
+
   saveDesignCanvas(designCanvasID){
     // Retrieve a design canvas by its ID
     let designCanvas = this.designCanvasMap[designCanvasID]; 
@@ -328,7 +328,7 @@ export default class PageContainer extends React.Component {
               </h3>
             </div>
             <div className="constraints-canvas-container"> 
-              <ConstraintsCanvas ref={this.constraintsCanvasRef} />
+              <ConstraintsCanvas ref={this.constraintsCanvasRef} updateConstraintsCanvas={this.updateConstraintsCanvasShape}/>
             </div>
            {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>

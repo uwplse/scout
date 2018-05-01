@@ -34,10 +34,7 @@ class ConstraintBuilder(object):
 		for trashed_solution in trash: 
 			elements = trashed_solution["elements"]
 			all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
-			self.solver.add(Not(And(all_values)))
-
-	# def init_relative_design_constraints(self, relative_design, shapes):
-		
+			self.solver.add(Not(And(all_values)))		
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements):
 		all_values = []
@@ -53,8 +50,6 @@ class ConstraintBuilder(object):
 					elif variable_key in element:
 						all_values.append(variable.z3 == element[variable_key])
 		return all_values
-
-
 
 	def init_canvas_constraints(self, canvas): 
 		alignment = canvas.variables.alignment

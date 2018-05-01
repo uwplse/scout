@@ -9,6 +9,9 @@ export default class ConstraintsCanvas extends React.Component {
   constructor(props) {
   	super(props); 
 
+    // Callback to update a shape on the constraints canvas through the PageContainer so that it can validate the current state
+    this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
+
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = [];
     this.widgetTreeNodeMap = {};
@@ -76,6 +79,16 @@ export default class ConstraintsCanvas extends React.Component {
     }));
   }
 
+  getWidgetFeedback(id, parentShape, action, message){
+    return (<WidgetFeedback 
+              key={id} 
+              id={id} 
+              parentShape={parentShape}
+              action={action}
+              message={message} 
+              updateConstraintsCanvas={this.updateConstraintsCanvas}/>); 
+  }
+
   updateWidgetFeedbacks(shape, action, actionType) {    
     // The shape was already updated so we just need to re-render the tree to get the new sizes
     // Add WidgetFeedbackItem to correct item in the tree
@@ -87,8 +100,10 @@ export default class ConstraintsCanvas extends React.Component {
     if(shape.type == "page") {
       // Add the feedback widgets to the page level instead
       if(actionType == "do") {
-        let message = action.getFeedbackMessage(shape);
-        let widgetFeedback = <WidgetFeedback key={shapeId + "_" + uniqueId} feedbackKey={action.key} message={message} />; 
+        let message = action[actionType].getFeedbackMessage(shape);
+        let id = shapeId + "_" + uniqueId; 
+
+        let widgetFeedback = this.getWidgetFeedback(id, shape, action, message);
         this.state.pageFeedbackWidgets.push(widgetFeedback);   
       }else {
         // Remove the feedback widget from the page level
@@ -113,8 +128,9 @@ export default class ConstraintsCanvas extends React.Component {
 
       // Check whether to remove or add a widget feedback item
       if(actionType == "do") {
-        let message = action.getFeedbackMessage(shape);
-        let widgetFeedback = <WidgetFeedback key={shapeId + "_" + uniqueId} feedbackKey={action.key} message={message} />; 
+        let message = action[actionType].getFeedbackMessage(shape);
+        let id = shapeId + "_" + uniqueId; 
+        let widgetFeedback = this.getWidgetFeedback(id, shape, action, message);
         treeNode.subtitle.push(widgetFeedback);       
       } else {
         // Remove the corresponding widget feedback item
