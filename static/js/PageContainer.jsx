@@ -21,19 +21,17 @@ export default class PageContainer extends React.Component {
 
     // This is the set of design canvases in the design window
     this.state = { 
-      designCanvases: [], 
+      mainDesignCanvases: [], 
       savedDesignCanvases: [], 
       trashedDesignCanvases: [], 
       constraintChanged: false , 
       designsFound: -1, 
       treeData: [], 
-      sidebarOpen: true
+      sidebarOpen: true,
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
-    this.designCanvasMap = {}; 
-    this.savedDesignCanvasesMap = {}; 
-    this.trashedDesignCanvasesMap = {};
+    this.designCanvasMap ={};
 
     this.constraintsCanvasRef = React.createRef();
   }
@@ -48,6 +46,18 @@ export default class PageContainer extends React.Component {
   // for a shape of this type
   addShapeToConstraintsCanvas(type) {
     this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type);
+  }
+
+  getDesignCanvas(id, elements, originalElements, savedState) {
+    return (<DesignCanvas 
+              key={id} id={id} 
+              elements={elements} 
+              originalElements={originalElements}
+              savedState={savedState}
+              updateConstraintsCanvas={this.updateConstraintsCanvasShape}
+              saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
+              trashDesignCanvas={this.trashDesignCanvas.bind(this)}
+              getRelativeDesigns={this.getRelativeDesigns.bind(this)}/>); 
   }
 
   drawWidgetCanvas() {
@@ -102,53 +112,42 @@ export default class PageContainer extends React.Component {
       constraintChanged: true
     });
 
-    // let jsonShapes = this.getShapesJSON(); 
-    // var self = this;
-    // $.post("/check", {"elements": jsonShapes}, function(requestData) {
-    //   if(requestData == "True") {
-    //     // At least one constraint has been changed 
-    //     // The button to get more designs with the current set of constraints should be disabled. 
-    //     self.setState({
-    //       errorMessageShown: false
-    //     });  
-    //   } else {
-    //     // Display an error message somewhere (?)
-    //     undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
+    let jsonShapes = this.getShapesJSON(); 
+    var self = this;
+    $.post("/check", {"elements": jsonShapes}, function(requestData) {
+      if(requestData == "True") {
+        // At least one constraint has been changed 
+        // The button to get more designs with the current set of constraints should be disabled. 
+        self.setState({
+          errorMessageShown: false
+        });  
+      } else {
+        // Display an error message somewhere (?)
+        undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
 
-    //     self.setState({
-    //       errorMessageShown: true
-    //     });
-    //   }
-    // }, 'text');
+        self.setState({
+          errorMessageShown: true
+        });
+      }
+    }, 'text');
   }
-
-  getDesignCanvasScalingFactor(designCanvasID) {
-    if(this.savedDesignCanvasesMap[designCanvasID]) {
-      return 0.10; 
-    } 
-    else if(this.trashedDesignCanvasesMap[designCanvasID]) {
-      return 0.10; 
-    }
-
-    return 0.5;
-  }
-
+  
   saveDesignCanvas(designCanvasID){
     // Retrieve a design canvas by its ID
     let designCanvas = this.designCanvasMap[designCanvasID]; 
 
     // Remove it from the list of design canvas components and from the map 
-    let designCanvasIndex = this.state.designCanvases.indexOf(designCanvas); 
-    this.state.designCanvases.splice(designCanvasIndex, 1); 
-    delete this.designCanvasMap[designCanvasID]; 
+    let designCanvasIndex = this.state.mainDesignCanvases.indexOf(designCanvas); 
+    this.state.mainDesignCanvases.splice(designCanvasIndex, 1); 
 
     // Move the design into the collection of saved design canvas components
-    this.state.savedDesignCanvases.push(designCanvas);  
-    this.savedDesignCanvasesMap[designCanvasID] = designCanvas; 
+    let savedCanvas = this.getDesignCanvas(designCanvas.props.id, designCanvas.props.elements, designCanvas.props.originalElements,1);
+
+    this.state.savedDesignCanvases.push(savedCanvas);  
 
     // Update the state
     this.setState({
-      designCanvases: this.state.designCanvases, 
+      mainDesignCanvases: this.state.mainDesignCanvases, 
       savedDesignCanvases: this.state.savedDesignCanvases
     }); 
   }
@@ -158,18 +157,17 @@ export default class PageContainer extends React.Component {
     let designCanvas = this.designCanvasMap[designCanvasID]; 
 
     // Remove it from the list of design canvas components and from the map 
-    let designCanvasIndex = this.state.designCanvases.indexOf(designCanvas); 
-    this.state.designCanvases.splice(designCanvasIndex, 1); 
-    delete this.designCanvasMap[designCanvasID]; 
+    let designCanvasIndex = this.state.mainDesignCanvases.indexOf(designCanvas); 
+    this.state.mainDesignCanvases.splice(designCanvasIndex, 1); 
 
     // Move the design into the collection of saved design canvas components
-    this.state.trashedDesignCanvases.push(designCanvas);  
-    this.trashedDesignCanvasesMap[designCanvasID] = designCanvas; 
+    let trashedCanvas = this.getDesignCanvas(designCanvas.props.id, designCanvas.props.elements, designCanvas.props.originalElements,-1);
+    this.state.trashedDesignCanvases.push(trashedCanvas);  
 
     // Update the state
     this.setState({
-      designCanvases: this.state.designCanvases, 
-      trashedDesignCanvases: this.state.trashedDesignCanvases
+      mainDesignCanvases: this.state.mainDesignCanvases, 
+      trashedDesignCanvases: this.state.trashedDesignCanvases 
     }); 
   }
 
@@ -201,7 +199,7 @@ export default class PageContainer extends React.Component {
     }
 
     // Get solutions in the design ideas panel 
-    let designIdeasCanvases = this.state.designCanvases; 
+    let designIdeasCanvases = this.state.mainDesignCanvases; 
     solutions.designs = []; 
     for(var k=0; k<designIdeasCanvases.length; k++){
       solutions.designs.push({
@@ -215,7 +213,7 @@ export default class PageContainer extends React.Component {
   parseSolutions(requestData) {
     let resultsParsed = JSON.parse(requestData); 
     let solutions = resultsParsed.solutions;
-    let designCanvasList = this.state.designCanvases; 
+    let designCanvasList = this.state.mainDesignCanvases; 
     for(let i=0; i<solutions.length; i++) {
       let solution = solutions[i]; 
       let elements = solution.elements; 
@@ -225,13 +223,8 @@ export default class PageContainer extends React.Component {
       // Attach the JSON shapes for this canvas instance to the corresponding constraints canvas shapes
       this.constraintsCanvasRef.current.linkSolutionShapesToConstraintShapes(elements); 
 
-      let designCanvas = <DesignCanvas key={solution.id} id={solution.id} 
-                              elements={elements} originalElements={originalElements}
-                              updateConstraintsCanvas={this.updateConstraintsCanvasShape}
-                              saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
-                              trashDesignCanvas={this.trashDesignCanvas.bind(this)}
-                              getRelativeDesigns={this.getRelativeDesigns.bind(this)}
-                              scalingFactor={this.getDesignCanvasScalingFactor.bind(this)}/>; 
+      let designCanvas = this.getDesignCanvas(solution.id, elements, originalElements, 0);
+
       designCanvasList.push(designCanvas); 
       this.designCanvasMap[solution.id] = designCanvas; 
     }
@@ -239,8 +232,8 @@ export default class PageContainer extends React.Component {
     let designsFound = solutions.length;
     this.setState({
       designsFound: designsFound,
-      designCanvases: designCanvasList, 
-      errorMessageShown: false
+      mainDesignCanvases: designCanvasList, 
+      errorMessageShown: false 
     });
   }
 
@@ -287,9 +280,9 @@ export default class PageContainer extends React.Component {
   }
 
   render () {
-    const designs = this.state.designCanvases;
+    const designs = this.state.mainDesignCanvases;
     const designsFound = this.state.designsFound; 
-    const numDesigns = this.state.designCanvases.length; 
+    const numDesigns = this.state.mainDesignCanvases.length; 
     const errorMessageShown = this.state.errorMessageShown; 
     const constraintChanged = this.state.constraintChanged;
     const saved = this.state.savedDesignCanvases; 

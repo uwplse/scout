@@ -117,23 +117,19 @@ div:focus {
     max-height: 550px;
 }
 
-.saved-body {
+.saved-body, .trashed-body {
 	height: 75px;
 	display: flex; 
 	flex-direction: row;
 }
 
-.saved-body .canvas-container {
+.saved-body .canvas-container, .trashed-body .canvas-container {
 	margin-right: 5px;
 }
 
 .save-icon {
 	margin-left: 0.5em;
 	margin-top: 0.5em;
-}
-
-.trashed-body {
-	height: 75px;
 }
 
 .designs-message {

@@ -12,7 +12,7 @@ class DesignMenuItem extends React.Component {
   render () {
     const menuAction = this.props.onClick;
     const action = this.props.action;
-	  return <li onClick={menuAction.bind(this,action)} className="canvas-actions-menu-item">{this.label}</li>; 
+	  return <li onClick={function() { menuAction(action); }} className="canvas-actions-menu-item">{this.label}</li>; 
   }
 }
 

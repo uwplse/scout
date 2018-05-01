@@ -13,15 +13,14 @@ export default class DesignCanvas extends React.Component {
 
   	// Object shapes to be drawn onto the canvas
   	this.elements = props.elements; 
+    this.savedState = props.savedState;
   	this.id = props.id; 
   	this.elementDict = {}; 
+    this.inMainCanvas = (this.savedState == 0);
 
     // The original solution shapes from the solver
     // Should remain by later feedback constraints
     this.originalElements = props.originalElements; 
-
-    // Is this a saved design canvas?
-    this.saved = props.saved; 
 
   	this.state = {
   		menuShown: false, 
@@ -37,8 +36,26 @@ export default class DesignCanvas extends React.Component {
     this.canvasHeight = 667; 
 
     // Original scaling factor
-    this.scalingFactor = props.scalingFactor(this.id);
+    this.scalingFactor = this.getScalingFactor();
   } 
+
+  componentWillReceiveProps(nextProps) {  // you still need this to receive 
+    // this.setState({                       // prop changes from parent Toggle
+    //   isOpen: nextProps.openAll ? true : false
+    // });
+    console.log("recieve props");
+  }
+
+  getScalingFactor() {
+    if(this.savedState == 1) {
+      return 0.10; 
+    } 
+    else if(this.savedState == -1) {
+      return 0.10; 
+    }
+
+    return 0.5;
+  }
 
   showConstraintsContextMenu(element,evt) {
 		// Check for the status of menuShown to see if we need to close out another menu before opening this one
@@ -128,7 +145,11 @@ export default class DesignCanvas extends React.Component {
           text: ""
         }); 
 
-        pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+        // Dont' bind event handlers to canvases that are in a saved or trashed state. 
+        if(this.inMainCanvas) {
+          pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+        }
+
         // pageGroup.on("mouseout", this.hideMenu.bind(this));
         element.shape = pageGroup; 
         this.canvas.add(pageGroup);
@@ -142,7 +163,11 @@ export default class DesignCanvas extends React.Component {
               'selectable': false, 
               'text': element["label"]
           }); 
-          button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+
+          if(this.inMainCanvas) {
+            button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+          }
+
           element.shape = button; 
           this.canvas.add(button); 
         }
@@ -152,7 +177,11 @@ export default class DesignCanvas extends React.Component {
             'selectable': false, 
             'text': element["label"]
           }); 
-          text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+
+          if(this.inMainCanvas) {
+            text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+          }
+
           element.shape = text; 
           this.canvas.add(text); 
         }
@@ -162,7 +191,11 @@ export default class DesignCanvas extends React.Component {
             'selectable': false, 
             'text': element["label"]
           }); 
-          field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+
+          if(this.inMainCanvas) {
+            field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+          }
+
           element.shape = field; 
           this.canvas.add(field); 
         }
@@ -176,9 +209,12 @@ export default class DesignCanvas extends React.Component {
             padding: 20,  
           }); 
 
-          group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
-          group.on("mouseover", this.showGroupIndicator.bind(this, element)); 
-          group.on("mouseout", this.hideGroupIndicator.bind(this, element));
+          if(this.inMainCanvas) {
+            group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+            group.on("mouseover", this.showGroupIndicator.bind(this, element)); 
+            group.on("mouseout", this.hideGroupIndicator.bind(this, element));            
+          }
+
           element.shape = group; 
           this.canvas.add(group);
           this.canvas.sendToBack(group); 
@@ -243,9 +279,11 @@ export default class DesignCanvas extends React.Component {
   performDesignCanvasMenuAction(action) {
     if(action == "save") {
       this.props.saveDesignCanvas(this.id);
+      this.state.savedState = 1; 
     }
     else if(action == "trash") {
       this.props.trashDesignCanvas(this.id);
+      this.state.savedState = -1; 
     }
     else if(action == "like"){
       // Do something here 
@@ -253,7 +291,8 @@ export default class DesignCanvas extends React.Component {
     }
 
     this.setState({
-      designMenu: undefined
+      designMenu: undefined, 
+      savedState: this.state.savedState
     });
   }
 
@@ -294,9 +333,11 @@ export default class DesignCanvas extends React.Component {
     let openMenu = this.onMouseEnter;
     let closeMenu = this.onMouseOut; 
     let designMenu = this.state.designMenu; 
+    let saved = this.savedState == 1; 
+    let trashed = this.savedState == -1; 
     return  (
-      <div onMouseEnter={(this.saved ? undefined : openMenu.bind(this))} 
-           onMouseOut={(this.saved ? undefined : closeMenu.bind(this))} 
+      <div onMouseEnter={((saved || trashed) ? undefined : openMenu.bind(this))} 
+           onMouseOut={((saved || trashed) ? undefined : closeMenu.bind(this))} 
            className="canvas-container" id={"canvas-box-" + this.id}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-feedback-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
