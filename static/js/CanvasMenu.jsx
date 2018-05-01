@@ -76,7 +76,7 @@ export default class CanvasMenu extends React.Component {
       groupItems = this.getMenuItems(ConstraintActions.groupConstraints); 
     }
 
-    if(this.menuTrigger.type == "page") {
+    if(this.menuTrigger.type == "canvas") {
       pageItems = this.getMenuItems(ConstraintActions.pageConstraints); 
     }
 

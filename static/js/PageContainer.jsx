@@ -123,7 +123,7 @@ export default class PageContainer extends React.Component {
         });  
       } else {
         // Display an error message somewhere (?)
-        undoAction.updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
+        action["undo"].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
 
         self.setState({
           errorMessageShown: true

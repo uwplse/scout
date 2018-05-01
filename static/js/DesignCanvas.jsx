@@ -78,8 +78,8 @@ export default class DesignCanvas extends React.Component {
       activeCanvasMenu: <CanvasMenu menuTrigger={element} onClick={this.performActionAndCloseMenu.bind(this)} />,
       menuShown: true, 
       menuPosition: {
-      	x: componentBoundingBox.x + shape.left + (scaledWidth/2), 
-      	y: componentBoundingBox.y + shape.top + (scaledHeight/2)
+      	x: evt.e.clientX, 
+      	y: evt.e.clientY
       }
     });
   }
@@ -100,24 +100,18 @@ export default class DesignCanvas extends React.Component {
     });  
   }
 
-  showGroupIndicator(element) {
-    let shape = element.shape; 
-    if(shape) {
-      shape.set("stroke", "#000"); 
-      shape.set("strokeDashArray", [5,5]);
-      shape.set("opacity", 1); 
-      this.canvas.renderAll();
-    }
+  showHoverIndicator(element, shape) {
+    shape.set("stroke", "#000000"); 
+    shape.set("strokeWidth", 1); 
+    shape.set("strokeDashArray", [5,5]);
+    this.canvas.renderAll();
   }
 
-  hideGroupIndicator(element) {
-    let shape = element.shape; 
-    if(shape){
-      shape.set("stroke", undefined); 
-      shape.set("strokeDashArray", undefined);
-      shape.set("opacity", 0);
-      this.canvas.renderAll(); 
-    }
+  hideHoverIndicator(element, shape) {
+    shape.set("stroke", undefined); 
+    shape.set("strokeDashArray", undefined);
+    shape.set("strokeWidth", undefined);
+    this.canvas.renderAll(); 
   }
  
   componentDidMount() {
@@ -130,24 +124,25 @@ export default class DesignCanvas extends React.Component {
   		this.elementDict[element.id] = element; 
 
   		// Scale down the values to fit into the design canvases
-      if(element.type == "page") {
+      if(element.type == "canvas") {
         let x = 0; 
         let y = 0; 
         let width = this.canvasWidth; 
         let height = this.canvasHeight; 
         
         // Make a white rectangle of this size to serve as the background layer
-        let pageGroup = FabricHelpers.getGroup(x,y,width,height, {
+        let pageGroup = FabricHelpers.getDesignGroup(x,y,width-2,height-2, {
           cursor: 'hand', 
           selectable: false, 
-          opacity: 0, 
-          stroke: undefined,
-          text: ""
+          padding: 0
         }); 
 
         // Dont' bind event handlers to canvases that are in a saved or trashed state. 
         if(this.inMainCanvas) {
           pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+
+          pageGroup.on("mouseover", this.showHoverIndicator.bind(this, element, pageGroup)); 
+          pageGroup.on("mouseout", this.hideHoverIndicator.bind(this, element, pageGroup)); 
         }
 
         // pageGroup.on("mouseout", this.hideMenu.bind(this));
@@ -166,6 +161,10 @@ export default class DesignCanvas extends React.Component {
 
           if(this.inMainCanvas) {
             button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+
+            let rect = button.getObjects()[0];
+            button.on("mouseover", this.showHoverIndicator.bind(this, element, rect)); 
+            button.on("mouseout", this.hideHoverIndicator.bind(this, element, rect)); 
           }
 
           element.shape = button; 
@@ -180,6 +179,8 @@ export default class DesignCanvas extends React.Component {
 
           if(this.inMainCanvas) {
             text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+            text.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
+            text.on("mouseout", this.hideHoverIndicator.bind(this, element, text));
           }
 
           element.shape = text; 
@@ -194,6 +195,10 @@ export default class DesignCanvas extends React.Component {
 
           if(this.inMainCanvas) {
             field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+
+            let text = field.getObjects()[0]; 
+            field.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
+            field.on("mouseout", this.hideHoverIndicator.bind(this, element, text)); 
           }
 
           element.shape = field; 
@@ -204,15 +209,13 @@ export default class DesignCanvas extends React.Component {
           let group = FabricHelpers.getDesignGroup(x-groupPadding,y-groupPadding,element.size.width+(groupPadding*2), element.size.height+(groupPadding*2), {
             cursor: 'hand', 
             selectable: false, 
-            stroke: "#000",
-            strokeDashArray: [5,5],
             padding: 20,  
           }); 
 
           if(this.inMainCanvas) {
             group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
-            group.on("mouseover", this.showGroupIndicator.bind(this, element)); 
-            group.on("mouseout", this.hideGroupIndicator.bind(this, element));            
+            group.on("mouseover", this.showHoverIndicator.bind(this, element, group)); 
+            group.on("mouseout", this.hideHoverIndicator.bind(this, element, group));            
           }
 
           element.shape = group; 
@@ -228,7 +231,7 @@ export default class DesignCanvas extends React.Component {
     // Rescale the canvas to the given scaling factor
     this.rescaleCanvas();
 
-    this.invalidateCanvas();
+    // this.invalidateCanvas();
   }
 
   invalidateCanvas() {     

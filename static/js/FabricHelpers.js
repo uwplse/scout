@@ -50,7 +50,9 @@ class FabricHelpers {
 	static getDesignGroup(left, top, width, height, options={}) {
 	    let scaleX = options.scaleX ? options.scaleX : 1; 
 	    let scaleY = options.scaleY ? options.scaleY : 1;
-	    let padding = options.padding ? options.padding : undefined; 
+	    let padding = options.padding != undefined ? options.padding : undefined; 
+	    let strokeWidth = options.strokeWidth ? options.strokeWidth : 1; 
+	    let strokeDashArray = options.strokeDashArray ?  options.strokeDashArray : [5,5];
 
 	    var rect = new fabric.Rect({
 	    	left: left - padding, 
@@ -61,8 +63,8 @@ class FabricHelpers {
 	        scaleX: scaleX, 
 	        scaleY: scaleY, 
 	        stroke: options.stroke, 
-	        strokeDashArray: options.strokeDashArray, 
-	        opacity: 0, 
+	        strokeDashArray: strokeDashArray, 
+	        strokeWidth: strokeWidth,
 	        hoverCursor: options.cursor, 
 	        selectable: options.selectable
 	    });

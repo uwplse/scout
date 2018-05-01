@@ -97,7 +97,7 @@ export default class ConstraintsCanvas extends React.Component {
     let shapeId = shape.name; 
     let uniqueId = _.uniqueId();
 
-    if(shape.type == "page") {
+    if(shape.type == "canvas") {
       // Add the feedback widgets to the page level instead
       if(actionType == "do") {
         let message = action[actionType].getFeedbackMessage(shape);
