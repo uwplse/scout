@@ -178,6 +178,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   getShapeChildren(node) {
     let shape = node.title.props.shape; 
+    shape.children = []; 
     for(var i=0; i<node.children.length; i++){
       let child = node.children[i]; 
       
