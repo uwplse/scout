@@ -503,7 +503,7 @@ class Solver(object):
 			time_z3_start = time.time()
 			result = self.solver.check()
 			constraints = self.solver.sexpr()
-			# unsat_core = self.solver.unsat_core()
+			unsat_core = self.solver.unsat_core()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -550,7 +550,7 @@ class Solver(object):
 				# GGet a solution
 				time_z3_start = time.time()
 				result = self.solver.check()
-				# unsat_core = self.solver.unsat_core()
+				unsat_core = self.solver.unsat_core()
 				self.z3_calls += 1
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start

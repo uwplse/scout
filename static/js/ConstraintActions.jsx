@@ -83,7 +83,7 @@ ConstraintActions.groupConstraints = {
 					delete constraintsCanvasShape[ConstraintActions.locked_arrangement_key]; 
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Unlock " + ConstraintActions.locked_arrangment_key + " from " + shape[ConstraintActions.locked_arrangement_key] + ".";
+					return "Unlock " + ConstraintActions.locked_arrangement_key + " from " + ConstraintActions.arrangements[shape[ConstraintActions.locked_arrangement_key]] + ".";
 				}
 			}
 		}

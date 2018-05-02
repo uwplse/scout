@@ -67,7 +67,7 @@ class ConstraintBuilder(object):
 		or_values = []
 		for margin_value in margin.domain:
 			or_values.append(margin.z3 == margin_value)
-		self.solver.add(Or(or_values))
+		self.solver.add(Or(or_values), "canvas margin domain in range")
 
 		page_shape = canvas.children[0]
 		# page shape should stay within the bounds of the canvas container
@@ -92,15 +92,15 @@ class ConstraintBuilder(object):
 		container_y = container.variables.y.z3
 
 		# Limit domains to the set of variable values
-		self.solver.add(arrangement >= 0)
-		self.solver.add(arrangement < len(container.variables.arrangement.domain))
-		self.solver.add(alignment >= 0)
-		self.solver.add(alignment < len(container.variables.alignment.domain))
+		self.solver.add(arrangement >= 0, "container " + container.shape_id + " arrangment greater than zero")
+		self.solver.add(arrangement < len(container.variables.arrangement.domain), "container " + container.shape_id + " arrangment less than domain")
+		self.solver.add(alignment >= 0, "container " + container.shape_id + " alignment greater than zero")
+		self.solver.add(alignment < len(container.variables.alignment.domain), "container " + container.shape_id + " alignment less than domain")
 
 		or_values = []
 		for prox_value in container.variables.proximity.domain: 
 			or_values.append(proximity == prox_value)
-		self.solver.add(Or(or_values))
+		self.solver.add(Or(or_values), "container " + container.shape_id + " proximity in domain")
 
 		child_shapes = container.children
 		for s_index in range(0, len(child_shapes)): 
@@ -109,10 +109,10 @@ class ConstraintBuilder(object):
 			shape1_y = shape1.variables.y.z3
 
 			# Shapes cannot exceed the bounds of their parent containers
-			self.solver.add(shape1_x >= container_x)
-			self.solver.add(shape1_y >= container_y)
-			self.solver.add((shape1_x + shape1.width) <= (container_x + container.width))
-			self.solver.add((shape1_y + shape1.height) <= (container_y + container.height))
+			self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
+			self.solver.add(shape1_y >= container_y, "child shape " + shape1.shape_id + " inside parent container (greater than top)")
+			self.solver.add((shape1_x + shape1.width) <= (container_x + container.width), "child shape " + shape1.shape_id + " inside parent container (less than width)")
+			self.solver.add((shape1_y + shape1.height) <= (container_y + container.height), "child shape " + shape1.shape_id + " inside parent container (less than height)")
 
 		self.arrange_container(container)
 		self.align_container(container)
@@ -123,7 +123,8 @@ class ConstraintBuilder(object):
 		# TODO: Make generic at some point
 		if container.locks is not None: 
 			for lock in container.locks: 
-				self.solver.add(container.variables[lock] == container.variable_values[lock])
+				# "container " + container.shape_id + " variable " + container.variables[lock].name + " fixed to " + str(container.variable_values[lock])
+				self.solver.add(container.variables[lock].z3 == container.variable_values[lock], container.shape_id + " variable " + container.variables[lock].name + " fixed to " + str(container.variable_values[lock]))
 
 	def init_location_locks(self, shape): 
 		if shape.locks is not None:
