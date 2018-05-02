@@ -161,6 +161,7 @@ div:focus {
 
 .canvas-feedback-menu-item {
 	padding-left: 1em;
+	padding-right: 1em;
 }
 
 .canvas-feedback-menu-label {
@@ -173,7 +174,6 @@ div:focus {
     background: white;
     z-index: 1000;
     list-style-type: none;
-    width: 150px;
     font-size: 12px;
     border: 1px solid gray;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
@@ -297,10 +297,10 @@ div:focus {
 	height: calc(100% - 44px); 
 }
 
-.widgets-sortable-tree-remove .glyphicon-minus {
+/*.widgets-sortable-tree-remove .glyphicon-minus {
 	line-height: 0.5; 
 	font-size: 18pt;
-}
+}*/
 
 .widgets-sortable-tree-remove {
 	border: none;

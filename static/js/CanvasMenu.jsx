@@ -14,7 +14,7 @@ class CanvasMenuItem extends React.Component {
   render () {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
 	  // let menuProperty = menuTextToProperty[this.text]; 
-	  let menuText = this.action[this.actionType].label; 
+	  let menuText = this.action[this.actionType].getFeedbackMessage(this.menuTrigger);
 	  return <li className="canvas-feedback-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action, this.actionType)} >{menuText}</li>; 
   }
 }
@@ -74,10 +74,12 @@ export default class CanvasMenu extends React.Component {
     let pageItems = null; 
     if(this.menuTrigger.type == "group") {
       groupItems = this.getMenuItems(ConstraintActions.groupConstraints); 
+      elementItems = elementItems.concat(groupItems); 
     }
 
     if(this.menuTrigger.type == "canvas") {
       pageItems = this.getMenuItems(ConstraintActions.pageConstraints); 
+      elementItems = elementItems.concat(pageItems);
     }
 
     // if(this.menuTrigger.type == "element" || this.menuTrigger.type == "group") {
@@ -87,12 +89,7 @@ export default class CanvasMenu extends React.Component {
 
 	  return (
       <div className="canvas-menu">
-        <span className="canvas-feedback-menu-label">Element</span>
         <ul className="canvas-feedback-menu">{elementItems}</ul>
-        { groupItems ? <span className="canvas-feedback-menu-label">Group</span> : null }
-        { groupItems ? <ul className="canvas-feedback-menu">{groupItems}</ul> : null }
-        { pageItems ? <span className="canvas-feedback-menu-label">Page</span> : null }
-        { pageItems ? <ul className="canvas-feedback-menu">{pageItems}</ul> : null}
       </div>
     );
   }

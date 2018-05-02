@@ -3,7 +3,6 @@ import React from "react";
 import '../css/Canvas.css'; 
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
 import FabricHelpers from './FabricHelpers.js';
-import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import DesignCanvas from './DesignCanvas';
 import Sidebar from 'react-sidebar';
 import $ from 'jquery';
@@ -62,9 +61,9 @@ export default class PageContainer extends React.Component {
 
   drawWidgetCanvas() {
     this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
-    let field = FabricHelpers.getField(20,50,120,40,{'cursor': 'hand', 'selectable': false}); 
-    let text = FabricHelpers.getText(20,100,20,{'cursor': 'hand', 'selectable': false}); 
-    let button = FabricHelpers.getButton(20,150,120,40,{'cursor': 'hand', 'selectable': false}); 
+    let field = FabricHelpers.getField(15,50,120,40,{'cursor': 'hand', 'selectable': false}); 
+    let text = FabricHelpers.getText(15,100,20,{'cursor': 'hand', 'selectable': false}); 
+    let button = FabricHelpers.getButton(15,150,120,40,{'cursor': 'hand', 'selectable': false}); 
     field.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'field')); 
     text.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'text')); 
     button.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'button')); 
@@ -75,7 +74,7 @@ export default class PageContainer extends React.Component {
 
   drawContainersCanvas() {
     this.containersCanvas = new fabric.Canvas('containers-canvas');
-    let group = FabricHelpers.getGroup(10, 10, 120, 40, {
+    let group = FabricHelpers.getGroup(15, 10, 120, 40, {
       stroke: '#39a1f4',
       selectable: false, 
       groupType: 'Group', 
@@ -84,7 +83,7 @@ export default class PageContainer extends React.Component {
 
     group.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'group'));
 
-    let label = FabricHelpers.getGroup(10, 70, 120, 40, {
+    let label = FabricHelpers.getGroup(15, 70, 120, 40, {
       selectable: false, 
       stroke: 'red', 
       groupType: 'Label', 
@@ -307,7 +306,7 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">Widgets</h3>
               </div>  
               <div className="panel-body">         
-                <canvas id="widgets-canvas" width="200px" height="333px">
+                <canvas id="widgets-canvas" width="150px" height="333px">
                 </canvas>
               </div>
             </div>
@@ -316,7 +315,7 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">Containers</h3>
               </div>  
               <div className="panel-body">         
-                <canvas id="containers-canvas" width="200px" height="260px">
+                <canvas id="containers-canvas" width="150px" height="260px">
                 </canvas>
               </div>
             </div>

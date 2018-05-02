@@ -8,13 +8,13 @@ ConstraintActions.locked_arrangement_key = 'arrangement';
 ConstraintActions.arrangements = ["horizontal", "vertical"];
 
 ConstraintActions.locked_proximity_key = 'proximity'; 
+ConstraintActions.locked_margin_key = 'margin';
 ConstraintActions.locksKey = 'locks'; 
 
 ConstraintActions.elementConstraints = {
 	"location" : {
 		"do": {
 			"key": ConstraintActions.locked_location_key,
-			"label": "Keep position.",
 			"updateConstraintsCanvasShape": function keepPosition(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
 			    // Use the server key for locking a shape into a specific location
@@ -28,13 +28,12 @@ ConstraintActions.elementConstraints = {
 			    	y: designCanvasShape["location"]["y"]
 			    }
 			}, 
-			"getFeedbackMessage": function generateFeedbackMessage(constraintsCanvasShape) {
-				return "Keep position at X: " + constraintsCanvasShape[ConstraintActions.locked_location_key]["x"] + ", Y: " + constraintsCanvasShape[ConstraintActions.locked_location_key]["y"] + ".";
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Keep position at X: " + shape[ConstraintActions.locked_location_key]["x"] + ", Y: " + shape[ConstraintActions.locked_location_key]["y"] + ".";
 			}
 		}, 
 		"undo": {
 			"key": ConstraintActions.locked_location_key,
-			"label": "Unlock position.", 
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
 				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_location_key); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
@@ -43,6 +42,9 @@ ConstraintActions.elementConstraints = {
 				}
 
 				delete constraintsCanvasShape[ConstraintActions.locked_location_key]; 
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Unlock position from X: " + shape[ConstraintActions.locked_location_key]["x"] + ", Y: " + shape[ConstraintActions.locked_location_key]["y"] + ".";
 			}
 		} 
 	}
@@ -53,7 +55,6 @@ ConstraintActions.groupConstraints = {
 		{
 			"do": {
 				"key": ConstraintActions.locked_arrangement_key,
-				"label": "Keep arrangement. ", 
 				"updateConstraintsCanvasShape": function keepArrangment(constraintsCanvasShape, designCanvasShape) {
 				  	if(constraintsCanvasShape[ConstraintActions.locksKey] == undefined) {
 						constraintsCanvasShape[ConstraintActions.locksKey] = []; 
@@ -65,14 +66,13 @@ ConstraintActions.groupConstraints = {
 					// Update the constraint property on the object
 					constraintsCanvasShape[ConstraintActions.locked_arrangement_key] = designCanvasShape[ConstraintActions.locked_arrangement_key]; 
 				}, 
-				"getFeedbackMessage": function generateFeedbackMessage(constraintsCanvasShape) {
-					let arrangmentValue = ConstraintActions.arrangements[constraintsCanvasShape[ConstraintActions.locked_arrangement_key]];
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					let arrangmentValue = ConstraintActions.arrangements[shape[ConstraintActions.locked_arrangement_key]];
 					return "Keep the " + ConstraintActions.locked_arrangement_key + " " + arrangmentValue + ".";
 				}
 			}, 
 			"undo": {
 				"key": ConstraintActions.locked_arrangement_key,
-				"label": "Unlock arrangement. ",
 				"updateConstraintsCanvasShape": function undoKeepArrangement(constraintsCanvasShape, designCanvasShape) {
 					var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_arrangement_key); 
 					constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
@@ -81,43 +81,47 @@ ConstraintActions.groupConstraints = {
 					}
 
 					delete constraintsCanvasShape[ConstraintActions.locked_arrangement_key]; 
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Unlock " + ConstraintActions.locked_arrangment_key + " from " + shape[ConstraintActions.locked_arrangement_key] + ".";
 				}
 			}
 		}
 }
 
 ConstraintActions.pageConstraints = {
-	"proximity": 
+	"margin": 
 		{
 			"do": {
-				"key": ConstraintActions.locked_proximity_key, 
-				"label": "Keep global proximity. ", 
-				"updateConstraintsCanvasShape": function keepProximity(constraintsCanvasShape, designCanvasShape) {
+				"key": ConstraintActions.locked_margin_key, 
+				"updateConstraintsCanvasShape": function keepMargin(constraintsCanvasShape, designCanvasShape) {
 				  	if(constraintsCanvasShape[ConstraintActions.locksKey] == undefined) {
 						constraintsCanvasShape[ConstraintActions.locksKey] = []; 
 					} 
 
-			    	constraintsCanvasShape[ConstraintActions.locksKey].push(ConstraintActions.locked_proximity_key); 
+			    	constraintsCanvasShape[ConstraintActions.locksKey].push(ConstraintActions.locked_margin_key); 
 
 					// Also should the constraints canvas arrange itself in the way of the designs canvas?
 					// Update the constraint property on the object
-					constraintsCanvasShape[ConstraintActions.locked_proximity_key] = designCanvasShape[ConstraintActions.locked_proximity_key]; 
+					constraintsCanvasShape[ConstraintActions.locked_margin_key] = designCanvasShape[ConstraintActions.locked_margin_key]; 
 				}, 
-				"getFeedbackMessage": function generateFeedbackMessage(constraintsCanvasShape) {
-					return "Keep the global " + ConstraintActions.locked_proximity_key + " at " + constraintsCanvasShape[ConstraintActions.locked_proximity_key] + "px.";
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Keep the global " + ConstraintActions.locked_margin_key + " at " + shape[ConstraintActions.locked_margin_key] + "px.";
 				}
 			}, 
 			"undo": {
 				"key": ConstraintActions.locked_proximity_key,
-				"label": "Unlock global proximity. ",
 				"updateConstraintsCanvasShape": function undoKeepProximity(constraintsCanvasShape, designCanvasShape) {
-					var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_proximity_key); 
+					var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_margin_key); 
 					constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 					if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 						delete constraintsCanvasShape[ConstraintActions.locksKey]; 
 					}
 
-					delete constraintsCanvasShape[ConstraintActions.locked_proximity_key]; 
+					delete constraintsCanvasShape[ConstraintActions.locked_margin_key]; 
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Unlock " + ConstraintActions.locked_margin_key + " from " + shape[ConstraintActions.locked_margin_key] + "px.";
 				}
 			}
 		}
