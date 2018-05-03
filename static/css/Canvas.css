@@ -53,7 +53,7 @@ div:focus {
 	flex-direction: column;
 }
 
-.widgets-container, .constraints-container, .designs-container, .containers-container {
+.widgets-container, .constraints-container, .designs-container, .containers-container, .right-container {
 	margin-top: 10px;
 	margin-left: 10px;
 }
@@ -88,9 +88,11 @@ div:focus {
 }
 
 .design-canvas-container {
+	display: flex; 
 	flex: 1 1 0px;
     align-self: stretch;
     margin-right: 10px;
+    flex-direction: row; 
 }
 
 .design-canvas {
@@ -123,8 +125,22 @@ div:focus {
 	flex-direction: row;
 }
 
+.invalidated-body {
+	width: 50px; 
+	display: flex;
+	flex-direction: column;
+}
+
+.left-container {
+	min-width: 750px; 
+}
+
 .saved-body .canvas-container, .trashed-body .canvas-container {
 	margin-right: 5px;
+}
+
+.invalidated-body .canvas-container {
+	margin-bottom: 5px;
 }
 
 .save-icon {

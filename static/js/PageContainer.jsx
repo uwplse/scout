@@ -47,12 +47,13 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type);
   }
 
-  getDesignCanvas(id, elements, savedState, validity) {
+  getDesignCanvas(id, elements, savedState, validity, invalidated) {
     return (<DesignCanvas 
               key={id} id={id} 
               elements={elements}
               savedState={savedState}
               valid={validity}
+              invalidated={invalidated}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
@@ -200,9 +201,19 @@ export default class PageContainer extends React.Component {
     }
 
     let designsFound = solutions.length;
+
+    // Go through previous solutions and see which ones need to be invalidated
+    for(let i=0; i<this.state.solutions.length; i++) {
+      let designSolution = this.state.solutions[i]; 
+      if(!designSolution.valid) {
+        // Invalidate the solution which means it should be moved into the right side panel 
+        designSolution.invalidated = true; 
+      }
+    }
+
     this.setState({
       designsFound: designsFound,
-      solutions: solutions, 
+      solutions: solutions.concat(this.state.solutions), 
       errorMessageShown: false 
     });
   }
@@ -257,20 +268,27 @@ export default class PageContainer extends React.Component {
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 1); })
               .map(function(solution) {
-                  return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid); 
+                  return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
                 }); 
 
-    const designCanvases = this.state.solutions.filter(function(solution) { return solution.saved == 0; }) 
+    const designCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 0 && (!solution.invalidated)); }) 
               .map(function(solution) {
-                  return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid); 
+                  return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
                 }); 
 
     const trashedCanvases = this.state.solutions.filter(function(solution) { return solution.saved == -1; })
               .map(function(solution) {
                     if(solution.saved == -1) {
-                      return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid); 
+                      return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
                     }
                 });
+
+    const invalidatedCanvases = this.state.solutions.filter(function(solution) { return solution.invalidated == true; })
+        .map(function(solution) {
+              if(solution.invalidated == true) {
+                return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
+              }
+          });      
     return (
       <div className="page-container">
         <nav className="navbar navbar-default">
@@ -313,23 +331,33 @@ export default class PageContainer extends React.Component {
            {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>
           <div className="panel-group design-canvas-container">
-            { savedCanvases.length ? (<div className="panel designs-container panel-default">
-              <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
-              <div className="panel-body saved-body">
-                {savedCanvases}
+            <div className="left-container">
+              { savedCanvases.length ? (<div className="panel designs-container panel-default">
+                <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+                <div className="panel-body saved-body">
+                  {savedCanvases}
+                </div>
+              </div>) : null }
+              <div className="panel designs-container panel-default">
+                <div className="design-body">
+                  {designCanvases}
+                </div>
               </div>
-            </div>) : null }
-            <div className="panel designs-container panel-default">
-              <div className="design-body">
-                {designCanvases}
-              </div>
+              { trashedCanvases.length ? (<div className="panel designs-container panel-default">
+                <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                <div className="panel-body trashed-body">
+                  {trashedCanvases}
+                </div>
+              </div>) : null }
             </div>
-            { trashedCanvases.length ? (<div className="panel designs-container panel-default">
-              <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
-              <div className="panel-body trashed-body">
-                {trashedCanvases}
+            {invalidatedCanvases.length ? (<div className="right-container"> 
+              <div className="panel invalid-container panel-default"> 
+                <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                <div className="panel-body invalidated-body">
+                  {invalidatedCanvases}
+                </div>
               </div>
-            </div>) : null }
+            </div>) : null}
           </div>
         </div>
       </div>
