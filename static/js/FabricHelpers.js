@@ -172,7 +172,8 @@ class FabricHelpers {
 	}
 
     static getInteractiveText(left, top, fontSize, options={}) {
-	    var text = new fabric.IText('Text', {
+    	let textValue = options.text ? options.text : "Text"; 
+	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize,
 	      left: left,
 	      top: top,
@@ -199,7 +200,7 @@ class FabricHelpers {
 	        selectable: false
 	    });
 
-	    let textValue = "Field..."; 
+	    let textValue = options.text ? options.text : "Field..."; 
 	    let fontSize = options.fontSize ? options.fontSize : 16; 
 	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize, 

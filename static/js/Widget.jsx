@@ -57,7 +57,8 @@ export default class Widget extends React.Component {
 
   addFieldToCanvas() {
     // Add a new field to the constraints canvas
-    let field = FabricHelpers.getInteractiveField(0,0, this.defaultControlWidth, this.defaultControlHeight, {'selectable': true});
+    let label = this.element.label; 
+    let field = FabricHelpers.getInteractiveField(0,0, this.defaultControlWidth, this.defaultControlHeight, {'selectable': true, 'text': label});
     this.canvas.add(field.field); 
     this.canvas.add(field.line);
     this.element.size = {}; 
@@ -72,7 +73,8 @@ export default class Widget extends React.Component {
 
   addTextToCanvas() {
     // Add a new text to the constraints canvas
-    let text = FabricHelpers.getInteractiveText(0, 0, 20, {'selectable': true});
+    let label = this.element.label;
+    let text = FabricHelpers.getInteractiveText(0, 0, 20, {'selectable': true, 'text': label});
     this.canvas.add(text);
     this.element.size = {}; 
     this.element.size.width = 50; 
