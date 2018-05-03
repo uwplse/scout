@@ -112,20 +112,21 @@ class ConstraintBuilder(object):
 		self.solver.add(Or(or_values), "container " + container.shape_id + " proximity in domain")
 
 		child_shapes = container.children
-		for s_index in range(0, len(child_shapes)): 
-			shape1 = child_shapes[s_index]
-			shape1_x = shape1.variables.x.z3
-			shape1_y = shape1.variables.y.z3
+		if len(child_shapes): 
+			for s_index in range(0, len(child_shapes)): 
+				shape1 = child_shapes[s_index]
+				shape1_x = shape1.variables.x.z3
+				shape1_y = shape1.variables.y.z3
 
-			# Shapes cannot exceed the bounds of their parent containers
-			self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
-			self.solver.add(shape1_y >= container_y, "child shape " + shape1.shape_id + " inside parent container (greater than top)")
-			self.solver.add((shape1_x + shape1.width) <= (container_x + container.width), "child shape " + shape1.shape_id + " inside parent container (less than width)")
-			self.solver.add((shape1_y + shape1.height) <= (container_y + container.height), "child shape " + shape1.shape_id + " inside parent container (less than height)")
+				# Shapes cannot exceed the bounds of their parent containers
+				self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
+				self.solver.add(shape1_y >= container_y, "child shape " + shape1.shape_id + " inside parent container (greater than top)")
+				self.solver.add((shape1_x + shape1.width) <= (container_x + container.width), "child shape " + shape1.shape_id + " inside parent container (less than width)")
+				self.solver.add((shape1_y + shape1.height) <= (container_y + container.height), "child shape " + shape1.shape_id + " inside parent container (less than height)")
 
-		self.arrange_container(container)
-		self.align_container(container)
-		self.non_overlapping(container)
+			self.arrange_container(container)
+			self.align_container(container)
+			self.non_overlapping(container)
 
 	def init_container_locks(self, container): 
 		# Add constraints for all of the locked properties
