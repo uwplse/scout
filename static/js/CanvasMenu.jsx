@@ -32,12 +32,13 @@ export default class CanvasMenu extends React.Component {
   	super(props); 
   	this.menuShown = props.menuShown; 
   	this.menuTrigger = props.menuTrigger; // This is the JSON of the shape that triggered the menu open 
+    this.getConstraintsCanvasShape = props.getConstraintsCanvasShape; // Gets the shape on the constraints canvas used to construct the menu options
   }
 
   getAction(constraint, constraintsMenu) {
       // Find the corresponding shape on the cosntraints canvas for the menu trigger shape
       // Use the state of that shape to determine what shows up
-      let constraintsCanvasShape = this.menuTrigger.constraintsCanvasShape; 
+      let constraintsCanvasShape = this.getConstraintsCanvasShape(this.menuTrigger.name);
       if(constraintsCanvasShape[ConstraintActions.locksKey]
         && constraintsCanvasShape[ConstraintActions.locksKey].indexOf(constraint) >= 0) {
         // The constraint is active and set to true, show the undo option

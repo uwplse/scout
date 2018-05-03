@@ -47,9 +47,6 @@ def solve():
 
 		# Output dictionary 
 		output = dict() 
-		output["size"] = dict() 
-		output["size"]["width"] = DEFAULT_APP_WIDTH
-		output["size"]["height"] = DEFAULT_APP_HEIGHT
 		output["solutions"] = solutions
 
 		return json.dumps(output).encode('utf-8')
@@ -63,12 +60,20 @@ def check():
 
 	if "elements" in form_data:
 		elements_json = form_data["elements"]
+		solutions_json = form_data["solutions"]
 		elements = json.loads(elements_json)
-		result = check_solution_exists_from_custom_solver(elements)
+		solutions = json.loads(solutions_json)
+
+		# Will return the status of whether the current set of constraints is valid
+		# and also update the valid state of each of the previous solutions
+		result = check_solution_exists_and_validate_previous_solutions(elements, solutions)
 
 		# Don't return back any results, just the status of whether it could be solved or not
-		return str(result)
-	return False
+		output = dict() 
+		output["result"] = result["valid"]
+		output["solutions"] = result["solutions"]
+		return json.dumps(output).encode('utf-8')
+	return ""
 
 # 	# Simulated annealing search 
 # 	# solutions = get_solution_annealing(elements, canvas_width, canvas_height)
@@ -89,14 +94,10 @@ def check():
 
 # 	return json.dumps(output).encode('utf-8')
 
-def check_solution_exists_from_custom_solver(elements): 
-	solutions = dict()
-	solutions["saved"] = []
-	solutions["trashed"] = []
-	solutions["designs"] = []
+def check_solution_exists_and_validate_previous_solutions(elements, solutions):
 	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
-	solutions = solver.check()
-	return solutions
+	result = solver.check()
+	return result
 
 def get_solution_from_custom_solver(elements, solutions, relative_designs): 
 	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT, relative_designs=relative_designs)

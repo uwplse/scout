@@ -13,7 +13,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
 
     // This collection contains the set of shapes on the constraints canvas
-    this.constraintsShapesMap = [];
+    this.constraintsShapesMap = {};
     this.widgetTreeNodeMap = {};
 
     this.canvasWidth = 375; 
@@ -87,6 +87,10 @@ export default class ConstraintsCanvas extends React.Component {
               action={action}
               message={message} 
               updateConstraintsCanvas={this.updateConstraintsCanvas}/>); 
+  }
+
+  getConstraintsCanvasShape(shapeID) {
+    return this.constraintsShapesMap[shapeID]; 
   }
 
   updateWidgetFeedbacks(shape, action, actionType) {    
@@ -192,14 +196,6 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  linkSolutionShapesToConstraintShapes(elements) {
-    for(var i=0; i<elements.length; i++) {
-      let element = elements[i]; 
-      let elementName = element["name"]; 
-      element.constraintsCanvasShape = this.constraintsShapesMap[elementName];
-    }
-    return elements; 
-  }
 
   createConstraintsCanvasShapeObject(type) {  
     // Set up the object that will keep the current state of this shape

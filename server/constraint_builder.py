@@ -18,23 +18,20 @@ class ConstraintBuilder(object):
 
 	def init_previous_solution_constraints(self, previous_solutions, shapes): 
 		# Saved solutions should not appear again in the results
-		saved = previous_solutions["saved"]
-		for saved_solution in saved: 
-			elements = saved_solution["elements"]
+		for solution in previous_solutions: 
+			elements = solution["elements"]
 			all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
-			self.solver.add(Not(And(all_values)))
 
-		designs = previous_solutions["designs"]
-		for design_solution in designs: 
-			elements = design_solution["elements"]
-			all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
-			self.solver.add(Not(And(all_values)))
+			# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
+			self.solver.add(Not(And(all_values)), "prevent previous solution " + solution["id"] + " values")
 
-		trash = previous_solutions["trashed"]
-		for trashed_solution in trash: 
-			elements = trashed_solution["elements"]
-			all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
-			self.solver.add(Not(And(all_values)))		
+	def init_solution_constraints(self, solution, shapes): 
+		# Saved solutions should not appear again in the results
+		elements = solution["elements"]
+		all_values = self.get_solution_constraints_from_elements(shapes, elements)
+
+		# All of the variables that were set for this solution should be maintained (And constraint)
+		self.solver.add(And(all_values), "prevent solution " + solution["id"] + " values")
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements):
 		all_values = []
@@ -50,6 +47,18 @@ class ConstraintBuilder(object):
 					elif variable_key in element:
 						all_values.append(variable.z3 == element[variable_key])
 		return all_values
+
+	def get_solution_constraints_from_elements(self, shapes, elements): 
+		all_values = []
+		for element in elements: 
+			# Get the shape corresponding to the element name
+			shape = shapes[element["name"]]
+			variables = shape.variables.toDict()
+			for variable_key in variables.keys(): 
+				variable = variables[variable_key]
+				if variable_key != "x" and variable_key != "y" and variable_key in element: 
+					all_values.append(variable.z3 == element[variable_key])
+		return all_values	
 
 	def init_canvas_constraints(self, canvas): 
 		alignment = canvas.variables.alignment

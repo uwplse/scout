@@ -24,7 +24,7 @@ export default class WidgetFeedback extends React.Component {
               </span>
               <button className="widget-feedback-items-remove" onClick={
                   function() { 
-                    self.updateConstraintsCanvas(self.parentShape, undefined, self.action, "undo"); 
+                    self.updateConstraintsCanvas(self.parentShape, self.action, "undo"); 
                   }}>
                 <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
               </button>

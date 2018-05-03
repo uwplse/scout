@@ -123,5 +123,7 @@ class Solution(object):
 		sln["elements"] = new_elements
 		sln["id"] = uuid.uuid4().hex
 		sln["cost"] = cost
+		sln["valid"] = True
+		sln["saved"] = 0
 
 		return sln

@@ -13,37 +13,57 @@ export default class DesignCanvas extends React.Component {
 
   	// Object shapes to be drawn onto the canvas
   	this.elements = props.elements; 
-    this.savedState = props.savedState;
   	this.id = props.id; 
   	this.elementDict = {}; 
-    this.inMainCanvas = (this.savedState == 0);
+    this.inMainCanvas = (props.savedState == 0);
 
     // The original solution shapes from the solver
     // Should remain by later feedback constraints
     this.originalElements = props.originalElements; 
+    this.renders = 0; 
 
   	this.state = {
   		menuShown: false, 
   		menuPosition: { x: 0, y: 0 }, 
   		activeCanvasMenu: undefined,
-      designMenu: undefined
+      designMenu: undefined, 
+      savedState: props.savedState, 
+      valid: props.valid
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
+    this.getConstraintsCanvasShape = props.getConstraintsCanvasShape;
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
 
     // Original scaling factor
     this.scalingFactor = this.getScalingFactor();
-  } 
+  }
 
-  componentWillReceiveProps(nextProps) {  // you still need this to receive 
-    // this.setState({                       // prop changes from parent Toggle
-    //   isOpen: nextProps.openAll ? true : false
-    // });
-    console.log("recieve props");
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if((prevState.valid && !nextProps.valid) || (!prevState.valid && nextProps.valid)) {
+      return {
+        menuShown: prevState.menuShown, 
+        menuPosition: prevState.menuPosition, 
+        activeCanvasMenu: prevState.activeCanvasMenu, 
+        designMenu: prevState.designMenu, 
+        savedState: prevState.savedState, 
+        valid: nextProps.valid, 
+        invalidated: false
+      }    
+    }
+
+    return null;
+  }
+
+  componentDidMount() {
+    this.redrawCanvas(); 
+
+    if(!this.state.valid) {
+      this.invalidateCanvas();
+    }
   }
 
   getScalingFactor() {
@@ -75,7 +95,7 @@ export default class DesignCanvas extends React.Component {
     let scaledHeight = shape.height * this.scalingFactor; 
 
     this.setState({
-      activeCanvasMenu: <CanvasMenu menuTrigger={element} onClick={this.performActionAndCloseMenu.bind(this)} />,
+      activeCanvasMenu: <CanvasMenu menuTrigger={element} onClick={this.performActionAndCloseMenu.bind(this)} getConstraintsCanvasShape={this.getConstraintsCanvasShape} />,
       menuShown: true, 
       menuPosition: {
       	x: evt.e.clientX, 
@@ -88,8 +108,7 @@ export default class DesignCanvas extends React.Component {
   performActionAndCloseMenu(menuTriggerShape, action, actionType, evt) {
   	// Shape and option clicked on should be the arguments here
   	// The linked shape in the constraints canvass
-  	let constraintsCanvasShape = menuTriggerShape.constraintsCanvasShape; 
-  	this.updateConstraintsCanvas(constraintsCanvasShape, menuTriggerShape, action, actionType); 
+  	this.updateConstraintsCanvas(menuTriggerShape, action, actionType); 
   	this.hideMenu();
   }
 
@@ -100,30 +119,47 @@ export default class DesignCanvas extends React.Component {
     });  
   }
 
+  rerenderCanvas() {
+    this.canvas.renderAll(); 
+
+    if(!this.state.valid) {
+      this.invalidateCanvas(); 
+    }
+  }
+
   showHoverIndicator(element, shape) {
     shape.set("stroke", "#000000"); 
     shape.set("strokeWidth", 1); 
     shape.set("strokeDashArray", [5,5]);
-    this.canvas.renderAll();
+    this.rerenderCanvas(); 
   }
 
   hideHoverIndicator(element, shape) {
     shape.set("stroke", undefined); 
     shape.set("strokeDashArray", undefined);
     shape.set("strokeWidth", undefined);
-    this.canvas.renderAll(); 
+    this.rerenderCanvas(); 
   }
- 
-  componentDidMount() {
-    this.canvas = new fabric.Canvas('design-canvas-' + this.id); 
 
-	  // When the component mounts, draw the shapes onto the canvas
+  redrawCanvas() {
+    if(!this.canvas) {
+      this.canvas = new fabric.Canvas('design-canvas-' + this.id);       
+    }
+
+    this.canvas.clear(); 
+    this.drawCanvas();
+  }
+
+  drawCanvas() {
+    console.log("drawing the canvas");
+
+    // When the component mounts, draw the shapes onto the canvas
     let pageFabricShape = null;
-  	for(var i=0; i<this.elements.length; i++) {
-  		let element = this.elements[i]; 
-  		this.elementDict[element.id] = element; 
+    for(var i=0; i<this.elements.length; i++) {
+      let element = this.elements[i]; 
+      this.elementDict[element.id] = element; 
 
-  		// Scale down the values to fit into the design canvases
+      // Scale down the values to fit into the design canvases
       if(element.type == "canvas") {
         let x = 0; 
         let y = 0; 
@@ -223,17 +259,15 @@ export default class DesignCanvas extends React.Component {
           this.canvas.sendToBack(group); 
         }
       }
-  	}
+    }
 
     // Make sure to send the page fabric shape to the back layer
     this.canvas.sendToBack(pageFabricShape); 
 
     // Rescale the canvas to the given scaling factor
-    this.rescaleCanvas();
-
-    // this.invalidateCanvas();
+    this.rescaleCanvas();   
   }
-
+ 
   invalidateCanvas() {     
     var color1 = "#f5c6cb";
     var numberOfStripes = 100;     
@@ -255,8 +289,8 @@ export default class DesignCanvas extends React.Component {
 
   rescaleCanvas() {
     let scaling = this.scalingFactor;
-    let canvasHeight = this.canvas.getHeight(); 
-    let canvasWidth = this.canvas.getWidth();
+    let canvasHeight = this.canvasHeight; 
+    let canvasWidth = this.canvasWidth; 
     this.canvas.setHeight(canvasHeight * scaling);
     this.canvas.setWidth(canvasWidth * scaling); 
     var obj = this.canvas.getObjects(); 
@@ -336,8 +370,13 @@ export default class DesignCanvas extends React.Component {
     let openMenu = this.onMouseEnter;
     let closeMenu = this.onMouseOut; 
     let designMenu = this.state.designMenu; 
-    let saved = this.savedState == 1; 
-    let trashed = this.savedState == -1; 
+    let saved = this.state.savedState == 1; 
+    let trashed = this.state.savedState == -1; 
+
+    if(this.canvas) {
+      this.rerenderCanvas();       
+    }
+
     return  (
       <div onMouseEnter={((saved || trashed) ? undefined : openMenu.bind(this))} 
            onMouseOut={((saved || trashed) ? undefined : closeMenu.bind(this))} 

@@ -43,11 +43,9 @@ class Solver(object):
 				self.cb.init_canvas_constraints(shape)
 			elif shape.type == "container": 
 				self.cb.init_container_constraints(shape)
-				self.cb.init_container_locks(shape)
-			self.cb.init_location_locks(shape)
 
 		# Initialize the previous solution constraints
-		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+		# self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
 
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
@@ -168,7 +166,7 @@ class Solver(object):
 		total = 1
 		for variable in self.variables:
 			total *= len(variable.domain)
-		return total
+		return total		
 
 	# def init_global_constraints():
 	# 	# Stay in bounds of the canvas
@@ -177,17 +175,63 @@ class Solver(object):
 
 	# This function just checks for satisfiability of the current set of constraints
 	# Doesn't return any solutions back 
-	def check(self): 
-		self.unassigned = copy.copy(self.variables)
+	def check(self):
+		results = dict()
 
-		start_time = time.time()
+		# Encode the fixed constraints 
+		for shape in self.shapes.values(): 
+			if shape.type == "canvas" or shape.type == "container": 
+			 	self.cb.init_container_locks(shape)
+			
+			# All shapes can have locked locations
+			self.cb.init_location_locks(shape)
 
-		# Branch and bound get one solution at a time
-		result = self.branch_and_bound_check(start_time)
+		time_start = time.time()
+		valid = self.z3_check(time_start)
 
-		return result
+		results["valid"] = valid
+
+		# Check all of the previous solutions
+		for solution in self.previous_solutions: 
+			# Create a new stack context for the solver before we encode the fixed values for the solution
+			self.solver.push() 
+
+			# For this solution, fix the values of the variables to the solution values
+			self.cb.init_solution_constraints(solution, self.shapes)
+
+			# Initialize the locks for this solution
+			# Encode the values of the variables that are fixed for this solution
+			start_time = time.time()
+			result = self.z3_check(start_time)
+
+			# update the valid state of the solution
+			solution["valid"] = result
+
+			if result: 
+				print("Solution could be found.")
+			else: 
+				print("Solution could not be found.")
+
+			self.solver.pop()
+
+		time_end = time.time()
+		total_time = time_end - time_start
+		print("Total time to check satisfiability: " + str(total_time))
+		results["solutions"] = self.previous_solutions
+		return results
 
 	def solve(self):
+		# Initialize the set of fixed constraints on shapes and containers
+		for shape in self.shapes.values(): 
+			if shape.type == "canvas" or shape.type == "container": 
+			 	self.cb.init_container_locks(shape)
+			
+			# All shapes can have locked locations
+			self.cb.init_location_locks(shape)
+
+		# Initialize the constraints preventing previous solutions from re-occuring
+		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+
 		self.unassigned = copy.copy(self.variables)
 
 		# For debugging how large the search space isd
@@ -217,7 +261,7 @@ class Solver(object):
 		if len(self.solutions):
 			self.solutions.sort(key=lambda s: s["cost"])
 			print("lowest cost: " + str(self.solutions[0]["cost"]))
-			print("higest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))
+			print("highest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))
 		else:
 			print("No solutions found.")
 		return self.solutions
@@ -335,6 +379,18 @@ class Solver(object):
 				print(variable.shape_id)
 				print(str(variable.domain[variable.assigned]))
 
+
+	def z3_check(self, time_start): 
+		time_z3_start = time.time()
+		result = self.solver.check()
+		unsat_core = self.solver.unsat_core()
+		time_z3_end = time.time()
+		time_z3_total = time_z3_end - time_z3_start
+		self.time_z3 += time_z3_total
+		if str(result) == 'sat': 
+			return True
+		else: 
+			return False
 
 	# Loop and solve until num solutions is reached
 	def z3_solve(self, time_start, search_space_size, state=sh.Solution()):
@@ -469,23 +525,6 @@ class Solver(object):
 		time_end = time.time()
 		total_time = time_end - time_start
 		print("Total time to " + str(NUM_SOLUTIONS) + ": " + str(total_time))
-
-
-	def branch_and_bound_check(self, time_start): 
-		state = sh.Solution()
-		sln = self.branch_and_bound_random(time_start, state)
-		if sln is not None: 
-			print("Solution could be found.")
-			self.solutions.append(sln)
-			self.num_solutions += 1
-		else: 
-			print("Solution could not be found.")
-
-		time_end = time.time()
-		total_time = time_end - time_start
-		print("Total time to check satisfiability: " + str(total_time))
-
-		return sln is not None
 
 	def restore_state(self): 
 		# Unassign and reset the variables
