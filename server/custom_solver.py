@@ -180,11 +180,7 @@ class Solver(object):
 
 		# Encode the fixed constraints 
 		for shape in self.shapes.values(): 
-			if shape.type == "canvas" or shape.type == "container": 
-			 	self.cb.init_container_locks(shape)
-			
-			# All shapes can have locked locations
-			self.cb.init_location_locks(shape)
+			self.cb.init_locks(shape)
 
 		time_start = time.time()
 		valid = self.z3_check(time_start)
@@ -223,12 +219,8 @@ class Solver(object):
 	def solve(self):
 		# Initialize the set of fixed constraints on shapes and containers
 		for shape in self.shapes.values(): 
-			if shape.type == "canvas" or shape.type == "container": 
-			 	self.cb.init_container_locks(shape)
+			self.cb.init_locks(shape)
 			
-			# All shapes can have locked locations
-			self.cb.init_location_locks(shape)
-
 		# Initialize the constraints preventing previous solutions from re-occuring
 		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
 

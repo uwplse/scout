@@ -43,20 +43,15 @@ export default class DesignCanvas extends React.Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    if((prevState.valid && !nextProps.valid) || (!prevState.valid && nextProps.valid) 
-      || (!!prevState.invalidated && (nextProps.invalidated))) {
-      return {
-        menuShown: prevState.menuShown, 
-        menuPosition: prevState.menuPosition, 
-        activeCanvasMenu: prevState.activeCanvasMenu, 
-        designMenu: prevState.designMenu, 
-        savedState: prevState.savedState, 
-        valid: nextProps.valid, 
-        invalidated: nextProps.invalidated
-      }    
-    }
-
-    return null;
+    return {
+      menuShown: prevState.menuShown, 
+      menuPosition: prevState.menuPosition, 
+      activeCanvasMenu: prevState.activeCanvasMenu, 
+      designMenu: prevState.designMenu, 
+      savedState: prevState.savedState, 
+      valid: nextProps.valid, 
+      invalidated: nextProps.invalidated
+    }    
   }
 
   componentDidMount() {

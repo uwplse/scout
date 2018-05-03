@@ -128,20 +128,17 @@ class ConstraintBuilder(object):
 			self.align_container(container)
 			self.non_overlapping(container)
 
-	def init_container_locks(self, container): 
+	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
 		# TODO: Make generic at some point
-		if container.locks is not None: 
-			for lock in container.locks: 
-				# "container " + container.shape_id + " variable " + container.variables[lock].name + " fixed to " + str(container.variable_values[lock])
-				self.solver.add(container.variables[lock].z3 == container.variable_values[lock], container.shape_id + " variable " + container.variables[lock].name + " fixed to " + str(container.variable_values[lock]))
-
-	def init_location_locks(self, shape): 
-		if shape.locks is not None:
-			for lock in shape.locks: 
+		if shape.locks is not None: 
+			for lock in shape.locks:
 				if lock == "location": 
 					self.solver.add(shape.variables.x.z3 == shape.orig_x, shape.shape_id + " locked to position x")
 					self.solver.add(shape.variables.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
+				else: 
+					if shape.type != "leaf":
+						self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], shape.shape_id + " variable " + shape.variables[lock].name + " fixed to " + str(shape.variable_values[lock]))
 
 	def non_overlapping(self, container): 
 		proximity = container.variables.proximity.z3

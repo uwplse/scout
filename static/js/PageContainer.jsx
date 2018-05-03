@@ -205,10 +205,9 @@ export default class PageContainer extends React.Component {
     // Go through previous solutions and see which ones need to be invalidated
     for(let i=0; i<this.state.solutions.length; i++) {
       let designSolution = this.state.solutions[i]; 
-      if(!designSolution.valid) {
-        // Invalidate the solution which means it should be moved into the right side panel 
-        designSolution.invalidated = true; 
-      }
+      
+      // Invalidate the solution which means it should be moved into the right side panel 
+      designSolution.invalidated = !designSolution.valid; 
     }
 
     this.setState({
