@@ -101,18 +101,7 @@ export default class PageContainer extends React.Component {
     this.containersCanvas.add(label);
   }
 
-  updateConstraintsCanvasFromDesignCanvas(designCanvasShape, action, actionType) {
-    // Retrieve the shape object in the constraints tree and apply teh updates
-    let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
-    action[actionType].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
-
-    // Notify the constraintss canvas
-    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
-
-    this.setState({
-      constraintChanged: true
-    });
-
+  checkSolutionValidity() {
     let jsonShapes = this.getShapesJSON(); 
 
     // Get all of the solutions so far to check their validity 
@@ -126,10 +115,27 @@ export default class PageContainer extends React.Component {
         self.setState({
           errorMessageShown: true
         }); 
-      } 
+      }else {
+        // TODO: Figure out what we are doing with this
+        self.setState({
+          constraintChanged: true
+        });
+      }
 
       self.updateSolutionValidity(requestParsed.solutions);
     }); 
+  }
+
+  updateConstraintsCanvasFromDesignCanvas(designCanvasShape, action, actionType) {
+    // Retrieve the shape object in the constraints tree and apply teh updates
+    let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
+    action[actionType].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
+
+    // Notify the constraintss canvas to remove the widget feedback from the tree
+    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
+
+    // Check the validity of the current constraints and update valid state of solutions
+    this.checkSolutionValidity();
   }
 
   updateSolutionValidity(solutions) {
@@ -152,32 +158,8 @@ export default class PageContainer extends React.Component {
     // Notify the constraintss canvas
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo");
 
-    this.setState({
-      constraintChanged: true
-    });
-
-    // let jsonShapes = this.getShapesJSON(); 
-
-    // // Get all of the solutions so far to check their validity 
-    // let prevSolutions = JSON.stringify(this.state.solutions);
-
-    // var self = this;
-    // $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, function(requestData) {
-    //   if(requestData == "True") {
-    //     // At least one constraint has been changed 
-    //     // The button to get more designs with the current set of constraints should be disabled. 
-    //     self.setState({
-    //       errorMessageShown: false
-    //     });  
-    //   } else {
-    //     // Display an error message somewhere (?)
-    //     action["undo"].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);  
-
-    //     self.setState({
-    //       errorMessageShown: true
-    //     });
-    //   }
-    // }, 'text');
+    // Check for the validity of current state of constriants, and update valid state of solutions
+    this.checkSolutionValidity(); 
   }
 
   saveDesignCanvas(designCanvasID){
