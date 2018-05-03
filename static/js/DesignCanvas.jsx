@@ -302,13 +302,9 @@ export default class DesignCanvas extends React.Component {
     this.canvas.setWidth(canvasWidth * scaling); 
     var obj = this.canvas.getObjects(); 
     for (var i=0; i<obj.length; i++){
-      // let scaleHeight = obj[i].get('height'); 
-      // let scaleWidth = obj[i].get('width'); 
       var left = obj[i].get('left');
       var top = obj[i].get('top');
 
-      // obj[i].set('width', scaleWidth * scaling);
-      // obj[i].set('height', scaleHeight * scaling);
       obj[i].set('left', left * scaling);
       obj[i].set('top', top * scaling);
       obj[i].set('scaleX', scaling);

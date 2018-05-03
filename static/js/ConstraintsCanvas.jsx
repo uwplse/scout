@@ -62,12 +62,23 @@ export default class ConstraintsCanvas extends React.Component {
     canvas.children.push(page); 
   }
 
+  getWidget(shape, type) {
+    let shapeId = shape.name;
+    return (<Widget 
+              key={shapeId} 
+              shape={shape} 
+              id={shapeId} 
+              type={type} 
+              updateCurrentSize={this.updateCurrentWidgetSize}
+              height={this.defaultControlHeight} 
+              width={this.defaultControlWidth}/>);
+  }
+
   addShapeOfTypeToCanvas(type) {
     let shape = this.createConstraintsCanvasShapeObject(type); 
 
     let shapeId = shape["name"];
-    let widget = <Widget key={shapeId} shape={shape} id={shapeId} type={type} height={this.defaultControlHeight} width={this.defaultControlWidth}/>;
-
+    let widget = this.getWidget(shape, type); 
     let newTreeNode = {
         title: widget, 
         subtitle: []
@@ -91,6 +102,11 @@ export default class ConstraintsCanvas extends React.Component {
 
   getConstraintsCanvasShape(shapeID) {
     return this.constraintsShapesMap[shapeID]; 
+  }
+
+  updateCurrentWidgetSize(shape, canvasShape) {
+    // Update the height and widget of the shape based on the calculated height/width from the canvas after editing
+
   }
 
   updateWidgetFeedbacks(shape, action, actionType) {    

@@ -75,6 +75,14 @@ class CanvasShape(Shape):
 		self.orig_x = 0
 		self.orig_y = 0
 
+		# values for locked variables
+		self.variable_values = dict()
+
+		if self.locks is not None: 
+			for lock in self.locks:
+				# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
+				self.variable_values[lock] = element[lock]
+
 	def add_child(self, child): 
 		self.children.append(child)
 
