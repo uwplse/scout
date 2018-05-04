@@ -83,7 +83,11 @@ export default class Widget extends React.Component {
     // Update the label when the text is modified
     let shape = this.element; 
     text.on("modified", function() {
-      shape["label"] = text.text;
+      shape.label = text.text; 
+
+      // Also update the height and width of the text to tell the solver the calculated size. 
+      shape.size.height = Math.round(text.height); 
+      shape.size.width = Math.round(text.width);
     }); 
   }
 

@@ -11,6 +11,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Callback to update a shape on the constraints canvas through the PageContainer so that it can validate the current state
     this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
+    this.checkSolutionValidity =  props.checkSolutionValidity; 
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
@@ -68,8 +69,7 @@ export default class ConstraintsCanvas extends React.Component {
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
-              type={type} 
-              updateCurrentSize={this.updateCurrentWidgetSize}
+              type={type}
               height={this.defaultControlHeight} 
               width={this.defaultControlWidth}/>);
   }
@@ -102,11 +102,6 @@ export default class ConstraintsCanvas extends React.Component {
 
   getConstraintsCanvasShape(shapeID) {
     return this.constraintsShapesMap[shapeID]; 
-  }
-
-  updateCurrentWidgetSize(shape, canvasShape) {
-    // Update the height and widget of the shape based on the calculated height/width from the canvas after editing
-
   }
 
   updateWidgetFeedbacks(shape, action, actionType) {    
@@ -271,7 +266,7 @@ export default class ConstraintsCanvas extends React.Component {
         path, 
         getNodeKey,
       })
-    })); 
+    }), this.checkSolutionValidity); 
   }
 
   render () {

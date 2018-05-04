@@ -192,21 +192,44 @@ class Solver(object):
 			# Create a new stack context for the solver before we encode the fixed values for the solution
 			self.solver.push() 
 
-			# For this solution, fix the values of the variables to the solution values
-			self.cb.init_solution_constraints(solution, self.shapes)
+			# Look for any shapes that have been removed or added in this solution
+			shapes_removed = []
+			shapes_added = []
+			elements = solution["elements"]
+			for elementID in elements:
+				if elementID not in self.shapes:
+					shapes_removed.append(elementID)
 
-			# Initialize the locks for this solution
-			# Encode the values of the variables that are fixed for this solution
-			start_time = time.time()
-			result = self.z3_check(start_time)
+			for shapeID in self.shapes:
+				if shapeID not in elements:
+					shapes_added.append(shapeID)
 
-			# update the valid state of the solution
-			solution["valid"] = result
+			if len(shapes_added) or len(shapes_removed):
+				# If any shapes were added or removed from the canvas since this solution was retrieved
+				# Mark the solution as invalid
+				solution["valid"] = False
 
-			if result: 
-				print("Solution could be found.")
-			else: 
-				print("Solution could not be found.")
+				# Send back the added and removed shapes to be used for highlighting inconsistencies in the constriants tree
+				solution["added"] = shapes_added
+				solution["removed"] = shapes_removed
+
+				print("Shapes were added or removed. not resolving. ")
+			else:
+				# For this solution, fix the values of the variables to the solution values
+				# Otherwise, check the solution for validity again
+				# This encodes the values that should be fixed for this solution
+				self.cb.init_solution_constraints(self.shapes, elements)
+
+				start_time = time.time()
+				result = self.z3_check(start_time)
+
+				# update the valid state of the solution
+				solution["valid"] = result
+
+				if result:
+					print("Solution could be found.")
+				else:
+					print("Solution could not be found.")
 
 			self.solver.pop()
 

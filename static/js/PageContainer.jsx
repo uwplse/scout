@@ -47,13 +47,13 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type);
   }
 
-  getDesignCanvas(id, elements, savedState, validity, invalidated) {
+  getDesignCanvas(solution) {
     return (<DesignCanvas 
-              key={id} id={id} 
-              elements={elements}
-              savedState={savedState}
-              valid={validity}
-              invalidated={invalidated}
+              key={solution.id} id={solution.id} 
+              elements={solution.elements}
+              savedState={solution.saved}
+              valid={solution.valid}
+              invalidated={solution.invalidated}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
@@ -132,25 +132,11 @@ export default class PageContainer extends React.Component {
     let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
     action[actionType].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
 
-    // Notify the constraintss canvas to remove the widget feedback from the tree
+    // Notify the constraintss canvas to add or remove the widget feedback to the tree
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
 
     // Check the validity of the current constraints and update valid state of solutions
     this.checkSolutionValidity();
-  }
-
-  updateSolutionValidity(solutions) {
-    // Update the state of each solution to display the updated valid/invalid state
-    for(var i=0; i<solutions.length; i++) {
-      let solution = solutions[i]; 
-      let designSolution = this.solutionsMap[solution.id]; 
-      designSolution.valid = solution.valid; 
-    }
-
-    // Update the state
-    this.setState({
-      solutions: this.state.solutions
-    }); 
   }
 
   updateConstraintsCanvas(constraintsCanvasShape, action) {
@@ -161,6 +147,22 @@ export default class PageContainer extends React.Component {
 
     // Check for the validity of current state of constriants, and update valid state of solutions
     this.checkSolutionValidity(); 
+  }
+
+  updateSolutionValidity(solutions) {
+    // Update the state of each solution to display the updated valid/invalid state
+    for(var i=0; i<solutions.length; i++) {
+      let solution = solutions[i]; 
+      let designSolution = this.solutionsMap[solution.id]; 
+      designSolution.valid = solution.valid; 
+      designSolution.added = solution.added; 
+      designSolution.removed = solution.removed;
+    }
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }); 
   }
 
   saveDesignCanvas(designCanvasID){
@@ -267,25 +269,25 @@ export default class PageContainer extends React.Component {
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 1); })
               .map(function(solution) {
-                  return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
+                  return self.getDesignCanvas(solution); 
                 }); 
 
     const designCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 0 && (!solution.invalidated)); }) 
               .map(function(solution) {
-                  return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
+                  return self.getDesignCanvas(solution); 
                 }); 
 
     const trashedCanvases = this.state.solutions.filter(function(solution) { return solution.saved == -1; })
               .map(function(solution) {
                     if(solution.saved == -1) {
-                      return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
+                      return self.getDesignCanvas(solution); 
                     }
                 });
 
     const invalidatedCanvases = this.state.solutions.filter(function(solution) { return solution.invalidated == true; })
         .map(function(solution) {
               if(solution.invalidated == true) {
-                return self.getDesignCanvas(solution.id, solution.elements, solution.saved, solution.valid, solution.invalidated); 
+                return self.getDesignCanvas(solution); 
               }
           });      
     return (
@@ -325,7 +327,9 @@ export default class PageContainer extends React.Component {
               </h3>
             </div>
             <div className="constraints-canvas-container"> 
-              <ConstraintsCanvas ref={this.constraintsCanvasRef} updateConstraintsCanvas={this.updateConstraintsCanvas}/>
+              <ConstraintsCanvas ref={this.constraintsCanvasRef} 
+                updateConstraintsCanvas={this.updateConstraintsCanvas} 
+                checkSolutionValidity={this.checkSolutionValidity.bind(this)}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
             </div>
            {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>

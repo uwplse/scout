@@ -50,7 +50,9 @@ export default class DesignCanvas extends React.Component {
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState, 
       valid: nextProps.valid, 
-      invalidated: nextProps.invalidated
+      invalidated: nextProps.invalidated, 
+      added: nextProps.added, 
+      removed: nextProps.removed
     }    
   }
 
@@ -148,123 +150,134 @@ export default class DesignCanvas extends React.Component {
     }
 
     this.canvas.clear(); 
-    this.drawCanvas();
+    this.drawDesign();
   }
 
-  drawCanvas() {
-    console.log("drawing the canvas");
+  drawCanvas(canvasElement) {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
 
+    let x = 0; 
+    let y = 0; 
+    let width = this.canvasWidth; 
+    let height = this.canvasHeight; 
+    
+    // Make a white rectangle of this size to serve as the background layer
+    let pageGroup = FabricHelpers.getDesignGroup(x,y,width-2,height-2, {
+      cursor: 'hand', 
+      selectable: false, 
+      padding: 0
+    }); 
+
+    // Dont' bind event handlers to canvases that are in a saved or trashed state. 
+    if(inMainCanvas) {
+      pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, canvasElement)); 
+
+      pageGroup.on("mouseover", this.showHoverIndicator.bind(this, canvasElement, pageGroup)); 
+      pageGroup.on("mouseout", this.hideHoverIndicator.bind(this, canvasElement, pageGroup)); 
+    }
+
+    canvasElement.shape = pageGroup; 
+    this.canvas.add(pageGroup);
+    return pageGroup; 
+  }
+
+  drawElement(element){
+    let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
+
+    // Scale down the values to fit into the design canvases
+    let x = element.location.x; 
+    let y = element.location.y; 
+    if(element.type == "button") {
+      let button = FabricHelpers.getButton(x,y,element.size.width,element.size.height,{
+          'cursor': 'hand', 
+          'selectable': false, 
+          'text': element["label"]
+      }); 
+
+      if(inMainCanvas) {
+        button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+
+        let rect = button.getObjects()[0];
+        button.on("mouseover", this.showHoverIndicator.bind(this, element, rect)); 
+        button.on("mouseout", this.hideHoverIndicator.bind(this, element, rect)); 
+      }
+
+      element.shape = button; 
+      this.canvas.add(button); 
+    }
+    else if (element.type == "text") {
+      let text = FabricHelpers.getText(x,y,element.size.height,{
+        'cursor': 'hand', 
+        'selectable': false, 
+        'text': element["label"]
+      }); 
+
+      if(inMainCanvas) {
+        text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+        text.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
+        text.on("mouseout", this.hideHoverIndicator.bind(this, element, text));
+      }
+
+      element.shape = text; 
+      this.canvas.add(text); 
+    }
+    else if (element.type == "field") {
+      let field = FabricHelpers.getField(x,y,element.size.width,element.size.height,{
+        'cursor': 'hand', 
+        'selectable': false, 
+        'text': element["label"]
+      }); 
+
+      if(inMainCanvas) {
+        field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
+
+        let text = field.getObjects()[0]; 
+        field.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
+        field.on("mouseout", this.hideHoverIndicator.bind(this, element, text)); 
+      }
+
+      element.shape = field; 
+      this.canvas.add(field); 
+    }
+    else if (element.type == "group") {
+      let groupPadding = 0; // TODO: make constant for this
+      let group = FabricHelpers.getDesignGroup(x-groupPadding,y-groupPadding,element.size.width+(groupPadding*2), element.size.height+(groupPadding*2), {
+        cursor: 'hand', 
+        selectable: false, 
+        padding: 20,  
+      }); 
+
+      if(inMainCanvas) {
+        group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
+        group.on("mouseover", this.showHoverIndicator.bind(this, element, group)); 
+        group.on("mouseout", this.hideHoverIndicator.bind(this, element, group));            
+      }
+
+      element.shape = group; 
+      this.canvas.add(group);
+      this.canvas.sendToBack(group); 
+    }
+  }
+
+  drawDesign() {
     // When the component mounts, draw the shapes onto the canvas
     let pageFabricShape = null;
-    for(var i=0; i<this.elements.length; i++) {
-      let element = this.elements[i]; 
-      this.elementDict[element.id] = element; 
 
-      // Scale down the values to fit into the design canvases
-      if(element.type == "canvas") {
-        let x = 0; 
-        let y = 0; 
-        let width = this.canvasWidth; 
-        let height = this.canvasHeight; 
-        
-        // Make a white rectangle of this size to serve as the background layer
-        let pageGroup = FabricHelpers.getDesignGroup(x,y,width-2,height-2, {
-          cursor: 'hand', 
-          selectable: false, 
-          padding: 0
-        }); 
-
-        // Dont' bind event handlers to canvases that are in a saved or trashed state. 
-        if(inMainCanvas) {
-          pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
-
-          pageGroup.on("mouseover", this.showHoverIndicator.bind(this, element, pageGroup)); 
-          pageGroup.on("mouseout", this.hideHoverIndicator.bind(this, element, pageGroup)); 
-        }
-
-        // pageGroup.on("mouseout", this.hideMenu.bind(this));
-        element.shape = pageGroup; 
-        this.canvas.add(pageGroup);
-        pageFabricShape = pageGroup; 
-      } else {
-        let x = element.location.x; 
-        let y = element.location.y; 
-        if(element.type == "button") {
-          let button = FabricHelpers.getButton(x,y,element.size.width,element.size.height,{
-              'cursor': 'hand', 
-              'selectable': false, 
-              'text': element["label"]
-          }); 
-
-          if(inMainCanvas) {
-            button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-
-            let rect = button.getObjects()[0];
-            button.on("mouseover", this.showHoverIndicator.bind(this, element, rect)); 
-            button.on("mouseout", this.hideHoverIndicator.bind(this, element, rect)); 
-          }
-
-          element.shape = button; 
-          this.canvas.add(button); 
-        }
-        else if (element.type == "text") {
-          let text = FabricHelpers.getText(x,y,element.size.height,{
-            'cursor': 'hand', 
-            'selectable': false, 
-            'text': element["label"]
-          }); 
-
-          if(inMainCanvas) {
-            text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-            text.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
-            text.on("mouseout", this.hideHoverIndicator.bind(this, element, text));
-          }
-
-          element.shape = text; 
-          this.canvas.add(text); 
-        }
-        else if (element.type == "field") {
-          let field = FabricHelpers.getField(x,y,element.size.width,element.size.height,{
-            'cursor': 'hand', 
-            'selectable': false, 
-            'text': element["label"]
-          }); 
-
-          if(inMainCanvas) {
-            field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-
-            let text = field.getObjects()[0]; 
-            field.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
-            field.on("mouseout", this.hideHoverIndicator.bind(this, element, text)); 
-          }
-
-          element.shape = field; 
-          this.canvas.add(field); 
-        }
-        else if (element.type == "group") {
-          let groupPadding = 0; // TODO: make constant for this
-          let group = FabricHelpers.getDesignGroup(x-groupPadding,y-groupPadding,element.size.width+(groupPadding*2), element.size.height+(groupPadding*2), {
-            cursor: 'hand', 
-            selectable: false, 
-            padding: 20,  
-          }); 
-
-          if(inMainCanvas) {
-            group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
-            group.on("mouseover", this.showHoverIndicator.bind(this, element, group)); 
-            group.on("mouseout", this.hideHoverIndicator.bind(this, element, group));            
-          }
-
-          element.shape = group; 
-          this.canvas.add(group);
-          this.canvas.sendToBack(group); 
+    for(let elementID in this.elements) {
+      if(this.elements.hasOwnProperty(elementID)) {
+        let element = this.elements[elementID];
+        if(element.type == "canvas") {
+          pageFabricShape = this.drawCanvas(element);
+        }else {
+          this.drawElement(element);
         }
       }
     }
 
     // Make sure to send the page fabric shape to the back layer
-    this.canvas.sendToBack(pageFabricShape); 
+    if(pageFabricShape) {
+      this.canvas.sendToBack(pageFabricShape); 
+    }
 
     // Rescale the canvas to the given scaling factor
     this.rescaleCanvas();   

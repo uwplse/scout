@@ -60,7 +60,7 @@ class Solution(object):
 	def convert_to_json(self, shapes, model):
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
-		new_elements = []
+		new_elements = dict()
 		for shape in shapes.values():  
 			f_x = model[shape.variables.x.z3]
 			f_y = model[shape.variables.y.z3]
@@ -74,7 +74,7 @@ class Solution(object):
 				# Dont add any JSON for the canvas_root shape to the results
 				# TODO: Figure out whether we should
 				element = copy.deepcopy(shape.element)
-				new_elements.append(element)
+				new_elements[element["name"]] = element
 
 				if "location" not in element:
 					element["location"] = dict()
