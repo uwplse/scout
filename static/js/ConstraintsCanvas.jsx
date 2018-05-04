@@ -71,7 +71,8 @@ export default class ConstraintsCanvas extends React.Component {
               id={shapeId} 
               type={type}
               width={shape.size.width} 
-              height={shape.size.height} />);
+              height={shape.size.height}
+              checkSolutionValidity={this.checkSolutionValidity} />);
   }
 
   addShapeOfTypeToCanvas(type) {

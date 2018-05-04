@@ -7,7 +7,7 @@ export default class Widget extends React.Component {
   static initialWidthValues(type) {
     let values = {
       'button': 120, 
-      'text': 50, 
+      'text': 120, 
       'field':  120, 
       'group': 120, 
       'labelGroup': 120
@@ -31,6 +31,9 @@ export default class Widget extends React.Component {
     this.type = props.type; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
+
+    // Callback to notify the parent container to re-check the solution validity
+    this.checkSolutionValidity =  props.checkSolutionValidity; 
 
     // mapping of shape types to handler functions
     this.shapeAddHandlers = {
@@ -84,8 +87,12 @@ export default class Widget extends React.Component {
 
 
     let shape = this.element;
+    let self = this; 
     field.field.on("modified", function() {
       shape["label"] = field.field.text; 
+
+      // Notify the parent to update the solution state after any property of the widget changes
+      self.checkSolutionValidity();
     }); 
   }
 
@@ -97,12 +104,16 @@ export default class Widget extends React.Component {
 
     // Update the label when the text is modified
     let shape = this.element; 
+    let self = this; 
     text.on("modified", function() {
       shape.label = text.text; 
 
       // Also update the height and width of the text to tell the solver the calculated size. 
       shape.size.height = Math.round(text.height); 
       shape.size.width = Math.round(text.width);
+
+      // Notify the parent to update the solution state after any property of the widget changes
+      self.checkSolutionValidity();
     }); 
   }
 
@@ -112,8 +123,12 @@ export default class Widget extends React.Component {
     this.canvas.add(button.label);   
 
     let shape = this.element; 
+    let self = this; 
     button.label.on("modified", function() {
       shape["label"] = button.label.text
+
+      // Notify the parent to update the solution state after any property of the widget changes
+      self.checkSolutionValidity();
     }); 
   }
 
