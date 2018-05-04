@@ -218,7 +218,7 @@ class Solver(object):
 				# For this solution, fix the values of the variables to the solution values
 				# Otherwise, check the solution for validity again
 				# This encodes the values that should be fixed for this solution
-				self.cb.init_solution_constraints(self.shapes, elements)
+				self.cb.init_solution_constraints(self.shapes, elements, solution["id"])
 
 				start_time = time.time()
 				result = self.z3_check(start_time)

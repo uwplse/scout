@@ -3,14 +3,34 @@ import React from "react";
 import FabricHelpers from './FabricHelpers';
 
 export default class Widget extends React.Component {
+  
+  static initialWidthValues(type) {
+    let values = {
+      'button': 120, 
+      'text': 50, 
+      'field':  120, 
+      'group': 120, 
+      'labelGroup': 120
+    }; 
+    return values[type]; 
+  }; 
+
+  static initialHeightValues(type) {
+    let values =  {
+      'button': 40, 
+      'text': 40, 
+      'field': 40, 
+      'group': 40,
+      'labelGroup': 40
+    };
+    return values[type];
+  }; 
+
   constructor(props) {
   	super(props); 
     this.type = props.type; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
-
-    this.defaultControlHeight = props.height; 
-    this.defaultControlWidth = props.width;
 
     // mapping of shape types to handler functions
     this.shapeAddHandlers = {
@@ -36,7 +56,7 @@ export default class Widget extends React.Component {
   }
 
   addLabelGroupToCanvas() {
-    let groupRect = FabricHelpers.getGroup(0,0, this.defaultControlWidth, this.defaultControlHeight, {
+    let groupRect = FabricHelpers.getGroup(0,0, 120, 40, {
       stroke: 'red', 
       groupType: 'Label', 
       strokeDashArray: [5,5]
@@ -46,7 +66,7 @@ export default class Widget extends React.Component {
   }
 
   addGroupToCanvas() {
-    let groupRect = FabricHelpers.getGroup(0, 0, this.defaultControlWidth, this.defaultControlHeight, {
+    let groupRect = FabricHelpers.getGroup(0, 0, 120, 40, {
       stroke: '#39a1f4', 
       groupType: 'Group', 
       strokeDashArray: [5,5]
@@ -58,12 +78,10 @@ export default class Widget extends React.Component {
   addFieldToCanvas() {
     // Add a new field to the constraints canvas
     let label = this.element.label; 
-    let field = FabricHelpers.getInteractiveField(0,0, this.defaultControlWidth, this.defaultControlHeight, {'selectable': true, 'text': label});
+    let field = FabricHelpers.getInteractiveField(0,0, this.element.size.width, this.element.size.height, {'selectable': true, 'text': label});
     this.canvas.add(field.field); 
     this.canvas.add(field.line);
-    this.element.size = {}; 
-    this.element.size.width = this.defaultControlWidth; 
-    this.element.size.height = this.defaultControlHeight;
+
 
     let shape = this.element;
     field.field.on("modified", function() {
@@ -76,9 +94,6 @@ export default class Widget extends React.Component {
     let label = this.element.label;
     let text = FabricHelpers.getInteractiveText(0, 0, 20, {'selectable': true, 'text': label});
     this.canvas.add(text);
-    this.element.size = {}; 
-    this.element.size.width = 50; 
-    this.element.size.height = 40; 
 
     // Update the label when the text is modified
     let shape = this.element; 
@@ -92,13 +107,9 @@ export default class Widget extends React.Component {
   }
 
   addButtonToCanvas() {
-    let button = FabricHelpers.getInteractiveButton(0, 0, this.defaultControlWidth, this.defaultControlHeight, {'selectable': true});
+    let button = FabricHelpers.getInteractiveButton(0, 0, this.element.size.width, this.element.size.height, {'selectable': true});
     this.canvas.add(button.button);
     this.canvas.add(button.label);   
-
-    this.element.size = {}; 
-    this.element.size.width = this.defaultControlWidth; 
-    this.element.size.height = this.defaultControlHeight;
 
     let shape = this.element; 
     button.label.on("modified", function() {
@@ -109,7 +120,7 @@ export default class Widget extends React.Component {
   render () {
     return (
       <div className="widget-container">
-        <canvas id={"widget-canvas-"  + this.id} className="widget-canvas" width={this.defaultControlWidth + "px"} height={this.defaultControlHeight + "px"}></canvas>
+        <canvas id={"widget-canvas-"  + this.id} className="widget-canvas" width={this.element.size.width + "px"} height={this.element.size.height + "px"}></canvas>
       </div>); 
   }
 

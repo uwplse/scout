@@ -26,14 +26,13 @@ class ConstraintBuilder(object):
 				# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
 				self.solver.add(Not(And(all_values)), "prevent previous solution " + solution["id"] + " values")
 
-	def init_solution_constraints(self, solution, shapes): 
+	def init_solution_constraints(self, shapes, elements, solutionID):
 		# Saved solutions should not appear again in the results
-		elements = solution["elements"]
 		all_values = self.get_solution_constraints_from_elements(shapes, elements)
 
 		# All of the variables that were set for this solution should be maintained (And constraint)
 		if len(all_values): 
-			self.solver.add(And(all_values), "prevent solution " + solution["id"] + " values")
+			self.solver.add(And(all_values), "prevent solution " + solutionID + " values")
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements):
 		all_values = []
