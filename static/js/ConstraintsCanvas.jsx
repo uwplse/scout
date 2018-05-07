@@ -250,6 +250,12 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
+  onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
+    // Called whenever a node is moved in the tree
+    // Tree updates have already been made by this point so we don't need to do this in a callback
+    this.checkSolutionValidity();
+  }
+
   removeWidgetNode(path){
     const getNodeKey = ({ treeIndex }) => treeIndex;
 
@@ -292,6 +298,7 @@ export default class ConstraintsCanvas extends React.Component {
             onChange={treeData => this.setState({ treeData })}
             canDrop={this.canReparentWidgetNode.bind(this)}
             rowHeight={this.calculateRowHeight.bind(this)}
+            onMoveNode={this.onMoveNode.bind(this)}
             generateNodeProps={({node, path}) => ({
               buttons: [
                 <button className="widgets-sortable-tree-remove" onClick={function() { self.removeWidgetNode(path); }}>

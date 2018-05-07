@@ -2,6 +2,9 @@ from z3 import *
 import solver_helpers as sh
 from dotmap import DotMap
 
+# Types of shapes that have labels
+label_types = ["text", "button", "field"]
+
 # Shape classes for constructing the element hierarchy 
 class Shape(object):
 	def __init__(self, shape_id, element): 
@@ -12,7 +15,7 @@ class Shape(object):
 		self.variables.x = sh.Variable(shape_id, "x")
 		self.variables.y = sh.Variable(shape_id, "y")
 
-		if self.shape_type == "text": 
+		if self.shape_type in label_types:
 			self.variables.label = sh.Variable(shape_id, "label", varType="str")
 
 		self.order = "important"
@@ -30,8 +33,6 @@ class Shape(object):
 					elif lock != "location":  
 						# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
 						self.variable_values[lock] = element[lock]
-
-
 
 			if "order" in element:
 				self.order = element["order"]
