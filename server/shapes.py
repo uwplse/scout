@@ -4,19 +4,34 @@ from dotmap import DotMap
 
 # Shape classes for constructing the element hierarchy 
 class Shape(object):
-	def __init__(self, shape_id, element=None): 
+	def __init__(self, shape_id, element): 
 		self.shape_id = shape_id
+		self.shape_type = element["type"]
 		self.element = element
 		self.variables = DotMap() 
 		self.variables.x = sh.Variable(shape_id, "x")
 		self.variables.y = sh.Variable(shape_id, "y")
 
+		if self.shape_type == "text": 
+			self.variables.label = sh.Variable(shape_id, "label", varType="str")
+
 		self.order = "important"
 		self.locks = None
 
+		self.variable_values = dict()
 		if element is not None:
 			if "locks" in element:
 				self.locks = element["locks"]
+				
+				# values for locked variables
+				for lock in self.locks:
+					if lock == "label": 
+						self.variable_values[lock] = StringVal(element[lock])
+					elif lock != "location":  
+						# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
+						self.variable_values[lock] = element[lock]
+
+
 
 			if "order" in element:
 				self.order = element["order"]
@@ -46,14 +61,6 @@ class ContainerShape(Shape):
 		# Width and Height will be adjustable for container shapes since their contents can change arrangements
 		self.width = Int(shape_id + "_width")
 		self.height = Int(shape_id + "_height")
-
-		# values for locked variables
-		self.variable_values = dict()
-
-		if self.locks is not None: 
-			for lock in self.locks:
-				# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
-				self.variable_values[lock] = element[lock]
 
 	def add_child(self, child): 
 		self.children.append(child)

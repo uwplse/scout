@@ -1,6 +1,7 @@
 // App.jsx
 import React from "react";
 import FabricHelpers from './FabricHelpers';
+import ConstraintActions from './ConstraintActions';
 
 export default class Widget extends React.Component {
   
@@ -58,6 +59,16 @@ export default class Widget extends React.Component {
     this.canvas.dispose();
   }
 
+  lockTextLabel(shape) {
+    if(shape[ConstraintActions.locksKey] == undefined) {
+      shape[ConstraintActions.locksKey] = []; 
+    } 
+
+    if(shape[ConstraintActions.locksKey].indexOf("label") == -1) {
+      shape[ConstraintActions.locksKey].push("label"); 
+    }
+  }
+
   addLabelGroupToCanvas() {
     let groupRect = FabricHelpers.getGroup(0,0, 120, 40, {
       stroke: 'red', 
@@ -78,18 +89,21 @@ export default class Widget extends React.Component {
     this.canvas.add(groupRect); 
   }
 
+
   addFieldToCanvas() {
     // Add a new field to the constraints canvas
     let label = this.element.label; 
     let field = FabricHelpers.getInteractiveField(0,0, this.element.size.width, this.element.size.height, {'selectable': true, 'text': label});
     this.canvas.add(field.field); 
     this.canvas.add(field.line);
-
+    this.lockTextLabel(this.element);
 
     let shape = this.element;
     let self = this; 
     field.field.on("modified", function() {
-      shape["label"] = field.field.text; 
+      shape.label = field.field.text; 
+
+      self.lockTextLabel(shape);
 
       // Notify the parent to update the solution state after any property of the widget changes
       self.checkSolutionValidity();
@@ -101,12 +115,15 @@ export default class Widget extends React.Component {
     let label = this.element.label;
     let text = FabricHelpers.getInteractiveText(0, 0, 20, {'selectable': true, 'text': label});
     this.canvas.add(text);
+    this.lockTextLabel(this.element);
 
     // Update the label when the text is modified
     let shape = this.element; 
     let self = this; 
     text.on("modified", function() {
       shape.label = text.text; 
+
+      self.lockTextLabel(shape);
 
       // Also update the height and width of the text to tell the solver the calculated size. 
       shape.size.height = Math.round(text.height); 
@@ -121,11 +138,14 @@ export default class Widget extends React.Component {
     let button = FabricHelpers.getInteractiveButton(0, 0, this.element.size.width, this.element.size.height, {'selectable': true});
     this.canvas.add(button.button);
     this.canvas.add(button.label);   
+    this.lockTextLabel(this.element);
 
     let shape = this.element; 
     let self = this; 
     button.label.on("modified", function() {
-      shape["label"] = button.label.text
+      shape.label = button.label.text
+
+      self.lockTextLabel(shape);
 
       // Notify the parent to update the solution state after any property of the widget changes
       self.checkSolutionValidity();

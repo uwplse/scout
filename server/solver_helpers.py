@@ -1,4 +1,4 @@
-from z3 import Int
+from z3 import Int, String, StringVal
 import copy 
 import uuid 
 import numpy as np
@@ -8,20 +8,34 @@ CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
 
 class Variable(object): 
-	def __init__(self, shape_id, name, domain=[]): 
+	def __init__(self, shape_id, name, domain=[], varType="int"): 
 		self.shape_id = shape_id
 		self.name = name
 		self.assigned = None
 		self.domain = domain
+		self.type = varType
 
 		# Z3 Variable for testing (??)
-		self.z3 = Int(shape_id + "_" + name)
+		if self.type == "str": 
+			self.z3 = String(shape_id + "_" + name)
+		else: 
+			self.z3 = Int(shape_id + "_" + name)
 
 	def domain(self, domain): 
 		self.domain = domain
 
 	def assign(self, value): 
 		self.assigned = value
+
+	def get_value_from_element(self, element):
+		# Return a Z3 expression or value to use in Z3 expressions from the element
+		if self.type == "str": 
+			return StringVal(element[self.name])
+
+		elif self.name == "x" or self.name == "y":
+			return element["location"][self.name]
+
+		return element[self.name]
 
 class Solution(object): 
 	def __init__(self): 

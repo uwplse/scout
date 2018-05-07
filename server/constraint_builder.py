@@ -42,13 +42,10 @@ class ConstraintBuilder(object):
 			# Get the shape corresponding to the element name
 			shape = shapes[elementID]
 			variables = shape.variables.toDict()
-			if element["type"] != "page" and element["type"] != "group" and element["type"] != "canvas":
+			if element["type"] == "leaf":
 				for variable_key in variables.keys(): 
 					variable = variables[variable_key]
-					if variable_key == "x" or variable_key == "y": 
-						all_values.append(variable.z3 == element["location"][variable_key])
-					elif variable_key in element:
-						all_values.append(variable.z3 == element[variable_key])
+					all_values.append(variable.z3 == variable.get_value_from_element(element))
 		return all_values
 
 	def get_solution_constraints_from_elements(self, shapes, elements): 
@@ -62,8 +59,7 @@ class ConstraintBuilder(object):
 			variables = shape.variables.toDict()
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
-				if variable_key != "x" and variable_key != "y" and variable_key in element: 
-					all_values.append(variable.z3 == element[variable_key])
+				all_values.append(variable.z3 == variable.get_value_from_element(element))
 
 		return all_values	
 
@@ -144,8 +140,7 @@ class ConstraintBuilder(object):
 					self.solver.add(shape.variables.x.z3 == shape.orig_x, shape.shape_id + " locked to position x")
 					self.solver.add(shape.variables.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
 				else: 
-					if shape.type != "leaf":
-						self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], shape.shape_id + " variable " + shape.variables[lock].name + " fixed to " + str(shape.variable_values[lock]))
+					self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], shape.shape_id + " variable " + shape.variables[lock].name + " fixed to " + str(shape.variable_values[lock]))
 
 	def non_overlapping(self, container): 
 		proximity = container.variables.proximity.z3

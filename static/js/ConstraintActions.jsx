@@ -9,6 +9,7 @@ ConstraintActions.arrangements = ["horizontal", "vertical"];
 
 ConstraintActions.locked_proximity_key = 'proximity'; 
 ConstraintActions.locked_margin_key = 'margin';
+ConstraintActions.locked_text_key = 'text';
 ConstraintActions.locksKey = 'locks'; 
 
 ConstraintActions.elementConstraints = {
