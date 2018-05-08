@@ -46,16 +46,18 @@ div:focus {
 }
 
 .bottom {
-	align-items: flex-start;
+	align-items: stretch;
+	height: calc(100% - 65px);
 }
 
 .page-container {
 	flex-direction: column;
 }
 
-.widgets-container, .constraints-container, .designs-container, .containers-container, .right-container {
+.widgets-container, .constraints-container, .containers-container, .right-container {
 	margin-top: 10px;
 	margin-left: 10px;
+	margin-bottom: 10px;
 }
 
 .navbar-default {
@@ -85,14 +87,23 @@ div:focus {
 **/
 .designs-container {
 	display: flex;
+	margin-bottom: 0;
+	margin-top: 10px;
+	margin-left: 10px;
+}
+
+.current-designs-container {
+	flex: 1 0 0px; 
 }
 
 .design-canvas-container {
 	display: flex; 
 	flex: 1 1 0px;
     align-self: stretch;
-    margin-right: 10px;
     flex-direction: row; 
+    align-items: stretch;
+    margin-right: 10px;
+    margin-bottom: 10px;
 }
 
 .design-canvas {
@@ -115,8 +126,6 @@ div:focus {
 
 .design-body {
     overflow: auto;
-    min-height: 550px;
-    max-height: 550px;
 }
 
 .saved-body, .trashed-body {
@@ -132,7 +141,11 @@ div:focus {
 }
 
 .left-container {
+	display: flex;
+	flex: 1 0 0px;
+	align-items: stretch;
 	min-width: 750px; 
+	flex-direction: column;
 }
 
 .saved-body .canvas-container, .trashed-body .canvas-container {

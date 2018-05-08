@@ -314,7 +314,7 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">Widgets</h3>
               </div>  
               <div className="panel-body">         
-                <canvas id="widgets-canvas" width="150px" height="333px">
+                <canvas id="widgets-canvas" width="150px" height="400px">
                 </canvas>
               </div>
             </div>
@@ -341,20 +341,20 @@ export default class PageContainer extends React.Component {
             </div>
            {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>
-          <div className="panel-group design-canvas-container">
+          <div className="design-canvas-container">
             <div className="left-container">
-              { savedCanvases.length ? (<div className="panel designs-container panel-default">
+              { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
                 <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
                 <div className="panel-body saved-body">
                   {savedCanvases}
                 </div>
               </div>) : null }
-              <div className="panel designs-container panel-default">
+              <div className="panel designs-container current-designs-container panel-default">
                 <div className="design-body">
                   {designCanvases}
                 </div>
               </div>
-              { trashedCanvases.length ? (<div className="panel designs-container panel-default">
+              { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
                 <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
                 <div className="panel-body trashed-body">
                   {trashedCanvases}
