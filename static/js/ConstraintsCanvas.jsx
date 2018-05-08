@@ -113,10 +113,15 @@ export default class ConstraintsCanvas extends React.Component {
 
   highlightWidgetFeedback(shapeId, lock, highlighted) {
     // Find the widget with this shape ID in the constraints tree
-    let widgetTreeNode = this.widgetTreeNodeMap[shapeId]; 
+    let treeNode = this.widgetTreeNodeMap[shapeId]; 
+    let feedbackItems = undefined; 
+    if(treeNode != undefined) {
+      feedbackItems = treeNode.subtitle; 
+    }else {
+      feedbackItems = this.state.pageFeedbackWidgets; 
+    }
 
     // Find the corresponding feedback item
-    let feedbackItems = widgetTreeNode.subtitle; 
     let feedbackIndex = -1; 
     for(var i=0; i<feedbackItems.length; i++) {
       if(feedbackItems[i].props.action["do"].key == lock) {
@@ -131,13 +136,13 @@ export default class ConstraintsCanvas extends React.Component {
       let newFeedbackItem = this.getWidgetFeedback(shapeId, feedbackItem.props.parentShape, feedbackItem.props.action, feedbackItem.props.message, highlighted); 
       
       // Splice out the old item 
-      widgetTreeNode.subtitle.splice(feedbackIndex, 1); 
-      widgetTreeNode.subtitle.splice(feedbackIndex, 0, newFeedbackItem); 
+      feedbackItems.splice(feedbackIndex, 1); 
+      feedbackItems.splice(feedbackIndex, 0, newFeedbackItem); 
     }
 
     this.setState(state => ({
       treeData: this.state.treeData
-    }));  
+    }));      
   }
 
   updateWidgetFeedbacks(shape, action, actionType) {    
@@ -172,7 +177,7 @@ export default class ConstraintsCanvas extends React.Component {
       }
 
       this.setState(state => ({
-        pageFeedbacks: this.state.pageFeedbackWidgets
+        pageFeedbackWidgets: this.state.pageFeedbackWidgets
       })); 
     } else {
       let treeNode = this.widgetTreeNodeMap[shapeId]; 
