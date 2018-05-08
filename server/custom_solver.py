@@ -227,8 +227,19 @@ class Solver(object):
 				solution["valid"] = result
 
 				if result:
+					# Remove an previous conflicts if the solution is solveable again. 
+					if "conflicts" in solution: 
+						del solution["conflicts"]
+
 					print("Solution could be found.")
 				else:
+					# Get the unsat core for each solution
+					unsat_core = self.solver.unsat_core()
+
+					# Parse the output message to send identifiers to highlight the conflicting constraints
+					conflicts = sh.parse_unsat_core(unsat_core)
+					solution["conflicts"] = conflicts
+					
 					print("Solution could not be found.")
 
 			self.solver.pop()
@@ -398,7 +409,6 @@ class Solver(object):
 	def z3_check(self, time_start): 
 		time_z3_start = time.time()
 		result = self.solver.check()
-		unsat_core = self.solver.unsat_core()
 		time_z3_end = time.time()
 		time_z3_total = time_z3_end - time_z3_start
 		self.time_z3 += time_z3_total

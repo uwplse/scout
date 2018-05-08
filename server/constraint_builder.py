@@ -20,7 +20,7 @@ class ConstraintBuilder(object):
 		# Saved solutions should not appear again in the results
 		for solution in previous_solutions: 
 			elements = solution["elements"]
-			if not len(solution["added"]) and not len(solution["removed"]):
+			if (not "added" in solution and not "removed" in solution) or (not len(solution["added"]) and not len(solution["removed"])):
 				all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
 
 				# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
@@ -42,7 +42,7 @@ class ConstraintBuilder(object):
 			# Get the shape corresponding to the element name
 			shape = shapes[elementID]
 			variables = shape.variables.toDict()
-			if element["type"] == "leaf":
+			if shape.type == "leaf":
 				for variable_key in variables.keys(): 
 					variable = variables[variable_key]
 					all_values.append(variable.z3 == variable.get_value_from_element(element))
@@ -137,10 +137,11 @@ class ConstraintBuilder(object):
 		if shape.locks is not None: 
 			for lock in shape.locks:
 				if lock == "location": 
-					self.solver.add(shape.variables.x.z3 == shape.orig_x, shape.shape_id + " locked to position x")
-					self.solver.add(shape.variables.y.z3 == shape.orig_y, shape.shape_id + " locked to position y")
+					self.solver.add(shape.variables.y.z3 == shape.orig_y, "lock_" + shape.shape_id + "_" + shape.variables.y.name + "_" + str(shape.orig_y))
+					self.solver.add(shape.variables.x.z3 == shape.orig_x, "lock_" + shape.shape_id + "_" + shape.variables.x.name + "_" + str(shape.orig_x))
 				else: 
-					self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], shape.shape_id + " variable " + shape.variables[lock].name + " fixed to " + str(shape.variable_values[lock]))
+					# Structure message for these constraints to have a specific format so they can be used to identify conflicts in the generated solutions
+					self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], "lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock]))
 
 	def non_overlapping(self, container): 
 		proximity = container.variables.proximity.z3

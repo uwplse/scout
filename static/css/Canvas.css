@@ -246,6 +246,11 @@ div:focus {
     border-radius: 2px;
 }
 
+.widget-feedback-items.highlighted {
+	background-color: #f2dede;
+   	border: 1px dashed gray;
+}
+
 .widget-feedback-items-list {
 	display: flex; 
 }
@@ -255,6 +260,10 @@ div:focus {
     border: none;
 }
 
+.widget-feedback-items-remove.highlighted {
+	background-color: #f2dede;
+	border: none;
+}
 
 /* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
 .widgets-sortable-tree {

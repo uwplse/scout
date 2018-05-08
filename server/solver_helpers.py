@@ -7,6 +7,22 @@ import math
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
 
+def parse_unsat_core(unsat_core):
+	# Parse the conflicting constraints out of the unsat core and return identifiers for each shape and the associated conflicting constraint
+	conflicts = []
+	for i in range(0, len(unsat_core)): 
+		conflict = unsat_core[i]
+		conflict_string = str(conflict)
+		if len(conflict_string) >= 5 and conflict_string.find("lock_", 0, 5) > -1:
+			parts = conflict_string.split("_")
+			lock_id, shape_id, variable, value = parts
+			conflict = dict()
+			conflict["shape_id"] = shape_id
+			conflict["variable"] = variable
+			conflict["value"] = value
+			conflicts.append(conflict)
+	return conflicts
+
 class Variable(object): 
 	def __init__(self, shape_id, name, domain=[], varType="int"): 
 		self.shape_id = shape_id

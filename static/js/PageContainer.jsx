@@ -17,6 +17,7 @@ export default class PageContainer extends React.Component {
     this.updateConstraintsCanvasFromDesignCanvas = this.updateConstraintsCanvasFromDesignCanvas.bind(this); 
     this.updateConstraintsCanvas = this.updateConstraintsCanvas.bind(this);
     this.getConstraintsCanvasShape = this.getConstraintsCanvasShape.bind(this);
+    this.highlightWidgetFeedback = this.highlightWidgetFeedback.bind(this);
 
     this.canvas = undefined; 
 
@@ -53,16 +54,14 @@ export default class PageContainer extends React.Component {
               elements={solution.elements}
               savedState={solution.saved}
               valid={solution.valid}
+              conflicts={solution.conflicts}
               invalidated={solution.invalidated}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
+              highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
               trashDesignCanvas={this.trashDesignCanvas.bind(this)}
               getRelativeDesigns={this.getRelativeDesigns.bind(this)}/>); 
-  }
-
-  getConstraintsCanvasShape(shapeId) {
-    return this.constraintsCanvasRef.current.getConstraintsCanvasShape(shapeId); 
   }
 
   drawWidgetCanvas() {
@@ -127,6 +126,14 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  getConstraintsCanvasShape(shapeId) {
+    return this.constraintsCanvasRef.current.getConstraintsCanvasShape(shapeId); 
+  }
+
+  highlightWidgetFeedback(shapeId, lock, highlighted) {
+    this.constraintsCanvasRef.current.highlightWidgetFeedback(shapeId, lock, highlighted);
+  }
+
   updateConstraintsCanvasFromDesignCanvas(designCanvasShape, action, actionType) {
     // Retrieve the shape object in the constraints tree and apply teh updates
     let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
@@ -142,7 +149,7 @@ export default class PageContainer extends React.Component {
   updateConstraintsCanvas(constraintsCanvasShape, action) {
     action["undo"].updateConstraintsCanvasShape(constraintsCanvasShape, undefined);
 
-    // Notify the constraintss canvas
+    // Notify the constraintss canvasa
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo");
 
     // Check for the validity of current state of constriants, and update valid state of solutions
@@ -157,6 +164,7 @@ export default class PageContainer extends React.Component {
       designSolution.valid = solution.valid; 
       designSolution.added = solution.added; 
       designSolution.removed = solution.removed;
+      designSolution.conflicts = solution.conflicts; 
     }
 
     // Update the state

@@ -28,12 +28,16 @@ export default class DesignCanvas extends React.Component {
       designMenu: undefined, 
       savedState: props.savedState, 
       valid: props.valid, 
-      invalidated: props.invalidated
+      invalidated: props.invalidated, 
+      conflicts: props.conflicts // The conflicting constraints current if there are any
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape;
+
+    // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
+    this.highlightWidgetFeedback = props.highlightWidgetFeedback; 
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
@@ -52,7 +56,8 @@ export default class DesignCanvas extends React.Component {
       valid: nextProps.valid, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
-      removed: nextProps.removed
+      removed: nextProps.removed, 
+      conflicts: nextProps.conflicts
     }    
   }
 
@@ -352,6 +357,19 @@ export default class DesignCanvas extends React.Component {
       }); 
     }
 
+    // Trigger constraint highlighting if the solution is not current valid
+    if(!this.state.valid && this.state.conflicts) {
+      for(var i=0; i<this.state.conflicts.length; i++) {
+        var conflict = this.state.conflicts[i];
+        var variable = conflict.variable; 
+        if(variable == "x" || variable == "y") {
+          variable = "location"; 
+        }
+
+        this.highlightWidgetFeedback(conflict.shape_id, variable, true); 
+      }
+    }
+
     let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
     
     // The menuTrigger is the JSON of the shape that triggered the open
@@ -361,6 +379,19 @@ export default class DesignCanvas extends React.Component {
   }
 
   onMouseOut(e) {
+    // Trigger constraint highlighting if the solution is not current valid
+    if(!this.state.valid && this.state.conflicts) {
+      for(var i=0; i<this.state.conflicts.length; i++) {
+        var conflict = this.state.conflicts[i];
+        var variable = conflict.variable; 
+        if(variable == "x" || variable == "y") {
+          variable = "location"; 
+        }
+
+        this.highlightWidgetFeedback(conflict.shape_id, variable, false); 
+      }
+    }
+
     // Close the menu if it is open 
     let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
     // Make sure the mouse is actually outside the div because mouse out can be triggered by child elements of this container. 
@@ -378,8 +409,8 @@ export default class DesignCanvas extends React.Component {
    	let menuShown = this.state.menuShown; 
    	let menuPosition = this.state.menuPosition; 
    	let activeCanvasMenu = this.state.activeCanvasMenu; 
-    let openMenu = this.onMouseEnter;
-    let closeMenu = this.onMouseOut; 
+    let showMenuAndHighlightConstraints = this.onMouseEnter;
+    let closeMenuAndRemoveHighlightConstraints = this.onMouseOut; 
     let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
@@ -390,8 +421,8 @@ export default class DesignCanvas extends React.Component {
     }
 
     return  (
-      <div onMouseEnter={((saved || trashed || invalidated) ? undefined : openMenu.bind(this))} 
-           onMouseOut={((saved || trashed || invalidated) ? undefined : closeMenu.bind(this))} 
+      <div onMouseEnter={((saved || trashed || invalidated) ? undefined : showMenuAndHighlightConstraints.bind(this))} 
+           onMouseOut={((saved || trashed || invalidated) ? undefined : closeMenuAndRemoveHighlightConstraints.bind(this))} 
            className="canvas-container" id={"canvas-box-" + this.id}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-feedback-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}

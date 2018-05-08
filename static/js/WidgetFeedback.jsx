@@ -10,19 +10,30 @@ export default class WidgetFeedback extends React.Component {
     this.id = props.id; 
     this.parentShape = props.parentShape; 
     this.action = props.action; 
+    
+    this.state = {
+      highlighted: props.highlighted
+    }
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      highlighted: nextProps.highlighted
+    }    
   }
 
   render () {
     var self = this;
+    var highlighted = this.state.highlighted; 
     return (
       <div className="widget-feedback-container">
         <div className="widget-feedback">
-          <ul className="widget-feedback-items">
+          <ul className={"widget-feedback-items " + (highlighted ? "highlighted" : "")}>
             <li className="widget-feedback-items-list"> 
               <span className="widget-feedback-items-label">
               {this.feedbackMessage}
               </span>
-              <button className="widget-feedback-items-remove" onClick={
+              <button className={"widget-feedback-items-remove " + (highlighted ? "highlighted" : "")} onClick={
                   function() { 
                     self.updateConstraintsCanvas(self.parentShape, self.action, "undo"); 
                   }}>

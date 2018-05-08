@@ -96,18 +96,48 @@ export default class ConstraintsCanvas extends React.Component {
     }), this.checkSolutionValidity);
   }
 
-  getWidgetFeedback(id, parentShape, action, message){
+  getWidgetFeedback(shapeId, parentShape, action, message, highlighted){
     return (<WidgetFeedback 
-              key={id} 
-              id={id} 
+              key={shapeId} 
+              id={shapeId} 
               parentShape={parentShape}
               action={action}
               message={message} 
+              highlighted={highlighted}
               updateConstraintsCanvas={this.updateConstraintsCanvas}/>); 
   }
 
   getConstraintsCanvasShape(shapeID) {
     return this.constraintsShapesMap[shapeID]; 
+  }
+
+  highlightWidgetFeedback(shapeId, lock, highlighted) {
+    // Find the widget with this shape ID in the constraints tree
+    let widgetTreeNode = this.widgetTreeNodeMap[shapeId]; 
+
+    // Find the corresponding feedback item
+    let feedbackItems = widgetTreeNode.subtitle; 
+    let feedbackIndex = -1; 
+    for(var i=0; i<feedbackItems.length; i++) {
+      if(feedbackItems[i].props.action["do"].key == lock) {
+        feedbackIndex = i; 
+      }
+    }
+
+    if(feedbackIndex > -1) {
+      let feedbackItem = feedbackItems[feedbackIndex]; 
+
+      // Highlight parameter can be true or false which determines whether the new feedback item is highlighted or unhighlighted
+      let newFeedbackItem = this.getWidgetFeedback(shapeId, feedbackItem.props.parentShape, feedbackItem.props.action, feedbackItem.props.message, highlighted); 
+      
+      // Splice out the old item 
+      widgetTreeNode.subtitle.splice(feedbackIndex, 1); 
+      widgetTreeNode.subtitle.splice(feedbackIndex, 0, newFeedbackItem); 
+    }
+
+    this.setState(state => ({
+      treeData: this.state.treeData
+    }));  
   }
 
   updateWidgetFeedbacks(shape, action, actionType) {    
@@ -131,7 +161,7 @@ export default class ConstraintsCanvas extends React.Component {
         let feedbackItems = this.state.pageFeedbackWidgets; 
         let feedbackIndex = -1; 
         for(var i=0; i<feedbackItems.length; i++){
-          if(feedbackItems[i].props.feedbackKey == action.key) {
+          if(feedbackItems[i].props.action[actionType].key == action[actionType].key) {
             feedbackIndex = i; 
           }
         }
@@ -155,10 +185,10 @@ export default class ConstraintsCanvas extends React.Component {
         treeNode.subtitle.push(widgetFeedback);       
       } else {
         // Remove the corresponding widget feedback item
-        let feedbackItems = treeNode.subtitle; 
-        let feedbackIndex = -1; 
+        var feedbackItems = treeNode.subtitle; 
+        var feedbackIndex = -1; 
         for(var i=0; i<feedbackItems.length; i++){
-          if(feedbackItems[i].props.feedbackKey == action.key) {
+          if(feedbackItems[i].props.action[actionType].key == action[actionType].key) {
             feedbackIndex = i; 
           }
         }
