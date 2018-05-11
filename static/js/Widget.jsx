@@ -113,7 +113,7 @@ export default class Widget extends React.Component {
   addTextToCanvas() {
     // Add a new text to the constraints canvas
     let label = this.element.label;
-    let text = FabricHelpers.getInteractiveText(0, 0, 20, {'selectable': true, 'text': label});
+    let text = FabricHelpers.getInteractiveText(0, 0, 20, {'selectable': true, 'text': "Login"});
     this.canvas.add(text);
     this.lockTextLabel(this.element);
 

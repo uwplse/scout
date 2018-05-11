@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 375 667">
+  <defs>
+    <style>
+      .cls-1 {
+        clip-path: url(#clip-_01-1-1-Intro);
+      }
+
+      .cls-2, .cls-5 {
+        fill: #0071ff;
+      }
+
+      .cls-11, .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-3, .cls-5 {
+        font-size: 17px;
+      }
+
+      .cls-3, .cls-5, .cls-6, .cls-7, .cls-8 {
+        font-family: Helvetica;
+      }
+
+      .cls-10, .cls-4 {
+        fill: none;
+      }
+
+      .cls-4 {
+        stroke: #0071ff;
+        stroke-width: 2px;
+      }
+
+      .cls-6 {
+        font-size: 36px;
+        letter-spacing: 0.011em;
+      }
+
+      .cls-7 {
+        fill: #90949c;
+        font-size: 16px;
+      }
+
+      .cls-8 {
+        fill: #95989a;
+        font-size: 12px;
+      }
+
+      .cls-9 {
+        stroke: none;
+      }
+    </style>
+    <clipPath id="clip-_01-1-1-Intro">
+      <rect width="375" height="667"/>
+    </clipPath>
+  </defs>
+  <g id="_01-1-1-Intro" data-name="01-1-1-Intro" class="cls-1">
+    <rect class="cls-11" width="375" height="667"/>
+    <g id="Button">
+      <rect id="Rectangle_1" data-name="Rectangle 1" class="cls-2" width="325" height="44" rx="22" transform="translate(25 475)"/>
+      <text id="Create_Account" data-name="Create Account" class="cls-3" transform="translate(188 503)"><tspan x="-58.122" y="0">Create Account</tspan></text>
+    </g>
+    <g id="Button-2" data-name="Button">
+      <g id="Rectangle_2" data-name="Rectangle 2" class="cls-4" transform="translate(25 529)">
+        <rect class="cls-9" width="325" height="44" rx="22"/>
+        <rect class="cls-10" x="1" y="1" width="323" height="42" rx="21"/>
+      </g>
+      <text id="Log_In" data-name="Log In" class="cls-5" transform="translate(188 557)"><tspan x="-23.632" y="0">Log In</tspan></text>
+    </g>
+    <text id="It_s_Going_To_Be_Revolutionary" data-name="It’s Going To Be Revolutionary" class="cls-6" transform="translate(25 195)"><tspan x="33.099" y="28">It’s Going To Be </tspan><tspan x="50.067" y="71">Revolutionary</tspan></text>
+    <text id="Launch_it_share_it_or_just_love_it." data-name="Launch it, share it or just love it." class="cls-7" transform="translate(26 306)"><tspan x="49.5" y="12">Launch it, share it or just love it.</tspan></text>
+    <text id="By_creating_an_account_you_agree_to_our_Terms_Conditions_and_agree_to_Privacy_Policy." data-name="By creating an account, you agree to our 
+Terms &amp; Conditions and agree to Privacy Policy." class="cls-8" transform="translate(25 603)"><tspan x="54.433" y="9">By creating an account, you agree to our </tspan><tspan x="34.886" y="27">Terms &amp; Conditions and agree to Privacy Policy.</tspan></text>
+  </g>
+</svg>

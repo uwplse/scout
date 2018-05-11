@@ -172,7 +172,7 @@ class FabricHelpers {
 	}
 
     static getInteractiveText(left, top, fontSize, options={}) {
-    	let textValue = options.text ? options.text : "Text"; 
+    	let textValue = options.text ? options.text : "Login"; 
 	    var text = new fabric.IText(textValue, {
 	      fontSize: fontSize,
 	      left: left,
