@@ -7,9 +7,13 @@ Install 'virtualenv' through the command
 
 	pip install virtualenv 
 
+Create the virtual environment
+
+	virtualenv --python=python3.5 scout
+
 Activate the virtual environment
 
-	source layout/bin/activate
+	source scout/bin/activate
 
 ### Install Python packages
     pip install -r requirements.txt
