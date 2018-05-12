@@ -4,9 +4,11 @@
 Make sure you have Python 3 installed (3.5). 
 
 Install 'virtualenv' through the command
+
 	pip install virtualenv 
 
 Activate the virtual environment
+
 	source layout/bin/activate
 
 ### Install Python packages
