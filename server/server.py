@@ -21,6 +21,10 @@ def index():
 def home(): 
 	return render_template("home.html")
 
+@app.route("/import")
+def importer(): 
+	return render_template("import.html")
+
 @app.route("/hello")
 def hello():
 	return "Hello World!"
