@@ -1,4 +1,4 @@
-# layout
+# Scout
 
 ### Setup 
 Make sure you have Python 3 installed (3.5). 
