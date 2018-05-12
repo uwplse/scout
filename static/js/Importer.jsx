@@ -19,7 +19,7 @@ export default class Importer extends React.Component {
     // Update the state
     this.state.disabled = false; 
 
-    this.state.svg = <svg>; 
+    this.state.svg = <svg />; 
 
     // Must be included to notify React to update the state
     this.setState({

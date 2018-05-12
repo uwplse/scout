@@ -31,8 +31,31 @@ Activate the virtual environment
 	make
 	make install
 
+### Compiling the web application
+Install NodeJS and npm if you do not already have them. 
+
+	https://www.npmjs.com/get-npm
+
+Install the npm packages for building the web application. 
+
+	cd static
+	npm install 
+	npm run watch # This will build the web page, and recompile whenever it detects you made a change in the files so you do not need to run this command every time you make a change.  
+
+If you want to just build the web application: 
+	
+	npm run build
 
 ### Running the web server
 	cd server
 	./run.sh
+
+### Opening Scout
+Home design dashboard
+
 	Open http://localhost:5000/
+
+Import an svg
+
+	Open http://localhost:5000/import
+
