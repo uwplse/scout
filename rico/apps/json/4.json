@@ -1,0 +1,3029 @@
+{
+ "activity_name": "kik.android/kik.android.chat.fragment.SimpleFragmentWrapperActivity",
+ "activity": {
+  "root": {
+   "scrollable-horizontal": false,
+   "draw": true,
+   "ancestors": [
+    "android.widget.FrameLayout",
+    "android.view.ViewGroup",
+    "android.view.View",
+    "java.lang.Object"
+   ],
+   "clickable": false,
+   "pressed": "not_pressed",
+   "focusable": false,
+   "long-clickable": false,
+   "enabled": true,
+   "bounds": [
+    0,
+    0,
+    1440,
+    2560
+   ],
+   "visibility": "visible",
+   "content-desc": [
+    null
+   ],
+   "rel-bounds": [
+    0,
+    0,
+    1440,
+    2560
+   ],
+   "focused": false,
+   "selected": false,
+   "scrollable-vertical": false,
+   "children": [
+    {
+     "scrollable-horizontal": false,
+     "draw": true,
+     "ancestors": [
+      "android.view.ViewGroup",
+      "android.view.View",
+      "java.lang.Object"
+     ],
+     "clickable": false,
+     "pressed": "not_pressed",
+     "focusable": false,
+     "long-clickable": false,
+     "enabled": true,
+     "bounds": [
+      0,
+      0,
+      1440,
+      2392
+     ],
+     "visibility": "visible",
+     "content-desc": [
+      null
+     ],
+     "rel-bounds": [
+      0,
+      0,
+      1440,
+      2392
+     ],
+     "focused": false,
+     "selected": false,
+     "scrollable-vertical": false,
+     "children": [
+      {
+       "resource-id": "android:id/action_mode_bar_stub",
+       "adapter-view": false,
+       "pointer": "21f6683",
+       "scrollable-horizontal": false,
+       "ancestors": [
+        "android.view.View",
+        "java.lang.Object"
+       ],
+       "selected": false,
+       "content-desc": [
+        null
+       ],
+       "rel-bounds": [
+        0,
+        0,
+        0,
+        0
+       ],
+       "draw": true,
+       "focusable": false,
+       "long-clickable": false,
+       "visibility": "gone",
+       "focused": false,
+       "clickable": false,
+       "abs-pos": true,
+       "class": "android.view.ViewStub",
+       "visible-to-user": false,
+       "package": "android",
+       "enabled": true,
+       "bounds": [
+        0,
+        0,
+        0,
+        0
+       ],
+       "pressed": "not_pressed",
+       "scrollable-vertical": false
+      },
+      {
+       "scrollable-horizontal": false,
+       "draw": true,
+       "ancestors": [
+        "android.view.ViewGroup",
+        "android.view.View",
+        "java.lang.Object"
+       ],
+       "clickable": false,
+       "pressed": "not_pressed",
+       "focusable": false,
+       "long-clickable": false,
+       "enabled": true,
+       "bounds": [
+        0,
+        84,
+        1440,
+        2392
+       ],
+       "visibility": "visible",
+       "content-desc": [
+        null
+       ],
+       "rel-bounds": [
+        0,
+        84,
+        1440,
+        2392
+       ],
+       "focused": false,
+       "selected": false,
+       "scrollable-vertical": false,
+       "children": [
+        {
+         "resource-id": "kik.android:id/action_bar_root",
+         "adapter-view": false,
+         "pointer": "b4df039",
+         "children": [
+          {
+           "resource-id": "kik.android:id/action_mode_bar_stub",
+           "adapter-view": false,
+           "pointer": "476d67e",
+           "scrollable-horizontal": false,
+           "ancestors": [
+            "android.view.View",
+            "java.lang.Object"
+           ],
+           "selected": false,
+           "content-desc": [
+            null
+           ],
+           "rel-bounds": [
+            0,
+            0,
+            0,
+            0
+           ],
+           "draw": true,
+           "focusable": false,
+           "long-clickable": false,
+           "visibility": "gone",
+           "focused": false,
+           "clickable": false,
+           "abs-pos": true,
+           "class": "android.support.v7.internal.widget.ViewStubCompat",
+           "visible-to-user": false,
+           "package": "kik.android",
+           "enabled": true,
+           "bounds": [
+            0,
+            84,
+            0,
+            84
+           ],
+           "pressed": "not_pressed",
+           "scrollable-vertical": false
+          },
+          {
+           "resource-id": "android:id/content",
+           "adapter-view": false,
+           "pointer": "f67e7df",
+           "children": [
+            {
+             "resource-id": "kik.android:id/fragment_container",
+             "adapter-view": false,
+             "pointer": "d5ddc2c",
+             "children": [
+              {
+               "scrollable-horizontal": false,
+               "draw": true,
+               "ancestors": [
+                "android.view.ViewGroup",
+                "android.view.View",
+                "java.lang.Object"
+               ],
+               "clickable": false,
+               "pressed": "not_pressed",
+               "focusable": false,
+               "long-clickable": false,
+               "enabled": true,
+               "bounds": [
+                0,
+                84,
+                1440,
+                2392
+               ],
+               "visibility": "visible",
+               "content-desc": [
+                null
+               ],
+               "rel-bounds": [
+                0,
+                0,
+                1440,
+                2308
+               ],
+               "focused": false,
+               "selected": false,
+               "scrollable-vertical": false,
+               "children": [
+                {
+                 "resource-id": "kik.android:id/action_bar",
+                 "adapter-view": false,
+                 "pointer": "1a5dc8a",
+                 "children": [
+                  {
+                   "resource-id": "kik.android:id/back_button",
+                   "adapter-view": false,
+                   "pointer": "98d22fb",
+                   "children": [
+                    {
+                     "scrollable-horizontal": false,
+                     "draw": false,
+                     "ancestors": [
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "clickable": false,
+                     "pressed": "not_pressed",
+                     "focusable": false,
+                     "long-clickable": false,
+                     "enabled": true,
+                     "bounds": [
+                      14,
+                      98,
+                      182,
+                      266
+                     ],
+                     "visibility": "visible",
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      14,
+                      14,
+                      182,
+                      182
+                     ],
+                     "focused": false,
+                     "selected": false,
+                     "scrollable-vertical": false,
+                     "adapter-view": false,
+                     "abs-pos": true,
+                     "pointer": "ae28f18",
+                     "class": "android.widget.ImageView",
+                     "visible-to-user": true
+                    }
+                   ],
+                   "scrollable-horizontal": false,
+                   "ancestors": [
+                    "android.view.ViewGroup",
+                    "android.view.View",
+                    "java.lang.Object"
+                   ],
+                   "selected": false,
+                   "content-desc": [
+                    null
+                   ],
+                   "rel-bounds": [
+                    0,
+                    0,
+                    196,
+                    196
+                   ],
+                   "draw": true,
+                   "focusable": false,
+                   "long-clickable": false,
+                   "visibility": "visible",
+                   "focused": false,
+                   "clickable": true,
+                   "abs-pos": true,
+                   "class": "android.widget.FrameLayout",
+                   "visible-to-user": true,
+                   "package": "kik.android",
+                   "enabled": true,
+                   "bounds": [
+                    0,
+                    84,
+                    196,
+                    280
+                   ],
+                   "pressed": "not_pressed",
+                   "scrollable-vertical": false
+                  },
+                  {
+                   "text": "Sign Up",
+                   "resource-id": "kik.android:id/title_view",
+                   "adapter-view": false,
+                   "pointer": "ea06d71",
+                   "scrollable-horizontal": false,
+                   "ancestors": [
+                    "android.widget.TextView",
+                    "android.view.View",
+                    "java.lang.Object"
+                   ],
+                   "selected": false,
+                   "content-desc": [
+                    null
+                   ],
+                   "rel-bounds": [
+                    252,
+                    0,
+                    525,
+                    196
+                   ],
+                   "draw": false,
+                   "focusable": false,
+                   "long-clickable": false,
+                   "visibility": "visible",
+                   "focused": false,
+                   "clickable": false,
+                   "abs-pos": true,
+                   "font-family": "default",
+                   "class": "kik.android.widget.RobotoTextView",
+                   "visible-to-user": true,
+                   "package": "kik.android",
+                   "enabled": true,
+                   "bounds": [
+                    252,
+                    84,
+                    525,
+                    280
+                   ],
+                   "pressed": "not_pressed",
+                   "scrollable-vertical": false
+                  }
+                 ],
+                 "scrollable-horizontal": false,
+                 "ancestors": [
+                  "android.view.ViewGroup",
+                  "android.view.View",
+                  "java.lang.Object"
+                 ],
+                 "selected": false,
+                 "content-desc": [
+                  null
+                 ],
+                 "rel-bounds": [
+                  0,
+                  0,
+                  525,
+                  196
+                 ],
+                 "draw": true,
+                 "focusable": false,
+                 "long-clickable": false,
+                 "visibility": "visible",
+                 "focused": false,
+                 "clickable": true,
+                 "abs-pos": true,
+                 "class": "android.widget.LinearLayout",
+                 "visible-to-user": true,
+                 "package": "kik.android",
+                 "enabled": true,
+                 "bounds": [
+                  0,
+                  84,
+                  525,
+                  280
+                 ],
+                 "pressed": "not_pressed",
+                 "scrollable-vertical": false
+                },
+                {
+                 "resource-id": "kik.android:id/register_fields_scroll",
+                 "adapter-view": false,
+                 "pointer": "20d3756",
+                 "children": [
+                  {
+                   "scrollable-horizontal": false,
+                   "draw": true,
+                   "ancestors": [
+                    "android.view.ViewGroup",
+                    "android.view.View",
+                    "java.lang.Object"
+                   ],
+                   "clickable": false,
+                   "pressed": "not_pressed",
+                   "focusable": true,
+                   "long-clickable": false,
+                   "enabled": true,
+                   "bounds": [
+                    0,
+                    280,
+                    1440,
+                    2392
+                   ],
+                   "visibility": "visible",
+                   "content-desc": [
+                    null
+                   ],
+                   "rel-bounds": [
+                    0,
+                    0,
+                    1440,
+                    2112
+                   ],
+                   "focused": true,
+                   "selected": false,
+                   "scrollable-vertical": false,
+                   "children": [
+                    {
+                     "resource-id": "kik.android:id/set_profile_photo_view",
+                     "adapter-view": false,
+                     "pointer": "efd84c4",
+                     "children": [
+                      {
+                       "resource-id": "kik.android:id/container_set_photo_contents",
+                       "adapter-view": false,
+                       "pointer": "3fd6fad",
+                       "children": [
+                        {
+                         "scrollable-horizontal": false,
+                         "draw": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "clickable": false,
+                         "pressed": "not_pressed",
+                         "focusable": false,
+                         "long-clickable": false,
+                         "enabled": true,
+                         "bounds": [
+                          193,
+                          431,
+                          267,
+                          491
+                         ],
+                         "visibility": "visible",
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          54,
+                          0,
+                          128,
+                          60
+                         ],
+                         "focused": false,
+                         "selected": false,
+                         "scrollable-vertical": false,
+                         "adapter-view": false,
+                         "abs-pos": true,
+                         "pointer": "7bd72e2",
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": true
+                        },
+                        {
+                         "text": "Set Photo",
+                         "scrollable-vertical": false,
+                         "adapter-view": false,
+                         "pointer": "176f673",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          74,
+                          183,
+                          131
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": false,
+                         "abs-pos": true,
+                         "font-family": "sans-serif",
+                         "class": "android.support.v7.widget.AppCompatTextView",
+                         "visible-to-user": true,
+                         "enabled": true,
+                         "bounds": [
+                          139,
+                          505,
+                          322,
+                          562
+                         ],
+                         "pressed": "not_pressed"
+                        }
+                       ],
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        83,
+                        109,
+                        266,
+                        240
+                       ],
+                       "draw": true,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        139,
+                        431,
+                        322,
+                        562
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "resource-id": "kik.android:id/imageview_profile_photo",
+                       "adapter-view": false,
+                       "pointer": "eb02930",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        0,
+                        0,
+                        0,
+                        0
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "gone",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.widget.ImageView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        322,
+                        56,
+                        322
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.FrameLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      56,
+                      42,
+                      406,
+                      392
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": true,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.SetProfilePhotoView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      56,
+                      322,
+                      406,
+                      672
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "resource-id": "kik.android:id/register_first_name",
+                     "adapter-view": false,
+                     "pointer": "8ae59a9",
+                     "children": [
+                      {
+                       "scrollable-horizontal": false,
+                       "draw": true,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "clickable": false,
+                       "pressed": "not_pressed",
+                       "focusable": false,
+                       "long-clickable": false,
+                       "enabled": true,
+                       "bounds": [
+                        462,
+                        350,
+                        1384,
+                        434
+                       ],
+                       "visibility": "visible",
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        28,
+                        978,
+                        112
+                       ],
+                       "focused": false,
+                       "selected": false,
+                       "scrollable-vertical": false,
+                       "children": [
+                        {
+                         "text": "",
+                         "resource-id": "kik.android:id/validateable_text_view",
+                         "adapter-view": false,
+                         "pointer": "44086cf",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.support.v7.widget.AppCompatEditText",
+                          "android.widget.EditText",
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          922,
+                          76
+                         ],
+                         "draw": false,
+                         "focusable": true,
+                         "long-clickable": true,
+                         "visibility": "visible",
+                         "text-hint": "First Name",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "font-family": "default",
+                         "class": "kik.android.widget.RobotoEditText",
+                         "visible-to-user": true,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          462,
+                          350,
+                          1384,
+                          426
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_clear_button",
+                         "adapter-view": false,
+                         "pointer": "ba6a85c",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          0,
+                          0
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "gone",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          462,
+                          350,
+                          462,
+                          350
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_right_image",
+                         "adapter-view": false,
+                         "pointer": "69e765",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          922,
+                          42,
+                          922,
+                          42
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          1384,
+                          392,
+                          1384,
+                          392
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        }
+                       ],
+                       "adapter-view": false,
+                       "abs-pos": true,
+                       "pointer": "343db2e",
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true
+                      },
+                      {
+                       "resource-id": "kik.android:id/validateable_text_view_underline",
+                       "adapter-view": false,
+                       "pointer": "eb67c3a",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        126,
+                        978,
+                        133
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.view.View",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        462,
+                        448,
+                        1384,
+                        455
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "text": "",
+                       "resource-id": "kik.android:id/validateable_error_view",
+                       "adapter-view": false,
+                       "pointer": "c68c0eb",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.widget.TextView",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        140,
+                        978,
+                        197
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "invisible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "font-family": "sans-serif",
+                       "class": "android.support.v7.widget.AppCompatTextView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        462,
+                        462,
+                        1384,
+                        519
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.LinearLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      406,
+                      42,
+                      1440,
+                      246
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": false,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.ValidateableInputView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      406,
+                      322,
+                      1440,
+                      526
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "resource-id": "kik.android:id/register_last_name",
+                     "adapter-view": false,
+                     "pointer": "423ee48",
+                     "children": [
+                      {
+                       "scrollable-horizontal": false,
+                       "draw": true,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "clickable": false,
+                       "pressed": "not_pressed",
+                       "focusable": false,
+                       "long-clickable": false,
+                       "enabled": true,
+                       "bounds": [
+                        462,
+                        554,
+                        1384,
+                        638
+                       ],
+                       "visibility": "visible",
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        28,
+                        978,
+                        112
+                       ],
+                       "focused": false,
+                       "selected": false,
+                       "scrollable-vertical": false,
+                       "children": [
+                        {
+                         "text": "",
+                         "resource-id": "kik.android:id/validateable_text_view",
+                         "adapter-view": false,
+                         "pointer": "d802206",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.support.v7.widget.AppCompatEditText",
+                          "android.widget.EditText",
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          922,
+                          76
+                         ],
+                         "draw": false,
+                         "focusable": true,
+                         "long-clickable": true,
+                         "visibility": "visible",
+                         "text-hint": "Last Name",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "font-family": "default",
+                         "class": "kik.android.widget.RobotoEditText",
+                         "visible-to-user": true,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          462,
+                          554,
+                          1384,
+                          630
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_clear_button",
+                         "adapter-view": false,
+                         "pointer": "9080c7",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          0,
+                          0
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "gone",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          462,
+                          554,
+                          462,
+                          554
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_right_image",
+                         "adapter-view": false,
+                         "pointer": "5ada6f4",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          922,
+                          42,
+                          922,
+                          42
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          1384,
+                          596,
+                          1384,
+                          596
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        }
+                       ],
+                       "adapter-view": false,
+                       "abs-pos": true,
+                       "pointer": "99694e1",
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true
+                      },
+                      {
+                       "resource-id": "kik.android:id/validateable_text_view_underline",
+                       "adapter-view": false,
+                       "pointer": "8869e1d",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        126,
+                        978,
+                        133
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.view.View",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        462,
+                        652,
+                        1384,
+                        659
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "text": "",
+                       "resource-id": "kik.android:id/validateable_error_view",
+                       "adapter-view": false,
+                       "pointer": "cec5892",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.widget.TextView",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        140,
+                        978,
+                        197
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "invisible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "font-family": "sans-serif",
+                       "class": "android.support.v7.widget.AppCompatTextView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        462,
+                        666,
+                        1384,
+                        723
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.LinearLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      406,
+                      246,
+                      1440,
+                      450
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": false,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.ValidateableInputView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      406,
+                      526,
+                      1440,
+                      730
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "resource-id": "kik.android:id/register_username",
+                     "adapter-view": false,
+                     "pointer": "68a6263",
+                     "children": [
+                      {
+                       "scrollable-horizontal": false,
+                       "draw": true,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "clickable": false,
+                       "pressed": "not_pressed",
+                       "focusable": false,
+                       "long-clickable": false,
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        758,
+                        1384,
+                        842
+                       ],
+                       "visibility": "visible",
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        28,
+                        1384,
+                        112
+                       ],
+                       "focused": false,
+                       "selected": false,
+                       "scrollable-vertical": false,
+                       "children": [
+                        {
+                         "text": "",
+                         "resource-id": "kik.android:id/validateable_text_view",
+                         "adapter-view": false,
+                         "pointer": "a73ff19",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.support.v7.widget.AppCompatEditText",
+                          "android.widget.EditText",
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          1328,
+                          76
+                         ],
+                         "draw": false,
+                         "focusable": true,
+                         "long-clickable": true,
+                         "visibility": "visible",
+                         "text-hint": "Username",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "font-family": "default",
+                         "class": "kik.android.widget.RobotoEditText",
+                         "visible-to-user": true,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          758,
+                          1384,
+                          834
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_clear_button",
+                         "adapter-view": false,
+                         "pointer": "1736bde",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          0,
+                          0
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "gone",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          758,
+                          56,
+                          758
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_right_image",
+                         "adapter-view": false,
+                         "pointer": "4b6c1bf",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          1328,
+                          42,
+                          1328,
+                          42
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          1384,
+                          800,
+                          1384,
+                          800
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        }
+                       ],
+                       "adapter-view": false,
+                       "abs-pos": true,
+                       "pointer": "e783e60",
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true
+                      },
+                      {
+                       "resource-id": "kik.android:id/validateable_text_view_underline",
+                       "adapter-view": false,
+                       "pointer": "992e08c",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        126,
+                        1384,
+                        133
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.view.View",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        856,
+                        1384,
+                        863
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "text": "",
+                       "resource-id": "kik.android:id/validateable_error_view",
+                       "adapter-view": false,
+                       "pointer": "c3c73d5",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.widget.TextView",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        140,
+                        1384,
+                        197
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "invisible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "font-family": "sans-serif",
+                       "class": "android.support.v7.widget.AppCompatTextView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        870,
+                        1384,
+                        927
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.LinearLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      0,
+                      450,
+                      1440,
+                      654
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": false,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.ValidateableInputView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      0,
+                      730,
+                      1440,
+                      934
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "resource-id": "kik.android:id/register_email",
+                     "adapter-view": false,
+                     "pointer": "cc667ea",
+                     "children": [
+                      {
+                       "scrollable-horizontal": false,
+                       "draw": true,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "clickable": false,
+                       "pressed": "not_pressed",
+                       "focusable": false,
+                       "long-clickable": false,
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        962,
+                        1384,
+                        1046
+                       ],
+                       "visibility": "visible",
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        28,
+                        1384,
+                        112
+                       ],
+                       "focused": false,
+                       "selected": false,
+                       "scrollable-vertical": false,
+                       "children": [
+                        {
+                         "text": "",
+                         "resource-id": "kik.android:id/validateable_text_view",
+                         "adapter-view": false,
+                         "pointer": "1d37978",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.support.v7.widget.AppCompatAutoCompleteTextView",
+                          "android.widget.AutoCompleteTextView",
+                          "android.widget.EditText",
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          1328,
+                          76
+                         ],
+                         "draw": false,
+                         "focusable": true,
+                         "long-clickable": true,
+                         "visibility": "visible",
+                         "text-hint": "Email",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "font-family": "default",
+                         "class": "kik.android.widget.KikAutoCompleteTextView",
+                         "visible-to-user": true,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          962,
+                          1384,
+                          1038
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_clear_button",
+                         "adapter-view": false,
+                         "pointer": "dd7851",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          0,
+                          0
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "gone",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          962,
+                          56,
+                          962
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_right_image",
+                         "adapter-view": false,
+                         "pointer": "89b18b6",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          1328,
+                          42,
+                          1328,
+                          42
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          1384,
+                          1004,
+                          1384,
+                          1004
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        }
+                       ],
+                       "adapter-view": false,
+                       "abs-pos": true,
+                       "pointer": "d1fbadb",
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true
+                      },
+                      {
+                       "resource-id": "kik.android:id/validateable_text_view_underline",
+                       "adapter-view": false,
+                       "pointer": "e5529b7",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        126,
+                        1384,
+                        133
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.view.View",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1060,
+                        1384,
+                        1067
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "text": "",
+                       "resource-id": "kik.android:id/validateable_error_view",
+                       "adapter-view": false,
+                       "pointer": "782b524",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.widget.TextView",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        140,
+                        1384,
+                        197
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "invisible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "font-family": "sans-serif",
+                       "class": "android.support.v7.widget.AppCompatTextView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1074,
+                        1384,
+                        1131
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "kik.android.chat.view.ValidateableInputView",
+                      "android.widget.LinearLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      0,
+                      654,
+                      1440,
+                      858
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": false,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.AutoCompleteValidateableInputView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      0,
+                      934,
+                      1440,
+                      1138
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "resource-id": "kik.android:id/register_password",
+                     "adapter-view": false,
+                     "pointer": "3b0488d",
+                     "children": [
+                      {
+                       "scrollable-horizontal": false,
+                       "draw": true,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "clickable": false,
+                       "pressed": "not_pressed",
+                       "focusable": false,
+                       "long-clickable": false,
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1166,
+                        1384,
+                        1250
+                       ],
+                       "visibility": "visible",
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        28,
+                        1384,
+                        112
+                       ],
+                       "focused": false,
+                       "selected": false,
+                       "scrollable-vertical": false,
+                       "children": [
+                        {
+                         "text": "",
+                         "resource-id": "kik.android:id/validateable_text_view",
+                         "adapter-view": false,
+                         "pointer": "608aa53",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.support.v7.widget.AppCompatEditText",
+                          "android.widget.EditText",
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          1328,
+                          76
+                         ],
+                         "draw": false,
+                         "focusable": true,
+                         "long-clickable": true,
+                         "visibility": "visible",
+                         "text-hint": "Password",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "font-family": "default",
+                         "class": "kik.android.widget.RobotoEditText",
+                         "visible-to-user": true,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          1166,
+                          1384,
+                          1242
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_clear_button",
+                         "adapter-view": false,
+                         "pointer": "4c7ff90",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          0,
+                          0
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "gone",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          1166,
+                          56,
+                          1166
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_right_image",
+                         "adapter-view": false,
+                         "pointer": "265e089",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          1328,
+                          42,
+                          1328,
+                          42
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          1384,
+                          1208,
+                          1384,
+                          1208
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        }
+                       ],
+                       "adapter-view": false,
+                       "abs-pos": true,
+                       "pointer": "2380a42",
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true
+                      },
+                      {
+                       "resource-id": "kik.android:id/validateable_text_view_underline",
+                       "adapter-view": false,
+                       "pointer": "2c0888e",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        126,
+                        1384,
+                        133
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.view.View",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1264,
+                        1384,
+                        1271
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "text": "",
+                       "resource-id": "kik.android:id/validateable_error_view",
+                       "adapter-view": false,
+                       "pointer": "16998af",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.widget.TextView",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        140,
+                        1384,
+                        197
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "invisible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "font-family": "sans-serif",
+                       "class": "android.support.v7.widget.AppCompatTextView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1278,
+                        1384,
+                        1335
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.LinearLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      0,
+                      858,
+                      1440,
+                      1062
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": false,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.ValidateableInputView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      0,
+                      1138,
+                      1440,
+                      1342
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "resource-id": "kik.android:id/register_birthday",
+                     "adapter-view": false,
+                     "pointer": "cd584bc",
+                     "children": [
+                      {
+                       "scrollable-horizontal": false,
+                       "draw": true,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "clickable": false,
+                       "pressed": "not_pressed",
+                       "focusable": false,
+                       "long-clickable": false,
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1370,
+                        1384,
+                        1454
+                       ],
+                       "visibility": "visible",
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        28,
+                        1384,
+                        112
+                       ],
+                       "focused": false,
+                       "selected": false,
+                       "scrollable-vertical": false,
+                       "children": [
+                        {
+                         "text": "",
+                         "resource-id": "kik.android:id/validateable_text_view",
+                         "adapter-view": false,
+                         "pointer": "409f9a",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.support.v7.widget.AppCompatEditText",
+                          "android.widget.EditText",
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          1328,
+                          76
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "text-hint": "Birthday",
+                         "focused": false,
+                         "clickable": false,
+                         "abs-pos": true,
+                         "font-family": "default",
+                         "class": "kik.android.widget.RobotoEditText",
+                         "visible-to-user": true,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          1370,
+                          1384,
+                          1446
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_clear_button",
+                         "adapter-view": false,
+                         "pointer": "74110cb",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          0,
+                          0
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "gone",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          1370,
+                          56,
+                          1370
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_right_image",
+                         "adapter-view": false,
+                         "pointer": "1d430a8",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          1328,
+                          42,
+                          1328,
+                          42
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          1384,
+                          1412,
+                          1384,
+                          1412
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        }
+                       ],
+                       "adapter-view": false,
+                       "abs-pos": true,
+                       "pointer": "ac2fc45",
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true
+                      },
+                      {
+                       "resource-id": "kik.android:id/validateable_text_view_underline",
+                       "adapter-view": false,
+                       "pointer": "81c17c1",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        126,
+                        1384,
+                        133
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.view.View",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1468,
+                        1384,
+                        1475
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "text": "",
+                       "resource-id": "kik.android:id/validateable_error_view",
+                       "adapter-view": false,
+                       "pointer": "3791b66",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.widget.TextView",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        140,
+                        1384,
+                        197
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "invisible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "font-family": "sans-serif",
+                       "class": "android.support.v7.widget.AppCompatTextView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1482,
+                        1384,
+                        1539
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.LinearLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      0,
+                      1062,
+                      1440,
+                      1266
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": true,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.ValidateableInputView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      0,
+                      1342,
+                      1440,
+                      1546
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "resource-id": "kik.android:id/register_phone",
+                     "adapter-view": false,
+                     "pointer": "7cdeea7",
+                     "children": [
+                      {
+                       "scrollable-horizontal": false,
+                       "draw": true,
+                       "ancestors": [
+                        "android.view.ViewGroup",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "clickable": false,
+                       "pressed": "not_pressed",
+                       "focusable": false,
+                       "long-clickable": false,
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1574,
+                        1384,
+                        1658
+                       ],
+                       "visibility": "visible",
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        28,
+                        1384,
+                        112
+                       ],
+                       "focused": false,
+                       "selected": false,
+                       "scrollable-vertical": false,
+                       "children": [
+                        {
+                         "text": "",
+                         "resource-id": "kik.android:id/validateable_text_view",
+                         "adapter-view": false,
+                         "pointer": "c916efd",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.support.v7.widget.AppCompatEditText",
+                          "android.widget.EditText",
+                          "android.widget.TextView",
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          1328,
+                          76
+                         ],
+                         "draw": false,
+                         "focusable": true,
+                         "long-clickable": true,
+                         "visibility": "visible",
+                         "text-hint": "Phone (Recommended)",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "font-family": "default",
+                         "class": "kik.android.widget.RobotoEditText",
+                         "visible-to-user": true,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          1574,
+                          1384,
+                          1650
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_clear_button",
+                         "adapter-view": false,
+                         "pointer": "e6b87f2",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          0,
+                          0,
+                          0,
+                          0
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "gone",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          56,
+                          1574,
+                          56,
+                          1574
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        },
+                        {
+                         "resource-id": "kik.android:id/validateable_text_view_right_image",
+                         "adapter-view": false,
+                         "pointer": "e60ce43",
+                         "scrollable-horizontal": false,
+                         "ancestors": [
+                          "android.view.View",
+                          "java.lang.Object"
+                         ],
+                         "selected": false,
+                         "content-desc": [
+                          null
+                         ],
+                         "rel-bounds": [
+                          1328,
+                          42,
+                          1328,
+                          42
+                         ],
+                         "draw": false,
+                         "focusable": false,
+                         "long-clickable": false,
+                         "visibility": "visible",
+                         "focused": false,
+                         "clickable": true,
+                         "abs-pos": true,
+                         "class": "android.widget.ImageView",
+                         "visible-to-user": false,
+                         "package": "kik.android",
+                         "enabled": true,
+                         "bounds": [
+                          1384,
+                          1616,
+                          1384,
+                          1616
+                         ],
+                         "pressed": "not_pressed",
+                         "scrollable-vertical": false
+                        }
+                       ],
+                       "adapter-view": false,
+                       "abs-pos": true,
+                       "pointer": "d8faf54",
+                       "class": "android.widget.LinearLayout",
+                       "visible-to-user": true
+                      },
+                      {
+                       "resource-id": "kik.android:id/validateable_text_view_underline",
+                       "adapter-view": false,
+                       "pointer": "8e26cc0",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        126,
+                        1384,
+                        133
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "visible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "class": "android.view.View",
+                       "visible-to-user": true,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1672,
+                        1384,
+                        1679
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      },
+                      {
+                       "text": "",
+                       "resource-id": "kik.android:id/validateable_error_view",
+                       "adapter-view": false,
+                       "pointer": "20afdf9",
+                       "scrollable-horizontal": false,
+                       "ancestors": [
+                        "android.widget.TextView",
+                        "android.view.View",
+                        "java.lang.Object"
+                       ],
+                       "selected": false,
+                       "content-desc": [
+                        null
+                       ],
+                       "rel-bounds": [
+                        56,
+                        140,
+                        1384,
+                        197
+                       ],
+                       "draw": false,
+                       "focusable": false,
+                       "long-clickable": false,
+                       "visibility": "invisible",
+                       "focused": false,
+                       "clickable": false,
+                       "abs-pos": true,
+                       "font-family": "sans-serif",
+                       "class": "android.support.v7.widget.AppCompatTextView",
+                       "visible-to-user": false,
+                       "package": "kik.android",
+                       "enabled": true,
+                       "bounds": [
+                        56,
+                        1686,
+                        1384,
+                        1743
+                       ],
+                       "pressed": "not_pressed",
+                       "scrollable-vertical": false
+                      }
+                     ],
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.LinearLayout",
+                      "android.view.ViewGroup",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      0,
+                      1266,
+                      1440,
+                      1470
+                     ],
+                     "draw": true,
+                     "focusable": false,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": false,
+                     "abs-pos": true,
+                     "class": "kik.android.chat.view.ValidateableInputView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      0,
+                      1546,
+                      1440,
+                      1750
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "text": "Sign Up",
+                     "resource-id": "kik.android:id/register_button",
+                     "adapter-view": false,
+                     "pointer": "fa6313e",
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.Button",
+                      "android.widget.TextView",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      42,
+                      1470,
+                      1398,
+                      1672
+                     ],
+                     "draw": false,
+                     "focusable": true,
+                     "long-clickable": false,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": true,
+                     "abs-pos": true,
+                     "font-family": "sans-serif-medium",
+                     "class": "android.support.v7.widget.AppCompatButton",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      42,
+                      1750,
+                      1398,
+                      1952
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    },
+                    {
+                     "text": "By tapping \"Sign Up\" you agree to Kik's terms and privacy policy",
+                     "resource-id": "kik.android:id/tos_text",
+                     "adapter-view": false,
+                     "pointer": "b80b9f",
+                     "scrollable-horizontal": false,
+                     "ancestors": [
+                      "android.widget.TextView",
+                      "android.view.View",
+                      "java.lang.Object"
+                     ],
+                     "selected": false,
+                     "content-desc": [
+                      null
+                     ],
+                     "rel-bounds": [
+                      56,
+                      1700,
+                      1384,
+                      1795
+                     ],
+                     "draw": false,
+                     "focusable": true,
+                     "long-clickable": true,
+                     "visibility": "visible",
+                     "focused": false,
+                     "clickable": true,
+                     "abs-pos": true,
+                     "font-family": "default",
+                     "class": "kik.android.widget.RobotoTextView",
+                     "visible-to-user": true,
+                     "package": "kik.android",
+                     "enabled": true,
+                     "bounds": [
+                      56,
+                      1980,
+                      1384,
+                      2075
+                     ],
+                     "pressed": "not_pressed",
+                     "scrollable-vertical": false
+                    }
+                   ],
+                   "adapter-view": false,
+                   "abs-pos": true,
+                   "pointer": "900f3d7",
+                   "class": "android.widget.RelativeLayout",
+                   "visible-to-user": true
+                  }
+                 ],
+                 "scrollable-horizontal": false,
+                 "ancestors": [
+                  "android.widget.ScrollView",
+                  "android.widget.FrameLayout",
+                  "android.view.ViewGroup",
+                  "android.view.View",
+                  "java.lang.Object"
+                 ],
+                 "selected": false,
+                 "content-desc": [
+                  null
+                 ],
+                 "rel-bounds": [
+                  0,
+                  196,
+                  1440,
+                  2308
+                 ],
+                 "draw": false,
+                 "focusable": true,
+                 "long-clickable": false,
+                 "visibility": "visible",
+                 "focused": false,
+                 "clickable": false,
+                 "abs-pos": true,
+                 "class": "com.github.ksoichiro.android.observablescrollview.ObservableScrollView",
+                 "visible-to-user": true,
+                 "package": "kik.android",
+                 "enabled": true,
+                 "bounds": [
+                  0,
+                  280,
+                  1440,
+                  2392
+                 ],
+                 "pressed": "not_pressed",
+                 "scrollable-vertical": true
+                },
+                {
+                 "resource-id": "kik.android:id/shadow",
+                 "adapter-view": false,
+                 "pointer": "de194ec",
+                 "scrollable-horizontal": false,
+                 "ancestors": [
+                  "android.view.ViewGroup",
+                  "android.view.View",
+                  "java.lang.Object"
+                 ],
+                 "selected": false,
+                 "content-desc": [
+                  null
+                 ],
+                 "rel-bounds": [
+                  0,
+                  196,
+                  1440,
+                  217
+                 ],
+                 "draw": true,
+                 "focusable": false,
+                 "long-clickable": false,
+                 "visibility": "visible",
+                 "focused": false,
+                 "clickable": false,
+                 "abs-pos": true,
+                 "class": "android.widget.FrameLayout",
+                 "visible-to-user": false,
+                 "package": "kik.android",
+                 "enabled": true,
+                 "bounds": [
+                  0,
+                  280,
+                  1440,
+                  301
+                 ],
+                 "pressed": "not_pressed",
+                 "scrollable-vertical": false
+                }
+               ],
+               "adapter-view": false,
+               "abs-pos": true,
+               "pointer": "1456f5",
+               "class": "android.widget.RelativeLayout",
+               "visible-to-user": true
+              }
+             ],
+             "scrollable-horizontal": false,
+             "ancestors": [
+              "android.view.ViewGroup",
+              "android.view.View",
+              "java.lang.Object"
+             ],
+             "selected": false,
+             "content-desc": [
+              null
+             ],
+             "rel-bounds": [
+              0,
+              0,
+              1440,
+              2308
+             ],
+             "draw": true,
+             "focusable": false,
+             "long-clickable": false,
+             "visibility": "visible",
+             "focused": false,
+             "clickable": false,
+             "abs-pos": true,
+             "class": "android.widget.LinearLayout",
+             "visible-to-user": true,
+             "package": "kik.android",
+             "enabled": true,
+             "bounds": [
+              0,
+              84,
+              1440,
+              2392
+             ],
+             "pressed": "not_pressed",
+             "scrollable-vertical": false
+            }
+           ],
+           "scrollable-horizontal": false,
+           "ancestors": [
+            "android.widget.FrameLayout",
+            "android.view.ViewGroup",
+            "android.view.View",
+            "java.lang.Object"
+           ],
+           "selected": false,
+           "content-desc": [
+            null
+           ],
+           "rel-bounds": [
+            0,
+            0,
+            1440,
+            2308
+           ],
+           "draw": true,
+           "focusable": false,
+           "long-clickable": false,
+           "visibility": "visible",
+           "focused": false,
+           "clickable": false,
+           "abs-pos": true,
+           "class": "android.support.v7.internal.widget.ContentFrameLayout",
+           "visible-to-user": true,
+           "package": "android",
+           "enabled": true,
+           "bounds": [
+            0,
+            84,
+            1440,
+            2392
+           ],
+           "pressed": "not_pressed",
+           "scrollable-vertical": false
+          }
+         ],
+         "scrollable-horizontal": false,
+         "ancestors": [
+          "android.widget.LinearLayout",
+          "android.view.ViewGroup",
+          "android.view.View",
+          "java.lang.Object"
+         ],
+         "selected": false,
+         "content-desc": [
+          null
+         ],
+         "rel-bounds": [
+          0,
+          0,
+          1440,
+          2308
+         ],
+         "draw": true,
+         "focusable": false,
+         "long-clickable": false,
+         "visibility": "visible",
+         "focused": false,
+         "clickable": false,
+         "abs-pos": true,
+         "class": "android.support.v7.internal.widget.FitWindowsLinearLayout",
+         "visible-to-user": true,
+         "package": "kik.android",
+         "enabled": true,
+         "bounds": [
+          0,
+          84,
+          1440,
+          2392
+         ],
+         "pressed": "not_pressed",
+         "scrollable-vertical": false
+        }
+       ],
+       "adapter-view": false,
+       "abs-pos": true,
+       "pointer": "4ecc000",
+       "class": "android.widget.FrameLayout",
+       "visible-to-user": true
+      }
+     ],
+     "adapter-view": false,
+     "abs-pos": true,
+     "pointer": "4a05932",
+     "class": "android.widget.LinearLayout",
+     "visible-to-user": true
+    },
+    {
+     "resource-id": "android:id/navigationBarBackground",
+     "adapter-view": false,
+     "pointer": "ef480b5",
+     "scrollable-horizontal": false,
+     "ancestors": [
+      "java.lang.Object"
+     ],
+     "selected": false,
+     "content-desc": [
+      null
+     ],
+     "rel-bounds": [
+      0,
+      2392,
+      1440,
+      2560
+     ],
+     "draw": false,
+     "focusable": false,
+     "long-clickable": false,
+     "visibility": "visible",
+     "focused": false,
+     "clickable": false,
+     "abs-pos": true,
+     "class": "android.view.View",
+     "visible-to-user": true,
+     "package": "android",
+     "enabled": true,
+     "bounds": [
+      0,
+      2392,
+      1440,
+      2560
+     ],
+     "pressed": "not_pressed",
+     "scrollable-vertical": false
+    },
+    {
+     "resource-id": "android:id/statusBarBackground",
+     "adapter-view": false,
+     "pointer": "e50234a",
+     "scrollable-horizontal": false,
+     "ancestors": [
+      "java.lang.Object"
+     ],
+     "selected": false,
+     "content-desc": [
+      null
+     ],
+     "rel-bounds": [
+      0,
+      0,
+      1440,
+      84
+     ],
+     "draw": false,
+     "focusable": false,
+     "long-clickable": false,
+     "visibility": "visible",
+     "focused": false,
+     "clickable": false,
+     "abs-pos": true,
+     "class": "android.view.View",
+     "visible-to-user": true,
+     "package": "android",
+     "enabled": true,
+     "bounds": [
+      0,
+      0,
+      1440,
+      84
+     ],
+     "pressed": "not_pressed",
+     "scrollable-vertical": false
+    }
+   ],
+   "adapter-view": false,
+   "abs-pos": true,
+   "pointer": "2bdbd3d",
+   "class": "com.android.internal.policy.PhoneWindow$DecorView",
+   "visible-to-user": true
+  },
+  "added_fragments": [],
+  "active_fragments": []
+ },
+ "is_keyboard_deployed": false,
+ "request_id": "25"
+}
