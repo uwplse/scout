@@ -46,6 +46,11 @@ export default class SVGWidget extends React.Component {
     this.timer = null; 
   }
 
+  componentDidMount() {
+    // Set the initial value for the text label
+    this.setTextLabel();
+  }
+
   lockTextLabel() {
     if(this.element[ConstraintActions.locksKey] == undefined) {
       this.element[ConstraintActions.locksKey] = []; 
@@ -57,20 +62,24 @@ export default class SVGWidget extends React.Component {
   }
 
   handleTextChange(evt) {
-    console.log("handleTextChange"); 
+    // Handle the text change on a timeout so it saves after the user finishes typing
     clearTimeout(this.timer); 
     this.timer = setTimeout(this.updateTextLabel.bind(this), WAIT_INTERVAL);  
   }
 
   updateTextLabel(evt) {
-    console.log("udpating the text label"); 
-    // this.element.label = 
     let id = "widget-container-" + this.id; 
-    let editableText = document.getElementById(id).querySelectorAll("#widget-editable-text");
+    let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
     let textValue = editableText[0].innerHTML; 
     this.element.label = textValue;
     this.lockTextLabel()
     this.checkSolutionValidity();
+  }
+
+  setTextLabel() {
+    let id = "widget-container-" + this.id; 
+    let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
+    let textValue = editableText[0].innerHTML = this.element.label; 
   }
 
   render () {
