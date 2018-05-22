@@ -80,6 +80,40 @@ div:focus {
 
 .widgets-container {
 	border-right: 1px solid #ccc;
+	width: 250px;
+}
+
+.widget-control {
+	margin-top: 20px;
+	cursor: pointer;
+}
+
+.widget-stepper {
+	height: 25px; 
+}
+
+.widget-label {
+	height: 30px;
+}
+
+.widget-buttons, .widget-placeholders {
+	display: flex; 
+	flex-wrap: wrap;
+}
+
+.widget-buttons > .widget-control {
+	height: 40px;
+	margin-right: 10px;
+}
+
+.widget-placeholders > .widget-control {
+	height: 75px;
+	margin-right: 10px;
+}
+
+.widget-container.field {
+	height: 40px;
+	width: 250px;
 }
 
 /** 

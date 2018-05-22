@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 343 28">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: none;
+      }
+
+      .cls-1 {
+        stroke: #007aff;
+      }
+
+      .cls-3, .cls-4 {
+        fill: #007aff;
+      }
+
+      .cls-3, .cls-5 {
+        font-size: 13px;
+        font-family: Helvetica;
+        letter-spacing: -0.006em;
+      }
+
+      .cls-5 {
+        fill: #fff;
+      }
+
+      .cls-6 {
+        stroke: none;
+      }
+    </style>
+  </defs>
+  <g id="segmentedEntry" transform="translate(-16 -10)">
+    <g id="Tab_3" data-name="Tab 3" transform="translate(-456.11 -1263.155)">
+      <g id="Background" class="cls-1" transform="translate(700.11 1273.155)">
+        <path class="cls-6" d="M0,0H112a3,3,0,0,1,3,3V25a3,3,0,0,1-3,3H0a0,0,0,0,1,0,0V0A0,0,0,0,1,0,0Z"/>
+        <path class="cls-2" d="M1,.5H112A2.5,2.5,0,0,1,114.5,3V25a2.5,2.5,0,0,1-2.5,2.5H1A.5.5,0,0,1,.5,27V1A.5.5,0,0,1,1,.5Z"/>
+      </g>
+      <g id="Controls_Segmented_Control__Resources_Button_on_Light_1" data-name="Controls / Segmented Control / _Resources / Button on Light – 1" transform="translate(733.11 1273.155)">
+        <rect id="boundary" class="cls-2" width="50" height="28"/>
+        <text id="Tab_Label" data-name="Tab Label" class="cls-3" transform="translate(25 19)"><tspan x="-15.748" y="0">Label</tspan></text>
+      </g>
+    </g>
+    <g id="Tab_2" data-name="Tab 2" transform="translate(-484.873 -1263.155)">
+      <g id="Background-2" data-name="Background" class="cls-1" transform="translate(614.873 1273.155)">
+        <rect class="cls-6" width="115" height="28"/>
+        <rect class="cls-2" x="0.5" y="0.5" width="114" height="27"/>
+      </g>
+      <g id="Controls_Segmented_Control__Resources_Button_on_Light_1-2" data-name="Controls / Segmented Control / _Resources / Button on Light – 1" transform="translate(646.873 1273.155)">
+        <rect id="boundary-2" data-name="boundary" class="cls-2" width="50" height="28"/>
+        <text id="Tab_Label-2" data-name="Tab Label" class="cls-3" transform="translate(25 19)"><tspan x="-15.748" y="0">Label</tspan></text>
+      </g>
+    </g>
+    <g id="Tab_1" data-name="Tab 1" transform="translate(-426 -1263)">
+      <path id="Background-3" data-name="Background" class="cls-4" d="M3,0H115a0,0,0,0,1,0,0V28a0,0,0,0,1,0,0H3a3,3,0,0,1-3-3V3A3,3,0,0,1,3,0Z" transform="translate(442 1273)"/>
+      <g id="Controls_Segmented_Control__Resources_Button_Active_on_Light_1" data-name="Controls / Segmented Control / _Resources / Button Active on Light – 1" transform="translate(474 1273)">
+        <rect id="boundary-3" data-name="boundary" class="cls-4" width="50" height="28"/>
+        <text id="Tab_Label-3" data-name="Tab Label" class="cls-5" transform="translate(25 19)"><tspan x="-15.748" y="0">Label</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

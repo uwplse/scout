@@ -1,6 +1,6 @@
 import React from "react";
 import FabricHelpers from './FabricHelpers.js';
-import Widget from './Widget';
+import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
@@ -63,27 +63,28 @@ export default class ConstraintsCanvas extends React.Component {
     canvas.children.push(page); 
   }
 
-  getWidget(shape, type) {
+  getWidget(shape, type, src) {
     let shapeId = shape.name;
-    return (<Widget 
+    return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
               type={type}
-              width={shape.size.width} 
+              source={src}
+              width={shape.size.width}
               height={shape.size.height}
               checkSolutionValidity={this.checkSolutionValidity} />);
   }
 
-  addShapeOfTypeToCanvas(type) {
+  addShapeOfTypeToCanvas(src, type) {
     let shape = this.createConstraintsCanvasShapeObject(type); 
     // Initialize size values 
     shape.size = {}; 
-    shape.size.height = Widget.initialHeightValues(shape.type);
-    shape.size.width = Widget.initialWidthValues(shape.type);
+    shape.size.height = SVGWidget.initialHeightValues(shape.type);
+    shape.size.width = SVGWidget.initialWidthValues(shape.type);
 
     let shapeId = shape.name;
-    let widget = this.getWidget(shape, type); 
+    let widget = this.getWidget(shape, type, src); 
 
     let newTreeNode = {
         title: widget, 
@@ -328,11 +329,11 @@ export default class ConstraintsCanvas extends React.Component {
           {pageFeedbacks}
         </div>
         <div className="widgets-sortable-tree">
+          { /*             rowHeight={this.calculateRowHeight.bind(this)} */}
           <SortableTree
             treeData={this.state.treeData}
             onChange={treeData => this.setState({ treeData })}
             canDrop={this.canReparentWidgetNode.bind(this)}
-            rowHeight={this.calculateRowHeight.bind(this)}
             onMoveNode={this.onMoveNode.bind(this)}
             generateNodeProps={({node, path}) => ({
               buttons: [

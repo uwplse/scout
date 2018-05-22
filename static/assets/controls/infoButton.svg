@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #007aff;
+      }
+    </style>
+  </defs>
+  <g id="infoButton" transform="translate(-912 -97)">
+    <path id="Light-Info" class="cls-1" d="M22,32A10,10,0,1,0,12,22,10,10,0,0,0,22,32Zm0,1A11,11,0,1,1,33,22,11,11,0,0,1,22,33Zm-.25-14.5A1.25,1.25,0,1,1,23,17.25,1.25,1.25,0,0,1,21.75,18.5ZM20,28.5V28h1V20.5H20V20h3v8h1v.5Z" transform="translate(901 86)"/>
+  </g>
+</svg>

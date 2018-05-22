@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 53 21">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #007aff;
+        font-size: 17px;
+        font-family: Helvetica;
+        letter-spacing: -0.024em;
+      }
+    </style>
+  </defs>
+  <g id="button" transform="translate(-829 -101)">
+    <text id="Label" class="cls-1" transform="translate(829 101)"><tspan x="0" y="13">Button</tspan></text>
+  </g>
+</svg>

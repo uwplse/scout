@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 375 40">
+  <defs>
+    <style>
+      .cls-1, .cls-4, .cls-6 {
+        fill: none;
+      }
+
+      .cls-1 {
+        clip-rule: evenodd;
+      }
+
+      .cls-2 {
+        fill: #007aff;
+      }
+
+      .cls-3 {
+        fill: url(#pattern);
+      }
+
+      .cls-5 {
+        clip-path: url(#clip-path);
+      }
+
+      .cls-6 {
+        stroke: rgba(255,255,255,0.47);
+        stroke-width: 2px;
+      }
+
+      .cls-7 {
+        clip-path: url(#clip-path-2);
+      }
+
+      .cls-8 {
+        fill: rgba(255,255,255,0.58);
+      }
+
+      .cls-9 {
+        clip-path: url(#clip-path-3);
+      }
+
+      .cls-10, .cls-11, .cls-12, .cls-13, .cls-14 {
+        fill: #fff;
+      }
+
+      .cls-11, .cls-13 {
+        font-size: 12px;
+        font-family: Helvetica;
+      }
+
+      .cls-11 {
+        letter-spacing: 0em;
+      }
+
+      .cls-12 {
+        fill-rule: evenodd;
+      }
+
+      .cls-14 {
+        stroke: #fff;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    </style>
+    <pattern id="pattern" preserveAspectRatio="xMidYMid slice" width="100%" height="100%" viewBox="0 0 18 18">
+      <image width="18" height="18" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAAXNSR0IArs4c6QAAANJJREFUOBGlks0NwjAMRgnljJiArtE5kGAODowBJ06MAHsgxkBswM8RpPRVgsiJo6gulj7VST+/2JLd6I/w3leUL1AzCANgitboirpYmUAU1GiHHugXN5JJLxDGBp3QG6WxKUJwV2iJzmmlOL/IZ1kQP9L5RZ1KtwqCpUbp/KpSXHRjzgOIQ2l+UafSY4BYEoWhAUt98CagS/hhTRKQbQHlYwKUXcCxNPfM9865T0+vtn07evLNLqC1owPd3PUzhhs6iRfQUBtZAQ1bwIjCAVBxAVvVfnBotmOhywAAAABJRU5ErkJggg=="/>
+    </pattern>
+    <clipPath id="clip-path">
+      <path id="Path_728" data-name="Path 728" class="cls-1" d="M0-9.5A2.5,2.5,0,0,1,2.5-12h19A2.5,2.5,0,0,1,24-9.5V-3A2.5,2.5,0,0,1,21.5-.5h-19A2.5,2.5,0,0,1,0-3Z" transform="translate(0 12)"/>
+    </clipPath>
+    <clipPath id="clip-path-2">
+      <path id="Path_730" data-name="Path 730" class="cls-1" d="M25-8.372A2.251,2.251,0,0,1,26.5-6.25,2.251,2.251,0,0,1,25-4.128Z" transform="translate(0 12)"/>
+    </clipPath>
+    <clipPath id="clip-path-3">
+      <path id="Path_732" data-name="Path 732" class="cls-1" d="M2-9a1,1,0,0,1,.992-1H21.008A.994.994,0,0,1,22-9V-3.5a1,1,0,0,1-.992,1H2.992A.994.994,0,0,1,2-3.5Z" transform="translate(0 12)"/>
+    </clipPath>
+  </defs>
+  <g id="header" transform="translate(-8 87)">
+    <rect id="Background" class="cls-2" width="375" height="40" transform="translate(8 -87)"/>
+    <rect id="Status_Bar_-_Location_Glyph" data-name="Status Bar - Location Glyph" class="cls-3" width="9" height="9" transform="translate(291 -80.75)"/>
+    <g id="Status_Bar_on_Dark" data-name="Status Bar on Dark" transform="translate(-12 -237)">
+      <rect id="Background-2" data-name="Background" class="cls-4" width="375" height="20" transform="translate(20 150)"/>
+      <g id="Right">
+        <g id="Battery" transform="translate(363 154)">
+          <g id="Battery_Outline" data-name="Battery Outline" class="cls-5">
+            <g id="Group_277" data-name="Group 277">
+              <path id="Path_727" data-name="Path 727" class="cls-6" d="M0,2.5A2.5,2.5,0,0,1,2.5,0h19A2.5,2.5,0,0,1,24,2.5V9a2.5,2.5,0,0,1-2.5,2.5h-19A2.5,2.5,0,0,1,0,9Z"/>
+            </g>
+          </g>
+          <g id="Cap" class="cls-7">
+            <path id="Path_729" data-name="Path 729" class="cls-8" d="M20,.872H31.5V-13.372H20Z" transform="translate(0 12)"/>
+          </g>
+          <g id="Battery_Fill" data-name="Battery Fill" class="cls-9">
+            <path id="Path_731" data-name="Path 731" class="cls-10" d="M-3,2.5H27V-15H-3Z" transform="translate(0 12)"/>
+          </g>
+        </g>
+        <text id="_100_" data-name="100%" class="cls-11" transform="translate(329.854 164)"><tspan x="0" y="0">100%</tspan></text>
+        <path id="Bluetooth" class="cls-12" d="M293.5-12l4,3.5L294.75-6l2.75,2.5-4,3.5V-4.751L291.25-2.5l-.75-.75L293.25-6,290.5-8.75l.75-.75,2.25,2.25Zm1,2.37V-7L296-8.4Zm0,4.63v2.75L296-3.541Z" transform="translate(26 165.5)"/>
+      </g>
+      <text id="_9:41_AM" data-name="9:41 AM" class="cls-13" transform="translate(208 165)"><tspan x="-22.017" y="0">9:41 AM</tspan></text>
+      <g id="Left">
+        <path id="Bars" class="cls-12" d="M14.25-11h1.5a.75.75,0,0,1,.75.75v8.5a.75.75,0,0,1-.75.75h-1.5a.75.75,0,0,1-.75-.75v-8.5h0A.75.75,0,0,1,14.25-11ZM9.75-9h1.5a.75.75,0,0,1,.75.75v6.5a.75.75,0,0,1-.75.75H9.75A.75.75,0,0,1,9-1.75v-6.5A.75.75,0,0,1,9.75-9ZM5.25-7h1.5a.75.75,0,0,1,.75.75v4.5A.75.75,0,0,1,6.75-1H5.25a.75.75,0,0,1-.75-.75v-4.5A.75.75,0,0,1,5.25-7ZM.75-5.5h1.5A.75.75,0,0,1,3-4.75v3A.75.75,0,0,1,2.25-1H.75A.75.75,0,0,1,0-1.75v-3A.75.75,0,0,1,.75-5.5Z" transform="translate(26 165.5)"/>
+        <path id="Wifi" class="cls-14" d="M0,2.491a9.75,9.75,0,0,1,13.018,0l-.885.885a8.5,8.5,0,0,0-11.248,0ZM2.392,4.883a6.376,6.376,0,0,1,8.229,0l-.882.882a5.126,5.126,0,0,0-6.465,0ZM4.886,7.377a2.877,2.877,0,0,1,3.246,0L6.509,9Z" transform="translate(46.991 155)"/>
+      </g>
+    </g>
+  </g>
+</svg>

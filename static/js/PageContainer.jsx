@@ -6,11 +6,24 @@ import FabricHelpers from './FabricHelpers.js';
 import DesignCanvas from './DesignCanvas';
 import Sidebar from 'react-sidebar';
 import $ from 'jquery';
+import field from '../assets/controls/field.svg';
+import addButton from '../assets/controls/addButton.svg'; 
+import button from '../assets/controls/button.svg'; 
+import placeholder from '../assets/controls/group.svg'; 
+import header from '../assets/controls/header.svg'; 
+import image from '../assets/controls/image.svg'; 
+import infoButton from '../assets/controls/infoButton.svg'; 
+import label from '../assets/controls/label.svg'; 
+import pagination from '../assets/controls/pagination.svg'; 
+import search from '../assets/controls/search.svg'; 
+import segmentedEntry from '../assets/controls/segmentedEntry.svg'; 
+import slider from '../assets/controls/slider.svg'; 
+import stepper from '../assets/controls/stepper.svg'; 
+import toggle from '../assets/controls/toggle.svg'; 
 
 export default class PageContainer extends React.Component {
   constructor(props) {
   	super(props); 
-    this.drawWidgetCanvas = this.drawWidgetCanvas.bind(this); 
     this.drawContainersCanvas = this.drawContainersCanvas.bind(this);
     this.getMoreDesigns = this.getMoreDesigns.bind(this); 
     this.parseSolutions = this.parseSolutions.bind(this);
@@ -26,8 +39,7 @@ export default class PageContainer extends React.Component {
       solutions: [],
       constraintChanged: false , 
       designsFound: -1, 
-      treeData: [], 
-      sidebarOpen: true,
+      treeData: []
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -37,15 +49,13 @@ export default class PageContainer extends React.Component {
   }
 
   componentDidMount() {
-    // Draw the canvas for adding new widgets to the constraints canvas
-    this.drawWidgetCanvas(); 
     this.drawContainersCanvas(); 
   }
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
   // for a shape of this type
-  addShapeToConstraintsCanvas(type) {
-    this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type);
+  addShapeToConstraintsCanvas(type, src) {
+    this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type, src);
   }
 
   getDesignCanvas(solution) {
@@ -64,18 +74,18 @@ export default class PageContainer extends React.Component {
               getRelativeDesigns={this.getRelativeDesigns.bind(this)}/>); 
   }
 
-  drawWidgetCanvas() {
-    this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
-    let field = FabricHelpers.getField(15,50,120,40,{'cursor': 'hand', 'selectable': false}); 
-    let text = FabricHelpers.getText(15,100,20,{'cursor': 'hand', 'selectable': false}); 
-    let button = FabricHelpers.getButton(15,150,120,40,{'cursor': 'hand', 'selectable': false}); 
-    field.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'field')); 
-    text.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'text')); 
-    button.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'button')); 
-    this.widgetsCanvas.add(field); 
-    this.widgetsCanvas.add(text); 
-    this.widgetsCanvas.add(button); 
-  }
+  // drawWidgetCanvas() {
+  //   this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
+  //   let field = FabricHelpers.getField(15,50,120,40,{'cursor': 'hand', 'selectable': false}); 
+  //   let text = FabricHelpers.getText(15,100,20,{'cursor': 'hand', 'selectable': false}); 
+  //   let button = FabricHelpers.getButton(15,150,120,40,{'cursor': 'hand', 'selectable': false}); 
+  //   field.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'field')); 
+  //   text.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'text')); 
+  //   button.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'button')); 
+  //   this.widgetsCanvas.add(field); 
+  //   this.widgetsCanvas.add(text); 
+  //   this.widgetsCanvas.add(button); 
+  // }
 
   drawContainersCanvas() {
     this.containersCanvas = new fabric.Canvas('containers-canvas');
@@ -303,7 +313,7 @@ export default class PageContainer extends React.Component {
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
-            <h2>C.N.P.</h2>
+            <h2>Scout</h2>
           </div>
          </div>
         </nav>
@@ -314,8 +324,26 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">Widgets</h3>
               </div>  
               <div className="panel-body">         
-                <canvas id="widgets-canvas" width="150px" height="400px">
-                </canvas>
+                { /*<canvas id="widgets-canvas" width="150px" height="400px">
+                </canvas> */ }
+                <img className="widget-control" src={header} onClick={this.addShapeToConstraintsCanvas.bind(this, header, 'header')}/>
+                <img className="widget-control" src={field} onClick={this.addShapeToConstraintsCanvas.bind(this, field, 'field')}/>
+                <img className="widget-control" src={search} onClick={this.addShapeToConstraintsCanvas.bind(this, search, 'field')}/>    
+                <img className="widget-control widget-label" src={label} onClick={this.addShapeToConstraintsCanvas.bind(this, label, 'text')}/>
+                <img className="widget-control" src={pagination} onClick={this.addShapeToConstraintsCanvas.bind(this, pagination, 'control')}/>
+                <img className="widget-control" src={segmentedEntry} onClick={this.addShapeToConstraintsCanvas.bind(this, segmentedEntry, 'control')}/>
+                <img className="widget-control" src={slider} onClick={this.addShapeToConstraintsCanvas.bind(this, slider, 'control')}/>
+                <div className="widget-buttons"> 
+                  <img className="widget-control" src={button} onClick={this.addShapeToConstraintsCanvas.bind(this, button, 'button')}/>
+                  <img className="widget-control" src={addButton} onClick={this.addShapeToConstraintsCanvas.bind(this, addButton, 'button')}/>
+                  <img className="widget-control" src={toggle} onClick={this.addShapeToConstraintsCanvas.bind(this, toggle, 'button')}/>
+                  <img className="widget-control widget-stepper" src={stepper} onClick={this.addShapeToConstraintsCanvas.bind(this, stepper, 'button')}/>
+                  <img className="widget-control" src={infoButton} onClick={this.addShapeToConstraintsCanvas.bind(this, infoButton, 'button')}/>
+                </div>
+                <div className="widget-placeholders">
+                  <img className="widget-control" src={placeholder} onClick={this.addShapeToConstraintsCanvas.bind(this, placeholder, 'image')}/>
+                  <img className="widget-control" src={image} onClick={this.addShapeToConstraintsCanvas.bind(this, image, 'image')}/>
+                </div>
               </div>
             </div>
             <div className="panel panel-default containers-container">
