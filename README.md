@@ -21,6 +21,7 @@ Activate the virtual environment
 
 ### Install Z3 
 *** Optional: This part is not needed to run the server. It is only needed if are working with the code that generates the design from the constraints tree.
+
 *** If you do not do the Z3 steps, comment out the following line in server/server.py: 
 	
 	import custom_solver
