@@ -39,6 +39,14 @@ Install NodeJS and npm if you do not already have them.
 
 	https://www.npmjs.com/get-npm
 
+Install the custom package for react-sortable-tree. 
+
+	git clone https://github.com/mandamarie0587/react-sortable-tree.git
+	cd react-sortable-tree
+	npm install
+	npm run build
+	npm pack
+
 Install the npm packages for building the web application. 
 
 	cd static

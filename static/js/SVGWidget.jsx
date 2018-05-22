@@ -7,9 +7,9 @@ export default class SVGWidget extends React.Component {
   
   static initialWidthValues(type) {
     let values = {
-      'button': 120, 
-      'text': 120, 
-      'field':  120, 
+      'button': 165, 
+      'text': 75, 
+      'field':  250, 
       'group': 120, 
       'labelGroup': 120
     }; 
@@ -33,6 +33,8 @@ export default class SVGWidget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
     this.imgSource = props.source; 
+    this.height = props.height; 
+    this.width = props.width; 
 
     // Callback to notify the parent container to re-check the solution validity
     this.checkSolutionValidity =  props.checkSolutionValidity; 
@@ -71,8 +73,8 @@ export default class SVGWidget extends React.Component {
   render () {
     const source = this.imgSource; 
     return (
-      <div className={"widget-container " + this.type}>
-        <img src={source} />
+      <div className="widget-container">
+        <img height={this.height + "px"} width={this.width + "px"} src={source} />
       </div>); 
   }
 

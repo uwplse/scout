@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 115 28">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #007aff;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        font-size: 13px;
+        font-family: Helvetica;
+        letter-spacing: -0.006em;
+      }
+    </style>
+  </defs>
+  <g id="filledButton" transform="translate(-442 -1273)">
+    <rect id="Background" class="cls-1" width="115" height="28" rx="3" transform="translate(442 1273)"/>
+    <g id="Controls_Segmented_Control__Resources_Button_Active_on_Light_1" data-name="Controls / Segmented Control / _Resources / Button Active on Light – 1" transform="translate(474 1273)">
+      <rect id="boundary" class="cls-1" width="50" height="28"/>
+      <text id="Tab_Label" data-name="Tab Label" class="cls-2" transform="translate(25 19)"><tspan x="-18.597" y="0">Button</tspan></text>
+    </g>
+  </g>
+</svg>

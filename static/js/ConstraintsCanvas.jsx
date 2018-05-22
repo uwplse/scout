@@ -335,6 +335,7 @@ export default class ConstraintsCanvas extends React.Component {
             onChange={treeData => this.setState({ treeData })}
             canDrop={this.canReparentWidgetNode.bind(this)}
             onMoveNode={this.onMoveNode.bind(this)}
+            rowHeight={this.calculateRowHeight.bind(this)}
             generateNodeProps={({node, path}) => ({
               buttons: [
                 <button className="widgets-sortable-tree-remove" onClick={function() { self.removeWidgetNode(path); }}>

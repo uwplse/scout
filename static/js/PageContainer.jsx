@@ -8,6 +8,7 @@ import Sidebar from 'react-sidebar';
 import $ from 'jquery';
 import field from '../assets/controls/field.svg';
 import addButton from '../assets/controls/addButton.svg'; 
+import filledButton from '../assets/controls/filledButton.svg'; 
 import button from '../assets/controls/button.svg'; 
 import placeholder from '../assets/controls/group.svg'; 
 import header from '../assets/controls/header.svg'; 
@@ -335,10 +336,11 @@ export default class PageContainer extends React.Component {
                 <img className="widget-control" src={slider} onClick={this.addShapeToConstraintsCanvas.bind(this, slider, 'control')}/>
                 <div className="widget-buttons"> 
                   <img className="widget-control" src={button} onClick={this.addShapeToConstraintsCanvas.bind(this, button, 'button')}/>
-                  <img className="widget-control" src={addButton} onClick={this.addShapeToConstraintsCanvas.bind(this, addButton, 'button')}/>
+                  <img className="widget-control" src={filledButton} onClick={this.addShapeToConstraintsCanvas.bind(this, filledButton, 'button')}/>
+                 { /*<img className="widget-control" src={addButton} onClick={this.addShapeToConstraintsCanvas.bind(this, addButton, 'button')}/>
                   <img className="widget-control" src={toggle} onClick={this.addShapeToConstraintsCanvas.bind(this, toggle, 'button')}/>
                   <img className="widget-control widget-stepper" src={stepper} onClick={this.addShapeToConstraintsCanvas.bind(this, stepper, 'button')}/>
-                  <img className="widget-control" src={infoButton} onClick={this.addShapeToConstraintsCanvas.bind(this, infoButton, 'button')}/>
+                  <img className="widget-control" src={infoButton} onClick={this.addShapeToConstraintsCanvas.bind(this, infoButton, 'button')}/> */ }
                 </div>
                 <div className="widget-placeholders">
                   <img className="widget-control" src={placeholder} onClick={this.addShapeToConstraintsCanvas.bind(this, placeholder, 'image')}/>
