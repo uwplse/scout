@@ -21,6 +21,9 @@ Activate the virtual environment
 
 ### Install Z3 
 *** Optional: This part is not needed to run the server. It is only needed if are working with the code that generates the design from the constraints tree.
+*** If you do not do the Z3 steps, comment out the following line in server/server.py: 
+	
+	import custom_solver
 
 *** Make sure you have the Python virtual environment created above still activated. 
 
@@ -51,12 +54,10 @@ If you want to just build the web application:
 	./run.sh
 
 ### Opening Scout
-Home design dashboard
+Home design dashboard. (*** You will only be able to open this page if you do the Z3 steps above)
 
 	Open http://localhost:5000/
 
-Import an svg
+Import an svg page. 
 
-	Open http://localhost:5000/import
-
-Testing :) 
+	Open http://localhost:5000/import 
