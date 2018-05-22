@@ -14,7 +14,16 @@ const config = {
         extensions: ['.js', '.jsx', '.css']
     },
     module: {
-	  rules: [
+  	  rules: [
+      {
+        test: /\.svg$/,
+        loader: 'raw-loader'
+      }, 
+      {
+              test: /\.js$/,
+              exclude: /node_modules/,
+              loader: 'script-loader'
+      },
 	    {
 	      test: /\.jsx?/,
 	      exclude: /node_modules/,
@@ -23,15 +32,7 @@ const config = {
       {
         test: /\.css$/, 
         loader: "style-loader!css-loader" 
-      }, 
-      {
-        test: /\.(pdf|jpg|png|gif|svg|ico)$/,
-        use: [
-            {
-                loader: 'url-loader'
-            },
-        ]
-      },
+      }
 	  ]
 	}
 };

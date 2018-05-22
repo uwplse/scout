@@ -2,30 +2,17 @@
 import React from "react";
 import '../css/Canvas.css'; 
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
-import FabricHelpers from './FabricHelpers.js';
 import DesignCanvas from './DesignCanvas';
 import Sidebar from 'react-sidebar';
 import $ from 'jquery';
-import field from '../assets/controls/field.svg';
-import addButton from '../assets/controls/addButton.svg'; 
-import filledButton from '../assets/controls/filledButton.svg'; 
-import button from '../assets/controls/button.svg'; 
-import placeholder from '../assets/controls/group.svg'; 
-import header from '../assets/controls/header.svg'; 
-import image from '../assets/controls/image.svg'; 
-import infoButton from '../assets/controls/infoButton.svg'; 
-import label from '../assets/controls/label.svg'; 
-import pagination from '../assets/controls/pagination.svg'; 
-import search from '../assets/controls/search.svg'; 
-import segmentedEntry from '../assets/controls/segmentedEntry.svg'; 
-import slider from '../assets/controls/slider.svg'; 
-import stepper from '../assets/controls/stepper.svg'; 
-import toggle from '../assets/controls/toggle.svg'; 
+import SVGInline from "react-svg-inline"; 
+import field from '../assets/illustrator/field.svg';
+import search from '../assets/illustrator/search.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
   	super(props); 
-    this.drawContainersCanvas = this.drawContainersCanvas.bind(this);
+    // this.drawContainersCanvas = this.drawContainersCanvas.bind(this);
     this.getMoreDesigns = this.getMoreDesigns.bind(this); 
     this.parseSolutions = this.parseSolutions.bind(this);
     this.updateConstraintsCanvasFromDesignCanvas = this.updateConstraintsCanvasFromDesignCanvas.bind(this); 
@@ -47,10 +34,6 @@ export default class PageContainer extends React.Component {
     this.solutionsMap ={};
 
     this.constraintsCanvasRef = React.createRef();
-  }
-
-  componentDidMount() {
-    this.drawContainersCanvas(); 
   }
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
@@ -88,29 +71,29 @@ export default class PageContainer extends React.Component {
   //   this.widgetsCanvas.add(button); 
   // }
 
-  drawContainersCanvas() {
-    this.containersCanvas = new fabric.Canvas('containers-canvas');
-    let group = FabricHelpers.getGroup(15, 10, 120, 40, {
-      stroke: '#39a1f4',
-      selectable: false, 
-      groupType: 'Group', 
-      strokeDashArray: [5,5]
-    });
+  // drawContainersCanvas() {
+  //   this.containersCanvas = new fabric.Canvas('containers-canvas');
+  //   let group = FabricHelpers.getGroup(15, 10, 120, 40, {
+  //     stroke: '#39a1f4',
+  //     selectable: false, 
+  //     groupType: 'Group', 
+  //     strokeDashArray: [5,5]
+  //   });
 
-    group.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'group'));
+  //   group.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'group'));
 
-    let label = FabricHelpers.getGroup(15, 70, 120, 40, {
-      selectable: false, 
-      stroke: 'red', 
-      groupType: 'Label', 
-      strokeDashArray: [5,5]
-    });
+  //   let label = FabricHelpers.getGroup(15, 70, 120, 40, {
+  //     selectable: false, 
+  //     stroke: 'red', 
+  //     groupType: 'Label', 
+  //     strokeDashArray: [5,5]
+  //   });
 
-    label.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'labelGroup')); 
+  //   label.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'labelGroup')); 
 
-    this.containersCanvas.add(group); 
-    this.containersCanvas.add(label);
-  }
+  //   this.containersCanvas.add(group); 
+  //   this.containersCanvas.add(label);
+  // }
 
   checkSolutionValidity() {
     let jsonShapes = this.getShapesJSON(); 
@@ -327,25 +310,8 @@ export default class PageContainer extends React.Component {
               <div className="panel-body">         
                 { /*<canvas id="widgets-canvas" width="150px" height="400px">
                 </canvas> */ }
-                <img className="widget-control" src={header} onClick={this.addShapeToConstraintsCanvas.bind(this, header, 'header')}/>
-                <img className="widget-control" src={field} onClick={this.addShapeToConstraintsCanvas.bind(this, field, 'field')}/>
-                <img className="widget-control" src={search} onClick={this.addShapeToConstraintsCanvas.bind(this, search, 'field')}/>    
-                <img className="widget-control widget-label" src={label} onClick={this.addShapeToConstraintsCanvas.bind(this, label, 'text')}/>
-                <img className="widget-control" src={pagination} onClick={this.addShapeToConstraintsCanvas.bind(this, pagination, 'control')}/>
-                <img className="widget-control" src={segmentedEntry} onClick={this.addShapeToConstraintsCanvas.bind(this, segmentedEntry, 'control')}/>
-                <img className="widget-control" src={slider} onClick={this.addShapeToConstraintsCanvas.bind(this, slider, 'control')}/>
-                <div className="widget-buttons"> 
-                  <img className="widget-control" src={button} onClick={this.addShapeToConstraintsCanvas.bind(this, button, 'button')}/>
-                  <img className="widget-control" src={filledButton} onClick={this.addShapeToConstraintsCanvas.bind(this, filledButton, 'button')}/>
-                 { /*<img className="widget-control" src={addButton} onClick={this.addShapeToConstraintsCanvas.bind(this, addButton, 'button')}/>
-                  <img className="widget-control" src={toggle} onClick={this.addShapeToConstraintsCanvas.bind(this, toggle, 'button')}/>
-                  <img className="widget-control widget-stepper" src={stepper} onClick={this.addShapeToConstraintsCanvas.bind(this, stepper, 'button')}/>
-                  <img className="widget-control" src={infoButton} onClick={this.addShapeToConstraintsCanvas.bind(this, infoButton, 'button')}/> */ }
-                </div>
-                <div className="widget-placeholders">
-                  <img className="widget-control" src={placeholder} onClick={this.addShapeToConstraintsCanvas.bind(this, placeholder, 'image')}/>
-                  <img className="widget-control" src={image} onClick={this.addShapeToConstraintsCanvas.bind(this, image, 'image')}/>
-                </div>
+                <SVGInline className="widget-control" svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, field, 'field')}/>
+                <SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, search, 'field')}/>
               </div>
             </div>
             <div className="panel panel-default containers-container">

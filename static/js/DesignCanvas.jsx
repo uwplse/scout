@@ -1,6 +1,5 @@
 // App.jsx
 import React from "react";
-import FabricHelpers from "./FabricHelpers.js"; 
 import CanvasMenu from "./CanvasMenu"; 
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";

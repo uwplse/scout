@@ -1,6 +1,5 @@
 // App.jsx
 import React from "react";
-import FabricHelpers from './FabricHelpers';
 
 export default class WidgetFeedback extends React.Component {
   constructor(props) {

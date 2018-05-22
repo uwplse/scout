@@ -1,10 +1,12 @@
 // App.jsx
 import React from "react";
-import FabricHelpers from './FabricHelpers';
 import ConstraintActions from './ConstraintActions';
+import SVGInline from "react-svg-inline"
+
+const WAIT_INTERVAL = 1000; 
 
 export default class SVGWidget extends React.Component {
-  
+
   static initialWidthValues(type) {
     let values = {
       'button': 165, 
@@ -32,7 +34,7 @@ export default class SVGWidget extends React.Component {
     this.type = props.type; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
-    this.imgSource = props.source; 
+    this.svgSource = props.source; 
     this.height = props.height; 
     this.width = props.width; 
 
@@ -40,41 +42,43 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity =  props.checkSolutionValidity; 
   }
 
-  lockTextLabel(shape) {
-    if(shape[ConstraintActions.locksKey] == undefined) {
-      shape[ConstraintActions.locksKey] = []; 
+  componentWillMount() {
+    this.timer = null; 
+  }
+
+  lockTextLabel() {
+    if(this.element[ConstraintActions.locksKey] == undefined) {
+      this.element[ConstraintActions.locksKey] = []; 
     } 
 
-    if(shape[ConstraintActions.locksKey].indexOf("label") == -1) {
-      shape[ConstraintActions.locksKey].push("label"); 
+    if(this.element[ConstraintActions.locksKey].indexOf("label") == -1) {
+      this.element[ConstraintActions.locksKey].push("label"); 
     }
   }
 
-  // addLabelGroupToCanvas() {
-  //   let groupRect = FabricHelpers.getGroup(0,0, 120, 40, {
-  //     stroke: 'red', 
-  //     groupType: 'Label', 
-  //     strokeDashArray: [5,5]
-  //   });
+  handleTextChange(evt) {
+    console.log("handleTextChange"); 
+    clearTimeout(this.timer); 
+    this.timer = setTimeout(this.updateTextLabel.bind(this), WAIT_INTERVAL);  
+  }
 
-  //   this.canvas.add(groupRect)
-  // }
-
-  // addGroupToCanvas() {
-  //   let groupRect = FabricHelpers.getGroup(0, 0, 120, 40, {
-  //     stroke: '#39a1f4', 
-  //     groupType: 'Group', 
-  //     strokeDashArray: [5,5]
-  //   });
-
-  //   this.canvas.add(groupRect); 
-  // }
+  updateTextLabel(evt) {
+    console.log("udpating the text label"); 
+    // this.element.label = 
+    let id = "widget-container-" + this.id; 
+    let editableText = document.getElementById(id).querySelectorAll("#widget-editable-text");
+    let textValue = editableText[0].innerHTML; 
+    this.element.label = textValue;
+    this.lockTextLabel()
+    this.checkSolutionValidity();
+  }
 
   render () {
-    const source = this.imgSource; 
+    const source = this.svgSource; 
     return (
-      <div className="widget-container">
-        <img height={this.height + "px"} width={this.width + "px"} src={source} />
+      <div suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
+          contentEditable="true" id={"widget-container-" + this.id} className="widget-container">
+        <SVGInline svg={source} height={this.height + "px"} width={this.width + "px"} />
       </div>); 
   }
 

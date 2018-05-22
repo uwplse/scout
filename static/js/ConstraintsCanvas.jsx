@@ -1,5 +1,4 @@
 import React from "react";
-import FabricHelpers from './FabricHelpers.js';
 import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
@@ -269,7 +268,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   calculateRowHeight({treeIndex, node, path}) {
-    let rowHeight = node.title.props.height; 
+    let rowHeight = 40
 
     // Row height
     let subtitles = node.subtitle; 
