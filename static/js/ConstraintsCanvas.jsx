@@ -2,7 +2,9 @@ import React from "react";
 import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
+import FontSizeSelector from './FontSizeSelector'; 
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
+
 
 export default class ConstraintsCanvas extends React.Component {
   constructor(props) {
@@ -11,6 +13,10 @@ export default class ConstraintsCanvas extends React.Component {
     // Callback to update a shape on the constraints canvas through the PageContainer so that it can validate the current state
     this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
     this.checkSolutionValidity =  props.checkSolutionValidity; 
+
+    // Method bindings
+    this.displayFontSizeSelector = this.displayFontSizeSelector.bind(this);
+    this.hideFontSizeSelector = this.hideFontSizeSelector.bind(this); 
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
@@ -25,9 +31,14 @@ export default class ConstraintsCanvas extends React.Component {
     this.rowPadding = 10; 
 
     this.state = { 
-      constraintModified: false, 
       treeData: [], 
-      pageFeedbackWidgets: []
+      pageFeedbackWidgets: [], 
+      fontSizeSelectorShown: false, 
+      fontSizeSelectorCallback: undefined, 
+      fontSizeSelectorPosition: {
+        x: 0, 
+        y: 0
+      }
     }; 
   }
 
@@ -71,7 +82,9 @@ export default class ConstraintsCanvas extends React.Component {
               source={src}
               width={shape.size.width}
               height={shape.size.height}
-              checkSolutionValidity={this.checkSolutionValidity} />);
+              checkSolutionValidity={this.checkSolutionValidity} 
+              displayFontSizeSelector={this.displayFontSizeSelector}
+              hideFontSizeSelector= {this.hideFontSizeSelector} />);
   }
 
   addShapeOfTypeToCanvas(type, controlType, source) {
@@ -108,6 +121,23 @@ export default class ConstraintsCanvas extends React.Component {
 
   getConstraintsCanvasShape(shapeID) {
     return this.constraintsShapesMap[shapeID]; 
+  }
+
+  displayFontSizeSelector(evt, setFontSize) {
+    this.setState({
+      fontSizeSelectorShown: true, 
+      fontSizeSelectorCallback: setFontSize, // The method to call in the SVGWidget instance that called this menu open.  
+      fontSizeSelectorPosition: {
+        x: evt.clientX, 
+        y: evt.clientY
+      }
+    });  
+  }
+
+  hideFontSizeSelector() {
+    this.setState({
+      fontSizeSelectorShown: false
+    }); 
   }
 
   highlightWidgetFeedback(shapeId, lock, highlighted) {
@@ -320,6 +350,8 @@ export default class ConstraintsCanvas extends React.Component {
   render () {
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
+    const fontSizeSelector = (this.state.fontSizeSelectorShown ? <FontSizeSelector onClick={this.state.fontSizeSelectorCallback} /> : undefined);  
+    const fontSizeSelectorPosition = this.state.fontSizeSelectorPosition; 
     var self = this;
 
     // Process the queue of shapes to add to the canvas
@@ -327,6 +359,9 @@ export default class ConstraintsCanvas extends React.Component {
       <div className="panel-body" id="constraints-canvas-container" tabIndex="1">
         <div className="constraints-canvas-page-feedback">
           {pageFeedbacks}
+        </div>
+        <div style={{left: fontSizeSelectorPosition.x, top: fontSizeSelectorPosition.y}} className={"constraints-canvas-font-size-selector-container " + (!fontSizeSelector ? "hidden" : "")}> 
+          {fontSizeSelector}
         </div>
         <div className="widgets-sortable-tree">
           { /*             rowHeight={this.calculateRowHeight.bind(this)} */}

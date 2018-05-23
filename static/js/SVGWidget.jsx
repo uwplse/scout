@@ -48,11 +48,19 @@ export default class SVGWidget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 
-    this.height = props.height; 
-    this.width = props.width; 
 
     // Callback to notify the parent container to re-check the solution validity
     this.checkSolutionValidity =  props.checkSolutionValidity; 
+    this.displayFontSizeSelector = props.displayFontSizeSelector; 
+    this.hideFontSizeSelector = props.hideFontSizeSelector; 
+
+    // Method bindings
+    this.setFontSize = this.setFontSize.bind(this); 
+
+    this.state = {
+      height: props.height, 
+      width: props.width
+    }
   }
 
   componentWillMount() {
@@ -97,12 +105,55 @@ export default class SVGWidget extends React.Component {
     }
   }
 
+  setElementSize(height, width) {
+    // When height and width are updated by font size changes, update the element object. 
+    this.element.size.height = height; 
+    this.element.size.width = width; 
+  }
+
+  showFontSizeSelector(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    // Call the parents method to construct the font size selector
+    this.displayFontSizeSelector(evt, this.setFontSize);
+  }
+
+  setFontSize(value) {
+    // Update the font size of the SVG element
+    let id = "widget-container-" + this.id; 
+    let svgElement  = document.getElementById(id); 
+
+    let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
+
+    // Unset these so that we can calculate a new size after the font size is changed
+    svgElementInline[0].style.width = ""; 
+    svgElementInline[0].style.height = ""; 
+
+    let editableText = svgElement.querySelectorAll(".widget-editable-text");
+    editableText[0].style.fontSize = value + "px"; 
+
+
+    // Update the element object size
+    let boundingRect = editableText[0].getBoundingClientRect(); 
+    this.setState({
+      width: boundingRect.width, 
+      height: boundingRect.height
+    })
+
+    this.hideFontSizeSelector(); 
+  }
+
   render () {
     const source = this.svgSource; 
+    const height = this.state.height; 
+    const width = this.state.width; 
+    this.setElementSize(height, width); 
+
     return (
-      <div suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
+      <div onContextMenu={this.showFontSizeSelector.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
           contentEditable="true" id={"widget-container-" + this.id} className="widget-container">
-        <SVGInline svg={source} height={this.height + "px"} width={this.width + "px"} />
+        <SVGInline svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
       </div>); 
   }
 

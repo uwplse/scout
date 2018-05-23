@@ -121,6 +121,10 @@ div:focus {
     flex-direction: column;
 }
 
+.SVGInline-svg {
+	cursor: pointer;
+}
+
 
 /** 
 	Designs canvas 
@@ -223,38 +227,43 @@ div:focus {
 }
 
 /** 
-  Feedback menu that appears on design canvases 
+  Right click feedback menu, font size selector menu
   */
 
-.canvas-feedback-menu {
+.canvas-feedback-menu, .font-size-selector-menu {
 	list-style-type: none;
     padding: 0px;
 }
 
-.canvas-feedback-menu > li, {
+.canvas-feedback-menu > li, 
+.font-size-selector-menu > li {
 	padding: 0.5em;
 }
 
-.canvas-feedback-menu > li:hover {
+.canvas-feedback-menu > li:hover, 
+.font-size-selector-menu > li:hover {
 	background-color: lightgray;
 	cursor: pointer; 
 }
 
-.canvas-feedback-menu-item {
+.canvas-feedback-menu-item, 
+.font-size-selector-menu-item,  {
 	padding-left: 1em;
 	padding-right: 1em;
 }
 
-.canvas-feedback-menu-label {
+.canvas-feedback-menu-label, 
+.font-size-selector-menu-label{
 	font-weight: bold;
 	padding-left: 0.5em; 
 }
 
-.canvas-feedback-menu-container {
+.canvas-feedback-menu-container, 
+.constraints-canvas-font-size-selector-container
+ {
     position: absolute;
     background: white;
     z-index: 1000;
-    list-style-type: none;
     font-size: 12px;
     border: 1px solid gray;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
