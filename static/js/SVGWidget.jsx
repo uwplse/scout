@@ -1,5 +1,6 @@
 // App.jsx
 import React from "react";
+import Resizable from 're-resizable';
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
 
@@ -67,6 +68,7 @@ export default class SVGWidget extends React.Component {
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
+    this.onElementResized = this.onElementResized.bind(this);
 
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
@@ -124,6 +126,21 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
+  adjustElementSize(element) {
+    let boundingRect = element.getBoundingClientRect(); 
+
+    // Set it on the element object
+    let widthRounded = Math.round(boundingRect.width); 
+    let heightRounded = Math.round(boundingRect.height);
+
+    this.setElementSize(widthRounded, heightRounded);
+
+    this.setState({
+      width: widthRounded, 
+      height: heightRounded
+    });     
+  }
+
   setTextLabel(initSize) {
     let id = "widget-container-" + this.id; 
     let svgElement = document.getElementById(id); 
@@ -132,22 +149,14 @@ export default class SVGWidget extends React.Component {
       editableText[0].innerHTML = this.element.label;       
     }
 
+    let svgViewBox = svgElement.querySelectorAll(".SVGInline-svg"); 
+    svgViewBox[0].removeAttribute("viewBox");
+
     if(initSize) {
       if(this.state.width == 0 || this.state.height == 0) {
         // give the component an initial size based on the calculated size of the text box
         let sizeContainer = svgElement.querySelectorAll(".widget-size-container"); 
-        let boundingRect = sizeContainer[0].getBoundingClientRect(); 
-
-        // Set it on the element object
-        let widthRounded = Math.round(boundingRect.width); 
-        let heightRounded = Math.round(boundingRect.height);
-
-        this.setElementSize(widthRounded, heightRounded);
-
-        this.setState({
-          width: widthRounded, 
-          height: heightRounded
-        }); 
+        this.adjustElementSize(sizeContainer[0]);
       }
     }
   }
@@ -191,17 +200,27 @@ export default class SVGWidget extends React.Component {
     this.hideFontSizeSelector(); 
   }
 
+  onElementResized(evt, direction, element, delta) {
+    // When resizing finishes, update the size of the element
+    this.adjustElementSize(element);
+  }
+
   render () {
     const source = this.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 
     this.setElementSize(width, height); 
+    const enableOptions = {
+      top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
+    };
 
     return (
-      <div onContextMenu={this.showFontSizeSelector.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
-          contentEditable="true" id={"widget-container-" + this.id} className="widget-container">
-        <SVGInline svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
-      </div>); 
+      <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
+        <div onContextMenu={this.showFontSizeSelector.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
+            contentEditable="true" id={"widget-container-" + this.id} className="widget-container">
+          <SVGInline svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+        </div>
+      </Resizable>); 
   }
 
 
