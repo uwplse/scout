@@ -251,9 +251,10 @@ export default class ConstraintsCanvas extends React.Component {
   createConstraintsCanvasShapeObject(type, controlType) {  
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
+    let label = SVGWidget.initialLabels(controlType); 
     let shape = {
       "name": _.uniqueId(),
-      "label": type, 
+      "label": label, 
       "type": type,
       "controlType": controlType
     }

@@ -87,6 +87,10 @@ div:focus {
 	width: 10em;
 }
 
+.widget-control-label > .widget-control-svg {
+	width: 5em;
+}
+
 .widget-control-svg {
 	margin-top: 20px;
 	cursor: pointer;
@@ -110,6 +114,11 @@ div:focus {
 	display: flex;
     flex-direction: row;
     justify-content: center;
+}
+
+.widgets-panel {
+	display: flex;
+    flex-direction: column;
 }
 
 
@@ -340,6 +349,9 @@ div:focus {
 	height: 44px;
 }
 
+.widgets-sortable-tree .rst__rowTitle {
+	font-weight: normal;
+}
 
 .widgets-sortable-tree .rst__rowTitleWithSubtitle {
     height: inherit; 

@@ -9,6 +9,7 @@ import SVGInline from "react-svg-inline";
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
+import label from '../assets/illustrator/label.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
 
@@ -273,12 +274,13 @@ export default class PageContainer extends React.Component {
               <div className="panel-heading"> 
                 <h3 className="panel-title">Widgets</h3>
               </div>  
-              <div className="panel-body">         
+              <div className="panel-body widgets-panel">         
                 { /*<canvas id="widgets-canvas" width="150px" height="400px">
                 </canvas> */ }
                 <SVGInline className="widget-control" svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
                 <SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
                 <SVGInline className="widget-control widget-control-button" svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
+                <SVGInline className="widget-control widget-control-label" svg={ label } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', label)}/>
               </div>
             </div>
             <div className="panel panel-default containers-container">

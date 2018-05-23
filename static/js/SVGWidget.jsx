@@ -10,7 +10,7 @@ export default class SVGWidget extends React.Component {
   static initialWidthValues(type) {
     let values = {
       'button': 165, 
-      'text': 75, 
+      'label': 75, 
       'field':  250, 
       'group': 120, 
       'labelGroup': 120
@@ -21,12 +21,24 @@ export default class SVGWidget extends React.Component {
   static initialHeightValues(type) {
     let values =  {
       'button': 40, 
-      'text': 30, 
+      'label': 30, 
       'field': 25, 
       'group': 40,
       'labelGroup': 40
     };
     return values[type];
+  }; 
+
+  static initialLabels(controlType) {
+    let values = {
+      'button': 'Button', 
+      'label': 'Label', 
+      'field': 'Field', 
+      'search': 'Search', 
+      'group': 'Group', 
+      'labelGroup': 'Label'
+    }
+    return values[controlType]; 
   }; 
 
   constructor(props) {
