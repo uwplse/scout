@@ -7,6 +7,7 @@ import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
 import label from '../assets/illustrator/label.svg';
+import group from '../assets/illustrator/groupDesign.svg';
 
 export default class DesignCanvas extends React.Component {
   static svgElements(controlType) {
@@ -14,7 +15,8 @@ export default class DesignCanvas extends React.Component {
       'field': field, 
       'search': search, 
       'button': filledButton, 
-      'label': label
+      'label': label, 
+      'group': group
       /* Add others here */
     }; 
     return svgElements[controlType]; 
@@ -168,20 +170,27 @@ export default class DesignCanvas extends React.Component {
 
       // Update the text
       let textElement = svgDiv.querySelectorAll(".widget-editable-text"); 
-      textElement[0].innerHTML = shape.label; 
+      if(textElement[0]) {
+        textElement[0].innerHTML = shape.label; 
+      }
 
+      let padding = 0; 
+      if(controlType == "group" || controlType == "labelGroup") {
+        padding = 5;
+      }
+    
       // Append to the design canvas div
       let parentDiv = document.createElement("div"); 
       parentDiv.classList.add("widget-control-parent");
 
       // Update the size and location to the values in the shape object
-      parentDiv.style.position = "relative"; 
-      parentDiv.style.left = (shape.location.x * this.scalingFactor) + "px"; 
-      parentDiv.style.top = (shape.location.y * this.scalingFactor) + "px"; 
+      parentDiv.style.position = "absolute"; 
+      parentDiv.style.left = ((shape.location.x * this.scalingFactor) - padding) + "px"; 
+      parentDiv.style.top = ((shape.location.y * this.scalingFactor) - padding) + "px"; 
 
       // udpate the size
-      parentDiv.style.width = (shape.size.width * this.scalingFactor) + "px"; 
-      parentDiv.style.height = (shape.size.height * this.scalingFactor) + "px"; 
+      parentDiv.style.width = (shape.size.width * this.scalingFactor + (padding * 2)) + "px"; 
+      parentDiv.style.height = (shape.size.height * this.scalingFactor + (padding * 2)) + "px"; 
 
       parentDiv.appendChild(frag);
 
