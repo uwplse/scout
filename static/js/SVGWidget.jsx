@@ -80,7 +80,9 @@ export default class SVGWidget extends React.Component {
   setTextLabel() {
     let id = "widget-container-" + this.id; 
     let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
-    let textValue = editableText[0].innerHTML = this.element.label; 
+    if(editableText[0]) {
+      editableText[0].innerHTML = this.element.label;       
+    }
   }
 
   render () {

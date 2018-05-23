@@ -5,12 +5,14 @@ import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
+import filledButton from '../assets/illustrator/filledButton.svg';
 
 export default class DesignCanvas extends React.Component {
   static svgElements(controlType) {
     let svgElements = {
       'field': field, 
-      'search': search
+      'search': search, 
+      'button': filledButton
       /* Add others here */
     }; 
     return svgElements[controlType]; 
@@ -91,7 +93,7 @@ export default class DesignCanvas extends React.Component {
     return 0.5;
   }
 
-  showConstraintsContextMenu(element,evt) {
+  showConstraintsContextMenu(shape,evt) {
 		// Check for the status of menuShown to see if we need to close out another menu before opening this one
 		if(this.state.menuShown) {
 			this.setState({
@@ -101,21 +103,27 @@ export default class DesignCanvas extends React.Component {
 		}
 
 		// Show the context menu. 
-		let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
-
-		// The menuTrigger is the JSON of the shape that triggered the open
-		let shape = element.shape; 
-    let scaledWidth = shape.width * this.scalingFactor; 
-    let scaledHeight = shape.height * this.scalingFactor; 
+    var designCanvas = document.getElementById("design-canvas-" + this.id); 
+		let componentBoundingBox = designCanvas.getBoundingClientRect();
 
     this.setState({
-      activeCanvasMenu: <CanvasMenu menuTrigger={element} onClick={this.performActionAndCloseMenu.bind(this)} getConstraintsCanvasShape={this.getConstraintsCanvasShape} />,
+      activeCanvasMenu: <CanvasMenu menuTrigger={shape} onClick={this.performActionAndCloseMenu.bind(this)} getConstraintsCanvasShape={this.getConstraintsCanvasShape} />,
       menuShown: true, 
       menuPosition: {
-      	x: evt.e.clientX, 
-      	y: evt.e.clientY
+      	x: evt.clientX, 
+      	y: evt.clientY
       }
     });
+  }
+
+  showHoverIndicator(element, evt) {
+    evt.stopPropagation();
+    element.classList.add("design-canvas-hovered"); 
+  }
+
+  hideHoverIndicator(element, evt) {
+    evt.stopPropagation();
+    element.classList.remove("design-canvas-hovered"); 
   }
 
   // hideConstraintsContextMenu
@@ -133,102 +141,22 @@ export default class DesignCanvas extends React.Component {
     });  
   }
 
-  initCanvas(designCanvas, canvasElement) {
+  initDesignCanvas(designCanvas, shape) {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
 
     // Dont' bind event handlers to canvases that are in a saved or trashed state. 
     if(inMainCanvas) {
-      // TODO: Register the event handlers for the background layer
-      // pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, canvasElement)); 
+      designCanvas.addEventListener("mousedown", this.showConstraintsContextMenu.bind(this, shape)); 
 
-      // pageGroup.on("mouseover", this.showHoverIndicator.bind(this, canvasElement, pageGroup)); 
-      // pageGroup.on("mouseout", this.hideHoverIndicator.bind(this, canvasElement, pageGroup)); 
+      designCanvas.addEventListener("mouseover", this.showHoverIndicator.bind(this, designCanvas)); 
+      designCanvas.addEventListener("mouseout", this.hideHoverIndicator.bind(this, designCanvas)); 
     }
 
-  }
-
-  drawElement(element){
-    let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
-
-    // Scale down the values to fit into the design canvases
-    let x = element.location.x; 
-    let y = element.location.y; 
-    if(element.type == "button") {
-      let button = FabricHelpers.getButton(x,y,element.size.width,element.size.height,{
-          'cursor': 'hand', 
-          'selectable': false, 
-          'text': element["label"]
-      }); 
-
-      if(inMainCanvas) {
-        button.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-
-        let rect = button.getObjects()[0];
-        button.on("mouseover", this.showHoverIndicator.bind(this, element, rect)); 
-        button.on("mouseout", this.hideHoverIndicator.bind(this, element, rect)); 
-      }
-
-      element.shape = button; 
-      this.canvas.add(button); 
-    }
-    else if (element.type == "text") {
-      let text = FabricHelpers.getText(x,y,element.size.height,{
-        'cursor': 'hand', 
-        'selectable': false, 
-        'text': "Login"
-      }); 
-
-      if(inMainCanvas) {
-        text.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-        text.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
-        text.on("mouseout", this.hideHoverIndicator.bind(this, element, text));
-      }
-
-      element.shape = text; 
-      this.canvas.add(text); 
-    }
-    else if (element.type == "field") {
-      let field = FabricHelpers.getField(x,y,element.size.width,element.size.height,{
-        'cursor': 'hand', 
-        'selectable': false, 
-        'text': element["label"]
-      }); 
-
-      if(inMainCanvas) {
-        field.on("mousedown", this.showConstraintsContextMenu.bind(this,element));
-
-        let text = field.getObjects()[0]; 
-        field.on("mouseover", this.showHoverIndicator.bind(this, element, text)); 
-        field.on("mouseout", this.hideHoverIndicator.bind(this, element, text)); 
-      }
-
-      element.shape = field; 
-      this.canvas.add(field); 
-    }
-    else if (element.type == "group") {
-      let groupPadding = 0; // TODO: make constant for this
-      let group = FabricHelpers.getDesignGroup(x-groupPadding,y-groupPadding,element.size.width+(groupPadding*2), element.size.height+(groupPadding*2), {
-        cursor: 'hand', 
-        selectable: false, 
-        padding: 20,  
-      }); 
-
-      if(inMainCanvas) {
-        group.on("mousedown", this.showConstraintsContextMenu.bind(this, element)); 
-        group.on("mouseover", this.showHoverIndicator.bind(this, element, group)); 
-        group.on("mouseout", this.hideHoverIndicator.bind(this, element, group));            
-      }
-
-      element.shape = group; 
-      this.canvas.add(group);
-      this.canvas.sendToBack(group); 
-    }
   }
 
   drawSVGElement(designCanvas, shape) {
     // Get the control SVG element from the control type
     let controlType = shape.controlType;
-    let scalingFactor = this.getScalingFactor(); 
 
     let svg = DesignCanvas.svgElements(controlType); 
     if(svg != undefined) {
@@ -237,16 +165,31 @@ export default class DesignCanvas extends React.Component {
       let id = 'widget-control-' + controlType; 
       let svgDiv = frag.querySelector('#' + id);  
 
+      // Update the text
+      let textElement = svgDiv.querySelectorAll(".widget-editable-text"); 
+      textElement[0].innerHTML = shape.label; 
+
+      // Append to the design canvas div
+      let parentDiv = document.createElement("div"); 
+      parentDiv.classList.add("widget-control-parent");
+
       // Update the size and location to the values in the shape object
-      svgDiv.style.position = "relative"; 
-      svgDiv.style.left = (shape.location.x * scalingFactor) + "px"; 
-      svgDiv.style.top = (shape.location.y * scalingFactor) + "px"; 
+      parentDiv.style.position = "relative"; 
+      parentDiv.style.left = (shape.location.x * this.scalingFactor) + "px"; 
+      parentDiv.style.top = (shape.location.y * this.scalingFactor) + "px"; 
 
       // udpate the size
-      svgDiv.setAttribute("width", (shape.size.width * scalingFactor) + "px"); 
-      svgDiv.setAttribute("height", (shape.size.height * scalingFactor) + "px"); 
-      // Append to the design canvas div
-      designCanvas.appendChild(frag); 
+      parentDiv.style.width = (shape.size.width * this.scalingFactor) + "px"; 
+      parentDiv.style.height = (shape.size.height * this.scalingFactor) + "px"; 
+
+      parentDiv.appendChild(frag);
+
+      designCanvas.appendChild(parentDiv); 
+
+      // Register event handlers after appending the element to the dom
+      svgDiv.addEventListener("mousedown", this.showConstraintsContextMenu.bind(this, shape ));
+      svgDiv.addEventListener("mouseover", this.showHoverIndicator.bind(this, parentDiv)); 
+      svgDiv.addEventListener("mouseout", this.hideHoverIndicator.bind(this, parentDiv)); 
     }
   }
 
@@ -259,33 +202,12 @@ export default class DesignCanvas extends React.Component {
       if(this.elements.hasOwnProperty(elementID)) {
         let element = this.elements[elementID];
         if(element.type == "canvas") {
-          this.initCanvas(designCanvas, element);
+          this.initDesignCanvas(designCanvas, element);
         }else {
           this.drawSVGElement(designCanvas, element);
         }
       }
     }
-  }
- 
-  invalidateCanvas() {     
-    // var color1 = "#f5c6cb";
-    // var numberOfStripes = 100;     
-    // var drawingContext = this.canvas.getContext(); 
-    // var thickness = this.canvasWidth / numberOfStripes;
-    // for (var i=0;i < numberOfStripes*2;i++){
-    //   if((i % 2) == 0) {
-    //     drawingContext.beginPath();
-    //     drawingContext.strokeStyle = color1;
-    //     drawingContext.lineWidth = 1;
-    //     drawingContext.lineCap = 'round';
-         
-    //     drawingContext.moveTo(i*thickness + thickness/2 - this.canvasWidth,0);
-    //     drawingContext.lineTo(0 + i*thickness+thickness/2,this.canvasWidth);
-    //     drawingContext.stroke();          
-    //   }
-    // }
-
-    // Draw hatching lines over the div to invalidate it
   }
 
   performDesignCanvasMenuAction(action) {

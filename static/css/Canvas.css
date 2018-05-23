@@ -83,6 +83,10 @@ div:focus {
 	width: 250px;
 }
 
+.widget-control-button > .widget-control-svg {
+	width: 10em;
+}
+
 .widget-control-svg {
 	margin-top: 20px;
 	cursor: pointer;
@@ -96,20 +100,18 @@ div:focus {
 	height: 30px;
 }
 
-.widget-buttons, .widget-placeholders {
-	display: flex; 
-	flex-wrap: wrap;
+.widget-container > .widget-container-svg {
+	width: 100px;
+	margin-right: 5px;
+	margin-left: 5px;
 }
 
-.widget-buttons > .widget-control {
-	height: 40px;
-	margin-right: 10px;
+.containers-panel {
+	display: flex;
+    flex-direction: row;
+    justify-content: center;
 }
 
-.widget-placeholders > .widget-control {
-	height: 75px;
-	margin-right: 10px;
-}
 
 /** 
 	Designs canvas 
@@ -139,18 +141,16 @@ div:focus {
 	border: 1px solid #ccc;
 }
 
-.design-canvas-scaled {
-	transform: scale(0.5, 0.5);
-	transform-origin: top left; 
+.design-canvas .widget-control {
+	cursor: pointer;
 }
 
-.design-canvas-header > a {
-	color: #000;
-	text-decoration: none; 
+.design-canvas.design-canvas-hovered {
+	outline: 1px dashed black;
 }
 
-.design-canvas-header > a:hover {
-	text-decoration: none;
+.design-canvas .design-canvas-hovered {
+	outline: 1px dashed black;
 }
 
 .design-body > .canvas-container {

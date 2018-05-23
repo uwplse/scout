@@ -8,6 +8,9 @@ import $ from 'jquery';
 import SVGInline from "react-svg-inline"; 
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
+import filledButton from '../assets/illustrator/filledButton.svg';
+import labelContainer from '../assets/illustrator/labelContainer.svg';
+import groupContainer from '../assets/illustrator/groupContainer.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -57,30 +60,6 @@ export default class PageContainer extends React.Component {
               trashDesignCanvas={this.trashDesignCanvas.bind(this)}
               getRelativeDesigns={this.getRelativeDesigns.bind(this)}/>); 
   }
-
-  // drawContainersCanvas() {
-  //   this.containersCanvas = new fabric.Canvas('containers-canvas');
-  //   let group = FabricHelpers.getGroup(15, 10, 120, 40, {
-  //     stroke: '#39a1f4',
-  //     selectable: false, 
-  //     groupType: 'Group', 
-  //     strokeDashArray: [5,5]
-  //   });
-
-  //   group.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'group'));
-
-  //   let label = FabricHelpers.getGroup(15, 70, 120, 40, {
-  //     selectable: false, 
-  //     stroke: 'red', 
-  //     groupType: 'Label', 
-  //     strokeDashArray: [5,5]
-  //   });
-
-  //   label.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'labelGroup')); 
-
-  //   this.containersCanvas.add(group); 
-  //   this.containersCanvas.add(label);
-  // }
 
   checkSolutionValidity() {
     let jsonShapes = this.getShapesJSON(); 
@@ -299,15 +278,16 @@ export default class PageContainer extends React.Component {
                 </canvas> */ }
                 <SVGInline className="widget-control" svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
                 <SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
+                <SVGInline className="widget-control widget-control-button" svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
               </div>
             </div>
             <div className="panel panel-default containers-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Containers</h3>
               </div>  
-              <div className="panel-body">         
-                <canvas id="containers-canvas" width="150px" height="260px">
-                </canvas>
+              <div className="panel-body containers-panel">         
+                <SVGInline className="widget-control widget-container" svg={ groupContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'groupContainer', groupContainer)}/>
+                <SVGInline className="widget-control widget-container" svg={ labelContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'labelGroup', 'labelContainer', labelContainer)}/>
               </div>
             </div>
           </div>
