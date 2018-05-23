@@ -54,7 +54,7 @@ div:focus {
 	flex-direction: column;
 }
 
-.widgets-container, .constraints-container, .containers-container, .right-container {
+.widgets-container, .constraints-container, .containers-container, .right-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
@@ -129,15 +129,20 @@ div:focus {
 /** 
 	Designs canvas 
 **/
+
+.designs-area-container {
+	flex: 1 1 0px;
+}
+
+.designs-area-button-group {
+	margin-left: 10px;
+}
+
 .designs-container {
 	display: flex;
 	margin-bottom: 0;
 	margin-top: 10px;
 	margin-left: 10px;
-}
-
-.current-designs-container {
-	flex: 1 0 0px; 
 }
 
 .design-canvas-container {

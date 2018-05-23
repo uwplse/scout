@@ -16,14 +16,16 @@ import groupContainer from '../assets/illustrator/groupContainer.svg';
 export default class PageContainer extends React.Component {
   constructor(props) {
   	super(props); 
-    // this.drawContainersCanvas = this.drawContainersCanvas.bind(this);
+
+    // Method bindings
     this.getMoreDesigns = this.getMoreDesigns.bind(this); 
     this.parseSolutions = this.parseSolutions.bind(this);
     this.updateConstraintsCanvasFromDesignCanvas = this.updateConstraintsCanvasFromDesignCanvas.bind(this); 
     this.updateConstraintsCanvas = this.updateConstraintsCanvas.bind(this);
     this.getConstraintsCanvasShape = this.getConstraintsCanvasShape.bind(this);
     this.highlightWidgetFeedback = this.highlightWidgetFeedback.bind(this);
-
+    this.clearInvalidDesignCanvases = this.clearInvalidDesignCanvases.bind(this); 
+    
     this.canvas = undefined; 
 
     // This is the set of design canvases in the design window
@@ -156,6 +158,21 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  clearInvalidDesignCanvases() {
+    // Go through previous solutions and see which ones need to be invalidated
+    for(let i=0; i<this.state.solutions.length; i++) {
+      let designSolution = this.state.solutions[i]; 
+      
+      // Invalidate the solution which means it should be moved into the right side panel 
+      designSolution.invalidated = !designSolution.valid; 
+    }
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }); 
+  }
+
   getShapesJSON() {
     // Get all of the shapes on the canvas into a collection 
     let shapeObjects = this.constraintsCanvasRef.current.getShapeHierarchy();
@@ -205,6 +222,8 @@ export default class PageContainer extends React.Component {
       constraintChanged: false
     });
   }
+
+
 
   getRelativeDesigns(elements, action) {
     // get more designs relative to a specific design
@@ -295,9 +314,7 @@ export default class PageContainer extends React.Component {
           </div>
          <div className="panel panel-default constraints-container">
             <div className="panel-heading"> 
-              <h3 className="panel-title">Constraints
-                <button type="button" className="btn btn-default design-canvas-button" disabled={(designsFound > 0 || designsFound == -1) ? null : "disabled"} onClick={this.getMoreDesigns}>{(designsFound == 0 ? "Get Designs" : "Show More")}</button>
-              </h3>
+              <h3 className="panel-title">Constraints</h3>
             </div>
             <div className="constraints-canvas-container"> 
               <ConstraintsCanvas ref={this.constraintsCanvasRef} 
@@ -306,34 +323,44 @@ export default class PageContainer extends React.Component {
             </div>
            {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
           </div>
-          <div className="design-canvas-container">
-            <div className="left-container">
-              { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
-                <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
-                <div className="panel-body saved-body">
-                  {savedCanvases}
+          <div className="panel panel-default designs-area-container">
+            <div className="panel-heading"> 
+              <h3 className="panel-title">Designs
+                <div className="btn-group btn-group-xs designs-area-button-group">
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>Get Designs</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                 </div>
-              </div>) : null }
-              <div className="panel designs-container current-designs-container panel-default">
-                <div className="design-body">
-                  {designCanvases}
-                </div>
+              </h3>
+            </div>  
+            <div className="design-canvas-container">
+              <div className="left-container">
+                { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
+                  <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+                  <div className="panel-body saved-body">
+                    {savedCanvases}
+                  </div>
+                </div>) : null }
+                { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
+                  <div className="design-body">
+                    {designCanvases}
+                  </div>
+                </div>) : null }
+                { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
+                  <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                  <div className="panel-body trashed-body">
+                    {trashedCanvases}
+                  </div>
+                </div>) : null }
               </div>
-              { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
-                <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
-                <div className="panel-body trashed-body">
-                  {trashedCanvases}
+              {invalidatedCanvases.length ? (<div className="right-container"> 
+                <div className="panel invalid-container panel-default"> 
+                  <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                  <div className="panel-body invalidated-body">
+                    {invalidatedCanvases}
+                  </div>
                 </div>
-              </div>) : null }
+              </div>) : null}
             </div>
-            {invalidatedCanvases.length ? (<div className="right-container"> 
-              <div className="panel invalid-container panel-default"> 
-                <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
-                <div className="panel-body invalidated-body">
-                  {invalidatedCanvases}
-                </div>
-              </div>
-            </div>) : null}
           </div>
         </div>
       </div>

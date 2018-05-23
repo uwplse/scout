@@ -98,6 +98,8 @@ export default class DesignCanvas extends React.Component {
   }
 
   showConstraintsContextMenu(shape,evt) {
+    evt.stopPropagation();
+
 		// Check for the status of menuShown to see if we need to close out another menu before opening this one
 		if(this.state.menuShown) {
 			this.setState({
@@ -160,6 +162,7 @@ export default class DesignCanvas extends React.Component {
   drawSVGElement(designCanvas, shape) {
     // Get the control SVG element from the control type
     let controlType = shape.controlType;
+    let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
 
     let svg = DesignCanvas.svgElements(controlType); 
     if(svg != undefined) {
@@ -197,9 +200,11 @@ export default class DesignCanvas extends React.Component {
       designCanvas.appendChild(parentDiv); 
 
       // Register event handlers after appending the element to the dom
-      svgDiv.addEventListener("mousedown", this.showConstraintsContextMenu.bind(this, shape ));
-      svgDiv.addEventListener("mouseover", this.showHoverIndicator.bind(this, parentDiv)); 
-      svgDiv.addEventListener("mouseout", this.hideHoverIndicator.bind(this, parentDiv)); 
+      if(inMainCanvas) {
+        svgDiv.addEventListener("mousedown", this.showConstraintsContextMenu.bind(this, shape ));
+        svgDiv.addEventListener("mouseover", this.showHoverIndicator.bind(this, parentDiv)); 
+        svgDiv.addEventListener("mouseout", this.hideHoverIndicator.bind(this, parentDiv)); 
+      }
     }
   }
 

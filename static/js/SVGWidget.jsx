@@ -149,8 +149,8 @@ export default class SVGWidget extends React.Component {
       editableText[0].innerHTML = this.element.label;       
     }
 
-    let svgViewBox = svgElement.querySelectorAll(".SVGInline-svg"); 
-    svgViewBox[0].removeAttribute("viewBox");
+    // let svgViewBox = svgElement.querySelectorAll(".SVGInline-svg"); 
+    // svgViewBox[0].removeAttribute("viewBox");
 
     if(initSize) {
       if(this.state.width == 0 || this.state.height == 0) {
