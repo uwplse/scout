@@ -3,7 +3,7 @@ import solver_helpers as sh
 from dotmap import DotMap
 
 # Types of shapes that have labels
-label_types = ["text", "button", "field"]
+label_types = ["label", "button", "field"]
 
 # Shape classes for constructing the element hierarchy 
 class Shape(object):

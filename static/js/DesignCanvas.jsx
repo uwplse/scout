@@ -6,13 +6,15 @@ import DesignMenu from "./DesignMenu";
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
+import label from '../assets/illustrator/label.svg';
 
 export default class DesignCanvas extends React.Component {
   static svgElements(controlType) {
     let svgElements = {
       'field': field, 
       'search': search, 
-      'button': filledButton
+      'button': filledButton, 
+      'label': label
       /* Add others here */
     }; 
     return svgElements[controlType]; 
@@ -122,7 +124,6 @@ export default class DesignCanvas extends React.Component {
   }
 
   hideHoverIndicator(element, evt) {
-    evt.stopPropagation();
     element.classList.remove("design-canvas-hovered"); 
   }
 

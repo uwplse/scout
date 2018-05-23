@@ -80,8 +80,6 @@ export default class ConstraintsCanvas extends React.Component {
               shape={shape} 
               id={shapeId} 
               source={src}
-              width={shape.size.width}
-              height={shape.size.height}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayFontSizeSelector={this.displayFontSizeSelector}
               hideFontSizeSelector= {this.hideFontSizeSelector} />);
@@ -89,11 +87,6 @@ export default class ConstraintsCanvas extends React.Component {
 
   addShapeOfTypeToCanvas(type, controlType, source) {
     let shape = this.createConstraintsCanvasShapeObject(type, controlType); 
-    // Initialize size values 
-    shape.size = {}; 
-    shape.size.height = SVGWidget.initialHeightValues(shape.type);
-    shape.size.width = SVGWidget.initialWidthValues(shape.type);
-
     let shapeId = shape.name;
     let widget = this.getWidget(shape, source); 
 
@@ -286,7 +279,11 @@ export default class ConstraintsCanvas extends React.Component {
       "name": _.uniqueId(),
       "label": label, 
       "type": type,
-      "controlType": controlType
+      "controlType": controlType, 
+      "size": {
+        "width": SVGWidget.initialWidths(controlType), 
+        "height": SVGWidget.initialHeights(controlType)
+      }
     }
 
     if (type == "group" || type == "labelGroup") {

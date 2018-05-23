@@ -7,27 +7,34 @@ const WAIT_INTERVAL = 1000;
 
 export default class SVGWidget extends React.Component {
 
-  static initialWidthValues(type) {
+  static initialWidths(controlType) {
     let values = {
-      'button': 165, 
-      'label': 75, 
-      'field':  250, 
-      'group': 120, 
-      'labelGroup': 120
-    }; 
-    return values[type]; 
-  }; 
+      'button': 140, 
+      'field': 238, 
+      'search': 238, 
+    }
 
-  static initialHeightValues(type) {
-    let values =  {
-      'button': 40, 
-      'label': 30, 
+    if(controlType in values) {
+      return values[controlType]; 
+    }
+
+    return 0; 
+  }
+
+  static initialHeights(controlType) {
+    let values = {
+      'button': 34, 
       'field': 25, 
-      'group': 40,
-      'labelGroup': 40
-    };
-    return values[type];
-  }; 
+      'search': 25, 
+    }
+
+    if(controlType in values) {
+      return values[controlType]; 
+    }
+
+    return 0; 
+  }
+
 
   static initialLabels(controlType) {
     let values = {
@@ -58,8 +65,8 @@ export default class SVGWidget extends React.Component {
     this.setFontSize = this.setFontSize.bind(this); 
 
     this.state = {
-      height: props.height, 
-      width: props.width
+      height: SVGWidget.initialHeights(this.controlType),
+      width: SVGWidget.initialWidths(this.controlType)
     }
   }
 
@@ -69,7 +76,11 @@ export default class SVGWidget extends React.Component {
 
   componentDidMount() {
     // Set the initial value for the text label
-    this.setTextLabel();
+    this.setTextLabel(true);    
+  }
+
+  componentDidUpdate() {
+    this.setTextLabel(false);
   }
 
   lockTextLabel() {
@@ -89,23 +100,55 @@ export default class SVGWidget extends React.Component {
   }
 
   updateTextLabel(evt) {
+    console.log("updateTextLabel");
     let id = "widget-container-" + this.id; 
     let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
     let textValue = editableText[0].innerHTML; 
     this.element.label = textValue;
     this.lockTextLabel()
+
+    // After setting the text label, update the height and width of the parent container so that the tree size and widget size recalculates
+    let boundingRect = editableText[0].getBoundingClientRect(); 
+    let widthRounded = Math.round(boundingRect.width); 
+    let heightRounded = Math.round(boundingRect.height); 
+
+    this.setState({
+      width: widthRounded, 
+      height: heightRounded
+    })
+
     this.checkSolutionValidity();
   }
 
-  setTextLabel() {
+  setTextLabel(initSize) {
     let id = "widget-container-" + this.id; 
-    let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
+    let svgElement = document.getElementById(id); 
+    let editableText = svgElement.querySelectorAll(".widget-editable-text");
     if(editableText[0]) {
       editableText[0].innerHTML = this.element.label;       
     }
+
+    if(initSize) {
+      if(this.state.width == 0 || this.state.height == 0) {
+        // give the component an initial size based on the calculated size of the text box
+        let sizeContainer = svgElement.querySelectorAll(".widget-size-container"); 
+        let boundingRect = sizeContainer[0].getBoundingClientRect(); 
+
+        // Set it on the element object
+        let widthRounded = Math.round(boundingRect.width); 
+        let heightRounded = Math.round(boundingRect.height);
+
+        this.setElementSize(widthRounded, heightRounded);
+
+        this.setState({
+          width: widthRounded, 
+          height: heightRounded
+        }); 
+      }
+    }
   }
 
-  setElementSize(height, width) {
+  setElementSize(width, height) {
     // When height and width are updated by font size changes, update the element object. 
     this.element.size.height = height; 
     this.element.size.width = width; 
@@ -148,7 +191,7 @@ export default class SVGWidget extends React.Component {
     const source = this.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 
-    this.setElementSize(height, width); 
+    this.setElementSize(width, height); 
 
     return (
       <div onContextMenu={this.showFontSizeSelector.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 

@@ -1,5 +1,5 @@
-<svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 115 28">
-  <rect width="115" height="28" rx="3" ry="3" fill="#007aff"/>
+<svg id="widget-control-button" class="widget-control" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 115 28">
+  <rect class="widget-size-container" width="115" height="28" rx="3" ry="3" fill="#007aff"/>
   <text class="widget-editable-text" transform="translate(57 19)" text-anchor="middle" style="isolation:isolate" font-size="13" fill="#fff" font-family="Helvetica,Helvetica" letter-spacing="-.006em" data-name="Tab Label">
     Button
   </text>
