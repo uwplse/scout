@@ -288,8 +288,8 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">Containers</h3>
               </div>  
               <div className="panel-body containers-panel">         
-                <SVGInline className="widget-control widget-container" svg={ groupContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'groupContainer', groupContainer)}/>
-                <SVGInline className="widget-control widget-container" svg={ labelContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'labelGroup', 'labelContainer', labelContainer)}/>
+                <SVGInline className="widget-control widget-container" svg={ groupContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
+                <SVGInline className="widget-control widget-container" svg={ labelContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'labelGroup', 'labelGroup', labelContainer)}/>
               </div>
             </div>
           </div>

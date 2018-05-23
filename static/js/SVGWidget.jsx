@@ -12,6 +12,8 @@ export default class SVGWidget extends React.Component {
       'button': 140, 
       'field': 238, 
       'search': 238, 
+      'group': 100, 
+      'labelGroup': 100
     }
 
     if(controlType in values) {
@@ -26,6 +28,8 @@ export default class SVGWidget extends React.Component {
       'button': 34, 
       'field': 25, 
       'search': 25, 
+      'group': 40, 
+      'labelGroup': 40
     }
 
     if(controlType in values) {

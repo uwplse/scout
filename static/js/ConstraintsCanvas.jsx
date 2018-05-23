@@ -306,7 +306,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   canReparentWidgetNode({node, nextParent, prevPath, nextPath}) {
-    if(nextParent == null || (nextParent && (nextParent.title.props.type == "group" || nextParent.title.props.type == "labelGroup"))) {
+    if(nextParent == null || (nextParent && (nextParent.title.props.shape.type == "group" || nextParent.title.props.shape.type == "labelGroup"))) {
         return true;
     }
 
