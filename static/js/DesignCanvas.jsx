@@ -228,6 +228,7 @@ export default class DesignCanvas extends React.Component {
   drawSVGElement(designCanvas, shape) {
     // Get the control SVG element from the control type
     let controlType = shape.controlType;
+    let scalingFactor = this.getScalingFactor(); 
 
     let svg = DesignCanvas.svgElements(controlType); 
     if(svg != undefined) {
@@ -237,14 +238,13 @@ export default class DesignCanvas extends React.Component {
       let svgDiv = frag.querySelector('#' + id);  
 
       // Update the size and location to the values in the shape object
-      svgDiv.style.position = "absolute"; 
-      svgDiv.style.left = shape.location.x + "px"; 
-      svgDiv.style.top = shape.location.y + "px"; 
+      svgDiv.style.position = "relative"; 
+      svgDiv.style.left = (shape.location.x * scalingFactor) + "px"; 
+      svgDiv.style.top = (shape.location.y * scalingFactor) + "px"; 
 
       // udpate the size
-      svgDiv.setAttribute("width", shape.size.width + "px"); 
-      svgDiv.setAttribute("height", shape.size.height + "px"); 
-
+      svgDiv.setAttribute("width", (shape.size.width * scalingFactor) + "px"); 
+      svgDiv.setAttribute("height", (shape.size.height * scalingFactor) + "px"); 
       // Append to the design canvas div
       designCanvas.appendChild(frag); 
     }
@@ -373,7 +373,8 @@ export default class DesignCanvas extends React.Component {
     let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
-    let invalidated = this.state.invalidated;       
+    let invalidated = this.state.invalidated; 
+    let scalingFactor = this.getScalingFactor();      
 
 
       // TODO: Add invalidate observable
@@ -381,14 +382,14 @@ export default class DesignCanvas extends React.Component {
     return  (
       <div onMouseEnter={((saved || trashed || invalidated) ? undefined : showMenuAndHighlightConstraints.bind(this))} 
            onMouseOut={((saved || trashed || invalidated) ? undefined : closeMenuAndRemoveHighlightConstraints.bind(this))} 
-           className="canvas-container" id={"canvas-box-" + this.id}> 
+           className="canvas-container" id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-feedback-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
   			</div>
         <div>
           {designMenu}
         </div>
-        <div id={"design-canvas-" + this.id} className="design-canvas design-canvas-scaled" style={{height: this.canvasHeight + "px", width: this.canvasWidth + "px"}}>
+        <div id={"design-canvas-" + this.id} className="design-canvas" style={{height: "100%", width: "100%"}}>
         </div>
 	    </div>); 
   }
