@@ -31,7 +31,8 @@ export default class SVGWidget extends React.Component {
 
   constructor(props) {
   	super(props); 
-    this.type = props.type; 
+    this.type = props.shape.type; 
+    this.controlType = props.shape.controlType; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 

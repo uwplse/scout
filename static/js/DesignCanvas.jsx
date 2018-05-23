@@ -3,8 +3,19 @@ import React from "react";
 import CanvasMenu from "./CanvasMenu"; 
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
+import field from '../assets/illustrator/field.svg';
+import search from '../assets/illustrator/search.svg';
 
 export default class DesignCanvas extends React.Component {
+  static svgElements(controlType) {
+    let svgElements = {
+      'field': field, 
+      'search': search
+      /* Add others here */
+    }; 
+    return svgElements[controlType]; 
+  };
+
   constructor(props) {
   	super(props);
   	this.showConstraintsContextMenu.bind(this); 
@@ -61,13 +72,9 @@ export default class DesignCanvas extends React.Component {
   }
 
   componentDidMount() {
-    this.redrawCanvas(); 
-
-    if(!this.state.valid) {
-      this.invalidateCanvas();
-    }
+    this.drawDesign();
   }
-
+ 
   getScalingFactor() {
     if(this.state.savedState == 1) {
       return 0.10; 
@@ -126,63 +133,18 @@ export default class DesignCanvas extends React.Component {
     });  
   }
 
-  rerenderCanvas() {
-    this.canvas.renderAll(); 
-
-    if(!this.state.valid) {
-      this.invalidateCanvas(); 
-    }
-  }
-
-  showHoverIndicator(element, shape) {
-    shape.set("stroke", "#000000"); 
-    shape.set("strokeWidth", 1); 
-    shape.set("strokeDashArray", [5,5]);
-    this.rerenderCanvas(); 
-  }
-
-  hideHoverIndicator(element, shape) {
-    shape.set("stroke", undefined); 
-    shape.set("strokeDashArray", undefined);
-    shape.set("strokeWidth", undefined);
-    this.rerenderCanvas(); 
-  }
-
-  redrawCanvas() {
-    if(!this.canvas) {
-      this.canvas = new fabric.Canvas('design-canvas-' + this.id);       
-    }
-
-    this.canvas.clear(); 
-    this.drawDesign();
-  }
-
-  drawCanvas(canvasElement) {
+  initCanvas(designCanvas, canvasElement) {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
-
-    let x = 0; 
-    let y = 0; 
-    let width = this.canvasWidth; 
-    let height = this.canvasHeight; 
-    
-    // Make a white rectangle of this size to serve as the background layer
-    let pageGroup = FabricHelpers.getDesignGroup(x,y,width-2,height-2, {
-      cursor: 'hand', 
-      selectable: false, 
-      padding: 0
-    }); 
 
     // Dont' bind event handlers to canvases that are in a saved or trashed state. 
     if(inMainCanvas) {
-      pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, canvasElement)); 
+      // TODO: Register the event handlers for the background layer
+      // pageGroup.on("mousedown", this.showConstraintsContextMenu.bind(this, canvasElement)); 
 
-      pageGroup.on("mouseover", this.showHoverIndicator.bind(this, canvasElement, pageGroup)); 
-      pageGroup.on("mouseout", this.hideHoverIndicator.bind(this, canvasElement, pageGroup)); 
+      // pageGroup.on("mouseover", this.showHoverIndicator.bind(this, canvasElement, pageGroup)); 
+      // pageGroup.on("mouseout", this.hideHoverIndicator.bind(this, canvasElement, pageGroup)); 
     }
 
-    canvasElement.shape = pageGroup; 
-    this.canvas.add(pageGroup);
-    return pageGroup; 
   }
 
   drawElement(element){
@@ -263,69 +225,67 @@ export default class DesignCanvas extends React.Component {
     }
   }
 
+  drawSVGElement(designCanvas, shape) {
+    // Get the control SVG element from the control type
+    let controlType = shape.controlType;
+
+    let svg = DesignCanvas.svgElements(controlType); 
+    if(svg != undefined) {
+      // Create document fragment within which to place the SVG
+      let frag = document.createRange().createContextualFragment(svg); 
+      let id = 'widget-control-' + controlType; 
+      let svgDiv = frag.querySelector('#' + id);  
+
+      // Update the size and location to the values in the shape object
+      svgDiv.style.position = "absolute"; 
+      svgDiv.style.left = shape.location.x + "px"; 
+      svgDiv.style.top = shape.location.y + "px"; 
+
+      // udpate the size
+      svgDiv.setAttribute("width", shape.size.width + "px"); 
+      svgDiv.setAttribute("height", shape.size.height + "px"); 
+
+      // Append to the design canvas div
+      designCanvas.appendChild(frag); 
+    }
+  }
+
   drawDesign() {
     // When the component mounts, draw the shapes onto the canvas
-    let pageFabricShape = null;
+    let designId = "design-canvas-" + this.id;
+    let designCanvas = document.getElementById(designId);  
 
     for(let elementID in this.elements) {
       if(this.elements.hasOwnProperty(elementID)) {
         let element = this.elements[elementID];
         if(element.type == "canvas") {
-          pageFabricShape = this.drawCanvas(element);
+          this.initCanvas(designCanvas, element);
         }else {
-          this.drawElement(element);
+          this.drawSVGElement(designCanvas, element);
         }
       }
     }
-
-    // Make sure to send the page fabric shape to the back layer
-    if(pageFabricShape) {
-      this.canvas.sendToBack(pageFabricShape); 
-    }
-
-    // Rescale the canvas to the given scaling factor
-    this.rescaleCanvas();   
   }
  
   invalidateCanvas() {     
-    var color1 = "#f5c6cb";
-    var numberOfStripes = 100;     
-    var drawingContext = this.canvas.getContext(); 
-    var thickness = this.canvasWidth / numberOfStripes;
-    for (var i=0;i < numberOfStripes*2;i++){
-      if((i % 2) == 0) {
-        drawingContext.beginPath();
-        drawingContext.strokeStyle = color1;
-        drawingContext.lineWidth = 1;
-        drawingContext.lineCap = 'round';
+    // var color1 = "#f5c6cb";
+    // var numberOfStripes = 100;     
+    // var drawingContext = this.canvas.getContext(); 
+    // var thickness = this.canvasWidth / numberOfStripes;
+    // for (var i=0;i < numberOfStripes*2;i++){
+    //   if((i % 2) == 0) {
+    //     drawingContext.beginPath();
+    //     drawingContext.strokeStyle = color1;
+    //     drawingContext.lineWidth = 1;
+    //     drawingContext.lineCap = 'round';
          
-        drawingContext.moveTo(i*thickness + thickness/2 - this.canvasWidth,0);
-        drawingContext.lineTo(0 + i*thickness+thickness/2,this.canvasWidth);
-        drawingContext.stroke();          
-      }
-    }
-  }
+    //     drawingContext.moveTo(i*thickness + thickness/2 - this.canvasWidth,0);
+    //     drawingContext.lineTo(0 + i*thickness+thickness/2,this.canvasWidth);
+    //     drawingContext.stroke();          
+    //   }
+    // }
 
-  rescaleCanvas() {
-    let scaling = this.scalingFactor;
-    let canvasHeight = this.canvasHeight; 
-    let canvasWidth = this.canvasWidth; 
-    this.canvas.setHeight(canvasHeight * scaling);
-    this.canvas.setWidth(canvasWidth * scaling); 
-    var obj = this.canvas.getObjects(); 
-    for (var i=0; i<obj.length; i++){
-      var left = obj[i].get('left');
-      var top = obj[i].get('top');
-
-      obj[i].set('left', left * scaling);
-      obj[i].set('top', top * scaling);
-      obj[i].set('scaleX', scaling);
-      obj[i].set('scaleY', scaling);
-
-      obj[i].setCoords();
-    }
-
-    this.canvas.renderAll(); 
+    // Draw hatching lines over the div to invalidate it
   }
 
   performDesignCanvasMenuAction(action) {
@@ -413,11 +373,10 @@ export default class DesignCanvas extends React.Component {
     let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
-    let invalidated = this.state.invalidated; 
+    let invalidated = this.state.invalidated;       
 
-    if(this.canvas) {
-      this.rerenderCanvas();       
-    }
+
+      // TODO: Add invalidate observable
 
     return  (
       <div onMouseEnter={((saved || trashed || invalidated) ? undefined : showMenuAndHighlightConstraints.bind(this))} 
@@ -429,8 +388,8 @@ export default class DesignCanvas extends React.Component {
         <div>
           {designMenu}
         </div>
-	    	<canvas ref={"design-canvas-" + this.id} className="design-canvas" id={"design-canvas-" + this.id} width={this.canvasWidth} height={this.canvasHeight}>
-	     </canvas>
+        <div id={"design-canvas-" + this.id} className="design-canvas design-canvas-scaled" style={{height: this.canvasHeight + "px", width: this.canvasWidth + "px"}}>
+        </div>
 	    </div>); 
   }
 }

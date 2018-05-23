@@ -139,6 +139,11 @@ div:focus {
 	border: 1px solid #ccc;
 }
 
+.design-canvas-scaled {
+	transform: scale(0.5, 0.5);
+	transform-origin: top left; 
+}
+
 .design-canvas-header > a {
 	color: #000;
 	text-decoration: none; 

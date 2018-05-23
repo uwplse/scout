@@ -62,28 +62,27 @@ export default class ConstraintsCanvas extends React.Component {
     canvas.children.push(page); 
   }
 
-  getWidget(shape, type, src) {
+  getWidget(shape, src) {
     let shapeId = shape.name;
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
-              type={type}
               source={src}
               width={shape.size.width}
               height={shape.size.height}
               checkSolutionValidity={this.checkSolutionValidity} />);
   }
 
-  addShapeOfTypeToCanvas(src, type) {
-    let shape = this.createConstraintsCanvasShapeObject(type); 
+  addShapeOfTypeToCanvas(type, controlType, source) {
+    let shape = this.createConstraintsCanvasShapeObject(type, controlType); 
     // Initialize size values 
     shape.size = {}; 
     shape.size.height = SVGWidget.initialHeightValues(shape.type);
     shape.size.width = SVGWidget.initialWidthValues(shape.type);
 
     let shapeId = shape.name;
-    let widget = this.getWidget(shape, type, src); 
+    let widget = this.getWidget(shape, source); 
 
     let newTreeNode = {
         title: widget, 
@@ -249,13 +248,14 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
 
-  createConstraintsCanvasShapeObject(type) {  
+  createConstraintsCanvasShapeObject(type, controlType) {  
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
     let shape = {
       "name": _.uniqueId(),
       "label": type, 
-      "type": type 
+      "type": type,
+      "controlType": controlType
     }
 
     if (type == "group" || type == "labelGroup") {

@@ -38,8 +38,8 @@ export default class PageContainer extends React.Component {
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
   // for a shape of this type
-  addShapeToConstraintsCanvas(type, src) {
-    this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type, src);
+  addShapeToConstraintsCanvas(type, controlType, src) {
+    this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type, controlType, src);
   }
 
   getDesignCanvas(solution) {
@@ -57,19 +57,6 @@ export default class PageContainer extends React.Component {
               trashDesignCanvas={this.trashDesignCanvas.bind(this)}
               getRelativeDesigns={this.getRelativeDesigns.bind(this)}/>); 
   }
-
-  // drawWidgetCanvas() {
-  //   this.widgetsCanvas = new fabric.Canvas('widgets-canvas');
-  //   let field = FabricHelpers.getField(15,50,120,40,{'cursor': 'hand', 'selectable': false}); 
-  //   let text = FabricHelpers.getText(15,100,20,{'cursor': 'hand', 'selectable': false}); 
-  //   let button = FabricHelpers.getButton(15,150,120,40,{'cursor': 'hand', 'selectable': false}); 
-  //   field.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'field')); 
-  //   text.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'text')); 
-  //   button.on('mousedown', this.addShapeToConstraintsCanvas.bind(this, 'button')); 
-  //   this.widgetsCanvas.add(field); 
-  //   this.widgetsCanvas.add(text); 
-  //   this.widgetsCanvas.add(button); 
-  // }
 
   // drawContainersCanvas() {
   //   this.containersCanvas = new fabric.Canvas('containers-canvas');
@@ -310,8 +297,8 @@ export default class PageContainer extends React.Component {
               <div className="panel-body">         
                 { /*<canvas id="widgets-canvas" width="150px" height="400px">
                 </canvas> */ }
-                <SVGInline className="widget-control" svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, field, 'field')}/>
-                <SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, search, 'field')}/>
+                <SVGInline className="widget-control" svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
+                <SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
               </div>
             </div>
             <div className="panel panel-default containers-container">
