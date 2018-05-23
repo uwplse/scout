@@ -329,7 +329,8 @@ export default class DesignCanvas extends React.Component {
       }
     }
 
-    let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
+    var designCanvas = document.getElementById("design-canvas-" + this.id); 
+    var componentBoundingBox = designCanvas.getBoundingClientRect();
     
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
@@ -352,7 +353,8 @@ export default class DesignCanvas extends React.Component {
     }
 
     // Close the menu if it is open 
-    let componentBoundingBox = this.refs["design-canvas-" + this.id].getBoundingClientRect();
+    var designCanvas = document.getElementById("design-canvas-" + this.id); 
+    var componentBoundingBox = designCanvas.getBoundingClientRect();
     // Make sure the mouse is actually outside the div because mouse out can be triggered by child elements of this container. 
     if(e.clientX <= componentBoundingBox.x || e.clientX >= (componentBoundingBox.x + componentBoundingBox.width) 
       || e.clientY <= componentBoundingBox.y || e.clientY >= (componentBoundingBox.y + componentBoundingBox.height)) {
@@ -373,16 +375,16 @@ export default class DesignCanvas extends React.Component {
     let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
+    let valid = this.state.valid; 
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.getScalingFactor();      
-
-
-      // TODO: Add invalidate observable
+    let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
 
     return  (
       <div onMouseEnter={((saved || trashed || invalidated) ? undefined : showMenuAndHighlightConstraints.bind(this))} 
            onMouseOut={((saved || trashed || invalidated) ? undefined : closeMenuAndRemoveHighlightConstraints.bind(this))} 
-           className="canvas-container" id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
+           className={"canvas-container " + (!this.state.valid ? "canvas-container-invalid" : "") + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
+           id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-feedback-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
   			</div>

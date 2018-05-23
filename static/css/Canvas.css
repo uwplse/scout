@@ -158,6 +158,15 @@ div:focus {
 	margin: 5px;
 }
 
+.canvas-container.canvas-container-invalid {
+	background-image: url("../assets/stripe.png");
+}
+
+.canvas-container.canvas-container-invalid.canvas-container-invalid-scaled {
+	background-image: url("../assets/stripe_scaled.png");
+}
+
+
 .design-body {
     overflow: auto;
 }

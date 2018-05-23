@@ -20,9 +20,13 @@ const config = {
         loader: 'raw-loader'
       }, 
       {
-              test: /\.js$/,
-              exclude: /node_modules/,
-              loader: 'script-loader'
+        test: /\.(png|jp(e*)g)$/, 
+        loader: 'url-loader'
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'script-loader'
       },
 	    {
 	      test: /\.jsx?/,
