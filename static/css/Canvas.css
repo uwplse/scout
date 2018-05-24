@@ -277,6 +277,11 @@ div:focus {
     padding-top: 5px;
 }
 
+.constraints-color-picker-container {
+	position: absolute; 
+	z-index: 1000; 
+}
+
 /** 
   Actions menu that appears on design canvas 
 
@@ -354,6 +359,11 @@ div:focus {
 	border: none;
 	box-shadow: none;
 	min-width: initial;
+	background-color: initial;
+}
+
+.widgets-sortable-tree .widgets-sortable-tree-remove {
+	background-color: initial;
 }
 
 .widgets-sortable-tree .rst__rowWrapper {

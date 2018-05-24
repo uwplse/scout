@@ -157,6 +157,8 @@ export default class DesignCanvas extends React.Component {
       designCanvas.addEventListener("mouseout", this.hideHoverIndicator.bind(this, designCanvas)); 
     }
 
+    // Initialize the background color
+    designCanvas.style.backgroundColor = shape.background; 
   }
 
   drawSVGElement(designCanvas, shape) {

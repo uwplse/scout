@@ -3,6 +3,7 @@ import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
 import FontSizeSelector from './FontSizeSelector'; 
+import { GithubPicker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
 
@@ -17,6 +18,8 @@ export default class ConstraintsCanvas extends React.Component {
     // Method bindings
     this.displayFontSizeSelector = this.displayFontSizeSelector.bind(this);
     this.hideFontSizeSelector = this.hideFontSizeSelector.bind(this); 
+    this.displayColorPicker = this.displayColorPicker.bind(this);
+    this.updateBackgroundColor = this.updateBackgroundColor.bind(this);
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
@@ -38,6 +41,12 @@ export default class ConstraintsCanvas extends React.Component {
       fontSizeSelectorPosition: {
         x: 0, 
         y: 0
+      }, 
+      colorPickerShown: false, 
+      colorPickerCallback: undefined, 
+      colorPickerPosition: {
+        x: 0, 
+        y: 0 
       }
     }; 
   }
@@ -55,7 +64,8 @@ export default class ConstraintsCanvas extends React.Component {
       "size": {
         width: this.canvasWidth, 
         height: this.canvasHeight
-      }   
+      }, 
+      "background": "#ffffff" 
     }
 
     this.canvasLevelShape = canvas;
@@ -125,6 +135,29 @@ export default class ConstraintsCanvas extends React.Component {
         y: evt.clientY
       }
     });  
+  }
+
+  displayColorPicker(evt, setColor) {
+    this.setState({
+      colorPickerShown: true, 
+      colorPickerCallback: setColor,
+      colorPickerPosition: {
+        x: evt.clientX, 
+        y: evt.clientY
+      }
+    });   
+  }
+
+  updateBackgroundColor(color) {
+    let backgroundElement = document.getElementById("constraints-canvas-container");
+    backgroundElement.style.backgroundColor = color.hex; 
+
+    // When the canvas level background color changes, update the canvas level object
+    this.canvasLevelShape.background = color.hex; 
+
+    this.setState({
+      colorPickerShown: false
+    });   
   }
 
   hideFontSizeSelector() {
@@ -347,18 +380,23 @@ export default class ConstraintsCanvas extends React.Component {
   render () {
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
-    const fontSizeSelector = (this.state.fontSizeSelectorShown ? <FontSizeSelector onClick={this.state.fontSizeSelectorCallback} /> : undefined);  
+    const fontSizeSelector = (this.state.fontSizeSelectorShown ? <FontSizeSelector onClick={this.state.fontSizeSelectorCallback} /> : undefined);
+    const colorPicker = (this.state.colorPickerShown ? <GithubPicker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const fontSizeSelectorPosition = this.state.fontSizeSelectorPosition; 
+    const colorPickerPosition = this.state.colorPickerPosition; 
     var self = this;
 
     // Process the queue of shapes to add to the canvas
 	  return (
-      <div className="panel-body" id="constraints-canvas-container" tabIndex="1">
+      <div className="panel-body" id="constraints-canvas-container" tabIndex="1" onClick={this.displayColorPicker}>
         <div className="constraints-canvas-page-feedback">
           {pageFeedbacks}
         </div>
         <div style={{left: fontSizeSelectorPosition.x, top: fontSizeSelectorPosition.y}} className={"constraints-canvas-font-size-selector-container " + (!fontSizeSelector ? "hidden" : "")}> 
           {fontSizeSelector}
+        </div>
+        <div style={{left: colorPickerPosition.x, top: colorPickerPosition.y}} className={"constraints-color-picker-container " + (!colorPicker ? "hidden" : "")}> 
+          {colorPicker}
         </div>
         <div className="widgets-sortable-tree">
           { /*             rowHeight={this.calculateRowHeight.bind(this)} */}
