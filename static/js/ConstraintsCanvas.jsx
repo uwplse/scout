@@ -388,7 +388,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Process the queue of shapes to add to the canvas
 	  return (
-      <div className="panel-body" id="constraints-canvas-container" tabIndex="1" onClick={this.displayColorPicker}>
+      <div className="panel-body" id="constraints-canvas-container" tabIndex="1" /*onClick={this.displayColorPicker} */>
         <div className="constraints-canvas-page-feedback">
           {pageFeedbacks}
         </div>

@@ -14,7 +14,8 @@ export default class SVGWidget extends React.Component {
       'field': 238, 
       'search': 238, 
       'group': 100, 
-      'labelGroup': 100
+      'labelGroup': 100, 
+      'label': 100
     }
 
     if(controlType in values) {
@@ -30,7 +31,8 @@ export default class SVGWidget extends React.Component {
       'field': 25, 
       'search': 25, 
       'group': 40, 
-      'labelGroup': 40
+      'labelGroup': 40, 
+      'label': 40
     }
 
     if(controlType in values) {
@@ -82,7 +84,7 @@ export default class SVGWidget extends React.Component {
 
   componentDidMount() {
     // Set the initial value for the text label
-    this.setTextLabel(true);    
+    this.setTextLabel(true);   
   }
 
   componentDidUpdate() {
@@ -114,14 +116,16 @@ export default class SVGWidget extends React.Component {
     this.lockTextLabel()
 
     // After setting the text label, update the height and width of the parent container so that the tree size and widget size recalculates
-    let boundingRect = editableText[0].getBoundingClientRect(); 
-    let widthRounded = Math.round(boundingRect.width); 
-    let heightRounded = Math.round(boundingRect.height); 
+    if(this.controlType == "label") {
+      let boundingRect = editableText[0].getBoundingClientRect(); 
+      let widthRounded = Math.round(boundingRect.width); 
+      let heightRounded = Math.round(boundingRect.height); 
 
-    this.setState({
-      width: widthRounded, 
-      height: heightRounded
-    })
+      this.setState({
+        width: widthRounded, 
+        height: heightRounded
+      });
+    }
 
     this.checkSolutionValidity();
   }
@@ -132,6 +136,9 @@ export default class SVGWidget extends React.Component {
     // Set it on the element object
     let widthRounded = Math.round(boundingRect.width); 
     let heightRounded = Math.round(boundingRect.height);
+
+    // let svgViewBox = element.querySelectorAll(".SVGInline-svg"); 
+    // svgViewBox[0].removeAttribute("viewBox");
 
     this.setElementSize(widthRounded, heightRounded);
 
@@ -146,7 +153,14 @@ export default class SVGWidget extends React.Component {
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     if(editableText[0]) {
-      editableText[0].innerHTML = this.element.label;       
+      editableText[0].innerHTML = this.element.label;  
+
+      // Adjust the initial translation of the text to center it in the middle (only for buttons)
+      if(this.controlType == "button") {
+        let bboxText = editableText[0].getBoundingClientRect();
+        let heightLocation = (this.state.height/2);
+        editableText[0].style.transform = "translate(" + this.state.width/2 + "px," + heightLocation + "px)";  
+      }    
     }
 
     // let svgViewBox = svgElement.querySelectorAll(".SVGInline-svg"); 
@@ -214,11 +228,13 @@ export default class SVGWidget extends React.Component {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
 
+    let field
+
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showFontSizeSelector.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
             contentEditable="true" id={"widget-container-" + this.id} className="widget-container">
-          <SVGInline svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+          <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
         </div>
       </Resizable>); 
   }

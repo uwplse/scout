@@ -6,6 +6,7 @@ import DesignCanvas from './DesignCanvas';
 import Sidebar from 'react-sidebar';
 import $ from 'jquery';
 import SVGInline from "react-svg-inline"; 
+import SVGWidget from './SVGWidget';
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
@@ -302,10 +303,16 @@ export default class PageContainer extends React.Component {
               <div className="panel-body widgets-panel">         
                 { /*<canvas id="widgets-canvas" width="150px" height="400px">
                 </canvas> */ }
-                <SVGInline className="widget-control" svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
-                <SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
-                <SVGInline className="widget-control widget-control-button" svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
-                <SVGInline className="widget-control widget-control-label" svg={ label } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', label)}/>
+                <SVGInline className="widget-control widget-control-field" 
+                  height={SVGWidget.initialHeights('field') + "px"} width={SVGWidget.initialWidths('field') + "px"} 
+                  svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
+                { /*<SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/> */}
+                <SVGInline className="widget-control widget-control-button" 
+                  height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
+                  svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
+                <SVGInline className="widget-control widget-control-label" 
+                  height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
+                  svg={ label } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', label)}/>
               </div>
             </div>
             <div className="panel panel-default containers-container">

@@ -3,6 +3,7 @@ import React from "react";
 import CanvasMenu from "./CanvasMenu"; 
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
+import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
@@ -38,6 +39,7 @@ export default class DesignCanvas extends React.Component {
     this.renders = 0; 
 
   	this.state = {
+      childSVGs: [],
   		menuShown: false, 
   		menuPosition: { x: 0, y: 0 }, 
   		activeCanvasMenu: undefined,
@@ -161,52 +163,58 @@ export default class DesignCanvas extends React.Component {
     designCanvas.style.backgroundColor = shape.background; 
   }
 
+  getDesignCanvasWidget(shape, width, height, left, top){
+    let shapeId = shape.name;
+    let source = DesignCanvas.svgElements(shape.controlType);
+    let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
+    if(inMainCanvas) {
+      return (<DesignCanvasSVGWidget 
+              key={shapeId} 
+              shape={shape} 
+              id={shapeId} 
+              source={source}
+              width={width}
+              height={height}
+              left={left}
+              top={top}
+              onMouseEnter={this.showHoverIndicator.bind(this)}
+              onMouseDown={this.showConstraintsContextMenu.bind(this)}
+              onMouseOut={this.hideHoverIndicator.bind(this)} />);      
+    }
+    else {
+      return (<DesignCanvasSVGWidget 
+              key={shapeId} 
+              shape={shape} 
+              id={shapeId} 
+              source={source}
+              width={width}
+              height={height} 
+              left={left}
+              top={top} />);
+    }
+
+  }
+
   drawSVGElement(designCanvas, shape) {
     // Get the control SVG element from the control type
     let controlType = shape.controlType;
-    let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
-
     let svg = DesignCanvas.svgElements(controlType); 
     if(svg != undefined) {
-      // Create document fragment within which to place the SVG
-      let frag = document.createRange().createContextualFragment(svg); 
-      let id = 'widget-control-' + controlType; 
-      let svgDiv = frag.querySelector('#' + id);  
-
-      // Update the text
-      let textElement = svgDiv.querySelectorAll(".widget-editable-text"); 
-      if(textElement[0]) {
-        textElement[0].innerHTML = shape.label; 
-      }
-
       let padding = 0; 
       if(controlType == "group" || controlType == "labelGroup") {
         padding = 5;
       }
-    
-      // Append to the design canvas div
-      let parentDiv = document.createElement("div"); 
-      parentDiv.classList.add("widget-control-parent");
 
-      // Update the size and location to the values in the shape object
-      parentDiv.style.position = "absolute"; 
-      parentDiv.style.left = ((shape.location.x * this.scalingFactor) - padding) + "px"; 
-      parentDiv.style.top = ((shape.location.y * this.scalingFactor) - padding) + "px"; 
-
-      // udpate the size
-      parentDiv.style.width = (shape.size.width * this.scalingFactor + (padding * 2)) + "px"; 
-      parentDiv.style.height = (shape.size.height * this.scalingFactor + (padding * 2)) + "px"; 
-
-      parentDiv.appendChild(frag);
-
-      designCanvas.appendChild(parentDiv); 
-
-      // Register event handlers after appending the element to the dom
-      if(inMainCanvas) {
-        svgDiv.addEventListener("mousedown", this.showConstraintsContextMenu.bind(this, shape ));
-        svgDiv.addEventListener("mouseover", this.showHoverIndicator.bind(this, parentDiv)); 
-        svgDiv.addEventListener("mouseout", this.hideHoverIndicator.bind(this, parentDiv)); 
-      }
+      let computedHeight = (shape.size.height * this.scalingFactor + (padding * 2));
+      let computedWidth = (shape.size.width * this.scalingFactor + (padding * 2)); 
+      let computedLeft = ((shape.location.x * this.scalingFactor) - padding); 
+      let computedTop = ((shape.location.y * this.scalingFactor) - padding);
+     
+      let designCanvasWidget = this.getDesignCanvasWidget(shape, computedWidth, computedHeight, computedLeft, computedTop);
+      this.state.childSVGs.push(designCanvasWidget);
+      this.setState({
+        childSVGs: this.state.childSVGs
+      }); 
     }
   }
 
@@ -318,6 +326,7 @@ export default class DesignCanvas extends React.Component {
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.getScalingFactor();      
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
+    let childSVGs = this.state.childSVGs; 
 
     return  (
       <div onMouseEnter={((saved || trashed || invalidated) ? undefined : showMenuAndHighlightConstraints.bind(this))} 
@@ -331,6 +340,7 @@ export default class DesignCanvas extends React.Component {
           {designMenu}
         </div>
         <div id={"design-canvas-" + this.id} className={"design-canvas " + (!this.state.valid ? "canvas-container-invalid" : "")} style={{height: "100%", width: "100%"}}>
+          {childSVGs}
         </div>
 	    </div>); 
   }
