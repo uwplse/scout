@@ -70,16 +70,19 @@ export default class SVGWidget extends React.Component {
 
     // Callback to notify the parent container to re-check the solution validity
     this.checkSolutionValidity =  props.checkSolutionValidity; 
-    this.displayFontSizeSelector = props.displayFontSizeSelector; 
-    this.hideFontSizeSelector = props.hideFontSizeSelector; 
+    this.displayRightClickMenu = props.displayRightClickMenu; 
+    this.hideRightClickMenu = props.hideRightClickMenu; 
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
+    this.setImportanceLevel = this.setImportanceLevel.bind(this); 
     this.onElementResized = this.onElementResized.bind(this);
 
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
-      width: SVGWidget.initialWidths(this.controlType)
+      width: SVGWidget.initialWidths(this.controlType), 
+      importance: "normal", 
+      showImportance: props.showImportanceLevels
     }
   }
 
@@ -189,12 +192,11 @@ export default class SVGWidget extends React.Component {
     this.element.size.width = width; 
   }
 
-  showFontSizeSelector(evt) {
+  showContextMenu(evt) {
     evt.stopPropagation();
     evt.preventDefault();
 
-    // Call the parents method to construct the font size selector
-    this.displayFontSizeSelector(evt, this.setFontSize);
+    this.displayRightClickMenu(evt, this.setFontSize, this.setImportanceLevel); 
   }
 
   setFontSize(value) {
@@ -218,7 +220,13 @@ export default class SVGWidget extends React.Component {
       height: boundingRect.height
     })
 
-    this.hideFontSizeSelector(); 
+    this.hideRightClickMenu(); 
+  }
+
+  setImportanceLevel() {
+
+
+    this.hideRightClickMenu();
   }
 
   onElementResized(evt, direction, element, delta) {
@@ -230,6 +238,8 @@ export default class SVGWidget extends React.Component {
     const source = this.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 
+    const importance = this.state.importance; 
+    const showImportance = this.state.showImportance; 
     this.setElementSize(width, height); 
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
@@ -239,9 +249,14 @@ export default class SVGWidget extends React.Component {
 
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
-        <div onContextMenu={this.showFontSizeSelector.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
+        <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
             contentEditable="true" id={"widget-container-" + this.id} className="widget-container">
           <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+          <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
+            <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
+            <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
+            <span className={"glyphicon " + (importance == "least" || importance == "normal" ? "glyphicon-star-empty" : "glyphicon-star")}></span>
+          </div>
         </div>
       </Resizable>); 
   }

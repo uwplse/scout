@@ -2,7 +2,7 @@ import React from "react";
 import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
-import FontSizeSelector from './FontSizeSelector'; 
+import RightClickMenu from './RightClickMenu'; 
 import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
@@ -16,8 +16,8 @@ export default class ConstraintsCanvas extends React.Component {
     this.checkSolutionValidity =  props.checkSolutionValidity; 
 
     // Method bindings
-    this.displayFontSizeSelector = this.displayFontSizeSelector.bind(this);
-    this.hideFontSizeSelector = this.hideFontSizeSelector.bind(this); 
+    this.displayRightClickMenu = this.displayRightClickMenu.bind(this);
+    this.hideRightClickMenu = this.hideRightClickMenu.bind(this); 
     this.displayColorPicker = this.displayColorPicker.bind(this);
     this.updateBackgroundColor = this.updateBackgroundColor.bind(this);
 
@@ -36,9 +36,10 @@ export default class ConstraintsCanvas extends React.Component {
     this.state = { 
       treeData: [], 
       pageFeedbackWidgets: [], 
-      fontSizeSelectorShown: false, 
-      fontSizeSelectorCallback: undefined, 
-      fontSizeSelectorPosition: {
+      rightClickMenuShown: false, 
+      rightClickMenuSetFontSize: undefined, 
+      rightClickMenuSetImportance: undefined, 
+      rightClickMenuPosition: {
         x: 0, 
         y: 0
       }, 
@@ -47,7 +48,8 @@ export default class ConstraintsCanvas extends React.Component {
       colorPickerPosition: {
         x: 0, 
         y: 0 
-      }
+      }, 
+      showImportanceLevels: false
     }; 
   }
 
@@ -90,9 +92,10 @@ export default class ConstraintsCanvas extends React.Component {
               shape={shape} 
               id={shapeId} 
               source={src}
+              showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
-              displayFontSizeSelector={this.displayFontSizeSelector}
-              hideFontSizeSelector= {this.hideFontSizeSelector} />);
+              displayRightClickMenu={this.displayRightClickMenu}
+              hideRightClickMenu= {this.hideRightClickMenu} />);
   }
 
   addShapeOfTypeToCanvas(type, controlType, source) {
@@ -126,11 +129,12 @@ export default class ConstraintsCanvas extends React.Component {
     return this.constraintsShapesMap[shapeID]; 
   }
 
-  displayFontSizeSelector(evt, setFontSize) {
+  displayRightClickMenu(evt, setFontSizeCallback, setImportanceCallback) {
     this.setState({
-      fontSizeSelectorShown: true, 
-      fontSizeSelectorCallback: setFontSize, // The method to call in the SVGWidget instance that called this menu open.  
-      fontSizeSelectorPosition: {
+      rightClickMenuShown: true, 
+      rightClickMenuSetFontSize: setFontSizeCallback, // The method to call in the SVGWidget instance that called this menu open.
+      rightClickMenuSetImportance: setImportanceCallback,  
+      rightClickMenuPosition: {
         x: evt.clientX, 
         y: evt.clientY
       }
@@ -160,9 +164,9 @@ export default class ConstraintsCanvas extends React.Component {
     });   
   }
 
-  hideFontSizeSelector() {
+  hideRightClickMenu() {
     this.setState({
-      fontSizeSelectorShown: false
+      rightClickMenuShown: false
     }); 
   }
 
@@ -381,9 +385,10 @@ export default class ConstraintsCanvas extends React.Component {
   render () {
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
-    const fontSizeSelector = (this.state.fontSizeSelectorShown ? <FontSizeSelector onClick={this.state.fontSizeSelectorCallback} /> : undefined);
+    const rightClickMenu = (this.state.rightClickMenuShown ?
+     <RightClickMenu setFontSize={this.state.rightClickMenuSetFontSize} setImportanceLevel={this.state.rightClickMenuSetImportance} /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
-    const fontSizeSelectorPosition = this.state.fontSizeSelectorPosition; 
+    const rightClickMenuPosition = this.state.rightClickMenuPosition; 
     const colorPickerPosition = this.state.colorPickerPosition; 
     var self = this;
 
@@ -393,8 +398,8 @@ export default class ConstraintsCanvas extends React.Component {
         <div className="constraints-canvas-page-feedback">
           {pageFeedbacks}
         </div>
-        <div style={{left: fontSizeSelectorPosition.x, top: fontSizeSelectorPosition.y}} className={"constraints-canvas-font-size-selector-container " + (!fontSizeSelector ? "hidden" : "")}> 
-          {fontSizeSelector}
+        <div style={{left: rightClickMenuPosition.x, top: rightClickMenuPosition.y}} className={"constraints-canvas-font-size-selector-container " + (!rightClickMenu ? "hidden" : "")}> 
+          {rightClickMenu}
         </div>
         <div style={{left: colorPickerPosition.x, top: colorPickerPosition.y}} className={"constraints-color-picker-container " + (!colorPicker ? "hidden" : "")}> 
           {colorPicker}
