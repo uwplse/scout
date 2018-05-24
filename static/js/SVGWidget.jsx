@@ -156,11 +156,14 @@ export default class SVGWidget extends React.Component {
       editableText[0].innerHTML = this.element.label;  
 
       // Adjust the initial translation of the text to center it in the middle (only for buttons)
+      let bboxText = editableText[0].getBoundingClientRect();
+      let heightLocation = (this.state.height/2);
       if(this.controlType == "button") {
-        let bboxText = editableText[0].getBoundingClientRect();
-        let heightLocation = (this.state.height/2);
         editableText[0].style.transform = "translate(" + this.state.width/2 + "px," + heightLocation + "px)";  
-      }    
+      }
+      else if(this.controlType == "label") {
+        editableText[0].style.transform = "translate(0px," + heightLocation + "px)";  
+      }  
     }
 
     // let svgViewBox = svgElement.querySelectorAll(".SVGInline-svg"); 
@@ -199,10 +202,9 @@ export default class SVGWidget extends React.Component {
     // Unset these so that we can calculate a new size after the font size is changed
     svgElementInline[0].style.width = ""; 
     svgElementInline[0].style.height = ""; 
+    svgElementInline[0].style.fontSize = value + "px";
 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
-    editableText[0].style.fontSize = value + "px"; 
-
 
     // Update the element object size
     let boundingRect = editableText[0].getBoundingClientRect(); 

@@ -5,6 +5,10 @@ div:focus {
 	outline: none;
 }
 
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 .hidden {
 	display: none;
 }
@@ -23,7 +27,6 @@ div:focus {
 .panel-body {
 	padding: 5;
 }
-
 /**
   General styles
  **/

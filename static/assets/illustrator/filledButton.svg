@@ -1,6 +1,6 @@
-<svg id="widget-control-button" class="widget-control" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg">
+<svg id="widget-control-button" font-size="17" class="widget-control" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg">
   <rect class="widget-size-container" width="100%" height="100%" rx="3" ry="3" fill="#007aff"/>
-  <text class="widget-editable-text" text-anchor="middle" alignment-baseline="middle" style="isolation:isolate" font-size="17" fill="#fff" font-family="Helvetica,Helvetica" letter-spacing="-.006em" data-name="Tab Label">
+  <text class="widget-editable-text" text-anchor="middle" alignment-baseline="middle" style="isolation:isolate" fill="#fff" font-family="Helvetica,Helvetica" letter-spacing="-.006em" data-name="Tab Label">
     Button
   </text>
 </svg>

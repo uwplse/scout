@@ -313,6 +313,9 @@ export default class PageContainer extends React.Component {
                 <SVGInline className="widget-control widget-control-label" 
                   height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
                   svg={ label } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', label)}/>
+                <SVGInline className="widget-control widget-control-search" 
+                  height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
+                  svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
               </div>
             </div>
             <div className="panel panel-default containers-container">
