@@ -86,6 +86,10 @@ body {
 	width: 250px;
 }
 
+.widget-control-group .widget-control {
+	margin-right: 10px;
+}
+
 .widget-control-button > .widget-control-svg {
 	width: 10em;
 }

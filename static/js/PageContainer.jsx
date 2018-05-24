@@ -9,6 +9,8 @@ import SVGInline from "react-svg-inline";
 import SVGWidget from './SVGWidget';
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
+import image from '../assets/illustrator/image.svg';
+import placeholder from '../assets/illustrator/placeholder.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
 import label from '../assets/illustrator/label.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
@@ -316,6 +318,14 @@ export default class PageContainer extends React.Component {
                 <SVGInline className="widget-control widget-control-search" 
                   height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
                   svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
+                <div className="widget-control-group">
+                  <SVGInline className="widget-control widget-control-image" 
+                    height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+                    svg={ image } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'image', image)}/> 
+                  <SVGInline className="widget-control widget-control-placeholder" 
+                    height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
+                    svg={ placeholder } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'placeholder', placeholder)}/>
+                </div>
               </div>
             </div>
             <div className="panel panel-default containers-container">
@@ -343,13 +353,18 @@ export default class PageContainer extends React.Component {
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs
                 <div className="btn-group btn-group-xs designs-area-button-group">
-                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>Get Designs</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More Designs</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
+                </div>
+                <div className="btn-group btn-group-xs designs-area-button-group">
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More not like these</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More like these</button>
                 </div>
               </h3>
             </div>  
             <div className="design-canvas-container">
               <div className="left-container">
+                { designCanvases.length? <div className="alert alert-success" role="alert">Here are 10 arandomly selected designs.</div> : undefined }
                 { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
                   <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
                   <div className="panel-body saved-body">

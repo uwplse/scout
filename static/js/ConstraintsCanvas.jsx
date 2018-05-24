@@ -329,7 +329,8 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   calculateRowHeight({treeIndex, node, path}) {
-    let rowHeight = 40
+    let padding = 5; 
+    let rowHeight = node.title.props.shape.size.height + (padding * 2);
 
     // Row height
     let subtitles = node.subtitle; 

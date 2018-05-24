@@ -6,6 +6,8 @@ import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
+import image from '../assets/illustrator/image.svg'
+import placeholder from '../assets/illustrator/placeholder.svg'
 import filledButton from '../assets/illustrator/filledButton.svg';
 import label from '../assets/illustrator/label.svg';
 import group from '../assets/illustrator/groupDesign.svg';
@@ -17,7 +19,9 @@ export default class DesignCanvas extends React.Component {
       'search': search, 
       'button': filledButton, 
       'label': label, 
-      'group': group
+      'group': group, 
+      'placeholder': placeholder, 
+      'image': image
       /* Add others here */
     }; 
     return svgElements[controlType]; 

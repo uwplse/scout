@@ -8,6 +8,7 @@ const WAIT_INTERVAL = 1000;
 
 export default class SVGWidget extends React.Component {
 
+  // TODO: Calculate dynamically from the initial size of the SVG? 
   static initialWidths(controlType) {
     let values = {
       'button': 140, 
@@ -15,7 +16,9 @@ export default class SVGWidget extends React.Component {
       'search': 238, 
       'group': 100, 
       'labelGroup': 100, 
-      'label': 100
+      'label': 100, 
+      'image': 50, 
+      'placeholder': 50
     }
 
     if(controlType in values) {
@@ -32,7 +35,9 @@ export default class SVGWidget extends React.Component {
       'search': 25, 
       'group': 40, 
       'labelGroup': 40, 
-      'label': 40
+      'label': 40, 
+      'image': 50, 
+      'placeholder': 50
     }
 
     if(controlType in values) {
@@ -202,7 +207,7 @@ export default class SVGWidget extends React.Component {
     // Unset these so that we can calculate a new size after the font size is changed
     svgElementInline[0].style.width = ""; 
     svgElementInline[0].style.height = ""; 
-    svgElementInline[0].style.fontSize = value + "px";
+    svgElementInline[0].setAttribute("font-size", value);
 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
 
