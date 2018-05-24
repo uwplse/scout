@@ -128,6 +128,10 @@ export default class PageContainer extends React.Component {
       designSolution.added = solution.added; 
       designSolution.removed = solution.removed;
       designSolution.conflicts = solution.conflicts; 
+
+      if(designSolution.valid) {
+        designSolution.invalidated = false;
+      }
     }
 
     // Update the state
@@ -195,7 +199,9 @@ export default class PageContainer extends React.Component {
       let designSolution = this.state.solutions[i]; 
       
       // Invalidate the solution which means it should be moved into the right side panel 
-      designSolution.invalidated = !designSolution.valid; 
+      if(designSolution.valid) {
+        designSolution.invalidated = false;
+      }
     }
 
     this.setState({

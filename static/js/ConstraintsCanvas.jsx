@@ -3,7 +3,7 @@ import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
 import FontSizeSelector from './FontSizeSelector'; 
-import { GithubPicker } from 'react-color';
+import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
 
@@ -381,7 +381,7 @@ export default class ConstraintsCanvas extends React.Component {
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const fontSizeSelector = (this.state.fontSizeSelectorShown ? <FontSizeSelector onClick={this.state.fontSizeSelectorCallback} /> : undefined);
-    const colorPicker = (this.state.colorPickerShown ? <GithubPicker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
+    const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const fontSizeSelectorPosition = this.state.fontSizeSelectorPosition; 
     const colorPickerPosition = this.state.colorPickerPosition; 
     var self = this;

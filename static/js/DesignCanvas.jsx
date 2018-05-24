@@ -322,7 +322,7 @@ export default class DesignCanvas extends React.Component {
     return  (
       <div onMouseEnter={((saved || trashed || invalidated) ? undefined : showMenuAndHighlightConstraints.bind(this))} 
            onMouseOut={((saved || trashed || invalidated) ? undefined : closeMenuAndRemoveHighlightConstraints.bind(this))} 
-           className={"canvas-container " + (!this.state.valid ? "canvas-container-invalid" : "") + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
+           className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
            id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
   			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-feedback-menu-container " + (menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
@@ -330,7 +330,7 @@ export default class DesignCanvas extends React.Component {
         <div>
           {designMenu}
         </div>
-        <div id={"design-canvas-" + this.id} className="design-canvas" style={{height: "100%", width: "100%"}}>
+        <div id={"design-canvas-" + this.id} className={"design-canvas " + (!this.state.valid ? "canvas-container-invalid" : "")} style={{height: "100%", width: "100%"}}>
         </div>
 	    </div>); 
   }
