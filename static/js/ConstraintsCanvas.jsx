@@ -3,7 +3,7 @@ import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
 import RightClickMenu from './RightClickMenu'; 
-import { Ios11Picker } from 'react-color';
+// import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
 
