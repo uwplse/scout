@@ -125,6 +125,7 @@ export default class DesignCanvas extends React.Component {
 
   showHoverIndicator(element, evt) {
     evt.stopPropagation();
+    console.log(element);
     element.classList.add("design-canvas-hovered"); 
   }
 

@@ -258,10 +258,12 @@ export default class SVGWidget extends React.Component {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
 
+    const isEditable = this.controlType != "group";
+
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
-            contentEditable="true" id={"widget-container-" + this.id} className="widget-container">
+            contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
           <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
           <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
             <span className="glyphicon glyphicon-star" aria-hidden="true"></span>

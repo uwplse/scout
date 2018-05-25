@@ -297,47 +297,46 @@ export default class PageContainer extends React.Component {
          </div>
         </nav>
         <div className="bottom">
-          <div className="components-container">
-            <div className="panel panel-default widgets-container">
-              <div className="panel-heading"> 
-                <h3 className="panel-title">Widgets</h3>
-              </div>  
-              <div className="panel-body widgets-panel">         
-                { /*<canvas id="widgets-canvas" width="150px" height="400px">
-                </canvas> */ }
-                <SVGInline className="widget-control widget-control-field" 
-                  height={SVGWidget.initialHeights('field') + "px"} width={SVGWidget.initialWidths('field') + "px"} 
-                  svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
-                { /*<SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/> */}
-                <SVGInline className="widget-control widget-control-button" 
-                  height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
-                  svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
-                <SVGInline className="widget-control widget-control-label" 
-                  height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
-                  svg={ label } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', label)}/>
-                <SVGInline className="widget-control widget-control-search" 
-                  height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
-                  svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
-                <div className="widget-control-group">
-                  <SVGInline className="widget-control widget-control-image" 
-                    height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ image } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'image', image)}/> 
-                  <SVGInline className="widget-control widget-control-placeholder" 
-                    height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
-                    svg={ placeholder } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'placeholder', placeholder)}/>
-                </div>
+          <div className="panel panel-default widgets-container">
+            <div className="panel-heading"> 
+              <h3 className="panel-title">Widgets</h3>
+            </div>  
+            <div className="panel-body widgets-panel">         
+              { /*<canvas id="widgets-canvas" width="150px" height="400px">
+              </canvas> */ }
+              <SVGInline className="widget-control widget-control-field" 
+                height={SVGWidget.initialHeights('field') + "px"} width={SVGWidget.initialWidths('field') + "px"} 
+                svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
+              { /*<SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/> */}
+              <SVGInline className="widget-control widget-control-button" 
+                height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
+                svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
+              <SVGInline className="widget-control widget-control-label" 
+                height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
+                svg={ label } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', label)}/>
+              <SVGInline className="widget-control widget-control-search" 
+                height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
+                svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
+              <div className="widget-control-group">
+                <SVGInline className="widget-control widget-control-image" 
+                  height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+                  svg={ image } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'image', image)}/> 
+                <SVGInline className="widget-control widget-control-placeholder" 
+                  height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
+                  svg={ placeholder } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'placeholder', placeholder)}/>
+                <SVGInline className="widget-control widget-container" svg={ groupContainer } 
+                  onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
               </div>
             </div>
-            <div className="panel panel-default containers-container">
+          </div>
+            {/*<div className="panel panel-default containers-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Containers</h3>
               </div>  
               <div className="panel-body containers-panel">         
-                <SVGInline className="widget-control widget-container" svg={ groupContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
                 <SVGInline className="widget-control widget-container" svg={ labelContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'labelGroup', 'labelGroup', labelContainer)}/>
               </div>
-            </div>
-          </div>
+            </div>*/}
          <div className="panel panel-default constraints-container">
             <div className="panel-heading"> 
               <h3 className="panel-title">Constraints</h3>
