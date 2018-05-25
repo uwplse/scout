@@ -1,6 +1,15 @@
 # Scout
 
-### Setup 
+## Mac Install Instructions
+
+### XCode Setup (**if not already installed**)
+Install XCode through the app store installer. 
+
+After installing XCode, install the XCode developer tools using the command: 
+	
+	xcode-select --install
+
+### Python Setup 
 Make sure you have Python 3 installed (3.5). 
 
 Install 'virtualenv' through the command

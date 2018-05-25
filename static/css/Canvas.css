@@ -89,7 +89,6 @@ body {
 .widget-container > .widget-control-importance {
 	margin-top: 5px;
 	display: flex;
-    justify-content: center;
 }
 
 .widget-control-group .widget-control {
@@ -102,10 +101,12 @@ body {
 
 .widget-control-button .widget-editable-text {
 	transform: translate(70px, 18px);
+	pointer-events: none;
 }
 
 .widget-control-field .widget-editable-text {
 	transform: translate(9.7px, 18px);
+	pointer-events: none;
 }
 
 .widget-control-label > .widget-control-svg {

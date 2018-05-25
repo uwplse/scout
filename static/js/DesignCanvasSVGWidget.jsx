@@ -13,13 +13,18 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 
 
+    // Method bindings
+    this.setHovered = this.setHovered.bind(this); 
+    this.hideHovered = this.hideHovered.bind(this);
+
     this.uniqueID = _.uniqueId();
 
     this.state = {
       height: props.height,
       width: props.width, 
       left: props.left, 
-      top: props.top
+      top: props.top, 
+      hovered: false
     }
   }
 
@@ -64,6 +69,22 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.element.size.width = width; 
   }
 
+  setHovered(evt) {
+    this.setState({
+      hovered: true
+    }); 
+  }
+
+  hideHovered(evt) {
+    let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
+    let element = document.getElementById(id); 
+    let elementBox = element.getBoundingClientRect();
+
+    this.setState({
+      hovered: false
+    }); 
+  }
+
   render () {
     const source = this.svgSource; 
     const height = this.state.height; 
@@ -71,7 +92,10 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const left = this.state.left; 
     const top = this.state.top;
     return (
-      <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} className="widget-control-parent" 
+      <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} 
+        className={"widget-control-parent "  + (this.state.hovered ? "design-canvas-hovered" : "")}
+        onMouseEnter={this.setHovered}
+        onMouseLeave={this.hideHovered}
         style={{position: "absolute", left: left + "px", top: top + "px"}}>
         <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
       </div>); 
