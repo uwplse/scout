@@ -42,7 +42,6 @@
     "re-resizable": "^4.4.8",
     "react-sidebar": "^2.3.2",
     "react-sortable-tree": "file:../../react-sortable-tree/react-sortable-tree-2.1.0.tgz",
-    "react-color": "file:../../react-color/react-color-2.16.0.tgz",
     "react-svg-inline": "^2.1.0",
     "script-loader": "^0.7.2",
     "url-loader": "^1.0.1",

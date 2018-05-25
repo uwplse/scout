@@ -72,6 +72,7 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity =  props.checkSolutionValidity; 
     this.displayRightClickMenu = props.displayRightClickMenu; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
+    this.displayLabelIndicator = props.displayLabelIndicator; 
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
@@ -197,7 +198,7 @@ export default class SVGWidget extends React.Component {
     evt.preventDefault();
 
     if(this.controlType == "label") {
-      this.displayRightClickMenu(evt, this.setFontSize, this.setImportanceLevel); 
+      this.displayRightClickMenu(evt, this.setFontSize, this.setImportanceLevel, this.setLabel); 
     }
     else {
       this.displayRightClickMenu(evt, undefined, this.setImportanceLevel); 
@@ -240,6 +241,15 @@ export default class SVGWidget extends React.Component {
     }); 
 
     this.hideRightClickMenu();
+  }
+
+  setLabel(shapeId) {
+    // ID should be the Id of the element that is being labeled
+
+    // Add labels metadata to the shape object
+
+    // Notify the constraints canvas that it should set the label decorator arrow thing. 
+    this.displayLabelIndicator(this.id, shapeId); 
   }
 
   onElementResized(evt, direction, element, delta) {

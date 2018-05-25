@@ -39,6 +39,7 @@ export default class ConstraintsCanvas extends React.Component {
       rightClickMenuShown: false, 
       rightClickMenuSetFontSize: undefined, 
       rightClickMenuSetImportance: undefined, 
+      rightClickMenuSetLabel: undefined, 
       rightClickMenuPosition: {
         x: 0, 
         y: 0
@@ -129,11 +130,12 @@ export default class ConstraintsCanvas extends React.Component {
     return this.constraintsShapesMap[shapeID]; 
   }
 
-  displayRightClickMenu(evt, setFontSizeCallback, setImportanceCallback) {
+  displayRightClickMenu(evt, setFontSizeCallback, setImportanceCallback, setLabelCallback) {
     this.setState({
       rightClickMenuShown: true, 
       rightClickMenuSetFontSize: setFontSizeCallback, // The method to call in the SVGWidget instance that called this menu open.
       rightClickMenuSetImportance: setImportanceCallback,  
+      rightClickMenuSetLabel: setLabelCallback, 
       rightClickMenuPosition: {
         x: evt.clientX, 
         y: evt.clientY
@@ -150,6 +152,19 @@ export default class ConstraintsCanvas extends React.Component {
         y: evt.clientY
       }
     });   
+  }
+
+  getSiblingLabelItems(shapeId) {
+    // Find siblings in the tree (above and below) and return them to the rightclick menu instance
+
+    // Go through tree data (recursive) and find the level of the element
+
+    // then find the coresponding siblings. 
+
+    // Make object for each with the ID, label, and direction
+
+    // Send that back to the right click menu 
+    return []; 
   }
 
   updateBackgroundColor(color) {
@@ -387,7 +402,11 @@ export default class ConstraintsCanvas extends React.Component {
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
     const rightClickMenu = (this.state.rightClickMenuShown ?
-     <RightClickMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} setFontSize={this.state.rightClickMenuSetFontSize} setImportanceLevel={this.state.rightClickMenuSetImportance} /> : undefined);
+     <RightClickMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} 
+      setFontSize={this.state.rightClickMenuSetFontSize} 
+      setImportanceLevel={this.state.rightClickMenuSetImportance} 
+      setLabel={this.state.rightClickMenuSetLabel}
+      getSiblingLabelItems={this.getSiblingLabelItems}  /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const colorPickerPosition = this.state.colorPickerPosition; 
     var self = this;
