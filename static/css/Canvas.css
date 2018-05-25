@@ -255,38 +255,37 @@ body {
 /** 
   Right click feedback menu, font size selector menu
   */
-
-.canvas-feedback-menu, .font-size-selector-menu {
+.right-click-menu {
 	list-style-type: none;
-    padding: 0px;
+    padding: 0px; 
 }
 
-.canvas-feedback-menu > li, 
-.font-size-selector-menu > li {
-	padding: 0.5em;
-}
-
-.canvas-feedback-menu > li:hover, 
-.font-size-selector-menu > li:hover {
+.right-click-menu > li:hover {
 	background-color: lightgray;
 	cursor: pointer; 
 }
 
-.canvas-feedback-menu-item, 
-.font-size-selector-menu-item,  {
+.right-click-menu-item {
 	padding-left: 1em;
 	padding-right: 1em;
+	padding-top: 0.25em; 
+	padding-bottom: 0.25em;
+	display: flex;
 }
 
-.canvas-feedback-menu-label, 
-.font-size-selector-menu-label{
+.right-click-menu-label {
 	font-weight: bold;
 	padding-left: 0.5em; 
+	padding-right: 0.5em;
 }
 
-.canvas-feedback-menu-container, 
-.constraints-canvas-font-size-selector-container
- {
+.right-click-menu-label:hover {
+	background-color: lightgray;
+	cursor: pointer; 
+}
+
+.right-click-menu-container, 
+.right-click-submenu-container {
     position: absolute;
     background: white;
     z-index: 1000;
@@ -295,12 +294,13 @@ body {
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
     border-radius: 3px;
     padding-top: 5px;
+    padding-bottom: 5px;
 }
 
-.constraints-color-picker-container {
+/*.constraints-color-picker-container {
 	position: absolute; 
 	z-index: 1000; 
-}
+}*/
 
 /** 
   Actions menu that appears on design canvas 

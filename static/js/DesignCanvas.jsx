@@ -45,7 +45,6 @@ export default class DesignCanvas extends React.Component {
   	this.state = {
       childSVGs: [],
   		menuShown: false, 
-  		menuPosition: { x: 0, y: 0 }, 
   		activeCanvasMenu: undefined,
       designMenu: undefined, 
       savedState: props.savedState, 
@@ -71,7 +70,6 @@ export default class DesignCanvas extends React.Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     return {
       menuShown: prevState.menuShown, 
-      menuPosition: prevState.menuPosition, 
       activeCanvasMenu: prevState.activeCanvasMenu, 
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState, 
@@ -104,6 +102,7 @@ export default class DesignCanvas extends React.Component {
   }
 
   showConstraintsContextMenu(shape,evt) {
+    evt.preventDefault();
     evt.stopPropagation();
 
 		// Check for the status of menuShown to see if we need to close out another menu before opening this one
@@ -119,12 +118,8 @@ export default class DesignCanvas extends React.Component {
 		let componentBoundingBox = designCanvas.getBoundingClientRect();
 
     this.setState({
-      activeCanvasMenu: <CanvasMenu menuTrigger={shape} onClick={this.performActionAndCloseMenu.bind(this)} getConstraintsCanvasShape={this.getConstraintsCanvasShape} />,
-      menuShown: true, 
-      menuPosition: {
-      	x: evt.clientX, 
-      	y: evt.clientY
-      }
+      activeCanvasMenu: <CanvasMenu left={evt.clientX} top={evt.clientY} menuTrigger={shape} onClick={this.performActionAndCloseMenu.bind(this)} getConstraintsCanvasShape={this.getConstraintsCanvasShape} />,
+      menuShown: true
     });
   }
 
@@ -182,7 +177,7 @@ export default class DesignCanvas extends React.Component {
               left={left}
               top={top}
               onMouseEnter={this.showHoverIndicator.bind(this)}
-              onMouseDown={this.showConstraintsContextMenu.bind(this)}
+              onContextMenu={this.showConstraintsContextMenu.bind(this)}
               onMouseOut={this.hideHoverIndicator.bind(this)} />);      
     }
     else {
@@ -337,7 +332,7 @@ export default class DesignCanvas extends React.Component {
            onMouseOut={((saved || trashed || invalidated) ? undefined : closeMenuAndRemoveHighlightConstraints.bind(this))} 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
            id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
-  			<div style={{left: menuPosition.x, top: menuPosition.y}} className={"canvas-feedback-menu-container " + (menuShown ? "" : "hidden")}>
+  			<div className={(menuShown ? "" : "hidden")}>
   				{activeCanvasMenu}
   			</div>
         <div>

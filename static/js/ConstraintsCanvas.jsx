@@ -385,10 +385,10 @@ export default class ConstraintsCanvas extends React.Component {
   render () {
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
-    const rightClickMenu = (this.state.rightClickMenuShown ?
-     <RightClickMenu setFontSize={this.state.rightClickMenuSetFontSize} setImportanceLevel={this.state.rightClickMenuSetImportance} /> : undefined);
-    const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
+    const rightClickMenu = (this.state.rightClickMenuShown ?
+     <RightClickMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} setFontSize={this.state.rightClickMenuSetFontSize} setImportanceLevel={this.state.rightClickMenuSetImportance} /> : undefined);
+    const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const colorPickerPosition = this.state.colorPickerPosition; 
     var self = this;
 
@@ -398,12 +398,12 @@ export default class ConstraintsCanvas extends React.Component {
         <div className="constraints-canvas-page-feedback">
           {pageFeedbacks}
         </div>
-        <div style={{left: rightClickMenuPosition.x, top: rightClickMenuPosition.y}} className={"constraints-canvas-font-size-selector-container " + (!rightClickMenu ? "hidden" : "")}> 
+        <div className={(!rightClickMenu ? "hidden" : "")}> 
           {rightClickMenu}
         </div>
-        <div style={{left: colorPickerPosition.x, top: colorPickerPosition.y}} className={"constraints-color-picker-container " + (!colorPicker ? "hidden" : "")}> 
+        {/*<div className={(!colorPicker ? "hidden" : "")}> 
           {colorPicker}
-        </div>
+        </div>*/}
         <div className="widgets-sortable-tree">
           { /*             rowHeight={this.calculateRowHeight.bind(this)} */}
           <SortableTree

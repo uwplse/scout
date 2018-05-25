@@ -196,7 +196,12 @@ export default class SVGWidget extends React.Component {
     evt.stopPropagation();
     evt.preventDefault();
 
-    this.displayRightClickMenu(evt, this.setFontSize, this.setImportanceLevel); 
+    if(this.controlType == "label") {
+      this.displayRightClickMenu(evt, this.setFontSize, this.setImportanceLevel); 
+    }
+    else {
+      this.displayRightClickMenu(evt, undefined, this.setImportanceLevel); 
+    }
   }
 
   setFontSize(value) {
