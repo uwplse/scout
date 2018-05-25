@@ -228,8 +228,16 @@ export default class SVGWidget extends React.Component {
     this.hideRightClickMenu(); 
   }
 
-  setImportanceLevel() {
+  setImportanceLevel(level) {
+    // Update the object
+    let importance = level == 1 ? "least" : (level == 2 ? "normal" : "most"); 
+    this.element.importance = importance; 
 
+    // Update the number of stars showing
+    this.setState({
+      importance: importance, 
+      showImportance: true
+    }); 
 
     this.hideRightClickMenu();
   }
@@ -249,8 +257,6 @@ export default class SVGWidget extends React.Component {
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
-
-    let field
 
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
