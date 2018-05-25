@@ -15,7 +15,7 @@ class CanvasMenuItem extends React.Component {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
 	  // let menuProperty = menuTextToProperty[this.text]; 
 	  let menuText = this.action[this.actionType].getFeedbackMessage(this.menuTrigger);
-	  return <li className="canvas-feedback-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action, this.actionType)} >{menuText}</li>; 
+	  return <li className="right-click-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action, this.actionType)} >{menuText}</li>; 
   }
 }
 
@@ -33,6 +33,11 @@ export default class CanvasMenu extends React.Component {
   	this.menuShown = props.menuShown; 
   	this.menuTrigger = props.menuTrigger; // This is the JSON of the shape that triggered the menu open 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape; // Gets the shape on the constraints canvas used to construct the menu options
+
+    this.state = {
+      left: props.left, 
+      top: props.top
+    }
   }
 
   getAction(constraint, constraintsMenu) {
@@ -87,10 +92,12 @@ export default class CanvasMenu extends React.Component {
     //   // Relational constraints
     //   relationalItems = this.getRelationalMenuItems(); 
     // }
+    const menuLeft = this.state.left; 
+    const menuTop = this.state.top;
 
 	  return (
-      <div className="canvas-menu">
-        <ul className="canvas-feedback-menu">{elementItems}</ul>
+      <div className="right-click-menu-container" style={{left: menuLeft + "px", top: menuTop + "px"}} >
+        <ul className="right-click-menu">{elementItems}</ul>
       </div>
     );
   }

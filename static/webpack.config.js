@@ -14,16 +14,29 @@ const config = {
         extensions: ['.js', '.jsx', '.css']
     },
     module: {
-	  rules: [
+  	  rules: [
+      {
+        test: /\.svg$/,
+        loader: 'raw-loader'
+      }, 
+      {
+        test: /\.(png|jp(e*)g)$/, 
+        loader: 'url-loader'
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'script-loader'
+      },
 	    {
 	      test: /\.jsx?/,
 	      exclude: /node_modules/,
 	      use: 'babel-loader'
 	    }, 
-        {
-          test: /\.css$/, 
-          loader: "style-loader!css-loader" 
-        }
+      {
+        test: /\.css$/, 
+        loader: "style-loader!css-loader" 
+      }
 	  ]
 	}
 };

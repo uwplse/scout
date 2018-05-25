@@ -5,6 +5,10 @@ div:focus {
 	outline: none;
 }
 
+body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
 .hidden {
 	display: none;
 }
@@ -23,7 +27,6 @@ div:focus {
 .panel-body {
 	padding: 5;
 }
-
 /**
   General styles
  **/
@@ -54,7 +57,7 @@ div:focus {
 	flex-direction: column;
 }
 
-.widgets-container, .constraints-container, .containers-container, .right-container {
+.widgets-container, .constraints-container, .containers-container, .right-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
@@ -80,20 +83,88 @@ div:focus {
 
 .widgets-container {
 	border-right: 1px solid #ccc;
+	width: 250px;
 }
+
+.widget-container > .widget-control-importance {
+	margin-top: 5px;
+	display: flex;
+}
+
+.widget-control-group .widget-control {
+	margin-right: 10px;
+}
+
+.widget-control-button > .widget-control-svg {
+	width: 10em;
+}
+
+.widget-control-button .widget-editable-text {
+	transform: translate(70px, 18px);
+	pointer-events: none;
+}
+
+.widget-control-field .widget-editable-text {
+	transform: translate(9.7px, 18px);
+	pointer-events: none;
+}
+
+.widget-control-label > .widget-control-svg {
+	width: 5em;
+}
+
+.widget-control-svg {
+	margin-top: 20px;
+	cursor: pointer;
+}
+
+.widget-stepper {
+	height: 25px; 
+}
+
+.widget-label {
+	height: 30px;
+}
+
+.widget-container > .widget-container-svg {
+	width: 100px;
+	margin-right: 5px;
+	margin-left: 5px;
+}
+
+.containers-panel {
+	display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.widgets-panel {
+	display: flex;
+    flex-direction: column;
+}
+
+.SVGInline-svg {
+	cursor: pointer;
+}
+
 
 /** 
 	Designs canvas 
 **/
+
+.designs-area-container {
+	flex: 1 1 0px;
+}
+
+.designs-area-button-group {
+	margin-left: 10px;
+}
+
 .designs-container {
 	display: flex;
 	margin-bottom: 0;
 	margin-top: 10px;
 	margin-left: 10px;
-}
-
-.current-designs-container {
-	flex: 1 0 0px; 
 }
 
 .design-canvas-container {
@@ -107,22 +178,35 @@ div:focus {
 }
 
 .design-canvas {
+	position: relative;
 	border: 1px solid #ccc;
 }
 
-.design-canvas-header > a {
-	color: #000;
-	text-decoration: none; 
+.design-canvas .widget-control {
+	cursor: pointer;
 }
 
-.design-canvas-header > a:hover {
-	text-decoration: none;
+.design-canvas.design-canvas-hovered {
+	outline: 1px dashed black;
+}
+
+.design-canvas .design-canvas-hovered {
+	outline: 1px dashed black;
 }
 
 .design-body > .canvas-container {
 	display: inline-block;
 	margin: 5px;
 }
+
+.canvas-container .canvas-container-invalid {
+	background-image: url("../assets/stripe2.png");
+}
+
+.canvas-container .canvas-container-invalid.canvas-container-invalid-scaled {
+	background-image: url("../assets/stripe_scaled.png");
+}
+
 
 .design-body {
     overflow: auto;
@@ -144,7 +228,6 @@ div:focus {
 	display: flex;
 	flex: 1 0 0px;
 	align-items: stretch;
-	min-width: 750px; 
 	flex-direction: column;
 }
 
@@ -171,44 +254,54 @@ div:focus {
 }
 
 /** 
-  Feedback menu that appears on design canvases 
+  Right click feedback menu, font size selector menu
   */
-
-.canvas-feedback-menu {
+.right-click-menu {
 	list-style-type: none;
-    padding: 0px;
+    padding: 0px; 
 }
 
-.canvas-feedback-menu > li, {
-	padding: 0.5em;
-}
-
-.canvas-feedback-menu > li:hover {
+.right-click-menu > li:hover {
 	background-color: lightgray;
 	cursor: pointer; 
 }
 
-.canvas-feedback-menu-item {
+.right-click-menu-item {
 	padding-left: 1em;
 	padding-right: 1em;
+	padding-top: 0.25em; 
+	padding-bottom: 0.25em;
+	display: flex;
 }
 
-.canvas-feedback-menu-label {
+.right-click-menu-label {
 	font-weight: bold;
 	padding-left: 0.5em; 
+	padding-right: 0.5em;
 }
 
-.canvas-feedback-menu-container {
+.right-click-menu-label:hover {
+	background-color: lightgray;
+	cursor: pointer; 
+}
+
+.right-click-menu-container, 
+.right-click-submenu-container {
     position: absolute;
     background: white;
     z-index: 1000;
-    list-style-type: none;
     font-size: 12px;
     border: 1px solid gray;
     box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
     border-radius: 3px;
     padding-top: 5px;
+    padding-bottom: 5px;
 }
+
+/*.constraints-color-picker-container {
+	position: absolute; 
+	z-index: 1000; 
+}*/
 
 /** 
   Actions menu that appears on design canvas 
@@ -287,6 +380,11 @@ div:focus {
 	border: none;
 	box-shadow: none;
 	min-width: initial;
+	background-color: initial;
+}
+
+.widgets-sortable-tree .widgets-sortable-tree-remove {
+	background-color: initial;
 }
 
 .widgets-sortable-tree .rst__rowWrapper {
@@ -297,6 +395,9 @@ div:focus {
 	height: 44px;
 }
 
+.widgets-sortable-tree .rst__rowTitle {
+	font-weight: normal;
+}
 
 .widgets-sortable-tree .rst__rowTitleWithSubtitle {
     height: inherit; 
@@ -335,14 +436,34 @@ div:focus {
 	height: calc(100% - 44px); 
 }
 
-/*.widgets-sortable-tree-remove .glyphicon-minus {
-	line-height: 0.5; 
-	font-size: 18pt;
-}*/
-
 .widgets-sortable-tree-remove {
 	border: none;
 }
+
+/**  
+	Resizable box 
+**/
+
+.react-resizable {
+  position: relative;
+}
+
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  bottom: 0;
+  right: 0;
+  background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2IDYiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSI2cHgiIGhlaWdodD0iNnB4Ij48ZyBvcGFjaXR5PSIwLjMwMiI+PHBhdGggZD0iTSA2IDYgTCAwIDYgTCAwIDQuMiBMIDQgNC4yIEwgNC4yIDQuMiBMIDQuMiAwIEwgNiAwIEwgNiA2IEwgNiA2IFoiIGZpbGw9IiMwMDAwMDAiLz48L2c+PC9zdmc+');
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
+  cursor: se-resize;
+}
+
+
 
 
 
