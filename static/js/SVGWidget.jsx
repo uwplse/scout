@@ -77,13 +77,16 @@ export default class SVGWidget extends React.Component {
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
     this.setImportanceLevel = this.setImportanceLevel.bind(this); 
+    this.setLabel = this.setLabel.bind(this);
     this.onElementResized = this.onElementResized.bind(this);
 
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
       width: SVGWidget.initialWidths(this.controlType), 
       importance: "normal", 
-      showImportance: props.showImportanceLevels
+      showImportance: props.showImportanceLevels, 
+      showLabels: false, 
+      labelDirection: undefined
     }
   }
 
@@ -198,7 +201,7 @@ export default class SVGWidget extends React.Component {
     evt.preventDefault();
 
     if(this.controlType == "label") {
-      this.displayRightClickMenu(evt, this.setFontSize, this.setImportanceLevel, this.setLabel); 
+      this.displayRightClickMenu(evt, this.id, this.setFontSize, this.setImportanceLevel, this.setLabel); 
     }
     else {
       this.displayRightClickMenu(evt, undefined, this.setImportanceLevel); 
@@ -243,13 +246,17 @@ export default class SVGWidget extends React.Component {
     this.hideRightClickMenu();
   }
 
-  setLabel(shapeId) {
-    // ID should be the Id of the element that is being labeled
+  setLabel(shapeId, direction) {
+    // Save the labels relationship to the shape object 
+    this.element.labels = shapeId; 
 
-    // Add labels metadata to the shape object
+    // Notify the constraints canvas that it should set the label decorator arrow
+    this.setState({
+      showLabels: true, 
+      labelDirection: direction
+    }); 
 
-    // Notify the constraints canvas that it should set the label decorator arrow thing. 
-    this.displayLabelIndicator(this.id, shapeId); 
+    this.hideRightClickMenu();
   }
 
   onElementResized(evt, direction, element, delta) {
@@ -263,6 +270,8 @@ export default class SVGWidget extends React.Component {
     const width = this.state.width; 
     const importance = this.state.importance; 
     const showImportance = this.state.showImportance; 
+    const showLabels = this.state.showLabels; 
+    const labelDirection = this.state.labelDirection; 
     this.setElementSize(width, height); 
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
@@ -274,7 +283,11 @@ export default class SVGWidget extends React.Component {
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
             contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
-          <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+          <div className="widget-control-row"> 
+            <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+            <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}>
+            </div>
+          </div>
           <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
             <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
             <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>

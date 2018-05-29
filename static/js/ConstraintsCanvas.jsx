@@ -20,6 +20,8 @@ export default class ConstraintsCanvas extends React.Component {
     this.hideRightClickMenu = this.hideRightClickMenu.bind(this); 
     this.displayColorPicker = this.displayColorPicker.bind(this);
     this.updateBackgroundColor = this.updateBackgroundColor.bind(this);
+    this.findShapeSiblings = this.findShapeSiblings.bind(this);
+    this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
@@ -44,6 +46,7 @@ export default class ConstraintsCanvas extends React.Component {
         x: 0, 
         y: 0
       }, 
+      rightClickShapeID: undefined, 
       colorPickerShown: false, 
       colorPickerCallback: undefined, 
       colorPickerPosition: {
@@ -96,7 +99,7 @@ export default class ConstraintsCanvas extends React.Component {
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
-              hideRightClickMenu= {this.hideRightClickMenu} />);
+              hideRightClickMenu={this.hideRightClickMenu} />);
   }
 
   addShapeOfTypeToCanvas(type, controlType, source) {
@@ -130,7 +133,7 @@ export default class ConstraintsCanvas extends React.Component {
     return this.constraintsShapesMap[shapeID]; 
   }
 
-  displayRightClickMenu(evt, setFontSizeCallback, setImportanceCallback, setLabelCallback) {
+  displayRightClickMenu(evt, shapeID, setFontSizeCallback, setImportanceCallback, setLabelCallback) {
     this.setState({
       rightClickMenuShown: true, 
       rightClickMenuSetFontSize: setFontSizeCallback, // The method to call in the SVGWidget instance that called this menu open.
@@ -139,7 +142,8 @@ export default class ConstraintsCanvas extends React.Component {
       rightClickMenuPosition: {
         x: evt.clientX, 
         y: evt.clientY
-      }
+      }, 
+      rightClickShapeID: shapeID
     });  
   }
 
@@ -154,17 +158,52 @@ export default class ConstraintsCanvas extends React.Component {
     });   
   }
 
+  findShapeSiblings(shapeId, siblings) {
+    // Get the two neighboring siblings for a shape in the tree
+    let tree = this.state.treeData; 
+    for(var i=0; i<tree.length; i++) {
+      let treeNode = tree[i]; 
+      let nodeID = treeNode.title.props.id; 
+      if(nodeID == shapeId) {
+        if(i > 0) {
+          let prevSibling = tree[i-1]; 
+          siblings.previous = prevSibling; 
+        }
+
+        if(i<tree.length - 1) {
+          let nextSibling = tree[i+1];
+          siblings.next = nextSibling; 
+        }
+      }
+      else if(treeNode.children) {
+        this.findShapeSiblings(shapeId, siblings); 
+      }      
+    }
+  }
+
   getSiblingLabelItems(shapeId) {
-    // Find siblings in the tree (above and below) and return them to the rightclick menu instance
-
     // Go through tree data (recursive) and find the level of the element
+    let siblings = {}; 
+    this.findShapeSiblings(shapeId, siblings);
 
-    // then find the coresponding siblings. 
+    let menuItems = []; 
+    if(siblings.previous) {
+      menuItems.push({
+        id: siblings.previous.title.props.id, 
+        label: siblings.previous.title.props.shape.label, 
+        direction: 'above'
+      }); 
+    }
 
-    // Make object for each with the ID, label, and direction
+    if(siblings.next) {
+      menuItems.push({
+        id: siblings.next.title.props.id, 
+        label: siblings.next.title.props.shape.label, 
+        direction: 'below'
+      }); 
+    }
 
-    // Send that back to the right click menu 
-    return []; 
+    return menuItems; 
   }
 
   updateBackgroundColor(color) {
@@ -406,6 +445,7 @@ export default class ConstraintsCanvas extends React.Component {
       setFontSize={this.state.rightClickMenuSetFontSize} 
       setImportanceLevel={this.state.rightClickMenuSetImportance} 
       setLabel={this.state.rightClickMenuSetLabel}
+      shapeID={this.state.rightClickShapeID}
       getSiblingLabelItems={this.getSiblingLabelItems}  /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const colorPickerPosition = this.state.colorPickerPosition; 
