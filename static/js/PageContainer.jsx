@@ -13,7 +13,7 @@ import image from '../assets/illustrator/image.svg';
 import placeholder from '../assets/illustrator/placeholder.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
 import labelDynamic from '../assets/illustrator/label.svg';
-import labelStatic from '../assets/illustrator/labelWidget.svg';
+import labelStatic from '../assets/illustrator/label_widgets.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
 

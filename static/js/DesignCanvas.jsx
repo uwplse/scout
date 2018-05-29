@@ -9,7 +9,7 @@ import search from '../assets/illustrator/search.svg';
 import image from '../assets/illustrator/image.svg'
 import placeholder from '../assets/illustrator/placeholder.svg'
 import filledButton from '../assets/illustrator/filledButton.svg';
-import label from '../assets/illustrator/label.svg';
+import label from '../assets/illustrator/label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
 
 export default class DesignCanvas extends React.Component {

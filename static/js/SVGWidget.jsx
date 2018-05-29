@@ -107,7 +107,7 @@ export default class SVGWidget extends React.Component {
     this.setTextLabel(true);   
 
     if(this.type == "label") {
-      this.initFontSize(this.initialFontSize);       
+      this.initFontSize();       
     }
   }
 
@@ -161,9 +161,6 @@ export default class SVGWidget extends React.Component {
     let widthRounded = Math.round(boundingRect.width); 
     let heightRounded = Math.round(boundingRect.height);
 
-    // let svgViewBox = element.querySelectorAll(".SVGInline-svg"); 
-    // svgViewBox[0].removeAttribute("viewBox");
-
     this.setElementSize(widthRounded, heightRounded);
 
     this.setState({
@@ -177,21 +174,8 @@ export default class SVGWidget extends React.Component {
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     if(editableText[0]) {
-      editableText[0].innerHTML = this.element.label;  
-
-      // Adjust the initial translation of the text to center it in the middle (only for buttons)
-      let bboxText = editableText[0].getBoundingClientRect();
-      let heightLocation = (this.state.height/2);
-      if(this.controlType == "button") {
-        editableText[0].style.transform = "translate(" + this.state.width/2 + "px," + heightLocation + "px)";  
-      }
-      else if(this.controlType == "label") {
-        editableText[0].style.transform = "translate(0px," + heightLocation + "px)";  
-      }  
+      editableText[0].innerHTML = this.element.label;   
     }
-
-    // let svgViewBox = svgElement.querySelectorAll(".SVGInline-svg"); 
-    // svgViewBox[0].removeAttribute("viewBox");
 
     if(initSize) {
       if(this.state.width == 0 || this.state.height == 0) {
@@ -220,14 +204,17 @@ export default class SVGWidget extends React.Component {
     }
   }
 
-  initFontSize(value) {
+  initFontSize() {
     // Update the font size of the SVG element
     let id = "widget-container-" + this.id; 
     let svgElement  = document.getElementById(id); 
 
     let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
 
-    svgElementInline[0].setAttribute("font-size", value); 
+    svgElementInline[0].setAttribute("font-size", this.initialFontSize); 
+
+    // Set it on the element object as well
+    this.element.fontSize = this.initialFontSize; 
   }
 
   setFontSize(value) {
@@ -240,7 +227,9 @@ export default class SVGWidget extends React.Component {
     // Unset these so that we can calculate a new size after the font size is changed
     svgElementInline[0].style.width = ""; 
     svgElementInline[0].style.height = ""; 
-    svgElementInline[0].setAttribute("font-size", value);
+
+    // Set on the element object
+    this.element.fontSize = value; 
 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     let boundingRect = editableText[0].getBoundingClientRect(); 
