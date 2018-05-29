@@ -67,6 +67,7 @@ export default class SVGWidget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 
+    this.initialFontSize = 36; 
 
     // Callback to notify the parent container to re-check the solution validity
     this.checkSolutionValidity =  props.checkSolutionValidity; 
@@ -76,6 +77,7 @@ export default class SVGWidget extends React.Component {
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
+    this.initFontSize = this.initFontSize.bind(this);
     this.setImportanceLevel = this.setImportanceLevel.bind(this); 
     this.setLabel = this.setLabel.bind(this);
     this.onElementResized = this.onElementResized.bind(this);
@@ -84,6 +86,7 @@ export default class SVGWidget extends React.Component {
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
       width: SVGWidget.initialWidths(this.controlType), 
+      fontSize: this.initialFontSize,
       importance: "normal", 
       showImportance: props.showImportanceLevels, 
       showLabels: false, 
@@ -102,6 +105,10 @@ export default class SVGWidget extends React.Component {
   componentDidMount() {
     // Set the initial value for the text label
     this.setTextLabel(true);   
+
+    if(this.type == "label") {
+      this.initFontSize(this.initialFontSize);       
+    }
   }
 
   componentDidUpdate() {
@@ -213,8 +220,18 @@ export default class SVGWidget extends React.Component {
     }
   }
 
-  setFontSize(value) {
+  initFontSize(value) {
     // Update the font size of the SVG element
+    let id = "widget-container-" + this.id; 
+    let svgElement  = document.getElementById(id); 
+
+    let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
+
+    svgElementInline[0].setAttribute("font-size", value); 
+  }
+
+  setFontSize(value) {
+    // Update the element object size
     let id = "widget-container-" + this.id; 
     let svgElement  = document.getElementById(id); 
 
@@ -226,14 +243,14 @@ export default class SVGWidget extends React.Component {
     svgElementInline[0].setAttribute("font-size", value);
 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
-
-    // Update the element object size
     let boundingRect = editableText[0].getBoundingClientRect(); 
     this.setState({
-      width: boundingRect.width, 
-      height: boundingRect.height
-    })
+      width: Math.round(boundingRect.width,0), 
+      height: Math.round(boundingRect.height,0), 
+      fontSize: value
+    }); 
 
+    // Close the right click menu
     this.hideRightClickMenu(); 
   }
 
@@ -297,13 +314,13 @@ export default class SVGWidget extends React.Component {
     };
 
     const isEditable = this.controlType != "group";
-
+    const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
             contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
           <div className="widget-control-row"> 
-            <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+            <SVGInline style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
             <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}
                 style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>

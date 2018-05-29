@@ -12,7 +12,8 @@ import search from '../assets/illustrator/search.svg';
 import image from '../assets/illustrator/image.svg';
 import placeholder from '../assets/illustrator/placeholder.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
-import label from '../assets/illustrator/label.svg';
+import labelDynamic from '../assets/illustrator/label.svg';
+import labelStatic from '../assets/illustrator/labelWidget.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
 
@@ -313,7 +314,7 @@ export default class PageContainer extends React.Component {
                 svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
               <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
-                svg={ label } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', label)}/>
+                svg={ labelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', labelDynamic)}/>
               <SVGInline className="widget-control widget-control-search" 
                 height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
                 svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>
