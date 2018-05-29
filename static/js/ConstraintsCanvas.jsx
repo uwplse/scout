@@ -158,25 +158,24 @@ export default class ConstraintsCanvas extends React.Component {
     });   
   }
 
-  findShapeSiblings(shapeId, siblings) {
+  findShapeSiblings(shapeId, siblings, node) {
     // Get the two neighboring siblings for a shape in the tree
-    let tree = this.state.treeData; 
-    for(var i=0; i<tree.length; i++) {
-      let treeNode = tree[i]; 
+    for(var i=0; i<node.length; i++) {
+      let treeNode = node[i]; 
       let nodeID = treeNode.title.props.id; 
       if(nodeID == shapeId) {
         if(i > 0) {
-          let prevSibling = tree[i-1]; 
+          let prevSibling = node[i-1]; 
           siblings.previous = prevSibling; 
         }
 
-        if(i<tree.length - 1) {
-          let nextSibling = tree[i+1];
+        if(i < node.length - 1) {
+          let nextSibling = node[i+1];
           siblings.next = nextSibling; 
         }
       }
       else if(treeNode.children) {
-        this.findShapeSiblings(shapeId, siblings); 
+        this.findShapeSiblings(shapeId, siblings, treeNode.children); 
       }      
     }
   }
@@ -184,7 +183,8 @@ export default class ConstraintsCanvas extends React.Component {
   getSiblingLabelItems(shapeId) {
     // Go through tree data (recursive) and find the level of the element
     let siblings = {}; 
-    this.findShapeSiblings(shapeId, siblings);
+    let node = this.state.treeData; 
+    this.findShapeSiblings(shapeId, siblings, node);
 
     let menuItems = []; 
     if(siblings.previous) {

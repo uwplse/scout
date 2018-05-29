@@ -35,7 +35,7 @@ export default class SVGWidget extends React.Component {
       'search': 25, 
       'group': 40, 
       'labelGroup': 40, 
-      'label': 40, 
+      'label': 35, 
       'image': 50, 
       'placeholder': 50
     }
@@ -79,6 +79,7 @@ export default class SVGWidget extends React.Component {
     this.setImportanceLevel = this.setImportanceLevel.bind(this); 
     this.setLabel = this.setLabel.bind(this);
     this.onElementResized = this.onElementResized.bind(this);
+    this.computeLabelPosition = this.computeLabelPosition.bind(this);
 
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
@@ -86,7 +87,11 @@ export default class SVGWidget extends React.Component {
       importance: "normal", 
       showImportance: props.showImportanceLevels, 
       showLabels: false, 
-      labelDirection: undefined
+      labelDirection: undefined, 
+      labelPosition: {
+        x: 0, 
+        y: 0
+      }
     }
   }
 
@@ -246,14 +251,27 @@ export default class SVGWidget extends React.Component {
     this.hideRightClickMenu();
   }
 
+  computeLabelPosition(){
+    let svgElement = document.getElementById("widget-container-" + this.id); 
+    let svgBox = svgElement.getBoundingClientRect(); 
+
+    return {
+      x: (svgBox.width)/2, 
+      y: svgBox.height + 25
+    }; 
+  }
+
   setLabel(shapeId, direction) {
     // Save the labels relationship to the shape object 
     this.element.labels = shapeId; 
 
+    let labelPosition = this.computeLabelPosition();
+
     // Notify the constraints canvas that it should set the label decorator arrow
     this.setState({
       showLabels: true, 
-      labelDirection: direction
+      labelDirection: direction, 
+      labelPosition: labelPosition
     }); 
 
     this.hideRightClickMenu();
@@ -272,6 +290,7 @@ export default class SVGWidget extends React.Component {
     const showImportance = this.state.showImportance; 
     const showLabels = this.state.showLabels; 
     const labelDirection = this.state.labelDirection; 
+    const labelPosition = this.state.labelPosition; 
     this.setElementSize(width, height); 
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
@@ -285,7 +304,8 @@ export default class SVGWidget extends React.Component {
             contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
           <div className="widget-control-row"> 
             <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
-            <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}>
+            <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}
+                style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>
           </div>
           <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
