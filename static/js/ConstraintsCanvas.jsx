@@ -1,8 +1,9 @@
 import React from "react";
 import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
-import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
+import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey } from 'react-sortable-tree';
 import RightClickMenu from './RightClickMenu'; 
+import group from '../assets/illustrator/groupContainer.svg';
 // import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
@@ -22,10 +23,13 @@ export default class ConstraintsCanvas extends React.Component {
     this.updateBackgroundColor = this.updateBackgroundColor.bind(this);
     this.findShapeSiblings = this.findShapeSiblings.bind(this);
     this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
+    this.onMoveNode = this.onMoveNode.bind(this);
+    this.canBeTyped = this.canBeTyped.bind(this); 
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
     this.widgetTreeNodeMap = {};
+    this.canBeTypedGroupsMap = {}; 
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
@@ -89,13 +93,15 @@ export default class ConstraintsCanvas extends React.Component {
     canvas.children.push(page); 
   }
 
-  getWidget(shape, src) {
+  getWidget(shape, src, options={}) {
     let shapeId = shape.name;
+    let canBeTyped = (shape.type == "group" && options.canBeTyped); 
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
               source={src}
+              canBeTyped={this.canBeTyped}
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
@@ -311,7 +317,7 @@ export default class ConstraintsCanvas extends React.Component {
           }
         }
 
-        // Remove the item at that indexx
+        // Remove the item at that index
         if(feedbackIndex > -1) {
           treeNode.subtitle.splice(feedbackIndex, 1);        
         }
@@ -405,10 +411,130 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
+  canBeTyped(shapeId) {
+    if(this.constraintsShapesMap[shapeId] && this.constraintsShapesMap[shapeId].type == "group") {
+      if(this.canBeTypedGroupsMap[shapeId]) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  typesMatch(group1, group2) {
+    // Check whether the set of types in each group list match 
+    if(group1.length != group2.length) {
+      return false;
+    }
+
+    for(var i=0; i<group1.length; i++) {
+      let item1 = group1[i]; 
+      let item2 = group2[i]; 
+      if(item1 != item2) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  canSplitIntoGroupOfSize(node, size) {
+    // Determine if the children of this node can be split into a group of the given size
+    let pattern = []; 
+
+    // Collect all the types and split them into groups based on the given size
+    let currSize = 0; 
+    let currGroup = []; 
+    for(var i=0; i<node.children.length; i++) {
+      let currChild = node.children[i]; 
+      if(currSize == size-1){
+        if(currGroup.length) {
+          pattern.push(currGroup); 
+        }
+
+        currSize = 0; 
+        currGroup = []; 
+      }
+
+      currGroup.push(currChild.title.props.shape.type);
+      currSize++; 
+    }
+
+    // Now, verify that each of the subgroups has the exact same set of types
+    for(var i=0; i<pattern.length; i++){
+      if(i < pattern.length - 1) {
+        let patternGroup = pattern[i]; 
+        let nextPatternGroup = pattern[i+1]; 
+        if(!typesMatch) {
+          return false;
+        }
+      }
+    }
+
+    return true; 
+  }
+
+  getGroupSizes(total) {
+    // Get the set of group sizes to check by finding the possible divisors
+    let totalFloor = Math.floor(total/2); 
+    let sizes = []; 
+    for(var i=1; i<=totalFloor; i++) {
+      if(total % i == 0){
+        sizes.push(i); 
+      }
+    }
+
+    return sizes;
+  }
+
+  checkGroupTyping(node) {
+    // Do the type inference algorithm
+    // iterate through each set of possible groupings starting with the greatest common divisor
+    let numChildren = node.children.length; 
+    let groupSizes = this.getGroupSizes(numChildren);
+    for(var i=0; i<groupSizes.length; i++) {
+      let groupSize = groupSizes[i];
+      if(this.canSplitIntoGroupOfSize(node, groupSize)) {
+        return groupSize;
+      }
+    }
+
+    return false;
+  }
+
   onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
-    // Called whenever a node is moved in the tree
-    // Tree updates have already been made by this point so we don't need to do this in a callback
-    this.checkSolutionValidity();
+    // If the node was moved into group, check whether group typing should be applied. 
+    if(nextParentNode && nextParentNode.title.props.shape.type == "group") {
+      let parentPath = nextPath.splice(0); 
+      parentPath.splice(parentPath.length-1, 1); 
+      let shouldBeTyped = this.checkGroupTyping(nextParentNode); 
+        // Find the group in the tree, remove it, and display the label to apply the typing
+      if(shouldBeTyped) {
+        this.canBeTypedGroupsMap[nextParentNode.title.props.shape.name] = true; 
+
+        let widget = this.getWidget(nextParentNode.title.props.shape, group, { canBeTyped: true }); 
+        let newNode = {
+          title: widget, 
+          subtitle: [], 
+          expanded: true, 
+          children: nextParentNode.children
+        }; 
+
+        this.state.treeData = changeNodeAtPath({
+          treeData: this.state.treeData,
+          path: parentPath,
+          getNodeKey: defaultGetNodeKey,
+          ignoreCollapsed: true,
+          newNode: newNode
+        }); 
+
+        this.setState(state => ({
+          treeData: this.state.treeData
+        }), this.checkSolutionValidity); 
+      }
+      else {
+        this.canBeTypedGroupsMap[nextParentNode.title.props.shape.name] = false;    
+      }
+    }
   }
 
   removeWidgetNode(path){

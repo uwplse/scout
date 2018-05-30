@@ -273,8 +273,6 @@ export default class DesignCanvas extends React.Component {
   }
 
   closeMenuAndRemoveHighlightConstraints(e) {
-
-    console.log("hide deisgn menu"); 
     // Trigger constraint highlighting if the solution is not current valid
     if(!this.state.valid && this.state.conflicts) {
       for(var i=0; i<this.state.conflicts.length; i++) {

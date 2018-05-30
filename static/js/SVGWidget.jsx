@@ -74,6 +74,7 @@ export default class SVGWidget extends React.Component {
     this.displayRightClickMenu = props.displayRightClickMenu; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
     this.displayLabelIndicator = props.displayLabelIndicator; 
+    this.canBeTyped = props.canBeTyped; 
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
@@ -94,7 +95,8 @@ export default class SVGWidget extends React.Component {
       labelPosition: {
         x: 0, 
         y: 0
-      }
+      }, 
+      typedGroup: false
     }
   }
 
@@ -228,6 +230,9 @@ export default class SVGWidget extends React.Component {
     svgElementInline[0].style.width = ""; 
     svgElementInline[0].style.height = ""; 
 
+    // Needed for computing the final height and width. This will be removed when the element re-renders. 
+    svgElementInline[0].setAttribute("font-size", value); 
+
     // Set on the element object
     this.element.fontSize = value; 
 
@@ -283,6 +288,14 @@ export default class SVGWidget extends React.Component {
     this.hideRightClickMenu();
   }
 
+  setTypedGroup(value) {
+    if(value == "yes") {
+      this.setState({
+        typedGroup: true
+      }); 
+    }
+  }
+
   onElementResized(evt, direction, element, delta) {
     // When resizing finishes, update the size of the element
     this.adjustElementSize(element);
@@ -304,6 +317,7 @@ export default class SVGWidget extends React.Component {
 
     const isEditable = this.controlType != "group";
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
+    const typedGroup = this.canBeTyped(this.id);
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
@@ -313,6 +327,13 @@ export default class SVGWidget extends React.Component {
             <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}
                 style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>
+            {((this.type == "group" && typedGroup) ? (
+              <div className="widget-control-typing">
+                Make this a typed group? 
+                <span className="widget-control-typing-yes" onClick={this.setTypedGroup.bind(this, "yes")}>Yes</span>
+                <span className="widget-control-typing-no" onClick={this.setTypedGroup.bind(this, "no")}>No</span>
+              </div> 
+              ) : undefined)}
           </div>
           <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
             <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
