@@ -136,6 +136,20 @@ body {
 	z-index: 1000; 
 }
 
+.widget-control-typing {
+	margin-top: 0.5em;
+}
+
+.widget-control-typing span {
+	margin-left: 0.5em;
+	cursor: pointer;
+	color: blue;
+}
+
+.widget-control-typing span:hover {
+	text-decoration: underline;
+}
+
 .widget-stepper {
 	height: 25px; 
 }

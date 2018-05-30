@@ -3,7 +3,9 @@ import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey } from 'react-sortable-tree';
 import RightClickMenu from './RightClickMenu'; 
+import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
+import typedGroup from '../assets/illustrator/typedGroupContainer.svg';  
 // import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
@@ -24,12 +26,12 @@ export default class ConstraintsCanvas extends React.Component {
     this.findShapeSiblings = this.findShapeSiblings.bind(this);
     this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
-    this.canBeTyped = this.canBeTyped.bind(this); 
+    this.setTypedGroup = this.setTypedGroup.bind(this);
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
     this.widgetTreeNodeMap = {};
-    this.canBeTypedGroupsMap = {}; 
+    this.widgetTreeNodePaths = {}; 
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
@@ -93,15 +95,13 @@ export default class ConstraintsCanvas extends React.Component {
     canvas.children.push(page); 
   }
 
-  getWidget(shape, src, options={}) {
+  getWidget(shape, src) {
     let shapeId = shape.name;
-    let canBeTyped = (shape.type == "group" && options.canBeTyped); 
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
               source={src}
-              canBeTyped={this.canBeTyped}
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
@@ -119,6 +119,8 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[shapeId] = newTreeNode; 
+    this.widgetTreeNodePaths[shapeId] = [this.state.treeData.length - 1]; 
+
     this.setState(state => ({
       treeData: this.state.treeData.concat(newTreeNode)
     }), this.checkSolutionValidity);
@@ -411,15 +413,6 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  canBeTyped(shapeId) {
-    if(this.constraintsShapesMap[shapeId] && this.constraintsShapesMap[shapeId].type == "group") {
-      if(this.canBeTypedGroupsMap[shapeId]) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   typesMatch(group1, group2) {
     // Check whether the set of types in each group list match 
     if(group1.length != group2.length) {
@@ -501,29 +494,36 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
-    // If the node was moved into group, check whether group typing should be applied. 
-    if(nextParentNode && nextParentNode.title.props.shape.type == "group") {
-      let parentPath = nextPath.splice(0); 
-      parentPath.splice(parentPath.length-1, 1); 
-      let shouldBeTyped = this.checkGroupTyping(nextParentNode); 
-        // Find the group in the tree, remove it, and display the label to apply the typing
-      if(shouldBeTyped) {
-        this.canBeTypedGroupsMap[nextParentNode.title.props.shape.name] = true; 
+  setTypedGroup(shapeID, value){
+    let source = value == "Yes" ? typedGroup : group; 
 
-        let widget = this.getWidget(nextParentNode.title.props.shape, group, { canBeTyped: true }); 
+    // Make this group a typed group 
+    let treeNodePath = this.widgetTreeNodePaths[shapeID]; 
+    let treeNode = getNodeAtPath({
+      treeData: this.state.treeData, 
+      path: treeNodePath,
+      getNodeKey: defaultGetNodeKey, 
+      ignoreCollapsed: false, 
+    }); 
+
+    if(treeNode) {
+      let treeNodeResult = treeNode.node.children; 
+      if(treeNodeResult.length) {
+        let shapeNode = treeNodeResult[0]; 
+        let widget = this.getWidget(shapeNode.title.props.shape, source); 
+
         let newNode = {
           title: widget, 
           subtitle: [], 
           expanded: true, 
-          children: nextParentNode.children
+          children: shapeNode.children
         }; 
 
         this.state.treeData = changeNodeAtPath({
           treeData: this.state.treeData,
-          path: parentPath,
+          path: treeNodePath,
           getNodeKey: defaultGetNodeKey,
-          ignoreCollapsed: true,
+          ignoreCollapsed: false,
           newNode: newNode
         }); 
 
@@ -531,8 +531,37 @@ export default class ConstraintsCanvas extends React.Component {
           treeData: this.state.treeData
         }), this.checkSolutionValidity); 
       }
-      else {
-        this.canBeTypedGroupsMap[nextParentNode.title.props.shape.name] = false;    
+    }
+  }z
+
+  getWidgetTyping(key, shapeID){
+    return (<WidgetTyping key={key} shapeID={shapeID} setTypedGroup={this.setTypedGroup} />); 
+  }
+
+  onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
+    // If the node was moved into group, check whether group typing should be applied. 
+    if(nextParentNode) {
+      let shapeId = node.title.props.shape.name; 
+      // Update the current path to the element in the map 
+      this.widgetTreeNodePaths[shapeId] = nextPath; 
+
+      if(nextParentNode.title.props.shape.type == "group") {
+        let parentPath = nextPath.splice(0); 
+        parentPath.splice(parentPath.length-1, 1); 
+        let shouldBeTyped = this.checkGroupTyping(nextParentNode); 
+          // Find the group in the tree, remove it, and display the label to apply the typing
+        if(shouldBeTyped) {
+          let typingIndex = nextParentNode.subtitle.length; 
+          let widgetTypingElement = this.getWidgetTyping(typingIndex, shapeId); 
+          nextParentNode.subtitle.unshift(widgetTypingElement);
+
+          this.setState(state => ({
+            treeData: this.state.treeData
+          }), this.checkSolutionValidity); 
+        }
+        else {
+          // TODO: Remove the corresponding WidgetTyping item from the subtitle area of the node
+        }
       }
     }
   }
@@ -549,6 +578,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     let shapeID = treeNode.node.title.props.id; 
     delete this.widgetTreeNodeMap[shapeID]; 
+    delete this.widgetTreeNodePaths[shapeID];
 
     // Delete the entry in the constraints canvas shape map 
     delete this.constraintsShapesMap[shapeID];
