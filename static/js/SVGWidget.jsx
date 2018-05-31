@@ -112,7 +112,7 @@ export default class SVGWidget extends React.Component {
         y: 0
       }, 
       svgSource: props.source, 
-      typedGroup: false
+      typedGroup: props.typedGroup
     }
   }
 
@@ -221,6 +221,10 @@ export default class SVGWidget extends React.Component {
     this.element.size.width = width; 
   }
 
+  setElementTyping(typed) {
+    this.element.typed = typed; 
+  }
+
   showContextMenu(evt) {
     evt.stopPropagation();
     evt.preventDefault();
@@ -316,7 +320,7 @@ export default class SVGWidget extends React.Component {
   }
 
   setTypedGroup(value) {
-    if(value == "yes") {
+    if(value) {
       this.setState({
         typedGroup: true
       }); 
@@ -337,7 +341,9 @@ export default class SVGWidget extends React.Component {
     const showLabels = this.state.showLabels; 
     const labelDirection = this.state.labelDirection; 
     const labelPosition = this.state.labelPosition; 
+    const typedGroup = this.state.typedGroup; 
     this.setElementSize(width, height); 
+    this.setElementTyping(typedGroup);
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };

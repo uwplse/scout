@@ -100,7 +100,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   getWidget(shape, src, options={}) {
     let shapeId = shape.name;
-    let typedGroup = options.typedGroup ?  options.typedGroup : undefined;  
+    let typedGroup = options.typedGroup ?  options.typedGroup : false;  
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
@@ -575,7 +575,7 @@ export default class ConstraintsCanvas extends React.Component {
     let groupNode = this.widgetTreeNodeMap[groupID];
     let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
     if(groupNodeData) {
-      let widget = this.getWidget(groupNode.title.props.shape, source, { typed: typed }); 
+      let widget = this.getWidget(groupNode.title.props.shape, source, { typedGroup: typed }); 
       let newGroupChildren = this.restructureTypedGroupChildren(groupNodeData.children, groupSize); 
 
       // Create a new node for the widget

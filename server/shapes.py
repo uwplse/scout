@@ -11,6 +11,7 @@ class Shape(object):
 		self.shape_id = shape_id
 		self.shape_type = element["type"]
 		self.element = element
+		self.typed = False
 		self.variables = DotMap() 
 		self.variables.x = sh.Variable(shape_id, "x")
 		self.variables.y = sh.Variable(shape_id, "y")
@@ -44,6 +45,9 @@ class Shape(object):
 			if "location" in element:
 				self.orig_x = element["location"]["x"]
 				self.orig_y = element["location"]["y"]
+
+			if "typed" in element: 
+				self.typed = element["typed"]
 
 class LeafShape(Shape): 
 	def __init__(self, shape_id, element): 

@@ -131,6 +131,44 @@ class ConstraintBuilder(object):
 			self.align_container(container)
 			self.non_overlapping(container)
 
+			if container.typed: 
+				# If this is a typed container, enforce all variables on child containers to be the same
+				self.init_typed_container(container)
+
+	def init_typed_container(self, container): 
+		child_shapes = container.children
+		all_same_values = []
+
+		for i in range(0, len(child_shapes)): 
+			if i < len(child_shapes) - 1: 
+				child1 = child_shapes[i]
+				child2 = child_shapes[i+1]
+
+				child1_variables = child1.variables.toDict()
+				child2_variables = child2.variables.toDict()
+
+				child1_keys = list(child1_variables.keys())
+				child2_keys = list(child2_variables.keys())
+
+				for j in range(0, len(child1_keys)): 
+					child1_key = child1_keys[j]
+					child2_key = child2_keys[j]
+					child1_variable = child1_variables[child1_key]
+					child2_variable = child2_variables[child2_key]
+					children_same = child1_variable.z3 == child2_variable.z3
+
+					if child1_key != "x" and child1_key != "y": 
+						if j < len(all_same_values): 
+							all_same_values[j].append(children_same)
+						else: 
+							all_same_values.append([children_same])
+
+		for all_same_variables in all_same_values: 
+			# For each collection of child variable values for a variable
+			# Enforce all values of that collection to be thes ame 
+			self.solver.add(And(all_same_variables))
+
+
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
 		# TODO: Make generic at some point
