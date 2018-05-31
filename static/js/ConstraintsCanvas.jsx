@@ -576,11 +576,22 @@ export default class ConstraintsCanvas extends React.Component {
     // If the node was moved into group, check whether group typing should be applied. 
     if(nextParentNode) {
       if(nextParentNode.title.props.shape.type == "group") {
+        // Check first whether the widget typing alert has already been activated for this group
+        let alreadyTypedActive = false; 
+        if(nextParentNode.subtitle && nextParentNode.subtitle.length) {
+          let firstSubtitle = nextParentNode.subtitle[0]; 
+          if(firstSubtitle.props.type == "typing") {
+            // The node already has a typing message active, so don't add a new one if the group should be typed
+            alreadyTypedActive = true;
+          }
+        }
+
         let shouldBeTyped = this.checkGroupTyping(nextParentNode); 
         let parentID = nextParentNode.title.props.shape.name; 
+
           // Find the group in the tree, remove it, and display the label to apply the typing
-        if(shouldBeTyped) {
-          let typingIndex = nextParentNode.subtitle.length; 
+        if(shouldBeTyped && !alreadyTypedActive) {
+          let typingIndex = 0; 
           let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID); 
           nextParentNode.subtitle.unshift(widgetTypingElement);
 
