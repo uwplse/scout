@@ -374,7 +374,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  getPathForTreeNode(treeNode) {
+  getPathAndChildrenForTreeNode(treeNode) {
     // Innefficient but is the easiset to implement for now
     // Get all the tree data as a flattened list
     let treeNodeID = treeNode.title.props.shape.name; 
@@ -388,11 +388,11 @@ export default class ConstraintsCanvas extends React.Component {
       let node = flatData[i]; 
       let nodeItem = node.node; 
       if(nodeItem.title.props.shape && nodeItem.title.props.shape.name == treeNodeID) {
-        return node.path; 
+        return { path: node.path, children: node.node.children }; 
       }
     }
 
-    return [-1];
+    return { path: [-1], children: [] }; 
   }
 
 
@@ -499,7 +499,7 @@ export default class ConstraintsCanvas extends React.Component {
     // Get the set of group sizes to check by finding the possible divisors
     let totalFloor = Math.floor(total/2); 
     let sizes = []; 
-    for(var i=2; i<=totalFloor; i++) {
+    for(var i=1; i<=totalFloor; i++) {
       if(total % i == 0){
         sizes.push(i); 
       }
@@ -527,26 +527,20 @@ export default class ConstraintsCanvas extends React.Component {
     let source = typed ? typedGroup : group; 
 
     let groupNode = this.widgetTreeNodeMap[groupID];
-    let groupNodePath = this.getPathForTreeNode(groupNode);
-    let groupNodeInTree = getNodeAtPath({
-      treeData: this.state.treeData, 
-      path: groupNodePath, 
-      getNodeKey: defaultGetNodeKey,
-    }); 
-
-    if(groupNode) {
+    let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
+    if(groupNodeData) {
       let widget = this.getWidget(groupNode.title.props.shape, source, { typed: typed }); 
 
       let newNode = {
         title: widget, 
         subtitle: [], 
         expanded: true, 
-        children: groupNodeInTree.node.children
+        children: groupNodeData.children
       }; 
 
       this.state.treeData = changeNodeAtPath({
         treeData: this.state.treeData,
-        path: groupNodePath,
+        path: groupNodeData.path,
         getNodeKey: defaultGetNodeKey,
         ignoreCollapsed: false,
         newNode: newNode
