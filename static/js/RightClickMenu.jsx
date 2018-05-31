@@ -27,7 +27,7 @@ class LabelMenuItem extends React.Component {
   render () {
     var self = this;
     let label = this.shapeLabel + " (" + this.direction + ")"; 
-    return <li className="right-click-menu-item" onClick={function() { self.onClick(self.shapeId); }}>{label}</li>; 
+    return <li className="right-click-menu-item" onClick={function() { self.onClick(self.shapeId, self.direction); }}>{label}</li>; 
   }
 }
 
@@ -54,6 +54,7 @@ export default class RightClickMenu extends React.Component {
     this.setFontSize = props.setFontSize;
     this.setImportanceLevel = props.setImportanceLevel; 
     this.setLabel = props.setLabel; 
+    this.shapeID = props.shapeID; 
 
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
@@ -102,14 +103,22 @@ export default class RightClickMenu extends React.Component {
     let fontMenu = document.getElementById("font-size-menu-label"); 
     let fontLabelBox = fontMenu.getBoundingClientRect(); 
 
+    let labelLocation = this.state.labelMenuLocation; 
+    
+    let labelMenu = document.getElementById("label-menu-label"); 
+    let labelBox = labelMenu.getBoundingClientRect(); 
 
     this.setState({
       fontSizeMenuLocation: {
-        top: 0, 
+        top: labelBox.height, 
         left: left
       }, 
       importanceMenuLocation: {
-        top: fontLabelBox.height, 
+        top: fontLabelBox.height + labelBox.height, 
+        left: left
+      }, 
+      labelMenuLocation: {
+        top: 0, 
         left: left
       }
     }); 
@@ -137,11 +146,11 @@ export default class RightClickMenu extends React.Component {
 
   getLabelItems() {
     // Label items should return the text of the sibling element and the shape ID
-    let labelItems = this.getSiblingLabelItems(); 
+    let labelItems = this.getSiblingLabelItems(this.shapeID); 
     let menuItems = []; 
     for(var i=0; i<labelItems.length; i++) {
       let label = labelItems[i]; 
-      menuItems.push(<LabelMenuItem key={i} shapeId={label.id} shapeLabel={label.label} direction={label.direction} />); 
+      menuItems.push(<LabelMenuItem key={i} shapeId={label.id} shapeLabel={label.label} direction={label.direction} onClick={this.setLabel} />); 
     }
     return menuItems; 
   }
@@ -206,7 +215,7 @@ export default class RightClickMenu extends React.Component {
 	  return (
       <div id="right-click-menu-container" style={{left: menuLeft + "px", top: menuTop + "px"}} className="right-click-menu-container">
         {(labelShown ? (
-            <div id="font-size-menu-label" className="right-click-menu-label" onClick={this.openLabelMenu}> 
+            <div id="label-menu-label" className="right-click-menu-label" onClick={this.openLabelMenu}> 
               <span>Labels</span>
               <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
             </div>) : undefined)}

@@ -1,8 +1,11 @@
 import React from "react";
 import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
-import SortableTree, { removeNodeAtPath, getNodeAtPath } from 'react-sortable-tree';
+import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey } from 'react-sortable-tree';
 import RightClickMenu from './RightClickMenu'; 
+import WidgetTyping from './WidgetTyping'; 
+import group from '../assets/illustrator/groupContainer.svg';
+import typedGroup from '../assets/illustrator/typedGroupContainer.svg';  
 // import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
@@ -20,10 +23,16 @@ export default class ConstraintsCanvas extends React.Component {
     this.hideRightClickMenu = this.hideRightClickMenu.bind(this); 
     this.displayColorPicker = this.displayColorPicker.bind(this);
     this.updateBackgroundColor = this.updateBackgroundColor.bind(this);
+    this.findShapeSiblings = this.findShapeSiblings.bind(this);
+    this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
+    this.onMoveNode = this.onMoveNode.bind(this);
+    this.setTypingOnGroup = this.setTypingOnGroup.bind(this);
+    this.closeTypingAlert = this.closeTypingAlert.bind(this); 
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
     this.widgetTreeNodeMap = {};
+    this.widgetTreeNodePaths = {}; 
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
@@ -31,7 +40,9 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultControlWidth = 120; 
     this.defaultControlHeight = 40; 
     this.defaultFeedbackHeight = 40; 
+    this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
+    this.minimumRowHeight = 50; 
 
     this.state = { 
       treeData: [], 
@@ -44,6 +55,7 @@ export default class ConstraintsCanvas extends React.Component {
         x: 0, 
         y: 0
       }, 
+      rightClickShapeID: undefined, 
       colorPickerShown: false, 
       colorPickerCallback: undefined, 
       colorPickerPosition: {
@@ -86,17 +98,19 @@ export default class ConstraintsCanvas extends React.Component {
     canvas.children.push(page); 
   }
 
-  getWidget(shape, src) {
+  getWidget(shape, src, options={}) {
     let shapeId = shape.name;
+    let typedGroup = options.typedGroup ?  options.typedGroup : undefined;  
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
               source={src}
+              typedGroup={typedGroup}
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
-              hideRightClickMenu= {this.hideRightClickMenu} />);
+              hideRightClickMenu={this.hideRightClickMenu} />);
   }
 
   addShapeOfTypeToCanvas(type, controlType, source) {
@@ -110,14 +124,19 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[shapeId] = newTreeNode; 
+    this.state.treeData = this.state.treeData.concat(newTreeNode); 
+
     this.setState(state => ({
-      treeData: this.state.treeData.concat(newTreeNode)
+      treeData: this.state.treeData
     }), this.checkSolutionValidity);
+
+    this.widgetTreeNodePaths[shapeId] = [this.state.treeData.length - 1]; 
   }
 
   getWidgetFeedback(shapeId, parentShape, action, message, highlighted){
     return (<WidgetFeedback 
               key={shapeId} 
+              type="feedback"
               id={shapeId} 
               parentShape={parentShape}
               action={action}
@@ -130,7 +149,7 @@ export default class ConstraintsCanvas extends React.Component {
     return this.constraintsShapesMap[shapeID]; 
   }
 
-  displayRightClickMenu(evt, setFontSizeCallback, setImportanceCallback, setLabelCallback) {
+  displayRightClickMenu(evt, shapeID, setFontSizeCallback, setImportanceCallback, setLabelCallback) {
     this.setState({
       rightClickMenuShown: true, 
       rightClickMenuSetFontSize: setFontSizeCallback, // The method to call in the SVGWidget instance that called this menu open.
@@ -139,7 +158,8 @@ export default class ConstraintsCanvas extends React.Component {
       rightClickMenuPosition: {
         x: evt.clientX, 
         y: evt.clientY
-      }
+      }, 
+      rightClickShapeID: shapeID
     });  
   }
 
@@ -154,17 +174,52 @@ export default class ConstraintsCanvas extends React.Component {
     });   
   }
 
+  findShapeSiblings(shapeId, siblings, node) {
+    // Get the two neighboring siblings for a shape in the tree
+    for(var i=0; i<node.length; i++) {
+      let treeNode = node[i]; 
+      let nodeID = treeNode.title.props.id; 
+      if(nodeID == shapeId) {
+        if(i > 0) {
+          let prevSibling = node[i-1]; 
+          siblings.previous = prevSibling; 
+        }
+
+        if(i < node.length - 1) {
+          let nextSibling = node[i+1];
+          siblings.next = nextSibling; 
+        }
+      }
+      else if(treeNode.children) {
+        this.findShapeSiblings(shapeId, siblings, treeNode.children); 
+      }      
+    }
+  }
+
   getSiblingLabelItems(shapeId) {
-    // Find siblings in the tree (above and below) and return them to the rightclick menu instance
-
     // Go through tree data (recursive) and find the level of the element
+    let siblings = {}; 
+    let node = this.state.treeData; 
+    this.findShapeSiblings(shapeId, siblings, node);
 
-    // then find the coresponding siblings. 
+    let menuItems = []; 
+    if(siblings.previous) {
+      menuItems.push({
+        id: siblings.previous.title.props.id, 
+        label: siblings.previous.title.props.shape.label, 
+        direction: 'above'
+      }); 
+    }
 
-    // Make object for each with the ID, label, and direction
+    if(siblings.next) {
+      menuItems.push({
+        id: siblings.next.title.props.id, 
+        label: siblings.next.title.props.shape.label, 
+        direction: 'below'
+      }); 
+    }
 
-    // Send that back to the right click menu 
-    return []; 
+    return menuItems; 
   }
 
   updateBackgroundColor(color) {
@@ -272,7 +327,7 @@ export default class ConstraintsCanvas extends React.Component {
           }
         }
 
-        // Remove the item at that indexx
+        // Remove the item at that index
         if(feedbackIndex > -1) {
           treeNode.subtitle.splice(feedbackIndex, 1);        
         }
@@ -349,13 +404,16 @@ export default class ConstraintsCanvas extends React.Component {
 
   calculateRowHeight({treeIndex, node, path}) {
     let padding = 5; 
-    let rowHeight = node.title.props.shape.size.height + (padding * 2);
+    let actualRowHeight = node.title.props.shape.size.height + (padding * 2);
+    let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
 
     // Row height
-    let subtitles = node.subtitle; 
-    let numFeedback = subtitles ? subtitles.length : 0; 
+    let feedbackItems = node.subtitle.filter(item => item.props.type == "feedback"); 
+    let typingAlert = node.subtitle.filter(item => item.props.type == "typing"); 
+    let numFeedback = feedbackItems ? feedbackItems.length : 0; 
+    let numTyping = typingAlert ? typingAlert.length : 0; 
 
-    return this.rowPadding + rowHeight + (numFeedback * this.defaultFeedbackHeight); 
+    return this.rowPadding + rowHeight + (numFeedback * this.defaultFeedbackHeight) + (numTyping * this.defaultTypingAlertHeight); 
   }
 
   canReparentWidgetNode({node, nextParent, prevPath, nextPath}) {
@@ -366,10 +424,177 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
+  typesMatch(group1, group2) {
+    // Check whether the set of types in each group list match 
+    if(group1.length != group2.length) {
+      return false;
+    }
+
+    for(var i=0; i<group1.length; i++) {
+      let item1 = group1[i]; 
+      let item2 = group2[i]; 
+      if(item1 != item2) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  canSplitIntoGroupOfSize(node, size) {
+    // Determine if the children of this node can be split into a group of the given size
+    let pattern = []; 
+
+    // Collect all the types and split them into groups based on the given size
+    let currSize = 0; 
+    let currGroup = []; 
+    for(var i=0; i<node.children.length; i++) {
+      let currChild = node.children[i]; 
+      if(currSize == size-1){
+        if(currGroup.length) {
+          pattern.push(currGroup); 
+        }
+
+        currSize = 0; 
+        currGroup = []; 
+      }
+
+      currGroup.push(currChild.title.props.shape.type);
+      currSize++; 
+    }
+
+    // Now, verify that each of the subgroups has the exact same set of types
+    for(var i=0; i<pattern.length; i++){
+      if(i < pattern.length - 1) {
+        let patternGroup = pattern[i]; 
+        let nextPatternGroup = pattern[i+1]; 
+        if(!typesMatch) {
+          return false;
+        }
+      }
+    }
+
+    return true; 
+  }
+
+  getGroupSizes(total) {
+    // Get the set of group sizes to check by finding the possible divisors
+    let totalFloor = Math.floor(total/2); 
+    let sizes = []; 
+    for(var i=1; i<=totalFloor; i++) {
+      if(total % i == 0){
+        sizes.push(i); 
+      }
+    }
+
+    return sizes;
+  }
+
+  checkGroupTyping(node) {
+    // Do the type inference algorithm
+    // iterate through each set of possible groupings starting with the greatest common divisor
+    let numChildren = node.children.length; 
+    let groupSizes = this.getGroupSizes(numChildren);
+    for(var i=0; i<groupSizes.length; i++) {
+      let groupSize = groupSizes[i];
+      if(this.canSplitIntoGroupOfSize(node, groupSize)) {
+        return groupSize;
+      }
+    }
+
+    return false;
+  }
+
+  setTypingOnGroup(groupID, typed){
+    let source = typed ? typedGroup : group; 
+
+    // Make this group a typed group 
+    let treeNodePath = this.widgetTreeNodePaths[groupID]; 
+    let treeNode = getNodeAtPath({
+      treeData: this.state.treeData, 
+      path: treeNodePath,
+      getNodeKey: defaultGetNodeKey, 
+      ignoreCollapsed: false, 
+    }); 
+
+    if(treeNode.node) {
+      treeNode = treeNode.node;
+      let widget = this.getWidget(treeNode.title.props.shape, source, { typed: typed }); 
+
+      let newNode = {
+        title: widget, 
+        subtitle: [], 
+        expanded: true, 
+        children: treeNode.children
+      }; 
+
+      this.state.treeData = changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: treeNodePath,
+        getNodeKey: defaultGetNodeKey,
+        ignoreCollapsed: false,
+        newNode: newNode
+      }); 
+
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }), this.checkSolutionValidity); 
+    }
+  }
+
+  closeTypingAlert(groupID) {
+    // Close the group typing alert dialog without doing anything. 
+    let treeNodePath = this.widgetTreeNodePaths[groupID]; 
+    let treeNode = getNodeAtPath({
+      treeData: this.state.treeData, 
+      path: treeNodePath,
+      getNodeKey: defaultGetNodeKey, 
+      ignoreCollapsed: false, 
+    }); 
+
+    // Remove the typing dialog from the group
+    if(treeNode.node && treeNode.node.subtitle && treeNode.node.subtitle.length) {
+      let subtitleNode = treeNode.node.subtitle[0]; 
+      if(subtitleNode.props.type == "typing") {
+        treeNode.node.subtitle.splice(0,1);       
+      }
+    }
+
+    this.setState(state => ({
+      treeData: this.state.treeData
+    })); 
+  }
+
+  getWidgetTyping(key, groupID){
+    return (<WidgetTyping key={key} type="typing" groupID={groupID} setTypingOnGroup={this.setTypingOnGroup} closeTypingAlert={this.closeTypingAlert} />); 
+  }
+
   onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
-    // Called whenever a node is moved in the tree
-    // Tree updates have already been made by this point so we don't need to do this in a callback
-    this.checkSolutionValidity();
+    // If the node was moved into group, check whether group typing should be applied. 
+    if(nextParentNode) {
+      let currentShapeID = node.title.props.shape.name; 
+
+      // Update the current path to the element in the map 
+      this.widgetTreeNodePaths[currentShapeID] = nextPath.slice(0); 
+
+      if(nextParentNode.title.props.shape.type == "group") {
+        let shouldBeTyped = this.checkGroupTyping(nextParentNode); 
+        let parentID = nextParentNode.title.props.shape.name; 
+          // Find the group in the tree, remove it, and display the label to apply the typing
+        if(shouldBeTyped) {
+          let typingIndex = nextParentNode.subtitle.length; 
+          let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID); 
+          nextParentNode.subtitle.unshift(widgetTypingElement);
+
+          this.setState(state => ({
+            treeData: this.state.treeData
+          }), this.checkSolutionValidity); 
+        }
+        else {
+          // TODO: Remove the corresponding WidgetTyping item from the subtitle area of the node
+        }
+      }
+    }
   }
 
   removeWidgetNode(path){
@@ -384,6 +609,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     let shapeID = treeNode.node.title.props.id; 
     delete this.widgetTreeNodeMap[shapeID]; 
+    delete this.widgetTreeNodePaths[shapeID];
 
     // Delete the entry in the constraints canvas shape map 
     delete this.constraintsShapesMap[shapeID];
@@ -406,6 +632,7 @@ export default class ConstraintsCanvas extends React.Component {
       setFontSize={this.state.rightClickMenuSetFontSize} 
       setImportanceLevel={this.state.rightClickMenuSetImportance} 
       setLabel={this.state.rightClickMenuSetLabel}
+      shapeID={this.state.rightClickShapeID}
       getSiblingLabelItems={this.getSiblingLabelItems}  /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const colorPickerPosition = this.state.colorPickerPosition; 

@@ -9,6 +9,7 @@ export default class WidgetFeedback extends React.Component {
     this.id = props.id; 
     this.parentShape = props.parentShape; 
     this.action = props.action; 
+    this.type = props.type; 
     
     this.state = {
       highlighted: props.highlighted

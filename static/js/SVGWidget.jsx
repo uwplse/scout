@@ -17,6 +17,7 @@ export default class SVGWidget extends React.Component {
       'group': 100, 
       'labelGroup': 100, 
       'label': 100, 
+      'multilineLabel': 200, 
       'image': 50, 
       'placeholder': 50
     }
@@ -35,9 +36,10 @@ export default class SVGWidget extends React.Component {
       'search': 25, 
       'group': 40, 
       'labelGroup': 40, 
-      'label': 40, 
+      'label': 35, 
       'image': 50, 
-      'placeholder': 50
+      'placeholder': 50, 
+      'multilineLabel': 80
     }
 
     if(controlType in values) {
@@ -60,13 +62,25 @@ export default class SVGWidget extends React.Component {
     return values[controlType]; 
   }; 
 
+  static initialFontSizes(controlType) {
+    let values = {
+      'label': 36, 
+      'multilineLabel': 14
+    }
+    return values[controlType];
+  }
+
   constructor(props) {
   	super(props); 
     this.type = props.shape.type; 
     this.controlType = props.shape.controlType; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
-    this.svgSource = props.source; 
+
+    this.initialFontSize = 0; 
+    if(this.type == "label") {
+      this.initialFontSize = SVGWidget.initialFontSizes(this.controlType); 
+    }
 
     // Callback to notify the parent container to re-check the solution validity
     this.checkSolutionValidity =  props.checkSolutionValidity; 
@@ -76,24 +90,54 @@ export default class SVGWidget extends React.Component {
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
+    this.initFontSize = this.initFontSize.bind(this);
     this.setImportanceLevel = this.setImportanceLevel.bind(this); 
+    this.setLabel = this.setLabel.bind(this);
     this.onElementResized = this.onElementResized.bind(this);
+    this.computeLabelPosition = this.computeLabelPosition.bind(this);
+
+    // Timer for handling text change events
+    this.timer = null; 
 
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
       width: SVGWidget.initialWidths(this.controlType), 
+      fontSize: this.initialFontSize,
       importance: "normal", 
-      showImportance: props.showImportanceLevels
+      showImportance: props.showImportanceLevels, 
+      showLabels: false, 
+      labelDirection: undefined, 
+      labelPosition: {
+        x: 0, 
+        y: 0
+      }, 
+      svgSource: props.source, 
+      typedGroup: false
     }
   }
 
-  componentWillMount() {
-    this.timer = null; 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      height: prevState.height,  
+      width: prevState.width, 
+      fontSize: prevState.fontSize, 
+      importance: prevState.importance, 
+      showImportance: prevState.showImportance, 
+      showLabels: prevState.showLabels, 
+      labelDirection: prevState.labelDirection, 
+      labelPosition: prevState.labelPosition, 
+      svgSource: nextProps.source, 
+      typedGroup: nextProps.typedGroup
+    }    
   }
-
+  
   componentDidMount() {
     // Set the initial value for the text label
     this.setTextLabel(true);   
+
+    if(this.type == "label") {
+      this.initFontSize();       
+    }
   }
 
   componentDidUpdate() {
@@ -146,9 +190,6 @@ export default class SVGWidget extends React.Component {
     let widthRounded = Math.round(boundingRect.width); 
     let heightRounded = Math.round(boundingRect.height);
 
-    // let svgViewBox = element.querySelectorAll(".SVGInline-svg"); 
-    // svgViewBox[0].removeAttribute("viewBox");
-
     this.setElementSize(widthRounded, heightRounded);
 
     this.setState({
@@ -162,21 +203,8 @@ export default class SVGWidget extends React.Component {
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     if(editableText[0]) {
-      editableText[0].innerHTML = this.element.label;  
-
-      // Adjust the initial translation of the text to center it in the middle (only for buttons)
-      let bboxText = editableText[0].getBoundingClientRect();
-      let heightLocation = (this.state.height/2);
-      if(this.controlType == "button") {
-        editableText[0].style.transform = "translate(" + this.state.width/2 + "px," + heightLocation + "px)";  
-      }
-      else if(this.controlType == "label") {
-        editableText[0].style.transform = "translate(0px," + heightLocation + "px)";  
-      }  
+      editableText[0].innerHTML = this.element.label;   
     }
-
-    // let svgViewBox = svgElement.querySelectorAll(".SVGInline-svg"); 
-    // svgViewBox[0].removeAttribute("viewBox");
 
     if(initSize) {
       if(this.state.width == 0 || this.state.height == 0) {
@@ -198,15 +226,28 @@ export default class SVGWidget extends React.Component {
     evt.preventDefault();
 
     if(this.controlType == "label") {
-      this.displayRightClickMenu(evt, this.setFontSize, this.setImportanceLevel, this.setLabel); 
+      this.displayRightClickMenu(evt, this.id, this.setFontSize, this.setImportanceLevel, this.setLabel); 
     }
     else {
       this.displayRightClickMenu(evt, undefined, this.setImportanceLevel); 
     }
   }
 
-  setFontSize(value) {
+  initFontSize() {
     // Update the font size of the SVG element
+    let id = "widget-container-" + this.id; 
+    let svgElement  = document.getElementById(id); 
+
+    let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
+
+    svgElementInline[0].setAttribute("font-size", this.initialFontSize); 
+
+    // Set it on the element object as well
+    this.element.fontSize = this.initialFontSize; 
+  }
+
+  setFontSize(value) {
+    // Update the element object size
     let id = "widget-container-" + this.id; 
     let svgElement  = document.getElementById(id); 
 
@@ -215,17 +256,22 @@ export default class SVGWidget extends React.Component {
     // Unset these so that we can calculate a new size after the font size is changed
     svgElementInline[0].style.width = ""; 
     svgElementInline[0].style.height = ""; 
-    svgElementInline[0].setAttribute("font-size", value);
+
+    // Needed for computing the final height and width. This will be removed when the element re-renders. 
+    svgElementInline[0].setAttribute("font-size", value); 
+
+    // Set on the element object
+    this.element.fontSize = value; 
 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
-
-    // Update the element object size
     let boundingRect = editableText[0].getBoundingClientRect(); 
     this.setState({
-      width: boundingRect.width, 
-      height: boundingRect.height
-    })
+      width: Math.round(boundingRect.width,0), 
+      height: Math.round(boundingRect.height,0), 
+      fontSize: value
+    }); 
 
+    // Close the right click menu
     this.hideRightClickMenu(); 
   }
 
@@ -243,13 +289,38 @@ export default class SVGWidget extends React.Component {
     this.hideRightClickMenu();
   }
 
-  setLabel(shapeId) {
-    // ID should be the Id of the element that is being labeled
+  computeLabelPosition(){
+    let svgElement = document.getElementById("widget-container-" + this.id); 
+    let svgBox = svgElement.getBoundingClientRect(); 
 
-    // Add labels metadata to the shape object
+    return {
+      x: (svgBox.width)/2, 
+      y: svgBox.height + 25
+    }; 
+  }
 
-    // Notify the constraints canvas that it should set the label decorator arrow thing. 
-    this.displayLabelIndicator(this.id, shapeId); 
+  setLabel(shapeId, direction) {
+    // Save the labels relationship to the shape object 
+    this.element.labels = shapeId; 
+
+    let labelPosition = this.computeLabelPosition();
+
+    // Notify the constraints canvas that it should set the label decorator arrow
+    this.setState({
+      showLabels: true, 
+      labelDirection: direction, 
+      labelPosition: labelPosition
+    }); 
+
+    this.hideRightClickMenu();
+  }
+
+  setTypedGroup(value) {
+    if(value == "yes") {
+      this.setState({
+        typedGroup: true
+      }); 
+    }
   }
 
   onElementResized(evt, direction, element, delta) {
@@ -258,23 +329,31 @@ export default class SVGWidget extends React.Component {
   }
 
   render () {
-    const source = this.svgSource; 
+    const source = this.state.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 
     const importance = this.state.importance; 
     const showImportance = this.state.showImportance; 
+    const showLabels = this.state.showLabels; 
+    const labelDirection = this.state.labelDirection; 
+    const labelPosition = this.state.labelPosition; 
     this.setElementSize(width, height); 
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
 
     const isEditable = this.controlType != "group";
-
+    const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
             contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
-          <SVGInline className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+          <div className="widget-control-row"> 
+            <SVGInline style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+            <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}
+                style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
+            </div>
+          </div>
           <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
             <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
             <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
