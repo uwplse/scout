@@ -4,7 +4,7 @@ import CanvasMenu from "./CanvasMenu";
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
-import field from '../assets/illustrator/field.svg';
+import field from '../assets/illustrator/field_designs.svg';
 import search from '../assets/illustrator/search.svg';
 import image from '../assets/illustrator/image.svg'
 import placeholder from '../assets/illustrator/placeholder.svg'

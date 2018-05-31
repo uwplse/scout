@@ -58,9 +58,11 @@ export default class DesignCanvasSVGWidget extends React.Component {
       editableText[0].innerHTML = this.element.label;  
       editableText[0].style.fontSize = "50%"; 
 
-      // Adjust the initial translation of the text to center it in the middle (only for buttons)
-      let bboxText = editableText[0].getBoundingClientRect();
-      if(this.type == "label") {
+      if(this.type == "button") {
+        editableText[0].style.transform = "translate(" + Math.round(this.state.width/2,0) + "px," + Math.round(this.state.height/2,0) + "px)"; 
+      }
+      else if(this.type == "label") {
+        let bboxText = editableText[0].getBoundingClientRect();
         this.setState({
           height: Math.round(bboxText.height,0), 
           width: Math.round(bboxText.width)

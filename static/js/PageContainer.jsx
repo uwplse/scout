@@ -368,7 +368,7 @@ export default class PageContainer extends React.Component {
             </div>  
             <div className="design-canvas-container">
               <div className="left-container">
-                { designCanvases.length? <div className="alert alert-success" role="alert">Here are 10 arandomly selected designs.</div> : undefined }
+                { designCanvases.length? <div className="alert alert-success" role="alert">Here are 10 randomly selected designs.</div> : undefined }
                 { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
                   <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
                   <div className="panel-body saved-body">
