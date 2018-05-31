@@ -26,7 +26,8 @@ export default class ConstraintsCanvas extends React.Component {
     this.findShapeSiblings = this.findShapeSiblings.bind(this);
     this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
-    this.setTypedGroup = this.setTypedGroup.bind(this);
+    this.setTypingOnGroup = this.setTypingOnGroup.bind(this);
+    this.closeTypingAlert = this.closeTypingAlert.bind(this); 
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
@@ -39,6 +40,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultControlWidth = 120; 
     this.defaultControlHeight = 40; 
     this.defaultFeedbackHeight = 40; 
+    this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
 
     this.state = { 
@@ -95,13 +97,15 @@ export default class ConstraintsCanvas extends React.Component {
     canvas.children.push(page); 
   }
 
-  getWidget(shape, src) {
+  getWidget(shape, src, options={}) {
     let shapeId = shape.name;
+    let typedGroup = options.typedGroup ?  options.typedGroup : undefined;  
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
               source={src}
+              typedGroup={typedGroup}
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
@@ -119,16 +123,19 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[shapeId] = newTreeNode; 
-    this.widgetTreeNodePaths[shapeId] = [this.state.treeData.length - 1]; 
+    this.state.treeData = this.state.treeData.concat(newTreeNode); 
 
     this.setState(state => ({
-      treeData: this.state.treeData.concat(newTreeNode)
+      treeData: this.state.treeData
     }), this.checkSolutionValidity);
+
+    this.widgetTreeNodePaths[shapeId] = [this.state.treeData.length - 1]; 
   }
 
   getWidgetFeedback(shapeId, parentShape, action, message, highlighted){
     return (<WidgetFeedback 
               key={shapeId} 
+              type="feedback"
               id={shapeId} 
               parentShape={parentShape}
               action={action}
@@ -399,10 +406,12 @@ export default class ConstraintsCanvas extends React.Component {
     let rowHeight = node.title.props.shape.size.height + (padding * 2);
 
     // Row height
-    let subtitles = node.subtitle; 
-    let numFeedback = subtitles ? subtitles.length : 0; 
+    let feedbackItems = node.subtitle.filter(item => item.props.type == "feedback"); 
+    let typingAlert = node.subtitle.filter(item => item.props.type == "typing"); 
+    let numFeedback = feedbackItems ? feedbackItems.length : 0; 
+    let numTyping = typingAlert ? typingAlert.length : 0; 
 
-    return this.rowPadding + rowHeight + (numFeedback * this.defaultFeedbackHeight); 
+    return this.rowPadding + rowHeight + (numFeedback * this.defaultFeedbackHeight) + (numTyping * this.defaultTypingAlertHeight); 
   }
 
   canReparentWidgetNode({node, nextParent, prevPath, nextPath}) {
@@ -494,11 +503,11 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  setTypedGroup(shapeID, value){
-    let source = value == "Yes" ? typedGroup : group; 
+  setTypingOnGroup(groupID, typed){
+    let source = typed ? typedGroup : group; 
 
     // Make this group a typed group 
-    let treeNodePath = this.widgetTreeNodePaths[shapeID]; 
+    let treeNodePath = this.widgetTreeNodePaths[groupID]; 
     let treeNode = getNodeAtPath({
       treeData: this.state.treeData, 
       path: treeNodePath,
@@ -506,53 +515,73 @@ export default class ConstraintsCanvas extends React.Component {
       ignoreCollapsed: false, 
     }); 
 
-    if(treeNode) {
-      let treeNodeResult = treeNode.node.children; 
-      if(treeNodeResult.length) {
-        let shapeNode = treeNodeResult[0]; 
-        let widget = this.getWidget(shapeNode.title.props.shape, source); 
+    if(treeNode.node) {
+      treeNode = treeNode.node;
+      let widget = this.getWidget(treeNode.title.props.shape, source, { typed: typed }); 
 
-        let newNode = {
-          title: widget, 
-          subtitle: [], 
-          expanded: true, 
-          children: shapeNode.children
-        }; 
+      let newNode = {
+        title: widget, 
+        subtitle: [], 
+        expanded: true, 
+        children: treeNode.children
+      }; 
 
-        this.state.treeData = changeNodeAtPath({
-          treeData: this.state.treeData,
-          path: treeNodePath,
-          getNodeKey: defaultGetNodeKey,
-          ignoreCollapsed: false,
-          newNode: newNode
-        }); 
+      this.state.treeData = changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: treeNodePath,
+        getNodeKey: defaultGetNodeKey,
+        ignoreCollapsed: false,
+        newNode: newNode
+      }); 
 
-        this.setState(state => ({
-          treeData: this.state.treeData
-        }), this.checkSolutionValidity); 
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }), this.checkSolutionValidity); 
+    }
+  }
+
+  closeTypingAlert(groupID) {
+    // Close the group typing alert dialog without doing anything. 
+    let treeNodePath = this.widgetTreeNodePaths[groupID]; 
+    let treeNode = getNodeAtPath({
+      treeData: this.state.treeData, 
+      path: treeNodePath,
+      getNodeKey: defaultGetNodeKey, 
+      ignoreCollapsed: false, 
+    }); 
+
+    // Remove the typing dialog from the group
+    if(treeNode.node && treeNode.node.subtitle && treeNode.node.subtitle.length) {
+      let subtitleNode = treeNode.node.subtitle[0]; 
+      if(subtitleNode.props.type == "typing") {
+        treeNode.node.subtitle.splice(0,1);       
       }
     }
-  }z
 
-  getWidgetTyping(key, shapeID){
-    return (<WidgetTyping key={key} shapeID={shapeID} setTypedGroup={this.setTypedGroup} />); 
+    this.setState(state => ({
+      treeData: this.state.treeData
+    })); 
+  }
+
+  getWidgetTyping(key, groupID){
+    return (<WidgetTyping key={key} type="typing" groupID={groupID} setTypingOnGroup={this.setTypingOnGroup} closeTypingAlert={this.closeTypingAlert} />); 
   }
 
   onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
     // If the node was moved into group, check whether group typing should be applied. 
     if(nextParentNode) {
-      let shapeId = node.title.props.shape.name; 
+      let currentShapeID = node.title.props.shape.name; 
+
       // Update the current path to the element in the map 
-      this.widgetTreeNodePaths[shapeId] = nextPath; 
+      this.widgetTreeNodePaths[currentShapeID] = nextPath.slice(0); 
 
       if(nextParentNode.title.props.shape.type == "group") {
-        let parentPath = nextPath.splice(0); 
-        parentPath.splice(parentPath.length-1, 1); 
         let shouldBeTyped = this.checkGroupTyping(nextParentNode); 
+        let parentID = nextParentNode.title.props.shape.name; 
           // Find the group in the tree, remove it, and display the label to apply the typing
         if(shouldBeTyped) {
           let typingIndex = nextParentNode.subtitle.length; 
-          let widgetTypingElement = this.getWidgetTyping(typingIndex, shapeId); 
+          let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID); 
           nextParentNode.subtitle.unshift(widgetTypingElement);
 
           this.setState(state => ({

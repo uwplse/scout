@@ -103,6 +103,8 @@ export default class RightClickMenu extends React.Component {
     let fontMenu = document.getElementById("font-size-menu-label"); 
     let fontLabelBox = fontMenu.getBoundingClientRect(); 
 
+    let labelLocation = this.state.labelMenuLocation; 
+    
     let labelMenu = document.getElementById("label-menu-label"); 
     let labelBox = labelMenu.getBoundingClientRect(); 
 

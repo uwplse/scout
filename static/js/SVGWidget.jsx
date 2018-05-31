@@ -66,7 +66,6 @@ export default class SVGWidget extends React.Component {
     this.controlType = props.shape.controlType; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
-    this.svgSource = props.source; 
     this.initialFontSize = 36; 
 
     // Callback to notify the parent container to re-check the solution validity
@@ -83,6 +82,9 @@ export default class SVGWidget extends React.Component {
     this.onElementResized = this.onElementResized.bind(this);
     this.computeLabelPosition = this.computeLabelPosition.bind(this);
 
+    // Timer for handling text change events
+    this.timer = null; 
+
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
       width: SVGWidget.initialWidths(this.controlType), 
@@ -95,14 +97,26 @@ export default class SVGWidget extends React.Component {
         x: 0, 
         y: 0
       }, 
+      svgSource: props.source, 
       typedGroup: false
     }
   }
 
-  componentWillMount() {
-    this.timer = null; 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      height: prevState.height,  
+      width: prevState.width, 
+      fontSize: prevState.fontSize, 
+      importance: prevState.importance, 
+      showImportance: prevState.showImportance, 
+      showLabels: prevState.showLabels, 
+      labelDirection: prevState.labelDirection, 
+      labelPosition: prevState.labelPosition, 
+      svgSource: nextProps.source, 
+      typedGroup: nextProps.typedGroup
+    }    
   }
-
+  
   componentDidMount() {
     // Set the initial value for the text label
     this.setTextLabel(true);   
@@ -301,7 +315,7 @@ export default class SVGWidget extends React.Component {
   }
 
   render () {
-    const source = this.svgSource; 
+    const source = this.state.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 
     const importance = this.state.importance; 

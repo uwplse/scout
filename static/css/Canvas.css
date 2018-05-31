@@ -138,6 +138,7 @@ body {
 
 .widget-control-typing {
 	margin-top: 0.5em;
+	margin-bottom: 0.5em; 
 }
 
 .widget-control-typing span {
