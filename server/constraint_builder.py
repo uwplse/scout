@@ -138,6 +138,8 @@ class ConstraintBuilder(object):
 	def init_typed_container(self, container): 
 		child_shapes = container.children
 		all_same_values = []
+		all_same_heights = []
+		all_same_widths = []
 
 		for i in range(0, len(child_shapes)): 
 			if i < len(child_shapes) - 1: 
@@ -163,11 +165,17 @@ class ConstraintBuilder(object):
 						else: 
 							all_same_values.append([children_same])
 
+				# Also enforce height and width same since they arent' in the variables collection
+				all_same_widths.append(child1.width == child2.width)
+				all_same_heights.append(child1.height == child2.height)
+
 		for all_same_variables in all_same_values: 
 			# For each collection of child variable values for a variable
 			# Enforce all values of that collection to be thes ame 
 			self.solver.add(And(all_same_variables))
 
+		self.solver.add(all_same_heights)
+		self.solver.add(all_same_widths)
 
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties

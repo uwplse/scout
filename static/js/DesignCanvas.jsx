@@ -184,11 +184,6 @@ export default class DesignCanvas extends React.Component {
       let computedLeft = ((shape.location.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.location.y * this.scalingFactor) - padding);
 
-      if(controlType == "multilineLabel") {
-        computedHeight = shape.size.height; 
-        computedWidth = shape.size.width;   
-      }
-     
       let designCanvasWidget = this.getDesignCanvasWidget(shape, computedWidth, computedHeight, computedLeft, computedTop);
       this.state.childSVGs.push(designCanvasWidget);
       this.setState({
