@@ -16,7 +16,7 @@ export default class SVGWidget extends React.Component {
       'search': 238, 
       'group': 100, 
       'labelGroup': 100, 
-      'label': 100, 
+      'label': 83, 
       'multilineLabel': 200, 
       'image': 100, 
       'placeholder': 100
@@ -36,7 +36,7 @@ export default class SVGWidget extends React.Component {
       'search': 25, 
       'group': 40, 
       'labelGroup': 40, 
-      'label': 35, 
+      'label': 43, 
       'image': 100, 
       'placeholder': 100, 
       'multilineLabel': 80
