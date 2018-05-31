@@ -17,6 +17,7 @@ export default class SVGWidget extends React.Component {
       'group': 100, 
       'labelGroup': 100, 
       'label': 100, 
+      'multilineLabel': 200, 
       'image': 50, 
       'placeholder': 50
     }
@@ -37,7 +38,8 @@ export default class SVGWidget extends React.Component {
       'labelGroup': 40, 
       'label': 35, 
       'image': 50, 
-      'placeholder': 50
+      'placeholder': 50, 
+      'multilineLabel': 80
     }
 
     if(controlType in values) {
@@ -60,13 +62,25 @@ export default class SVGWidget extends React.Component {
     return values[controlType]; 
   }; 
 
+  static initialFontSizes(controlType) {
+    let values = {
+      'label': 36, 
+      'multilineLabel': 14
+    }
+    return values[controlType];
+  }
+
   constructor(props) {
   	super(props); 
     this.type = props.shape.type; 
     this.controlType = props.shape.controlType; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
-    this.initialFontSize = 36; 
+
+    this.initialFontSize = 0; 
+    if(this.type == "label") {
+      this.initialFontSize = SVGWidget.initialFontSizes(this.controlType); 
+    }
 
     // Callback to notify the parent container to re-check the solution validity
     this.checkSolutionValidity =  props.checkSolutionValidity; 

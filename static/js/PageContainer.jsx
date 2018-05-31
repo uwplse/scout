@@ -16,6 +16,7 @@ import labelDynamic from '../assets/illustrator/label.svg';
 import labelStatic from '../assets/illustrator/label_widgets.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
+import multilineLabel from '../assets/illustrator/multiline_label.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -315,6 +316,9 @@ export default class PageContainer extends React.Component {
               <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
                 svg={ labelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', labelDynamic)}/>
+              <SVGInline className="widget-control widget-control-label" 
+                height={SVGWidget.initialHeights('multilineLabel') + "px"} width={SVGWidget.initialWidths('multilineLabel') + "px"} 
+                svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'multilineLabel', multilineLabel)}/>
               <SVGInline className="widget-control widget-control-search" 
                 height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
                 svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>

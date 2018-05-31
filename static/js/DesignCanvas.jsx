@@ -10,6 +10,7 @@ import image from '../assets/illustrator/image.svg'
 import placeholder from '../assets/illustrator/placeholder.svg'
 import filledButton from '../assets/illustrator/filledButton.svg';
 import label from '../assets/illustrator/label_designs.svg';
+import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
 
 export default class DesignCanvas extends React.Component {
@@ -19,6 +20,7 @@ export default class DesignCanvas extends React.Component {
       'search': search, 
       'button': filledButton, 
       'label': label, 
+      'multilineLabel': multilineLabel,
       'group': group, 
       'placeholder': placeholder, 
       'image': image
@@ -193,6 +195,11 @@ export default class DesignCanvas extends React.Component {
       let computedWidth = (shape.size.width * this.scalingFactor + (padding * 2)); 
       let computedLeft = ((shape.location.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.location.y * this.scalingFactor) - padding);
+
+      if(controlType == "multilineLabel") {
+        computedHeight = shape.size.height; 
+        computedWidth = shape.size.width;   
+      }
      
       let designCanvasWidget = this.getDesignCanvasWidget(shape, computedWidth, computedHeight, computedLeft, computedTop);
       this.state.childSVGs.push(designCanvasWidget);

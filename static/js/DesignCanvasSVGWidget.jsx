@@ -45,12 +45,13 @@ export default class DesignCanvasSVGWidget extends React.Component {
 
     if(this.type == "label") {
       let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
-
-      // Unset these so that we can calculate a new size after the font size is changed
-      svgElementInline[0].style.width = ""; 
-      svgElementInline[0].style.height = ""; 
-      
       svgElementInline[0].setAttribute("font-size", this.element.fontSize); 
+
+      if(this.controlType == "label") {
+        // Unset these so that we can calculate a new size after the font size is changed
+        svgElementInline[0].style.width = ""; 
+        svgElementInline[0].style.height = "";
+      }
     }
 
     if(editableText[0]) {
