@@ -18,8 +18,8 @@ export default class SVGWidget extends React.Component {
       'labelGroup': 100, 
       'label': 100, 
       'multilineLabel': 200, 
-      'image': 50, 
-      'placeholder': 50
+      'image': 100, 
+      'placeholder': 100
     }
 
     if(controlType in values) {
@@ -37,8 +37,8 @@ export default class SVGWidget extends React.Component {
       'group': 40, 
       'labelGroup': 40, 
       'label': 35, 
-      'image': 50, 
-      'placeholder': 50, 
+      'image': 100, 
+      'placeholder': 100, 
       'multilineLabel': 80
     }
 

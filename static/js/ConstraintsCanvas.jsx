@@ -42,7 +42,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultFeedbackHeight = 40; 
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
-    this.minimumRowHeight = 50; 
+    this.minimumRowHeight = 40; 
 
     this.state = { 
       treeData: [], 
@@ -403,7 +403,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   calculateRowHeight({treeIndex, node, path}) {
-    let padding = 5; 
+    let padding = 0; 
     let actualRowHeight = node.title.props.shape.size.height + (padding * 2);
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
 
