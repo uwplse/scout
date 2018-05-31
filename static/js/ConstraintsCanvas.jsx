@@ -42,7 +42,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 2; 
+    this.minimumGroupSize = 1; 
 
     this.state = { 
       treeData: [], 
@@ -553,14 +553,15 @@ export default class ConstraintsCanvas extends React.Component {
         curr = 0;  
       }
     }
-    
+
     // For each group of children, create a new group node in the tree, and return these groups as 
     // the new children 
     let newChildren = []; 
     for(var i=0; i<groups.length; i++) {
       let currGroup = groups[i]; 
       let newGroupNode = this.createNewTreeNode("group", "group", group); 
-      newGroupNode.expanded = true; 
+      let isExpanded = (i == 0) ? true : false; 
+      newGroupNode.expanded = isExpanded; 
       newGroupNode.children = currGroup; 
       newChildren.push(newGroupNode); 
     }

@@ -416,10 +416,6 @@ body {
 	background-color: initial;
 }
 
-.widgets-sortable-tree .widgets-sortable-tree-remove {
-	background-color: initial;
-}
-
 .widgets-sortable-tree .rst__row {
 	align-items: center;
 }
@@ -432,12 +428,16 @@ body {
 	height: 44px;
 }
 
-.widgets-sortable-tree .rst__rowTitle {
-	font-weight: normal;
-}
-
 .widgets-sortable-tree .rst__rowTitleWithSubtitle {
     height: inherit; 
+}
+
+.widgets-sortable-tree .widgets-sortable-tree-remove {
+	background-color: initial;
+}
+
+.widgets-sortable-tree .rst__rowTitle {
+	font-weight: normal;
 }
 
 .widgets-sortable-tree .rst__rowSubtitle {
@@ -452,13 +452,8 @@ body {
 	padding-right: 5px;
 }
 
-.widgets-sortable-tree .rst__collapseButton, 
-.widgets-sortable-tree .rst__expandButton {
-	top: 22px;
-}
-
 .widgets-sortable-tree .rst__lineChildren:after {
-	height: calc(100% - 50px); 
+	height: calc(50%); 
 }
 
 .widgets-sortable-tree-remove {
