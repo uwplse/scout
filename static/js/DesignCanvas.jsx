@@ -107,6 +107,7 @@ export default class DesignCanvas extends React.Component {
   }
 
   showConstraintsContextMenu(shape, evt) {
+    console.log(shape.name);
     evt.stopPropagation();
     evt.preventDefault();
 
@@ -155,30 +156,17 @@ export default class DesignCanvas extends React.Component {
     let shapeId = shape.name;
     let source = DesignCanvas.svgElements(shape.controlType);
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
-    if(inMainCanvas) {
-      return (<DesignCanvasSVGWidget 
-              key={shapeId} 
-              shape={shape} 
-              id={shapeId} 
-              source={source}
-              width={width}
-              height={height}
-              left={left}
-              top={top}
-              onContextMenu={this.showConstraintsContextMenu.bind(this, shape)} />); 
-    }
-    else {
-      return (<DesignCanvasSVGWidget 
-              key={shapeId} 
-              shape={shape} 
-              id={shapeId} 
-              source={source}
-              width={width}
-              height={height} 
-              left={left}
-              top={top} />);
-    }
-
+    return (<DesignCanvasSVGWidget 
+            key={shapeId} 
+            shape={shape} 
+            id={shapeId} 
+            source={source}            
+            width={width}
+            height={height}
+            left={left}
+            top={top}
+            inMainCanvas={inMainCanvas}
+            contextMenu={this.showConstraintsContextMenu.bind(this)}/>); 
   }
 
   createSVGElement(designCanvas, shape) {

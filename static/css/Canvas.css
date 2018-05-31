@@ -103,12 +103,10 @@ body {
 
 .widget-control-button .widget-editable-text {
 	transform: translate(70px, 18px);
-	pointer-events: none;
 }
 
 .widget-control-field .widget-editable-text {
 	transform: translate(9.7px, 18px);
-	pointer-events: none;
 }
 
 .widget-control-label > .widget-control-svg {

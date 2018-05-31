@@ -12,10 +12,12 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 
+    this.contextMenu = props.contextMenu; 
 
     // Method bindings
     this.setHovered = this.setHovered.bind(this); 
     this.hideHovered = this.hideHovered.bind(this);
+    this.contextMenuClicked = this.contextMenuClicked.bind(this);
 
     this.uniqueID = _.uniqueId();
 
@@ -93,6 +95,10 @@ export default class DesignCanvasSVGWidget extends React.Component {
     }); 
   }
 
+  contextMenuClicked(evt) {
+    this.contextMenu(this.element, evt);
+  }
+
   render () {
     const source = this.svgSource; 
     const height = this.state.height; 
@@ -101,7 +107,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const top = this.state.top;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
-      <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} 
+      <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} onContextMenu={this.contextMenuClicked}
         className={"widget-control-parent "  + (this.state.hovered ? "design-canvas-hovered" : "")}
         onMouseEnter={this.setHovered}
         onMouseLeave={this.hideHovered}
