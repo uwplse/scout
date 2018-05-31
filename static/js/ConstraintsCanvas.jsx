@@ -33,15 +33,16 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsShapesMap = {};
     this.widgetTreeNodeMap = {};
 
+    // A bunch of constants
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
-
     this.defaultControlWidth = 120; 
     this.defaultControlHeight = 40; 
     this.defaultFeedbackHeight = 40; 
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
+    this.minimumGroupSize = 2; 
 
     this.state = { 
       treeData: [], 
@@ -114,7 +115,6 @@ export default class ConstraintsCanvas extends React.Component {
 
   addShapeOfTypeToCanvas(type, controlType, source) {
     let shape = this.createConstraintsCanvasShapeObject(type, controlType); 
-    let shapeId = shape.name;
     let widget = this.getWidget(shape, source); 
 
     let newTreeNode = {
@@ -122,12 +122,27 @@ export default class ConstraintsCanvas extends React.Component {
         subtitle: []
     }; 
 
-    this.widgetTreeNodeMap[shapeId] = newTreeNode; 
+    this.widgetTreeNodeMap[shape.name] = newTreeNode; 
     this.state.treeData = this.state.treeData.concat(newTreeNode); 
 
     this.setState(state => ({
       treeData: this.state.treeData
     }), this.checkSolutionValidity);
+  }
+
+  createNewTreeNode(type, controlType, source) {
+    // Creates a new tree node widget and returns it
+    let shape = this.createConstraintsCanvasShapeObject(type, controlType); 
+    let widget = this.getWidget(shape, source); 
+
+    let newTreeNode = {
+      title: widget, 
+      subtitle: []
+    }; 
+
+    this.widgetTreeNodeMap[shape.name] = newTreeNode; 
+
+    return newTreeNode; 
   }
 
   getWidgetFeedback(shapeId, parentShape, action, message, highlighted){
@@ -523,21 +538,54 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  setTypingOnGroup(groupID, typed){
+  restructureTypedGroupChildren(groupChildren, groupSize) {
+    // Split the children of this group node into uniformly sized groups 
+    let curr = 0; 
+    let currGroup = []; 
+    let groups = []; 
+    for(var i=0; i<groupChildren.length; i++) {
+      currGroup.push(groupChildren[i]); 
+      curr++; 
+
+      if(curr == groupSize) {
+        groups.push(currGroup);
+        currGroup = [];
+        curr = 0;  
+      }
+    }
+    
+    // For each group of children, create a new group node in the tree, and return these groups as 
+    // the new children 
+    let newChildren = []; 
+    for(var i=0; i<groups.length; i++) {
+      let currGroup = groups[i]; 
+      let newGroupNode = this.createNewTreeNode("group", "group", group); 
+      newGroupNode.expanded = true; 
+      newGroupNode.children = currGroup; 
+      newChildren.push(newGroupNode); 
+    }
+
+    return newChildren; 
+  }
+
+  setTypingOnGroup(groupID, typed, groupSize){
     let source = typed ? typedGroup : group; 
 
     let groupNode = this.widgetTreeNodeMap[groupID];
     let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
     if(groupNodeData) {
       let widget = this.getWidget(groupNode.title.props.shape, source, { typed: typed }); 
+      let newGroupChildren = this.restructureTypedGroupChildren(groupNodeData.children, groupSize); 
 
+      // Create a new node for the widget
       let newNode = {
         title: widget, 
         subtitle: [], 
         expanded: true, 
-        children: groupNodeData.children
+        children: newGroupChildren
       }; 
 
+      // Replace the current node with this new node
       this.state.treeData = changeNodeAtPath({
         treeData: this.state.treeData,
         path: groupNodeData.path,
@@ -568,8 +616,13 @@ export default class ConstraintsCanvas extends React.Component {
     })); 
   }
 
-  getWidgetTyping(key, groupID){
-    return (<WidgetTyping key={key} type="typing" groupID={groupID} setTypingOnGroup={this.setTypingOnGroup} closeTypingAlert={this.closeTypingAlert} />); 
+  getWidgetTyping(key, groupID, groupSize){
+    return (<WidgetTyping 
+      key={key} type="typing" 
+      groupID={groupID} 
+      groupSize={groupSize}
+      setTypingOnGroup={this.setTypingOnGroup} 
+      closeTypingAlert={this.closeTypingAlert} />); 
   }
 
   onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
@@ -577,22 +630,21 @@ export default class ConstraintsCanvas extends React.Component {
     if(nextParentNode) {
       if(nextParentNode.title.props.shape.type == "group") {
         // Check first whether the widget typing alert has already been activated for this group
-        let alreadyTypedActive = false; 
         if(nextParentNode.subtitle && nextParentNode.subtitle.length) {
           let firstSubtitle = nextParentNode.subtitle[0]; 
           if(firstSubtitle.props.type == "typing") {
-            // The node already has a typing message active, so don't add a new one if the group should be typed
-            alreadyTypedActive = true;
+            // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
+            nextParentNode.subtitle.splice(0,1);
           }
         }
 
-        let shouldBeTyped = this.checkGroupTyping(nextParentNode); 
+        let groupSize = this.checkGroupTyping(nextParentNode); 
         let parentID = nextParentNode.title.props.shape.name; 
 
           // Find the group in the tree, remove it, and display the label to apply the typing
-        if(shouldBeTyped && !alreadyTypedActive) {
+        if(groupSize >= this.minimumGroupSize) {
           let typingIndex = 0; 
-          let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID); 
+          let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
           nextParentNode.subtitle.unshift(widgetTypingElement);
 
           this.setState(state => ({

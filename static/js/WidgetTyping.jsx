@@ -8,6 +8,7 @@ export default class WidgetTyping extends React.Component {
     this.closeAlert = props.closeTypingAlert;   
     this.groupID = props.groupID;   
     this.type = props.type;  
+    this.groupSize = props.groupSize; 
   }
 
   render () {
@@ -19,7 +20,7 @@ export default class WidgetTyping extends React.Component {
         </button>
         This looks like a <strong>typed</strong> group.
         <br /><br />
-        Click <a href="#" onClick={function() { self.setTypingOnGroup(self.groupID, true); }} className="alert-link">here</a> to make it typed. 
+        Click <a href="#" onClick={function() { self.setTypingOnGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make it typed. 
       </div>); 
   }
 }
