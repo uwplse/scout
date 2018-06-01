@@ -138,7 +138,8 @@ body {
     margin-left: 10px;
 }
 
-.widget-control-info .label-info {
+.widget-control-info .label-info, 
+.widget-control-info .label-success {
 	margin-bottom: 0.5em; 
 	font-size: 100%; 
 }

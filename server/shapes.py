@@ -19,8 +19,8 @@ class Shape(object):
 		if self.shape_type in label_types:
 			self.variables.label = sh.Variable(shape_id, "label", varType="str")
 
-		self.order = "unimportant"
 		self.locks = None
+		self.order = -1
 
 		self.variable_values = dict()
 		if element is not None:
@@ -66,6 +66,11 @@ class ContainerShape(Shape):
 		# Width and Height will be adjustable for container shapes since their contents can change arrangements
 		self.width = Int(shape_id + "_width")
 		self.height = Int(shape_id + "_height")
+
+		self.container_order = "unimportant"
+		if element is not None: 
+			if "containerOrder" in element: 
+				self.container_order = element["containerOrder"]
 
 	def add_child(self, child): 
 		self.children.append(child)

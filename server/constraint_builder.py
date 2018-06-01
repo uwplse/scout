@@ -276,7 +276,7 @@ class ConstraintBuilder(object):
 		v_index = container.variables.arrangement.domain.index("vertical")
 		is_vertical = arrangement == v_index
 
-		if container.order == "important": 
+		if container.container_order == "important": 
 			vertical_pairs = []
 			horizontal_pairs = []
 			child_shapes = container.children

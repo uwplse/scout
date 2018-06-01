@@ -46,6 +46,21 @@ class OrderMenuItem extends React.Component {
   }
 }
 
+class ContainerOrderMenuItem extends React.Component {
+  constructor(props) {
+    super(props); 
+    this.currentOrderValue = props.currentOrderValue;  
+    this.onClick = props.onClick; 
+  }
+
+  render () {
+    var self = this;
+    let newOrder = this.currentOrderValue == "important" ? "unimportant" : "important"; 
+    let label = "Make order " + newOrder + "."; 
+    return <li className="right-click-menu-item" onClick={function() { self.onClick(newOrder); }}>{label}</li>; 
+  }
+}
+
 class ImportanceMenuItem extends React.Component {
   constructor(props) {
     super(props); 
@@ -70,12 +85,14 @@ export default class RightClickMenu extends React.Component {
     this.setImportanceLevel = props.menuCallbacks.setImportanceLevel; 
     this.setLabel = props.menuCallbacks.setLabel; 
     this.setOrder = props.menuCallbacks.setOrder;  
+    this.setContainerOrder = props.menuCallbacks.setContainerOrder; 
     this.shapeID = props.shapeID; 
 
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
     this.getSiblingLabelItems = props.getSiblingLabelItems; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
+    this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
     this.importanceLevels = [3, 2, 1]; 
 
@@ -205,6 +222,12 @@ export default class RightClickMenu extends React.Component {
 
     let index = this.getCurrentShapeIndex(this.shapeID); 
     menuItems.push(<OrderMenuItem key={this.shapeID} index={index} onClick={this.setOrder} />); 
+
+    if(this.setContainerOrder) {
+      let currentOrder = this.getCurrentShapeOrder(this.shapeID); 
+      menuItems.push(<ContainerOrderMenuItem key={this.shapeID} currentOrderValue={currentOrder} onClick={this.setContainerOrder} />); 
+    }
+
     return menuItems; 
   }
 

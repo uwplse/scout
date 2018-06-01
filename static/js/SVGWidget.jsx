@@ -95,6 +95,7 @@ export default class SVGWidget extends React.Component {
     this.setImportanceLevel = this.setImportanceLevel.bind(this); 
     this.setLabel = this.setLabel.bind(this);
     this.setOrder = this.setOrder.bind(this);
+    this.setContainerOrder = this.setContainerOrder.bind(this);
     this.onElementResized = this.onElementResized.bind(this);
     this.computeLabelPosition = this.computeLabelPosition.bind(this);
 
@@ -131,9 +132,9 @@ export default class SVGWidget extends React.Component {
       showLabels: prevState.showLabels, 
       labelDirection: prevState.labelDirection, 
       labelPosition: prevState.labelPosition, 
+      orderedGroup: prevState.orderedGroup,
       svgSource: nextProps.source, 
-      typedGroup: nextProps.typedGroup, 
-      orderedGroup: nextProps.orderedGroup
+      typedGroup: nextProps.typedGroup
     }    
   }
   
@@ -242,6 +243,13 @@ export default class SVGWidget extends React.Component {
         setImportanceLevel: this.setImportanceLevel, 
         setOrder: this.setOrder
       }); 
+    }
+    else if(this.controlType == "group"){
+      this.displayRightClickMenu(evt, this.id, {
+        setImportanceLevel: this.setImportanceLevel, 
+        setOrder: this.setOrder,
+        setContainerOrder: this.setContainerOrder
+      });     
     }
     else {
       this.displayRightClickMenu(evt, this.id, {
@@ -356,6 +364,18 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
+  setContainerOrder(orderValue) {
+    this.element.containerOrder = orderValue; 
+
+    let orderedValue = orderValue == "important"; 
+    this.setState({
+      orderedGroup: orderedValue
+    }); 
+
+    this.hideRightClickMenu(); 
+    this.checkSolutionValidity();
+  }
+
   onElementResized(evt, direction, element, delta) {
     // When resizing finishes, update the size of the element
     this.adjustElementSize(element);
@@ -372,7 +392,6 @@ export default class SVGWidget extends React.Component {
     const labelPosition = this.state.labelPosition; 
     const typedGroup = this.state.typedGroup;
     const orderedGroup = this.state.orderedGroup; 
-    const groupOrder = orderedGroup ? "Ordered" : "Unordered"; 
     const order = this.state.order;
     const orderOrdinal = Converter.toWordsOrdinal(order+1); 
     const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
@@ -398,9 +417,9 @@ export default class SVGWidget extends React.Component {
             <div className="widget-control-info">
               <div className="widget-control-info-left">
               {this.controlType == "group" ? 
-               (<span className="label label-info">{typedGroup ? "Typed" : "Untyped"}</span>) : undefined}
+               (<span className={"label " + (typedGroup ? "label-success" : "label-info")}>{typedGroup ? "Typed" : "Untyped"}</span>) : undefined}
               {this.controlType == "group" ? 
-               (<span className="label label-info">{groupOrder}</span>) : undefined}
+               (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{orderedGroup ? "Ordered" : "Unordered"}</span>) : undefined}
               </div>
               <div className="widget-control-info-right">
                 <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{orderLabel}</span>

@@ -5,7 +5,6 @@ import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaul
 import RightClickMenu from './RightClickMenu'; 
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
-import typedGroup from '../assets/illustrator/typedGroupContainer.svg';  
 // import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
@@ -26,6 +25,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.findShapeSiblings = this.findShapeSiblings.bind(this);
     this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
     this.getCurrentShapeIndex = this.getCurrentShapeIndex.bind(this);
+    this.getCurrentShapeOrder = this.getCurrentShapeOrder.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
     this.setTypingOnGroup = this.setTypingOnGroup.bind(this);
     this.closeTypingAlert = this.closeTypingAlert.bind(this); 
@@ -281,6 +281,11 @@ export default class ConstraintsCanvas extends React.Component {
   getCurrentShapeIndex(shapeId) {
     let node = this.state.treeData; 
     return this.findShapeIndex(shapeId, node);
+  }
+
+  getCurrentShapeOrder(shapeId) {
+    let node = this.widgetTreeNodeMap[shapeId]; 
+    return node.title.props.shape.containerOrder; 
   }
 
   getCurrentShapeSiblings(shapeId) {
@@ -625,12 +630,10 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   setTypingOnGroup(groupID, typed, groupSize){
-    let source = typed ? typedGroup : group; 
-
     let groupNode = this.widgetTreeNodeMap[groupID];
     let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
     if(groupNodeData) {
-      let widget = this.getWidget(groupNode.title.props.shape, source, { typedGroup: typed }); 
+      let widget = this.getWidget(groupNode.title.props.shape, group, { typedGroup: typed }); 
       let newGroupChildren = this.restructureTypedGroupChildren(groupNodeData.children, groupSize); 
 
       // Create a new node for the widget
@@ -748,7 +751,8 @@ export default class ConstraintsCanvas extends React.Component {
       menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
       getSiblingLabelItems={this.getSiblingLabelItems}
-      getCurrentShapeIndex={this.getCurrentShapeIndex} /> : undefined);
+      getCurrentShapeIndex={this.getCurrentShapeIndex}
+      getCurrentShapeOrder={this.getCurrentShapeOrder}  /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const colorPickerPosition = this.state.colorPickerPosition; 
     var self = this;
