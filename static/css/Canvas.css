@@ -210,6 +210,10 @@ body {
     margin-bottom: 10px;
 }
 
+.designs-canvas-container-alert {
+	margin: 0.5em;
+}
+
 .design-canvas {
 	position: relative;
 	border: 1px solid #ccc;

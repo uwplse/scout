@@ -27,7 +27,20 @@ export default class DesignCanvasSVGWidget extends React.Component {
       left: props.left, 
       top: props.top, 
       hovered: false, 
-      fontSize: this.element.fontSize
+      fontSize: this.element.fontSize,
+      scaling: props.scalingFactor
+    }
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      height: nextProps.height,
+      width: nextProps.width, 
+      left: nextProps.left, 
+      top: nextProps.top, 
+      hovered: prevState.hovered, 
+      fontSize: prevState.fontSize, 
+      scaling: nextProps.scaling
     }
   }
 
@@ -38,6 +51,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
   componentDidMount() {
     // Set the initial value for the text label
     this.setTextLabel();  
+    this.rescaleTextLabel();
   }
 
   setTextLabel() {
@@ -56,19 +70,30 @@ export default class DesignCanvasSVGWidget extends React.Component {
       }
     }
 
-    if(editableText[0]) {
+    if(editableText.length) {
       editableText[0].innerHTML = this.element.label;  
-      editableText[0].style.fontSize = "50%"; 
+
+      let scaledFont = 100 * this.state.scalingFactor; 
+      editableText[0].style.fontSize = scaledFont + "%"; 
 
       if(this.type == "button") {
         editableText[0].style.transform = "translate(" + Math.round(this.state.width/2,0) + "px," + Math.round(this.state.height/2,0) + "px)"; 
       }
-      else if(this.type == "label") {
-        let bboxText = editableText[0].getBoundingClientRect();
-        this.setState({
-          height: Math.round(bboxText.height,0), 
-          width: Math.round(bboxText.width)
-        }); 
+    }
+  }
+
+  rescaleTextLabel() {
+    let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
+    let svgElement = document.getElementById(id); 
+    if(svgElement) {
+      let editableText = svgElement.querySelectorAll(".widget-editable-text");
+      if(editableText.length) {
+        let scaledFont = 100 * this.state.scaling; 
+        editableText[0].style.fontSize = scaledFont + "%"; 
+
+        if(this.type == "button") {
+          editableText[0].style.transform = "translate(" + Math.round(this.state.width/2,0) + "px," + Math.round(this.state.height/2,0) + "px)"; 
+        }
       }
     }
   }
@@ -106,6 +131,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const left = this.state.left; 
     const top = this.state.top;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
+    this.rescaleTextLabel();
     return (
       <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} onContextMenu={this.contextMenuClicked}
         className={"widget-control-parent "  + (this.state.hovered ? "design-canvas-hovered" : "")}

@@ -296,7 +296,6 @@ class ConstraintBuilder(object):
 
 			vertical_arrange = And(vertical_pairs)
 			horizontal_arrange = And(horizontal_pairs)
-			# self.solver.assert_and_track(If(is_vertical, vertical_arrange, horizontal_arrange), "arrangment_constraint_" + container.shape_id)
 			self.solver.add(If(is_vertical, vertical_arrange, horizontal_arrange), container.shape_id + " arrangement")
 			
 		# Sum up the widths and heights

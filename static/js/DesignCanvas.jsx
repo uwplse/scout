@@ -165,6 +165,7 @@ export default class DesignCanvas extends React.Component {
             height={height}
             left={left}
             top={top}
+            scaling={this.scalingFactor}
             inMainCanvas={inMainCanvas}
             contextMenu={this.showConstraintsContextMenu.bind(this)}/>); 
   }

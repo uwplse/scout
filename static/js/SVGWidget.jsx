@@ -233,7 +233,7 @@ export default class SVGWidget extends React.Component {
       this.displayRightClickMenu(evt, this.id, this.setFontSize, this.setImportanceLevel, this.setLabel); 
     }
     else {
-      this.displayRightClickMenu(evt, undefined, this.setImportanceLevel); 
+      this.displayRightClickMenu(evt, this.id, undefined, this.setImportanceLevel); 
     }
   }
 

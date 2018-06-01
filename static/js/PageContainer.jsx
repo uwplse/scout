@@ -295,6 +295,7 @@ export default class PageContainer extends React.Component {
          <div className="container-fluid">
           <div className="navbar-header">
             <h2>Scout</h2>
+            <span><img src="../assets/logo.svg" /></span>
           </div>
          </div>
         </nav>
@@ -368,9 +369,18 @@ export default class PageContainer extends React.Component {
             </div>  
             <div className="design-canvas-container">
               <div className="left-container">
-                { designCanvases.length? <div className="alert alert-success" role="alert">Here are 10 randomly selected designs.</div> : undefined }
+                { designCanvases.length ? 
+                  (<div className="designs-canvas-container-alert alert alert-info alert-dismissable" role="alert">
+                    <button type="button" className="close" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    Here are {designCanvases.length} randomly selected designs.
+                    </div>) : undefined }
                 { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
-                  <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+                  <div>
+                    <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+                    <span>({savedCanvases.length})</span>
+                  </div>
                   <div className="panel-body saved-body">
                     {savedCanvases}
                   </div>
@@ -381,7 +391,10 @@ export default class PageContainer extends React.Component {
                   </div>
                 </div>) : null }
                 { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
-                  <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                  <div>
+                    <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                    <span>({trashedCanvases.length})</span>
+                  </div>
                   <div className="panel-body trashed-body">
                     {trashedCanvases}
                   </div>
@@ -389,7 +402,10 @@ export default class PageContainer extends React.Component {
               </div>
               {invalidatedCanvases.length ? (<div className="right-container"> 
                 <div className="panel invalid-container panel-default"> 
-                  <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                  <div>
+                    <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                    <span>({invalidatedCanvases.length})</span>
+                  </div>
                   <div className="panel-body invalidated-body">
                     {invalidatedCanvases}
                   </div>
