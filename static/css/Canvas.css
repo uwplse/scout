@@ -120,6 +120,7 @@ body {
 
 .widget-control-row {
 	display: flex; 
+	align-items: center;
 }
 
 .widget-control-labels.widget-control-arrow-down:before {
@@ -134,6 +135,11 @@ body {
 	zoom: 50%; 
 	position: absolute;
 	z-index: 1000; 
+}
+
+.widget-control-order {
+	margin-left: 1em;
+	font-size: 100%; 
 }
 
 .widget-control-typing {

@@ -3,6 +3,7 @@ import React from "react";
 import Resizable from 're-resizable';
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
+import Converter from "number-to-words";
 
 const WAIT_INTERVAL = 1000; 
 
@@ -93,6 +94,7 @@ export default class SVGWidget extends React.Component {
     this.initFontSize = this.initFontSize.bind(this);
     this.setImportanceLevel = this.setImportanceLevel.bind(this); 
     this.setLabel = this.setLabel.bind(this);
+    this.setOrder = this.setOrder.bind(this);
     this.onElementResized = this.onElementResized.bind(this);
     this.computeLabelPosition = this.computeLabelPosition.bind(this);
 
@@ -101,7 +103,8 @@ export default class SVGWidget extends React.Component {
 
     this.state = {
       height: SVGWidget.initialHeights(this.controlType),
-      width: SVGWidget.initialWidths(this.controlType), 
+      width: SVGWidget.initialWidths(this.controlType),
+      order: -1,  
       fontSize: this.initialFontSize,
       importance: "normal", 
       showImportance: props.showImportanceLevels, 
@@ -111,6 +114,7 @@ export default class SVGWidget extends React.Component {
         x: 0, 
         y: 0
       }, 
+      showOrder: false, 
       svgSource: props.source, 
       typedGroup: props.typedGroup
     }
@@ -230,10 +234,18 @@ export default class SVGWidget extends React.Component {
     evt.preventDefault();
 
     if(this.controlType == "label") {
-      this.displayRightClickMenu(evt, this.id, this.setFontSize, this.setImportanceLevel, this.setLabel); 
+      this.displayRightClickMenu(evt, this.id, {
+        setFontSize: this.setFontSize, 
+        setLabel: this.setLabel, 
+        setImportanceLevel: this.setImportanceLevel, 
+        setOrder: this.setOrder
+      }); 
     }
     else {
-      this.displayRightClickMenu(evt, this.id, undefined, this.setImportanceLevel); 
+      this.displayRightClickMenu(evt, this.id, {
+        setImportanceLevel: this.setImportanceLevel, 
+        setOrder: this.setOrder
+      }); 
     }
   }
 
@@ -327,6 +339,17 @@ export default class SVGWidget extends React.Component {
     }
   }
 
+  setOrder(index) {
+    this.element.order = index; 
+
+    this.setState({
+      showOrder: true,
+      order: index
+    }); 
+
+    this.hideRightClickMenu(); 
+  }
+
   onElementResized(evt, direction, element, delta) {
     // When resizing finishes, update the size of the element
     this.adjustElementSize(element);
@@ -341,7 +364,9 @@ export default class SVGWidget extends React.Component {
     const showLabels = this.state.showLabels; 
     const labelDirection = this.state.labelDirection; 
     const labelPosition = this.state.labelPosition; 
-    const typedGroup = this.state.typedGroup; 
+    const typedGroup = this.state.typedGroup;
+    const order = Converter.toOrdinal(this.state.order+1); 
+    const showOrder = this.state.showOrder;  
     this.setElementSize(width, height); 
     this.setElementTyping(typedGroup);
     const enableOptions = {
@@ -356,6 +381,7 @@ export default class SVGWidget extends React.Component {
             contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
           <div className="widget-control-row"> 
             <SVGInline style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+            <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{order}</span>
             <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}
                 style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>

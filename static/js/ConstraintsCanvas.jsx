@@ -21,10 +21,11 @@ export default class ConstraintsCanvas extends React.Component {
     // Method bindings
     this.displayRightClickMenu = this.displayRightClickMenu.bind(this);
     this.hideRightClickMenu = this.hideRightClickMenu.bind(this); 
-    this.displayColorPicker = this.displayColorPicker.bind(this);
+    // this.displayColorPicker = this.displayColorPicker.bind(this);
     this.updateBackgroundColor = this.updateBackgroundColor.bind(this);
     this.findShapeSiblings = this.findShapeSiblings.bind(this);
     this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
+    this.getCurrentShapeIndex = this.getCurrentShapeIndex.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
     this.setTypingOnGroup = this.setTypingOnGroup.bind(this);
     this.closeTypingAlert = this.closeTypingAlert.bind(this); 
@@ -48,20 +49,18 @@ export default class ConstraintsCanvas extends React.Component {
       treeData: [], 
       pageFeedbackWidgets: [], 
       rightClickMenuShown: false, 
-      rightClickMenuSetFontSize: undefined, 
-      rightClickMenuSetImportance: undefined, 
-      rightClickMenuSetLabel: undefined, 
+      rightClickMenuCallbacks: undefined, 
       rightClickMenuPosition: {
         x: 0, 
         y: 0
       }, 
       rightClickShapeID: undefined, 
-      colorPickerShown: false, 
-      colorPickerCallback: undefined, 
-      colorPickerPosition: {
-        x: 0, 
-        y: 0 
-      }, 
+      // colorPickerShown: false, 
+      // colorPickerCallback: undefined, 
+      // colorPickerPosition: {
+      //   x: 0, 
+      //   y: 0 
+      // }, 
       showImportanceLevels: false
     }; 
   }
@@ -161,12 +160,10 @@ export default class ConstraintsCanvas extends React.Component {
     return this.constraintsShapesMap[shapeID]; 
   }
 
-  displayRightClickMenu(evt, shapeID, setFontSizeCallback, setImportanceCallback, setLabelCallback) {
+  displayRightClickMenu(evt, shapeID, menuCallbacks) {
     this.setState({
       rightClickMenuShown: true, 
-      rightClickMenuSetFontSize: setFontSizeCallback, // The method to call in the SVGWidget instance that called this menu open.
-      rightClickMenuSetImportance: setImportanceCallback,  
-      rightClickMenuSetLabel: setLabelCallback, 
+      rightClickMenuCallbacks: menuCallbacks, 
       rightClickMenuPosition: {
         x: evt.clientX, 
         y: evt.clientY
@@ -175,16 +172,16 @@ export default class ConstraintsCanvas extends React.Component {
     });  
   }
 
-  displayColorPicker(evt, setColor) {
-    this.setState({
-      colorPickerShown: true, 
-      colorPickerCallback: setColor,
-      colorPickerPosition: {
-        x: evt.clientX, 
-        y: evt.clientY
-      }
-    });   
-  }
+  // displayColorPicker(evt, setColor) {
+  //   this.setState({
+  //     colorPickerShown: true, 
+  //     colorPickerCallback: setColor,
+  //     colorPickerPosition: {
+  //       x: evt.clientX, 
+  //       y: evt.clientY
+  //     }
+  //   });   
+  // }
 
   findShapeSiblings(shapeId, siblings, node) {
     // Get the two neighboring siblings for a shape in the tree
@@ -206,6 +203,25 @@ export default class ConstraintsCanvas extends React.Component {
         this.findShapeSiblings(shapeId, siblings, treeNode.children); 
       }      
     }
+  }
+
+  findShapeIndex(shapeId, node) {
+    for(let i=0; i<node.length; i++) {
+      let treeNode = node[i]; 
+      let nodeID = treeNode.title.props.id; 
+      if(nodeID == shapeId) {
+        return i; 
+      }
+
+      if(treeNode.children) {
+        let inChildrenIndex = this.findShapeIndex(shapeId, treeNode.children); 
+        if(inChildrenIndex != -1) {
+          return inChildrenIndex; 
+        }        
+      }
+    } 
+
+    return -1; 
   }
 
   getSiblingLabelItems(shapeId) {
@@ -232,6 +248,11 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     return menuItems; 
+  }
+
+  getCurrentShapeIndex(shapeId) {
+    let node = this.state.treeData; 
+    return this.findShapeIndex(shapeId, node);
   }
 
   updateBackgroundColor(color) {
@@ -690,11 +711,10 @@ export default class ConstraintsCanvas extends React.Component {
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
     const rightClickMenu = (this.state.rightClickMenuShown ?
      <RightClickMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} 
-      setFontSize={this.state.rightClickMenuSetFontSize} 
-      setImportanceLevel={this.state.rightClickMenuSetImportance} 
-      setLabel={this.state.rightClickMenuSetLabel}
+      menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
-      getSiblingLabelItems={this.getSiblingLabelItems}  /> : undefined);
+      getSiblingLabelItems={this.getSiblingLabelItems}
+      getCurrentShapeIndex={this.getCurrentShapeIndex} /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const colorPickerPosition = this.state.colorPickerPosition; 
     var self = this;

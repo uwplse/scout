@@ -1,4 +1,4 @@
-layout/*
+scout/*
 static/node_modules/*
 static/dist/*
 *__pycache__
