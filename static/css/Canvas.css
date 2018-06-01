@@ -131,6 +131,14 @@ body {
 	content: url("../assets/up_arrow.png");
 }
 
+.widget-control-info {
+	align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-left: 10px;
+}
+
 .widget-control-labels {
 	zoom: 50%; 
 	position: absolute;
@@ -138,8 +146,8 @@ body {
 }
 
 .widget-control-order {
-	margin-left: 1em;
 	font-size: 100%; 
+	margin-bottom: 0.5em; 
 }
 
 .widget-control-typing {

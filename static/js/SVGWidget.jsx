@@ -381,15 +381,17 @@ export default class SVGWidget extends React.Component {
             contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
           <div className="widget-control-row"> 
             <SVGInline style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
-            <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{order}</span>
             <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}
                 style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>
-          </div>
-          <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
-            <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
-            <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
-            <span className={"glyphicon " + (importance == "least" || importance == "normal" ? "glyphicon-star-empty" : "glyphicon-star")}></span>
+            <div className="widget-control-info">
+              <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{order}</span>
+              <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
+                <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
+                <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
+                <span className={"glyphicon " + (importance == "least" || importance == "normal" ? "glyphicon-star-empty" : "glyphicon-star")}></span>
+              </div>
+            </div>
           </div>
         </div>
       </Resizable>); 
