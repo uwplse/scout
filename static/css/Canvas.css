@@ -134,9 +134,23 @@ body {
 .widget-control-info {
 	align-self: stretch;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     margin-left: 10px;
+}
+
+.widget-control-info .label-info {
+	margin-bottom: 0.5em; 
+	font-size: 100%; 
+}
+
+.widget-control-info-left, 
+.widget-control-info-right {
+	display: flex; 
+	flex-direction: column; 
+}
+
+.widget-control-info-right {
+	margin-left: 10px;
 }
 
 .widget-control-labels {
@@ -146,7 +160,6 @@ body {
 }
 
 .widget-control-order {
-	font-size: 100%; 
 	margin-bottom: 0.5em; 
 }
 

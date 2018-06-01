@@ -41,7 +41,7 @@ class OrderMenuItem extends React.Component {
 
   render () {
     var self = this;
-    let label = "Keep " + Converter.toOrdinal(this.index+1) + "."; 
+    let label = "Keep " + Converter.toWordsOrdinal(this.index+1) + "."; 
     return <li className="right-click-menu-item" onClick={function() { self.onClick(self.index); }}>{label}</li>; 
   }
 }
@@ -124,31 +124,39 @@ export default class RightClickMenu extends React.Component {
     let importanceMenu = document.getElementById("importance-menu-label");
     let importanceMenuBox = importanceMenu.getBoundingClientRect(); 
 
+    let currentTop = 0; 
     let importanceLocation = {
-      top: 0, 
+      top: currentTop, 
       left: left
     }; 
 
-    let orderMenu = document.getElementById("order-menu-label");
-    let orderMenuBox = orderMenu.getBoundingClientRect(); 
-    let orderLocation = {
-      top: importanceMenuBox.height, 
-      left: left
-    }; 
+    currentTop = currentTop + importanceMenuBox.height; 
+    let orderLocation = this.state.orderMenuLocation; 
+    if(this.setOrder) {
+      let orderMenu = document.getElementById("order-menu-label");
+      let orderMenuBox = orderMenu.getBoundingClientRect(); 
+
+      orderLocation = {
+        top: currentTop, 
+        left: left
+      }; 
+
+      currentTop = currentTop + orderMenuBox.height; 
+    }
 
     let labelLocation = this.state.labelMenuLocation; 
     let fontLocation = this.state.fontSizeMenuLocation; 
     if(this.setFontSize) {
       let labelMenu = document.getElementById("label-menu-label"); 
       let labelBox = labelMenu.getBoundingClientRect(); 
-
       labelLocation = {
-        top: orderLocation.top + orderMenuBox.height, 
+        top: currentTop, 
         left: left
       }; 
 
+      currentTop = currentTop + labelBox.height; 
       fontLocation = {
-        top: labelLocation.top + labelBox.height, 
+        top: currentTop, 
         left: left
       }; 
     }
@@ -254,6 +262,7 @@ export default class RightClickMenu extends React.Component {
 
     const fontSizeShown = this.setFontSize != undefined; 
     const labelShown = this.setLabel != undefined; 
+    const orderShown = this.setOrder != undefined; 
 
     // Importance will be enabled for all controls
     let importanceMenuItems = this.getImportanceMenuItems();
@@ -284,14 +293,15 @@ export default class RightClickMenu extends React.Component {
           (<div className="right-click-submenu-container" style={{left: importanceLeft + "px", top: importanceTop + "px"}}>
             <ul className="right-click-menu">{importanceMenuItems}</ul>
           </div>) : undefined}
-        <div id="order-menu-label" className="right-click-menu-label" onClick={this.openOrderMenu}>
-          <span>Order</span>
-          <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-        </div>
-        {orderMenuShown ? 
+        {orderShown ? 
+          (<div id="order-menu-label" className="right-click-menu-label" onClick={this.openOrderMenu}>
+            <span>Order</span>
+            <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+          </div>) : undefined}
+        {(orderMenuShown ? 
           (<div className="right-click-submenu-container" style={{left: orderLeft + "px", top: orderTop + "px"}}>
             <ul className="right-click-menu">{orderMenuItems}</ul>
-          </div>) : undefined}
+          </div>) : undefined)}
         {(labelShown ? (
             <div id="label-menu-label" className="right-click-menu-label" onClick={this.openLabelMenu}> 
               <span>Labels</span>

@@ -161,6 +161,15 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   displayRightClickMenu(evt, shapeID, menuCallbacks) {
+    // Decide whether to show the order menu item based on the index of the shape in the 
+    // parent container.
+    let shapeIndex = this.getCurrentShapeIndex(shapeID); 
+    let siblings = this.getCurrentShapeSiblings(shapeID); 
+    let showOrderMenu = (shapeIndex == 0 || shapeIndex == (siblings.length - 1)); 
+    if(!showOrderMenu) {
+      menuCallbacks.setOrder = undefined; 
+    }
+
     this.setState({
       rightClickMenuShown: true, 
       rightClickMenuCallbacks: menuCallbacks, 
@@ -183,7 +192,7 @@ export default class ConstraintsCanvas extends React.Component {
   //   });   
   // }
 
-  findShapeSiblings(shapeId, siblings, node) {
+  findShapePreviousNextSiblings(shapeId, siblings, node) {
     // Get the two neighboring siblings for a shape in the tree
     for(var i=0; i<node.length; i++) {
       let treeNode = node[i]; 
@@ -200,7 +209,7 @@ export default class ConstraintsCanvas extends React.Component {
         }
       }
       else if(treeNode.children) {
-        this.findShapeSiblings(shapeId, siblings, treeNode.children); 
+        this.findShapePreviousNextSiblings(shapeId, siblings, treeNode.children); 
       }      
     }
   }
@@ -228,7 +237,7 @@ export default class ConstraintsCanvas extends React.Component {
     // Go through tree data (recursive) and find the level of the element
     let siblings = {}; 
     let node = this.state.treeData; 
-    this.findShapeSiblings(shapeId, siblings, node);
+    this.findShapePreviousNextSiblings(shapeId, siblings, node);
 
     let menuItems = []; 
     if(siblings.previous) {
@@ -250,11 +259,35 @@ export default class ConstraintsCanvas extends React.Component {
     return menuItems; 
   }
 
+  findShapeSiblings(shapeId, node) {
+    // Get the two neighboring siblings for a shape in the tree
+    for(var i=0; i<node.length; i++) {
+      let treeNode = node[i]; 
+      let nodeID = treeNode.title.props.id; 
+      if(nodeID == shapeId) {
+        return node; 
+      }
+      else if(treeNode.children) {
+        let siblings = this.findShapeSiblings(shapeId, treeNode.children); 
+        if(siblings) {
+          return siblings; 
+        }
+      }      
+    }
+
+    return undefined; 
+  }
+
   getCurrentShapeIndex(shapeId) {
     let node = this.state.treeData; 
     return this.findShapeIndex(shapeId, node);
   }
 
+  getCurrentShapeSiblings(shapeId) {
+    let node = this.state.treeData; 
+    return this.findShapeSiblings(shapeId, node); 
+  }
+ 
   updateBackgroundColor(color) {
     let backgroundElement = document.getElementById("constraints-canvas-container");
     backgroundElement.style.backgroundColor = color.hex; 

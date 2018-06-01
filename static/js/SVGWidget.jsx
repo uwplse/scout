@@ -116,7 +116,8 @@ export default class SVGWidget extends React.Component {
       }, 
       showOrder: false, 
       svgSource: props.source, 
-      typedGroup: props.typedGroup
+      typedGroup: props.typedGroup, 
+      orderedGroup: props.orderedGroup
     }
   }
 
@@ -131,7 +132,8 @@ export default class SVGWidget extends React.Component {
       labelDirection: prevState.labelDirection, 
       labelPosition: prevState.labelPosition, 
       svgSource: nextProps.source, 
-      typedGroup: nextProps.typedGroup
+      typedGroup: nextProps.typedGroup, 
+      orderedGroup: nextProps.orderedGroup
     }    
   }
   
@@ -369,7 +371,12 @@ export default class SVGWidget extends React.Component {
     const labelDirection = this.state.labelDirection; 
     const labelPosition = this.state.labelPosition; 
     const typedGroup = this.state.typedGroup;
-    const order = Converter.toOrdinal(this.state.order+1); 
+    const orderedGroup = this.state.orderedGroup; 
+    const groupOrder = orderedGroup ? "Ordered" : "Unordered"; 
+    const order = this.state.order;
+    const orderOrdinal = Converter.toWordsOrdinal(order+1); 
+    const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
+
     const showOrder = this.state.showOrder;  
     this.setElementSize(width, height); 
     this.setElementTyping(typedGroup);
@@ -389,11 +396,19 @@ export default class SVGWidget extends React.Component {
                 style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>
             <div className="widget-control-info">
-              <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{order}</span>
-              <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
-                <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
-                <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
-                <span className={"glyphicon " + (importance == "least" || importance == "normal" ? "glyphicon-star-empty" : "glyphicon-star")}></span>
+              <div className="widget-control-info-left">
+              {this.controlType == "group" ? 
+               (<span className="label label-info">{typedGroup ? "Typed" : "Untyped"}</span>) : undefined}
+              {this.controlType == "group" ? 
+               (<span className="label label-info">{groupOrder}</span>) : undefined}
+              </div>
+              <div className="widget-control-info-right">
+                <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
+                <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
+                  <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
+                  <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
+                  <span className={"glyphicon " + (importance == "least" || importance == "normal" ? "glyphicon-star-empty" : "glyphicon-star")}></span>
+                </div>
               </div>
             </div>
           </div>
