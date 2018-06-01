@@ -43,7 +43,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 1; 
+    this.minimumGroupSize = 2; 
 
     this.state = { 
       treeData: [], 
@@ -268,6 +268,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   hideRightClickMenu() {
+    // Recheck consistency of the solutions after any of the things are set
     this.setState({
       rightClickMenuShown: false
     }); 

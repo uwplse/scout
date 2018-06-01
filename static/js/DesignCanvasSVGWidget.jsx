@@ -59,25 +59,25 @@ export default class DesignCanvasSVGWidget extends React.Component {
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
 
-    if(this.type == "label") {
-      let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
-      svgElementInline[0].setAttribute("font-size", this.element.fontSize); 
-
-      if(this.controlType == "label") {
-        // Unset these so that we can calculate a new size after the font size is changed
-        svgElementInline[0].style.width = ""; 
-        svgElementInline[0].style.height = "";
-      }
-    }
+    // if(this.controlType == "label") {
+    //   // Unset these so that we can calculate a new size after the font size is changed
+    //   let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
+    //   svgElementInline[0].style.width = ""; 
+    //   svgElementInline[0].style.height = "";
+    //   console.log("unset text sizes");
+    // }
 
     if(editableText.length) {
       editableText[0].innerHTML = this.element.label;  
-
-      let scaledFont = 100 * this.state.scalingFactor; 
-      editableText[0].style.fontSize = scaledFont + "%"; 
-
-      if(this.type == "button") {
-        editableText[0].style.transform = "translate(" + Math.round(this.state.width/2,0) + "px," + Math.round(this.state.height/2,0) + "px)"; 
+    
+      if(this.controlType == "label") {
+        let textArea = editableText[0].getBoundingClientRect(); 
+        console.log(textArea.height);
+        console.log(textArea.width);
+        this.setState({
+          height: Math.round(textArea.height,0), 
+          width: Math.round(textArea.width,0)
+        }); 
       }
     }
   }
@@ -132,6 +132,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const top = this.state.top;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     this.rescaleTextLabel();
+    console.log(this.state.height); 
+    console.log(this.state.width); 
     return (
       <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} onContextMenu={this.contextMenuClicked}
         className={"widget-control-parent "  + (this.state.hovered ? "design-canvas-hovered" : "")}

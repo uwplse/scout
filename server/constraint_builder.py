@@ -302,6 +302,8 @@ class ConstraintBuilder(object):
 		child_widths = 0
 		child_heights = 0
 		child_shapes = container.children
+		last_child_index = len(child_shapes) - 1
+
 		for child_i in range(0, len(child_shapes)): 
 			child = child_shapes[child_i]
 			child_x = child.variables.x.z3
@@ -311,13 +313,13 @@ class ConstraintBuilder(object):
 			child_widths += child.width + add_proximity
 			child_heights += child.height + add_proximity
 
-			if child.order == "last": 
+			if child.order == last_child_index: 
 				# The bottom of the shape is the bottom of the container
 				is_bottom = (child_y + child.height) == (container_y + container.height)
 				is_right = (child_x + child.width) == (container_x + container.width)
 				self.solver.add(If(is_vertical, is_bottom, is_right), "Order last")
 
-			if child.order == "first":
+			if child.order == 0:
 				is_top = (child_y == container_y)
 				is_left = (child_x == container_x)
 				self.solver.add(If(is_vertical, is_top, is_left), child.shape_id + " " + container.shape_id + " first in order")

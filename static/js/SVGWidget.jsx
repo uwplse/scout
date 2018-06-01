@@ -289,6 +289,7 @@ export default class SVGWidget extends React.Component {
 
     // Close the right click menu
     this.hideRightClickMenu(); 
+    this.checkSolutionValidity();
   }
 
   setImportanceLevel(level) {
@@ -303,6 +304,7 @@ export default class SVGWidget extends React.Component {
     }); 
 
     this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
   computeLabelPosition(){
@@ -329,6 +331,7 @@ export default class SVGWidget extends React.Component {
     }); 
 
     this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
   setTypedGroup(value) {
@@ -348,6 +351,7 @@ export default class SVGWidget extends React.Component {
     }); 
 
     this.hideRightClickMenu(); 
+    this.checkSolutionValidity();
   }
 
   onElementResized(evt, direction, element, delta) {

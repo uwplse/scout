@@ -19,7 +19,7 @@ class Shape(object):
 		if self.shape_type in label_types:
 			self.variables.label = sh.Variable(shape_id, "label", varType="str")
 
-		self.order = "important"
+		self.order = "unimportant"
 		self.locks = None
 
 		self.variable_values = dict()
