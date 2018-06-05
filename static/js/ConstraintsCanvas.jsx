@@ -493,8 +493,8 @@ export default class ConstraintsCanvas extends React.Component {
       "type": type,
       "controlType": controlType, 
       "size": {
-        "width": SVGWidget.initialWidths(controlType), 
-        "height": SVGWidget.initialHeights(controlType)
+        "width": SVGWidget.controlWidths(controlType), 
+        "height": SVGWidget.controlHeights(controlType)
       }
     }
 

@@ -184,7 +184,7 @@ body {
 }
 
 .widget-control-labels {
-	zoom: 50%; 
+	zoom: 40%; 
 	position: absolute;
 	z-index: 1000; 
 }

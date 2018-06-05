@@ -18,7 +18,30 @@ export default class SVGWidget extends React.Component {
       'group': 100, 
       'labelGroup': 100, 
       'label': 83, 
+      'smallLabel': 47, 
       'multilineLabel': 200, 
+      'image': 100, 
+      'placeholder': 100
+    }
+
+    if(controlType in values) {
+      return values[controlType]; 
+    }
+
+    return 0; 
+  }
+
+  // TODO: Refactor so don't need two different collections of sizes
+  static controlWidths(controlType) {
+    let values = {
+      'button': 275, 
+      'field': 275, 
+      'search': 275, 
+      'group': 100, 
+      'labelGroup': 100, 
+      'label': 83, 
+      'multilineLabel': 200, 
+      'smallLabel': 47,
       'image': 100, 
       'placeholder': 100
     }
@@ -38,6 +61,7 @@ export default class SVGWidget extends React.Component {
       'group': 40, 
       'labelGroup': 40, 
       'label': 43, 
+      'smallLabel': 23, 
       'image': 100, 
       'placeholder': 100, 
       'multilineLabel': 80
@@ -50,6 +74,9 @@ export default class SVGWidget extends React.Component {
     return 0; 
   }
 
+  static controlHeights(controlType) {
+    return SVGWidget.initialHeights(controlType);
+  }
 
   static initialLabels(controlType) {
     let values = {
@@ -58,7 +85,8 @@ export default class SVGWidget extends React.Component {
       'field': 'Field', 
       'search': 'Search', 
       'group': 'Group', 
-      'labelGroup': 'Label'
+      'labelGroup': 'Label', 
+      'smallLabel': 'Label'
     }
     return values[controlType]; 
   }; 
@@ -66,7 +94,8 @@ export default class SVGWidget extends React.Component {
   static initialFontSizes(controlType) {
     let values = {
       'label': 36, 
-      'multilineLabel': 14
+      'multilineLabel': 14, 
+      'smallLabel': 20
     }
     return values[controlType];
   }
@@ -236,7 +265,7 @@ export default class SVGWidget extends React.Component {
     evt.stopPropagation();
     evt.preventDefault();
 
-    if(this.controlType == "label") {
+    if(this.controlType == "label" || this.controlType == "smallLabel") {
       this.displayRightClickMenu(evt, this.id, {
         setFontSize: this.setFontSize, 
         setLabel: this.setLabel, 
@@ -407,7 +436,7 @@ export default class SVGWidget extends React.Component {
     const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
 
     const showOrder = this.state.showOrder;  
-    this.setElementSize(width, height); 
+    // this.setElementSize(width, height); 
     this.setElementTyping(typedGroup);
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false

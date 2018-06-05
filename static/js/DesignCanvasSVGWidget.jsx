@@ -13,6 +13,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 
     this.contextMenu = props.contextMenu; 
+    this.timer = null;
 
     // Method bindings
     this.setHovered = this.setHovered.bind(this); 
@@ -34,50 +35,52 @@ export default class DesignCanvasSVGWidget extends React.Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     return {
-      height: nextProps.height,
-      width: nextProps.width, 
-      left: nextProps.left, 
-      top: nextProps.top, 
+      height: prevState.height,
+      width: prevState.width, 
+      left: prevState.left, 
+      top: prevState.top, 
       hovered: prevState.hovered, 
       fontSize: prevState.fontSize, 
       scaling: nextProps.scaling
     }
   }
 
-  componentWillMount() {
-    this.timer = null; 
-  }
-
   componentDidMount() {
     // Set the initial value for the text label
     this.setTextLabel();  
+    this.rescaleLabelSize();
     this.rescaleTextLabel();
+  }
+
+  componentDidUpdate() {
+    this.setTextLabel();  
+  }
+
+  rescaleLabelSize() {
+    let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
+    let svgElement = document.getElementById(id); 
+    let editableText = svgElement.querySelectorAll(".widget-editable-text");
+
+    if(editableText.length) {    
+      if(this.controlType == "label" || this.controlType == "smallLabel") {
+        let textArea = editableText[0].getBoundingClientRect(); 
+        let newHeight = Math.round(textArea.height,0); 
+        let newWidth = Math.round(textArea.width,0);
+        this.setState({
+          height: newHeight, 
+          width: newWidth
+        }); 
+      }
+    }
   }
 
   setTextLabel() {
     let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
     let svgElement = document.getElementById(id); 
-    let editableText = svgElement.querySelectorAll(".widget-editable-text");
-
-    // if(this.controlType == "label") {
-    //   // Unset these so that we can calculate a new size after the font size is changed
-    //   let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
-    //   svgElementInline[0].style.width = ""; 
-    //   svgElementInline[0].style.height = "";
-    //   console.log("unset text sizes");
-    // }
-
-    if(editableText.length) {
-      editableText[0].innerHTML = this.element.label;  
-    
-      if(this.controlType == "label") {
-        let textArea = editableText[0].getBoundingClientRect(); 
-        console.log(textArea.height);
-        console.log(textArea.width);
-        this.setState({
-          height: Math.round(textArea.height,0), 
-          width: Math.round(textArea.width,0)
-        }); 
+    if(svgElement) {
+      let editableText = svgElement.querySelectorAll(".widget-editable-text");
+      if(editableText.length) {
+        editableText[0].innerHTML = this.element.label;  
       }
     }
   }
@@ -131,9 +134,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const left = this.state.left; 
     const top = this.state.top;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
+    this.setTextLabel();
     this.rescaleTextLabel();
-    console.log(this.state.height); 
-    console.log(this.state.width); 
     return (
       <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} onContextMenu={this.contextMenuClicked}
         className={"widget-control-parent "  + (this.state.hovered ? "design-canvas-hovered" : "")}

@@ -17,6 +17,8 @@ import labelStatic from '../assets/illustrator/label_widgets.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
 import multilineLabel from '../assets/illustrator/multiline_label.svg';
+import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
+import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -49,6 +51,7 @@ export default class PageContainer extends React.Component {
   }
 
   closeRightClickMenus() {
+    console.log("closeright click menus");
     if(this.constraintsCanvasRef) {
       this.constraintsCanvasRef.current.closeRightClickMenu(); 
     }
@@ -304,7 +307,7 @@ export default class PageContainer extends React.Component {
               }
           });      
     return (
-      <div className="page-container" onClick={this.closeRightClickMenus}>
+      <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
@@ -331,6 +334,9 @@ export default class PageContainer extends React.Component {
               <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
                 svg={ labelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', labelDynamic)}/>
+              <SVGInline className="widget-control widget-control-label" 
+                height={SVGWidget.initialHeights('smallLabel') + "px"} width={SVGWidget.initialWidths('smallLabel') + "px"} 
+                svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'smallLabel', smallLabelDynamic)}/>
               <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('multilineLabel') + "px"} width={SVGWidget.initialWidths('multilineLabel') + "px"} 
                 svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'multilineLabel', multilineLabel)}/>
