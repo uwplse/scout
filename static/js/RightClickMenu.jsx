@@ -91,6 +91,7 @@ export default class RightClickMenu extends React.Component {
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
     this.getSiblingLabelItems = props.getSiblingLabelItems; 
+    this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
@@ -151,31 +152,35 @@ export default class RightClickMenu extends React.Component {
     let orderLocation = this.state.orderMenuLocation; 
     if(this.setOrder) {
       let orderMenu = document.getElementById("order-menu-label");
-      let orderMenuBox = orderMenu.getBoundingClientRect(); 
+      if(orderMenu) {
+        let orderMenuBox = orderMenu.getBoundingClientRect(); 
 
-      orderLocation = {
-        top: currentTop, 
-        left: left
-      }; 
+        orderLocation = {
+          top: currentTop, 
+          left: left
+        }; 
 
-      currentTop = currentTop + orderMenuBox.height; 
+        currentTop = currentTop + orderMenuBox.height; 
+      }
     }
 
     let labelLocation = this.state.labelMenuLocation; 
     let fontLocation = this.state.fontSizeMenuLocation; 
     if(this.setFontSize) {
       let labelMenu = document.getElementById("label-menu-label"); 
-      let labelBox = labelMenu.getBoundingClientRect(); 
-      labelLocation = {
-        top: currentTop, 
-        left: left
-      }; 
+      if(labelMenu) {
+        let labelBox = labelMenu.getBoundingClientRect(); 
+        labelLocation = {
+          top: currentTop, 
+          left: left
+        }; 
 
-      currentTop = currentTop + labelBox.height; 
-      fontLocation = {
-        top: currentTop, 
-        left: left
-      }; 
+        currentTop = currentTop + labelBox.height; 
+        fontLocation = {
+          top: currentTop, 
+          left: left
+        };
+      } 
     }
 
     this.setState({
@@ -220,8 +225,15 @@ export default class RightClickMenu extends React.Component {
   getOrderMenuItems() {
     let menuItems = []; 
 
-    let index = this.getCurrentShapeIndex(this.shapeID); 
-    menuItems.push(<OrderMenuItem key={this.shapeID} index={index} onClick={this.setOrder} />); 
+    // Decide whether to show the order menu item based on the index of the shape in the 
+    // parent container.
+    let shapeIndex = this.getCurrentShapeIndex(this.shapeID); 
+    let siblings = this.getCurrentShapeSiblings(this.shapeID); 
+    let showOrderMenu = (shapeIndex == 0 || shapeIndex == (siblings.length - 1)); 
+
+    if(showOrderMenu) {
+      menuItems.push(<OrderMenuItem key={this.shapeID} index={shapeIndex} onClick={this.setOrder} />); 
+    }
 
     if(this.setContainerOrder) {
       let currentOrder = this.getCurrentShapeOrder(this.shapeID); 
@@ -285,11 +297,11 @@ export default class RightClickMenu extends React.Component {
 
     const fontSizeShown = this.setFontSize != undefined; 
     const labelShown = this.setLabel != undefined; 
-    const orderShown = this.setOrder != undefined; 
 
     // Importance will be enabled for all controls
     let importanceMenuItems = this.getImportanceMenuItems();
     let orderMenuItems = this.getOrderMenuItems();
+    const orderShown = this.setOrder != undefined && orderMenuItems.length; 
 
     const fontSizeLeft = this.state.fontSizeMenuLocation.left; 
     const fontSizeTop = this.state.fontSizeMenuLocation.top; 

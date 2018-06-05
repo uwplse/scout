@@ -14,6 +14,17 @@ GLOBAL_PROXIMITY = 5
 NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
+class OverrideSolver(object):
+	def __init__(self, solver):
+		self.solver = solver
+		self.debug = True
+
+	def add(self, constraint, name=""): 
+		if len(name) and self.debug: 
+			self.solver.assert_and_track(constraint, name)
+		else: 
+			self.solver.add(constraint)
+
 class Solver(object): 
 	def __init__(self, elements, solutions, canvas_width, canvas_height, relative_designs=None): 
 		self.solutions = [] # Initialize the variables somewhere
@@ -33,12 +44,13 @@ class Solver(object):
 
 		# Construct the solver instance we will use for Z3
 		self.solver = z3.Solver()
+		self.override_solver = OverrideSolver(self.solver)
 		self.solver_helper = z3_helper.Z3Helper(self.solver, canvas_width, canvas_height)
-		self.cb = constraint_builder.ConstraintBuilder(self.solver)
-		self.init_domains()
+		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
 
 		# Initialize the set of constraints on shapes and containers
 		for shape in self.shapes.values(): 
+			self.cb.init_shape_bounds(shape, canvas_width, canvas_height)
 			if shape.type == "canvas": 
 				self.cb.init_canvas_constraints(shape)
 			elif shape.type == "container": 
@@ -121,16 +133,6 @@ class Solver(object):
 
 		return shape_hierarchy
 
-	# initialize domains
-	def init_domains(self):
-		for shape in self.shapes.values():
-			# x_size = len(shape.x.domain)
-			# y_size = len(shape.y.domain)
-			self.solver.add(shape.variables.x.z3 >= 0)
-			self.solver.add((shape.variables.x.z3 + shape.width) <= self.canvas_width)
-			self.solver.add(shape.variables.y.z3 >= 0)
-			self.solver.add((shape.variables.y.z3 + shape.height) <= self.canvas_height)
-
 	def init_variables(self):
 		last = []
 		first = []
@@ -142,10 +144,15 @@ class Solver(object):
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.proximity)
 			
-			if shape.type == "canvas":
+			elif shape.type == "canvas":
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.justification)
 				last.append(shape.variables.margin)
+
+			if shape.importance == "most": 
+				last.append(shape.variables.magnification)
+			elif shape.importance == "least": 
+				last.append(shape.variables.minification)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
@@ -313,15 +320,15 @@ class Solver(object):
 		variable_equals_assigned = []
 		for variable in self.variables:
 			variable_equals_assigned.append(variable.z3 == variable.assigned)
-		self.solver.add(And(variable_equals_assigned))
+		self.override_solver.add(And(variable_equals_assigned), "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(variable.assigned))
 
 	def encode_assigned_variable(self, variable):
 		time_encoding_start = time.time()
 		if variable.name == "proximity" or variable.name == "margin":
 			prox_value = variable.domain[variable.assigned]
-			self.solver.add(variable.z3 == prox_value)
+			self.override_solver.add(variable.z3 == prox_value, "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(prox_value))
 		else:
-			self.solver.add(variable.z3 == variable.assigned)
+			self.override_solver.add(variable.z3 == variable.assigned, "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(variable.assigned))
 
 		time_encoding_end = time.time()
 		self.time_encoding += (time_encoding_end - time_encoding_start)
@@ -334,7 +341,7 @@ class Solver(object):
 			vars_diff += If(variable.z3 != self.previous_solution[var_i], 1, 0)
 		return vars_diff
 
-	def encode_previous_solution_from_model(self, model): 
+	def encode_previous_solution_from_model(self, model, solution_id): 
 		# The next solution cannot be the exact same outputs as the previous assignment
 		# It may be possible for multiple solutions to have the same outputs (exact x,y coordinates for all shapes)
 		# So to restrict this, we encode the X,Y positions in the clauses to prevent these solutions
@@ -346,9 +353,9 @@ class Solver(object):
 			variable_value = int(variable_value)
 			all_values.append(variable.z3 == variable_value)
 
-		self.solver.add(Not(And(all_values)))	
+		self.override_solver.add(Not(And(all_values)), "prevent previous solution " + solution_id + " from appearing again.")
 
-	def encode_constraints_for_model(self, model): 
+	def encode_constraints_for_model(self, model, solution_id): 
 		# Pop the previous 
 		if self.num_solutions > 1: 
 			# Remove the previous stack context
@@ -358,7 +365,7 @@ class Solver(object):
 
 		# The next solution cannot be the exact same set of assignments as the current solution
 		# These are cumulative
-		self.encode_previous_solution_from_model(model)
+		self.encode_previous_solution_from_model(model, solution_id)
 			
 		# Build the vector to store the previous solution
 		previous_solution_values = []
@@ -373,14 +380,14 @@ class Solver(object):
 			self.solver.push()
 			
 			# Add the previous solution values for the cost function
-			self.solver.add(previous_solution_values) 
+			self.override_solver.add(previous_solution_values, "prevent previous solution values " + solution_id) 
 
 			# New solutions must be at least NUM_DIFFERENT variable changes away from 
 			# the previous solution
-			self.solver.add(self.variables_different == self.num_variables_different())
+			self.override_solver.add(self.variables_different == self.num_variables_different(), "Number of variables different cost function value " + solution_id)
 
 			half = math.floor(len(self.variables)/2)
-			self.solver.add(self.variables_different >= half)
+			self.override_solver.add(self.variables_different >= half, "number of variables different greater than half. " + solution_id)
 
 	def print_solution_from_model(self, model): 
 		print("------------Solution-------------")
@@ -445,10 +452,10 @@ class Solver(object):
 				# Encode a conjunction into the solver
 				if not self.relative_search: 
 					# Encodes the previous solution plus a cost function enforce the number of variables to be different by a certain amount each time. 
-					self.encode_constraints_for_model(model)
+					self.encode_constraints_for_model(model, sln["id"])
 				else:
 					# Encodes only the previous solution to prevent that solution from appearing again 
-					self.encode_previous_solution_from_model(model)
+					self.encode_previous_solution_from_model(model, sln["id"])
 
 				# self.print_solution_from_model(model)
 
@@ -588,7 +595,7 @@ class Solver(object):
 				self.restore_state()
 
 				# Encode the previous solution outputs into the model so we don't produce it again in the next iteration
-				self.encode_previous_solution_from_model(model)
+				self.encode_previous_solution_from_model(model, sln["id"])
 				return sln
 			else:
 				self.invalid_solutions += 1

@@ -71,12 +71,27 @@ body {
     padding-left: 10px;
 }
 
+.header-button-group {
+	margin-left: 10px;
+}
+
+
+.label-info, 
+.label-success {
+	margin-bottom: 0.5em; 
+	margin-left: 0.5em;
+}
+
+.widgets-sortable-tree .label-info, 
+.widgets-sortable-tree .label-success {
+	font-size: 100%; 
+}
+
 /** 
 	Constraints canvas 
 **/
 .constraints-canvas-container {
 	width: 450px;
-	overflow: auto;
 }
 
 .constraints-canvas-page-feedback {
@@ -138,16 +153,11 @@ body {
     margin-left: 10px;
 }
 
-.widget-control-info .label-info, 
-.widget-control-info .label-success {
-	margin-bottom: 0.5em; 
-	font-size: 100%; 
-}
-
 .widget-control-info-left, 
 .widget-control-info-right {
 	display: flex; 
 	flex-direction: column; 
+	justify-content: center;
 }
 
 .widget-control-info-right {
@@ -215,10 +225,6 @@ body {
 
 .designs-area-container {
 	flex: 1 1 0px;
-}
-
-.designs-area-button-group {
-	margin-left: 10px;
 }
 
 .designs-container {
@@ -290,8 +296,6 @@ body {
 
 .left-container {
 	display: flex;
-	flex: 1 0 0px;
-	align-items: stretch;
 	flex-direction: column;
 }
 
@@ -437,10 +441,6 @@ body {
 }
 
 /* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
-.widgets-sortable-tree {
-	height: 100%;
-}
-
 .widgets-sortable-tree .rst__rowContents {
 	border: none;
 	box-shadow: none;

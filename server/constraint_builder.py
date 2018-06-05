@@ -1,20 +1,10 @@
 from z3 import *
-
-class Solver(object):
-	def __init__(self, solver): 
-		self.solver = solver
-		self.debug = True
-
-	def add(self, constraint, name=""): 
-		if len(name) and self.debug: 
-			self.solver.assert_and_track(constraint, name)
-		else: 
-			self.solver.add(constraint)
+import shapes
 
 class ConstraintBuilder(object):
 	def __init__(self, solver): 
 		# So we can override the add method for debugging
-		self.solver = Solver(solver)
+		self.solver = solver
 
 	def init_previous_solution_constraints(self, previous_solutions, shapes): 
 		# Saved solutions should not appear again in the results
@@ -63,13 +53,18 @@ class ConstraintBuilder(object):
 
 		return all_values	
 
+	def init_shape_bounds(self, shape, canvas_width, canvas_height):
+		self.solver.add(shape.variables.x.z3 >= 0, shape.shape_id + " x must be greater than zero.")
+		self.solver.add((shape.variables.x.z3 + shape.computed_width()) <= canvas_width, shape.shape_id + " right must be less than width.")
+		self.solver.add(shape.variables.y.z3 >= 0, shape.shape_id + " y must be greater than zero.")
+		self.solver.add((shape.variables.y.z3 + shape.computed_height()) <= canvas_height, shape.shape_id + " bottom must be less than height.")
+
 	def init_canvas_constraints(self, canvas): 
 		alignment = canvas.variables.alignment
 		justification = canvas.variables.justification
 		margin = canvas.variables.margin
 		canvas_x = canvas.variables.x.z3
 		canvas_y = canvas.variables.y.z3
-
 
 		self.solver.add(alignment.z3 >= 0, 'canvas_alignment domain lowest')
 		self.solver.add(alignment.z3 < len(alignment.domain), 'canvas_alignment domain highest')
@@ -86,8 +81,8 @@ class ConstraintBuilder(object):
 		# minus the current margin value. 
 		self.solver.add(page_shape.variables.x.z3 >= (canvas_x + margin.z3), page_shape.shape_id + ' gt canvas_x')
 		self.solver.add(page_shape.variables.y.z3 >= (canvas_y + margin.z3), page_shape.shape_id + ' gt canvas_y')
-		self.solver.add((page_shape.variables.x.z3 + page_shape.width) <= (canvas_x + canvas.width - margin.z3), page_shape.shape_id + ' gt canvas_right')
-		self.solver.add((page_shape.variables.y.z3 + page_shape.height) <= (canvas_y + canvas.height - margin.z3), page_shape.shape_id + ' gt canvas_bottom')	
+		self.solver.add((page_shape.variables.x.z3 + page_shape.computed_width()) <= (canvas_x + canvas.computed_width() - margin.z3), page_shape.shape_id + ' gt canvas_right')
+		self.solver.add((page_shape.variables.y.z3 + page_shape.computed_height()) <= (canvas_y + canvas.computed_height() - margin.z3), page_shape.shape_id + ' gt canvas_bottom')
 
 		# Fix the canvas X,Y to their original valuess
 		self.solver.add(canvas_x == canvas.orig_x, 'canvas orig x')
@@ -120,12 +115,17 @@ class ConstraintBuilder(object):
 				shape1 = child_shapes[s_index]
 				shape1_x = shape1.variables.x.z3
 				shape1_y = shape1.variables.y.z3
+				shape1_width = shape1.computed_height()
+				shape1_height = shape1.computed_height()
 
 				# Shapes cannot exceed the bounds of their parent containers
 				self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
 				self.solver.add(shape1_y >= container_y, "child shape " + shape1.shape_id + " inside parent container (greater than top)")
-				self.solver.add((shape1_x + shape1.width) <= (container_x + container.width), "child shape " + shape1.shape_id + " inside parent container (less than width)")
-				self.solver.add((shape1_y + shape1.height) <= (container_y + container.height), "child shape " + shape1.shape_id + " inside parent container (less than height)")
+				self.solver.add((shape1_x + shape1_width) <= (container_x + container.computed_width()), "child shape " + shape1.shape_id + " inside parent container (less than width)")
+				self.solver.add((shape1_y + shape1_height) <= (container_y + container.computed_height()), "child shape " + shape1.shape_id + " inside parent container (less than height)")
+
+				# Create importance level constraints
+				self.init_importance(shape1)
 
 			self.arrange_container(container)
 			self.align_container(container)
@@ -134,6 +134,35 @@ class ConstraintBuilder(object):
 			if container.typed: 
 				# If this is a typed container, enforce all variables on child containers to be the same
 				self.init_typed_container(container)
+
+	def init_importance_domains(self, shape): 
+		if shape.importance == "most": 
+			magnification = []
+			for domain_value in shape.variables.magnification.domain: 
+				magnification.append(shape.variables.magnification.z3 == domain_value)
+
+			self.solver.add(Or(magnification), "Shape " + shape.shape_id + " magnification values fall within domain.")
+		elif shape.importance == "least": 
+			minification = []
+			for domain_value in shape.variables.minification.domain: 
+				minification.append(shape.variables.minification.z3 == domain_value)
+
+			self.solver.add(Or(minification), "Shape " + shape.shape_id + " minification values fall within domain.")
+
+	def init_importance(self, shape): 
+		# For shapes that have importance levels, they can increase or decrease but only to the minimum or maximum size. 
+		if shape.shape_type == "image": 
+			if shape.importance == "most": 
+				# Enforce the max size 
+				self.solver.add((shape.computed_width() * shape.variables.magnification.z3) <= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be less than the maximum size.")
+				self.solver.add((shape.computed_height() * shape.variables.magnification.z3)<= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be less than the maximum size.")
+			elif shape.importance == "least": 
+				# Enforce the minimum size 
+				self.solver.add((shape.computed_width() * shape.variables.minification.z3) >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be greater than the minimum size.")
+				self.solver.add((shape.computed_height() * shape.variables.minification.z3) >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be greater than the minimum size.")
+
+			if shape.importance_set: 
+				self.init_importance_domains(shape)
 
 	def init_typed_container(self, container): 
 		child_shapes = container.children
@@ -145,6 +174,10 @@ class ConstraintBuilder(object):
 			if i < len(child_shapes) - 1: 
 				child1 = child_shapes[i]
 				child2 = child_shapes[i+1]
+				child1_width = child1.computed_width()
+				child1_height = child1.computed_height()
+				child2_width = child2.computed_width()
+				child2_height = child2.computed_height()
 
 				child1_variables = child1.variables.toDict()
 				child2_variables = child2.variables.toDict()
@@ -165,17 +198,17 @@ class ConstraintBuilder(object):
 						else: 
 							all_same_values.append([children_same])
 
-				# Also enforce height and width same since they arent' in the variables collection
-				all_same_widths.append(child1.width == child2.width)
-				all_same_heights.append(child1.height == child2.height)
+				# Keep the height and width of containers the same 
+				all_same_widths.append(child1_width == child2_width)
+				all_same_heights.append(child1_height == child2_height)
 
 		for all_same_variables in all_same_values: 
 			# For each collection of child variable values for a variable
 			# Enforce all values of that collection to be thes ame 
-			self.solver.add(And(all_same_variables))
+			self.solver.add(And(all_same_variables), container.shape_id + " enforce all child variable values to be the same.")
 
-		self.solver.add(all_same_heights)
-		self.solver.add(all_same_widths)
+		self.solver.add(all_same_heights, container.shape_id + " enforce all child height values to be the same.")
+		self.solver.add(all_same_widths, container.shape_id + " enforce all child width values to be the same.")
 
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
@@ -201,29 +234,41 @@ class ConstraintBuilder(object):
 					shape1_y = shape1.variables.y.z3
 					shape2_x = shape2.variables.x.z3
 					shape2_y = shape2.variables.y.z3
+					shape1_width = shape1.computed_width()
+					shape1_height = shape1.computed_height()
+					shape2_width = shape2.computed_width()
+					shape2_height = shape2.computed_height()
 
 					# Non-overlapping
-					left = shape1_x + shape1.width + proximity <= shape2_x
-					right = shape2_x + shape2.width + proximity <= shape1_x
-					top = shape1_y + shape1.height + proximity <= shape2_y
-					bottom = shape2_y + shape2.height + proximity <= shape1_y
+					left = shape1_x + shape1_width + proximity <= shape2_x
+					right = shape2_x + shape2_width + proximity <= shape1_x
+					top = shape1_y + shape1_height + proximity <= shape2_y
+					bottom = shape2_y + shape2_height + proximity <= shape1_y
 					self.solver.add(Or(left,right,top,bottom), "Non-overlapping shapes " + shape1.shape_id + " " + shape2.shape_id)
 
 	def get_max_width_constraint(self, child_i, widest_i, child_shapes): 
 		if child_i < len(child_shapes): 
 			widest_child = child_shapes[widest_i]
+			widest_child_width = widest_child.computed_width()
+
 			next_child = child_shapes[child_i]
-			return If(widest_child.width > next_child.width, self.get_max_width_constraint(child_i+1, widest_i, child_shapes), self.get_max_width_constraint(child_i+1, child_i, child_shapes))
+			next_child_width = next_child.computed_width()
+			return If(widest_child_width > next_child_width, self.get_max_width_constraint(child_i+1, widest_i, child_shapes), self.get_max_width_constraint(child_i+1, child_i, child_shapes))
 		else: 
-			return child_shapes[widest_i].width
+			child_shape_width = child_shapes[widest_i].computed_width()
+			return child_shape_width
 
 	def get_max_height_constraint(self, child_i, tallest_i, child_shapes): 
 		if child_i < len(child_shapes): 
 			tallest_child = child_shapes[tallest_i]
+			tallest_child_height = tallest_child.computed_height()
+
 			next_child = child_shapes[child_i]
-			return If(tallest_child.height > next_child.height, self.get_max_height_constraint(child_i+1, tallest_i, child_shapes), self.get_max_height_constraint(child_i+1, child_i, child_shapes))
+			next_child_height = next_child.computed_height()
+			return If(tallest_child_height > next_child_height, self.get_max_height_constraint(child_i+1, tallest_i, child_shapes), self.get_max_height_constraint(child_i+1, child_i, child_shapes))
 		else: 
-			return child_shapes[tallest_i].height
+			child_shape_height = child_shapes[tallest_i].computed_height()
+			return child_shape_height
 
 	def justify_canvas(self, canvas):
 		justification = canvas.variables.justification
@@ -239,8 +284,10 @@ class ConstraintBuilder(object):
 		is_top = justification.z3 == t_index
 		is_center = justification.z3 == c_index
 		top_justified = child_y == (canvas_y + margin.z3)
-		bottom_justified = (child_y + first_child.height) == (canvas_y + canvas.height - margin.z3)
-		center_justified = (child_y + (first_child.height/2)) == (canvas_y + (canvas.height/2))
+
+		first_child_height = first_child.computed_height()
+		bottom_justified = (child_y + first_child_height) == (canvas_y + canvas.computed_height() - margin.z3)
+		center_justified = (child_y + (first_child_height/2)) == (canvas_y + (canvas.computed_height()/2))
 		self.solver.add(If(is_top, top_justified, If(is_center, center_justified, bottom_justified)), 'canvas_justification')
 		# self.solver.assert_and_track(If(is_top, top_justified, If(is_center, center_justified, bottom_justified)), "canvas_justification")
 
@@ -258,8 +305,9 @@ class ConstraintBuilder(object):
 		is_left = alignment.z3 == l_index
 		is_center = alignment.z3 == c_index
 		left_aligned = child_x == (canvas_x + margin.z3)
-		center_aligned = (child_x + (first_child.width/2)) == (canvas_x + (canvas.width/2))
-		right_aligned = (child_x + first_child.width) == (canvas_x + canvas.width - margin.z3)
+		first_child_width = first_child.computed_width()
+		center_aligned = (child_x + (first_child_width/2)) == (canvas_x + (canvas.computed_width()/2))
+		right_aligned = (child_x + first_child_width) == (canvas_x + canvas.computed_width() - margin.z3)
 		self.solver.add(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), 'canvas_alignment')
 		# self.solver.assert_and_track(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), "canvas_alignment")
 
@@ -289,9 +337,12 @@ class ConstraintBuilder(object):
 				shape2_x = shape2.variables.x.z3
 				shape2_y = shape2.variables.y.z3
 
-				vertical_pair_y = (shape1_y + shape1.height + proximity) == shape2_y
+				shape1_height = shape1.computed_height()
+				vertical_pair_y = (shape1_y + shape1_height + proximity) == shape2_y
 				vertical_pairs.append(vertical_pair_y)
-				horizontal_pair_x = (shape1_x + shape1.width + proximity) == shape2_x
+
+				shape1_width = shape1.computed_width()
+				horizontal_pair_x = (shape1_x + shape1_width + proximity) == shape2_x
 				horizontal_pairs.append(horizontal_pair_x)
 
 			vertical_arrange = And(vertical_pairs)
@@ -310,13 +361,13 @@ class ConstraintBuilder(object):
 			child_y = child.variables.y.z3
 
 			add_proximity = 0 if child_i == (len(child_shapes) - 1) else proximity
-			child_widths += child.width + add_proximity
-			child_heights += child.height + add_proximity
+			child_widths += child.computed_width() + add_proximity
+			child_heights += child.computed_height() + add_proximity
 
 			if child.order == last_child_index: 
 				# The bottom of the shape is the bottom of the container
-				is_bottom = (child_y + child.height) == (container_y + container.height)
-				is_right = (child_x + child.width) == (container_x + container.width)
+				is_bottom = (child_y + child.computed_height()) == (container_y + container.computed_height())
+				is_right = (child_x + child.computed_width()) == (container_x + container.computed_width())
 				self.solver.add(If(is_vertical, is_bottom, is_right), "Order last")
 
 			if child.order == 0:
@@ -325,12 +376,10 @@ class ConstraintBuilder(object):
 				self.solver.add(If(is_vertical, is_top, is_left), child.shape_id + " " + container.shape_id + " first in order")
 
 		# Set the width and height of the container based on the arrangement axis 
-		# self.solver.assert_and_track(If(is_vertical, container.height == child_heights, container.width == child_widths), "height_constraint_" + container.shape_id)
-		self.solver.add(If(is_vertical, container.height == child_heights, container.width == child_widths), container.shape_id + " child_heights")
+		self.solver.add(If(is_vertical, container.computed_height() == child_heights, container.computed_width() == child_widths), container.shape_id + " child_heights")
 
-		m_w_constraint = container.width == (self.get_max_width_constraint(1,0,child_shapes))
-		m_h_constraint = container.height == (self.get_max_height_constraint(1,0,child_shapes))
-		# self.solver.assert_and_track(If(is_vertical, m_w_constraint, m_h_constraint), "max_height_constraint_" + container.shape_id)
+		m_w_constraint = container.computed_width() == (self.get_max_width_constraint(1,0,child_shapes))
+		m_h_constraint = container.computed_height() == (self.get_max_height_constraint(1,0,child_shapes))
 		self.solver.add(If(is_vertical, m_w_constraint, m_h_constraint), container.shape_id + " max height or width")
 
 
@@ -356,11 +405,11 @@ class ConstraintBuilder(object):
 			child_y = child.variables.y.z3
 
 			left_aligned = child_x == (container_x.z3 + proximity.z3)
-			right_aligned = (child_x + child.width) == (container_x.z3 + container.width - proximity.z3)
-			h_center_aligned = (child_x + (child.width/2)) == (container_x.z3 + (container.width/2))
+			right_aligned = (child_x + child.computed_width()) == (container_x.z3 + container.computed_width() - proximity.z3)
+			h_center_aligned = (child_x + (child.computed_width()/2)) == (container_x.z3 + (container.computed_width()/2))
 			top_aligned = child_y == container_y.z3 + proximity.z3
-			bottom_aligned = (child_y + child.height) == (container_y.z3 + container.height - proximity.z3)
-			v_center_aligned = (child_y + (child.height/2)) == (container_y.z3 + (container.height/2))
+			bottom_aligned = (child_y + child.computed_height()) == (container_y.z3 + container.computed_height() - proximity.z3)
+			v_center_aligned = (child_y + (child.computed_height()/2)) == (container_y.z3 + (container.computed_height()/2))
 			horizontal = If(is_left, top_aligned, If(is_center, v_center_aligned, bottom_aligned))
 			vertical = If(is_left, left_aligned, If(is_center, h_center_aligned, right_aligned))
 			# self.solver.assert_and_track(If(is_vertical, vertical, horizontal), "alignment_constraint_" + container.shape_id + "_" + child.shape_id)

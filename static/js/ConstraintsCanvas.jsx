@@ -26,9 +26,11 @@ export default class ConstraintsCanvas extends React.Component {
     this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
     this.getCurrentShapeIndex = this.getCurrentShapeIndex.bind(this);
     this.getCurrentShapeOrder = this.getCurrentShapeOrder.bind(this);
+    this.getCurrentShapeSiblings = this.getCurrentShapeSiblings.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
     this.setTypingOnGroup = this.setTypingOnGroup.bind(this);
     this.closeTypingAlert = this.closeTypingAlert.bind(this); 
+    this.togglePageOrder = this.togglePageOrder.bind(this);
 
     // This collection contains the set of shapes on the constraints canvas
     this.constraintsShapesMap = {};
@@ -43,7 +45,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 2; 
+    this.minimumGroupSize = 1; 
 
     this.state = { 
       treeData: [], 
@@ -55,13 +57,8 @@ export default class ConstraintsCanvas extends React.Component {
         y: 0
       }, 
       rightClickShapeID: undefined, 
-      // colorPickerShown: false, 
-      // colorPickerCallback: undefined, 
-      // colorPickerPosition: {
-      //   x: 0, 
-      //   y: 0 
-      // }, 
-      showImportanceLevels: false
+      showImportanceLevels: false, 
+      pageOrder: "important"
     }; 
   }
 
@@ -89,12 +86,29 @@ export default class ConstraintsCanvas extends React.Component {
     let page = {
       "name": _.uniqueId(),
       "type": "page", 
+      "location": {
+        x: 0, 
+        y: 0
+      }, 
+      "size": {
+        width: this.canvasWidth, 
+        height: this.canvasHeight
+      }, 
+      "containerOrder": "important",
       "children": []
     }
 
     this.constraintsShapesMap[page.name] = page; 
     this.pageLevelShape = page; 
     canvas.children.push(page); 
+  }
+
+  togglePageOrder(newOrder) {
+    this.pageLevelShape.containerOrder = newOrder; 
+
+    this.setState({
+      pageOrder: newOrder
+    });
   }
 
   getWidget(shape, src, options={}) {
@@ -161,15 +175,6 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   displayRightClickMenu(evt, shapeID, menuCallbacks) {
-    // Decide whether to show the order menu item based on the index of the shape in the 
-    // parent container.
-    let shapeIndex = this.getCurrentShapeIndex(shapeID); 
-    let siblings = this.getCurrentShapeSiblings(shapeID); 
-    let showOrderMenu = (shapeIndex == 0 || shapeIndex == (siblings.length - 1)); 
-    if(!showOrderMenu) {
-      menuCallbacks.setOrder = undefined; 
-    }
-
     this.setState({
       rightClickMenuShown: true, 
       rightClickMenuCallbacks: menuCallbacks, 
@@ -752,40 +757,59 @@ export default class ConstraintsCanvas extends React.Component {
       shapeID={this.state.rightClickShapeID}
       getSiblingLabelItems={this.getSiblingLabelItems}
       getCurrentShapeIndex={this.getCurrentShapeIndex}
-      getCurrentShapeOrder={this.getCurrentShapeOrder}  /> : undefined);
+      getCurrentShapeOrder={this.getCurrentShapeOrder}
+      getCurrentShapeSiblings={this.getCurrentShapeSiblings}  /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     const colorPickerPosition = this.state.colorPickerPosition; 
+    const pageOrder = this.state.pageOrder; 
     var self = this;
 
     // Process the queue of shapes to add to the canvas
 	  return (
-      <div className="panel-body" id="constraints-canvas-container" tabIndex="1" /*onClick={this.displayColorPicker} */>
-        <div className="constraints-canvas-page-feedback">
-          {pageFeedbacks}
-        </div>
-        <div className={(!rightClickMenu ? "hidden" : "")}> 
-          {rightClickMenu}
-        </div>
-        {/*<div className={(!colorPicker ? "hidden" : "")}> 
-          {colorPicker}
-        </div>*/}
-        <div className="widgets-sortable-tree">
-          { /*             rowHeight={this.calculateRowHeight.bind(this)} */}
-          <SortableTree
-            treeData={this.state.treeData}
-            onChange={treeData => this.setState({ treeData })}
-            canDrop={this.canReparentWidgetNode.bind(this)}
-            onMoveNode={this.onMoveNode.bind(this)}
-            rowHeight={this.calculateRowHeight.bind(this)}
-            generateNodeProps={({node, path}) => ({
-              buttons: [
-                <button className="widgets-sortable-tree-remove" onClick={function() { self.removeWidgetNode(path); }}>
-                  <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
+       <div className="panel panel-default constraints-container">
+          <div className="panel-heading"> 
+            <h3 className="panel-title">Constraints
+              <div className="btn-group btn-group-xs header-button-group">
+                <button type="button" className="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Order<span className="caret"></span>
                 </button>
-              ]
-            })}
-          />
-        </div>
+                <ul className="dropdown-menu">
+                  <li onClick={this.togglePageOrder.bind(this, "important")}><a href="#">Important</a></li>
+                  <li onClick={this.togglePageOrder.bind(this, "unimportant")}><a href="#">Unimportant</a></li>
+                </ul>
+              </div>
+              <span className={"label " + (pageOrder == "important" ? "label-success" : "label-info")}>{pageOrder}</span>
+            </h3>
+          </div>
+          <div id="constraints-canvas-container" tabIndex="1" className="constraints-canvas-container panel-body"> 
+            <div className="constraints-canvas-page-feedback">
+              {pageFeedbacks}
+            </div>
+            <div className={(!rightClickMenu ? "hidden" : "")}> 
+              {rightClickMenu}
+            </div>
+            {/*<div className={(!colorPicker ? "hidden" : "")}> 
+              {colorPicker}
+            </div>*/}
+            <div className="widgets-sortable-tree">
+              { /*             rowHeight={this.calculateRowHeight.bind(this)} */}
+              <SortableTree
+                treeData={this.state.treeData}
+                onChange={treeData => this.setState({ treeData })}
+                canDrop={this.canReparentWidgetNode.bind(this)}
+                onMoveNode={this.onMoveNode.bind(this)}
+                rowHeight={this.calculateRowHeight.bind(this)}
+                style={{height: "calc(100% - 80px)"}}
+                generateNodeProps={({node, path}) => ({
+                  buttons: [
+                    <button className="widgets-sortable-tree-remove" onClick={function() { self.removeWidgetNode(path); }}>
+                      <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                    </button>
+                  ]
+                })}
+              />
+            </div>
+          </div>
       </div>
     );
   }

@@ -335,33 +335,17 @@ export default class PageContainer extends React.Component {
               </div>
             </div>
           </div>
-            {/*<div className="panel panel-default containers-container">
-              <div className="panel-heading"> 
-                <h3 className="panel-title">Containers</h3>
-              </div>  
-              <div className="panel-body containers-panel">         
-                <SVGInline className="widget-control widget-container" svg={ labelContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'labelGroup', 'labelGroup', labelContainer)}/>
-              </div>
-            </div>*/}
-         <div className="panel panel-default constraints-container">
-            <div className="panel-heading"> 
-              <h3 className="panel-title">Constraints</h3>
-            </div>
-            <div className="constraints-canvas-container"> 
-              <ConstraintsCanvas ref={this.constraintsCanvasRef} 
-                updateConstraintsCanvas={this.updateConstraintsCanvas} 
-                checkSolutionValidity={this.checkSolutionValidity.bind(this)}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
-            </div>
-           {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
-          </div>
+          <ConstraintsCanvas ref={this.constraintsCanvasRef} 
+            updateConstraintsCanvas={this.updateConstraintsCanvas} 
+            checkSolutionValidity={this.checkSolutionValidity.bind(this)}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
           <div className="panel panel-default designs-area-container">
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs
-                <div className="btn-group btn-group-xs designs-area-button-group">
+                <div className="btn-group btn-group-xs header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More Designs</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                 </div>
-                <div className="btn-group btn-group-xs designs-area-button-group">
+                <div className="btn-group btn-group-xs header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More not like these</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More like these</button>
                 </div>
