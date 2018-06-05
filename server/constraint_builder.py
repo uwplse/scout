@@ -151,18 +151,17 @@ class ConstraintBuilder(object):
 
 	def init_importance(self, shape): 
 		# For shapes that have importance levels, they can increase or decrease but only to the minimum or maximum size. 
-		if shape.shape_type == "image": 
-			if shape.importance == "most": 
-				# Enforce the max size 
-				self.solver.add(shape.computed_width() <= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be less than the maximum size.")
-				self.solver.add(shape.computed_height()<= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be less than the maximum size.")
-			elif shape.importance == "least": 
-				# Enforce the minimum size 
-				self.solver.add(shape.computed_width() >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be greater than the minimum size.")
-				self.solver.add(shape.computed_height() >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be greater than the minimum size.")
+		if shape.importance == "most": 
+			# Enforce the max size 
+			self.solver.add(shape.computed_width() <= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be less than the maximum size.")
+			self.solver.add(shape.computed_height()<= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be less than the maximum size.")
+		elif shape.importance == "least": 
+			# Enforce the minimum size 
+			self.solver.add(shape.computed_width() >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be greater than the minimum size.")
+			self.solver.add(shape.computed_height() >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be greater than the minimum size.")
 
-			if shape.importance_set: 
-				self.init_importance_domains(shape)
+		if shape.importance_set: 
+			self.init_importance_domains(shape)
 
 	def init_typed_container(self, container): 
 		child_shapes = container.children

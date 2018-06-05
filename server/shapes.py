@@ -5,12 +5,13 @@ from dotmap import DotMap
 # Types of shapes that have labels
 label_types = ["label", "button", "field"]
 minimum_sizes = {
-	"text": 11, 
+	"label": 11, 
 	"image": 40
 }
 
 maximum_sizes = {
-	"image": 335 # Need to tweak later
+	"image": 335, # Need to tweak later
+	"label": 36
 }
 
 # Shape classes for constructing the element hierarchy 
@@ -57,15 +58,14 @@ class Shape(object):
 				self.orig_width = element["size"]["width"]
 				self.orig_height = element["size"]["height"]
 
-				if self.shape_type == "image": 
-					if self.importance == "most": 
-						# Make height and width into variables so that the solver can change them
-						magnification_values = sh.MAGNIFICATION_VALUES
-						self.variables.magnification = sh.Variable(shape_id, "magnification", magnification_values)
+				if self.importance == "most":
+					# Make height and width into variables so that the solver can change them
+					magnification_values = sh.MAGNIFICATION_VALUES
+					self.variables.magnification = sh.Variable(shape_id, "magnification", magnification_values)
 
-					if self.importance == "least": 
-						minification_values = sh.MAGNIFICATION_VALUES
-						self.variables.minification = sh.Variable(shape_id, "minification", minification_values)
+				if self.importance == "least": 
+					minification_values = sh.MAGNIFICATION_VALUES
+					self.variables.minification = sh.Variable(shape_id, "minification", minification_values)
 
 			if "location" in element:
 				self.orig_x = element["location"]["x"]

@@ -45,7 +45,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 1; 
+    this.minimumGroupSize = 2; 
 
     this.state = { 
       treeData: [], 

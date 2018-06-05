@@ -130,7 +130,7 @@ export default class RightClickMenu extends React.Component {
   }
 
   componentDidMount() {
-    this.computeSubMenuPositions();
+    // this.computeSubMenuPositions();
   }
 
   computeSubMenuPositions() {
@@ -319,42 +319,30 @@ export default class RightClickMenu extends React.Component {
     const orderMenuShown = this.state.orderMenuShown; 
 
 	  return (
-      <div id="right-click-menu-container" style={{left: menuLeft + "px", top: menuTop + "px"}} className="right-click-menu-container">
-        <div id="importance-menu-label" className="right-click-menu-label" onClick={this.openImportanceMenu}>
-          <span>Importance Levels</span>
-          <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-        </div>
-        {importanceMenuShown ? 
-          (<div className="right-click-submenu-container" style={{left: importanceLeft + "px", top: importanceTop + "px"}}>
-            <ul className="right-click-menu">{importanceMenuItems}</ul>
-          </div>) : undefined}
+      <div id="right-click-menu-container" className="right-click-menu-container dropdown" data-toggle="dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
+        <ul className="dropdown-menu" style={{display: "block"}}>
+          <li className="dropdown-submenu">
+            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Importance Levels<span className="caret"></span></a>
+            { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
+          </li> 
         {orderShown ? 
-          (<div id="order-menu-label" className="right-click-menu-label" onClick={this.openOrderMenu}>
-            <span>Order</span>
-            <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-          </div>) : undefined}
-        {(orderMenuShown ? 
-          (<div className="right-click-submenu-container" style={{left: orderLeft + "px", top: orderTop + "px"}}>
-            <ul className="right-click-menu">{orderMenuItems}</ul>
-          </div>) : undefined)}
-        {(labelShown ? (
-            <div id="label-menu-label" className="right-click-menu-label" onClick={this.openLabelMenu}> 
-              <span>Labels</span>
-              <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-            </div>) : undefined)}
-        {((labelShown && labelMenuShown)? 
-          (<div  style={{left: labelLeft + "px", top: labelTop + "px"}} className="right-click-submenu-container">
-            <ul className="right-click-menu">{labelItems}</ul>
-          </div>) : undefined)}
-        {(fontSizeShown ? (
-            <div id="font-size-menu-label" className="right-click-menu-label" onClick={this.openFontSizeMenu}> 
-              <span>Font Sizes</span>
-              <span className="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-            </div>) : undefined)}
-        {((fontSizeShown && fontSizeMenuShown)? 
-          (<div  style={{left: fontSizeLeft + "px", top: fontSizeTop + "px"}} className="right-click-submenu-container">
-            <ul className="right-click-menu">{fontSizeSelectorItems}</ul>
-          </div>) : undefined)}
+          (<li className="dropdown-submenu">
+              <a tabIndex="-1" href="#" onClick={this.openOrderMenu}>Order<span className="caret"></span></a>
+              { orderMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{orderMenuItems}</ul> : undefined } 
+            </li>) : undefined}
+
+        {labelShown ? 
+          (<li className="dropdown-submenu">
+              <a tabIndex="-1" href="#" onClick={this.openLabelMenu}>Labels<span className="caret"></span></a>
+              { labelMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{labelItems}</ul> : undefined } 
+            </li>) : undefined}
+
+        {fontSizeShown ? 
+          (<li className="dropdown-submenu">
+              <a tabIndex="-1" href="#" onClick={this.openFontSizeMenu}>Font Size<span className="caret"></span></a>
+              { fontSizeMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{fontSizeSelectorItems}</ul> : undefined } 
+            </li>) : undefined}
+        </ul>
       </div>
     );
   }

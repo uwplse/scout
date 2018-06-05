@@ -12,7 +12,7 @@ export default class SVGWidget extends React.Component {
   // TODO: Calculate dynamically from the initial size of the SVG? 
   static initialWidths(controlType) {
     let values = {
-      'button': 140, 
+      'button': 238, 
       'field': 238, 
       'search': 238, 
       'group': 100, 

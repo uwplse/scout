@@ -27,6 +27,21 @@ body {
 .panel-body {
 	padding: 5;
 }
+
+.dropdown {
+	position: absolute;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+
+.dropdown-submenu {
+	position: relative;
+}
+
 /**
   General styles
  **/
@@ -117,7 +132,7 @@ body {
 }
 
 .widget-control-button .widget-editable-text {
-	transform: translate(70px, 18px);
+	transform: translate(120px, 18px);
 }
 
 .widget-control-field .widget-editable-text {
@@ -324,16 +339,6 @@ body {
 /** 
   Right click feedback menu, font size selector menu
   */
-.right-click-menu {
-	list-style-type: none;
-    padding: 0px; 
-}
-
-.right-click-menu > li:hover {
-	background-color: lightgray;
-	cursor: pointer; 
-}
-
 .right-click-menu-item {
 	padding-left: 1em;
 	padding-right: 1em;
@@ -343,28 +348,9 @@ body {
 	white-space: nowrap;
 }
 
-.right-click-menu-label {
-	font-weight: bold;
-	padding-left: 0.5em; 
-	padding-right: 0.5em;
-}
-
-.right-click-menu-label:hover {
+.right-click-menu-item:hover {
 	background-color: lightgray;
 	cursor: pointer; 
-}
-
-.right-click-menu-container, 
-.right-click-submenu-container {
-    position: absolute;
-    background: white;
-    z-index: 1000;
-    font-size: 12px;
-    border: 1px solid gray;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-    padding-top: 5px;
-    padding-bottom: 5px;
 }
 
 /*.constraints-color-picker-container {
