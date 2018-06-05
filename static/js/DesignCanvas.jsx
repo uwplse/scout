@@ -107,7 +107,6 @@ export default class DesignCanvas extends React.Component {
   }
 
   showConstraintsContextMenu(shape, evt) {
-    console.log(shape.name);
     evt.stopPropagation();
     evt.preventDefault();
 
@@ -138,10 +137,12 @@ export default class DesignCanvas extends React.Component {
   }
 
   hideMenu() {
-    this.setState({
-      menuShown: false, 
-      activeCanvasMenu: undefined
-    });  
+    if(this.state.menuShown) {
+      this.setState({
+        menuShown: false, 
+        activeCanvasMenu: undefined
+      });  
+    }
   }
 
   initDesignCanvas(shape) {

@@ -30,7 +30,7 @@ export default class PageContainer extends React.Component {
     this.getConstraintsCanvasShape = this.getConstraintsCanvasShape.bind(this);
     this.highlightWidgetFeedback = this.highlightWidgetFeedback.bind(this);
     this.clearInvalidDesignCanvases = this.clearInvalidDesignCanvases.bind(this); 
-    this.closeRightClickMenu = this.closeRightClickMenu.bind(this);
+    this.closeRightClickMenus = this.closeRightClickMenus.bind(this);
     
     this.canvas = undefined; 
 
@@ -43,14 +43,22 @@ export default class PageContainer extends React.Component {
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
-    this.solutionsMap ={};
+    this.solutionsMap = {};
 
     this.constraintsCanvasRef = React.createRef();
   }
 
-  closeRightClickMenu() {
+  closeRightClickMenus() {
     if(this.constraintsCanvasRef) {
       this.constraintsCanvasRef.current.closeRightClickMenu(); 
+    }
+
+    for(var i=0; i<this.state.solutions.length; i++) {
+      let canvasID = "design-canvas-" + this.state.solutions[i].id; 
+      let designCanvas = this.refs[canvasID]; 
+      if(designCanvas) {
+        designCanvas.hideMenu();
+      }
     }
   }
 
@@ -63,6 +71,7 @@ export default class PageContainer extends React.Component {
   getDesignCanvas(solution) {
     return (<DesignCanvas 
               key={solution.id} id={solution.id} 
+              ref={"design-canvas-" + solution.id}
               elements={solution.elements}
               savedState={solution.saved}
               valid={solution.valid}
@@ -295,7 +304,7 @@ export default class PageContainer extends React.Component {
               }
           });      
     return (
-      <div className="page-container" onClick={this.closeRightClickMenu}>
+      <div className="page-container" onClick={this.closeRightClickMenus}>
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">

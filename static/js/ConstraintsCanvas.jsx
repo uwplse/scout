@@ -186,8 +186,11 @@ export default class ConstraintsCanvas extends React.Component {
     });  
   }
 
+
   closeRightClickMenu(evt) {
-    console.log("close"); 
+    if(this.state.rightClickMenuShown) {
+      this.hideRightClickMenu();
+    }
   }
 
   // displayColorPicker(evt, setColor) {
@@ -319,9 +322,6 @@ export default class ConstraintsCanvas extends React.Component {
     this.setState({
       rightClickMenuShown: false
     }); 
-
-    // Clear away the event listener on the body for the menu close
-    document.body.removeEventListener("click", this.menuCloseListener, false);
   }
 
   highlightWidgetFeedback(shapeId, lock, highlighted) {

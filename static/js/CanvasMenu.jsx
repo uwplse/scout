@@ -96,8 +96,8 @@ export default class CanvasMenu extends React.Component {
     const menuTop = this.state.top;
 
 	  return (
-      <div className="right-click-menu-container" style={{left: menuLeft + "px", top: menuTop + "px"}} >
-        <ul className="right-click-menu">{elementItems}</ul>
+      <div className="right-click-menu-container dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}} >
+        <ul className="dropdown-menu" style={{display: "block"}}>{elementItems}</ul>
       </div>
     );
   }
