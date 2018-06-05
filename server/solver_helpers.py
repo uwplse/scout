@@ -6,8 +6,7 @@ import math
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
-MINIFICATION_VALUES = [.1,.2,.3,.4,.5,.6,.7,.8,.9]
-MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9, 2]
+MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
 
 def parse_unsat_core(unsat_core):
 	# Parse the conflicting constraints out of the unsat core and return identifiers for each shape and the associated conflicting constraint
@@ -105,8 +104,6 @@ class Solution(object):
 			adj_x = int(adj_x)
 			adj_y = int(adj_y)
 
-
-
 			# Copy the solved info back into the JSON shape
 			if shape.element is not None: 
 				# Dont add any JSON for the canvas_root shape to the results
@@ -135,16 +132,20 @@ class Solution(object):
 					if shape.importance == "most": 
 						magnification = model[shape.variables.magnification.z3].as_string()
 						magnification = int(magnification)
-						height = height * magnification
-						width = width * magnification
+						height = height + ((1/magnification) * height)
+						width = width + ((1/magnification) * width)
+						height = int(round(height,0))
+						width = int(round(width,0))
 						element["size"]["height"] = height
-						element["size"]["width"] = width-1
+						element["size"]["width"] = height
 					elif shape.importance == "least": 
 						minification = model[shape.variables.minification.z3].as_string()
 						minification = int(minification)
-						height = height * minification
-						width = width * minification
-						element["size"]["height"] = height	
+						height = height - ((1/minification) * height)
+						width = width - ((1/minification) * width)
+						height = int(round(height,0))
+						width = int(round(width, 0))
+						element["size"]["height"] = height
 						element["size"]["width"] = width
 
 				if shape.type == "container": 
@@ -164,7 +165,16 @@ class Solution(object):
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
-
+				elif shape.type == "leaf":
+					if shape.importance == "most":
+						magnification = model[shape.variables.magnification.z3].as_string()
+						element["magnification"] = int(magnification)
+					elif shape.importance == "least":
+						minification = model[shape.variables.minification.z3].as_string()
+						element["minification"] = int(minification)
+					else: 
+						element["minification"] = 0
+						element["magnification"] = 0
 
 				if shape.type == "leaf": 
 					# Only the locations of leaf level shapes to compute the symmetry cost

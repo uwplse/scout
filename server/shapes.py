@@ -64,7 +64,7 @@ class Shape(object):
 						self.variables.magnification = sh.Variable(shape_id, "magnification", magnification_values)
 
 					if self.importance == "least": 
-						minification_values = sh.MINIFICATION_VALUES
+						minification_values = sh.MAGNIFICATION_VALUES
 						self.variables.minification = sh.Variable(shape_id, "minification", minification_values)
 
 			if "location" in element:
@@ -85,21 +85,21 @@ class Shape(object):
 			return self.flex_height
 		return self.orig_height
 
-	def computed_width(self, scale=1): 
+	def computed_width(self): 
 		# TAkes the current scaling value into account
-		if self.importance_set and scale != 1: 
+		if self.importance_set: 
 			if self.importance == "most": 
-				return self.width() * self.variables.magnification.z3
+				return self.width() + ((1/self.variables.magnification.z3) * self.width())
 			elif self.importance == "least": 
-				return self.width() * self.variables.minification.z3
+				return self.width() - ((1/self.variables.minification.z3) * self.width())
 		return self.width()
 
 	def computed_height(self, scale=1): 
-		if self.importance_set and scale != 1: 
+		if self.importance_set: 
 			if self.importance == "most": 
-				return self.height() * self.variables.magnification.z3
+				return self.height() + ((1/self.variables.magnification.z3) * self.height())
 			elif self.importance == "least": 
-				return self.height() * self.variables.minification.z3
+				return self.height() - ((1/self.variables.minification.z3) * self.height())
 		return self.height()
 
 class LeafShape(Shape): 
