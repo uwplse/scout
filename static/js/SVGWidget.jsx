@@ -272,7 +272,9 @@ export default class SVGWidget extends React.Component {
     this.element.fontSize = this.initialFontSize; 
   }
 
-  setFontSize(value) {
+  setFontSize(evt, value) {
+    evt.stopPropagation(); 
+
     // Update the element object size
     let id = "widget-container-" + this.id; 
     let svgElement  = document.getElementById(id); 
@@ -302,7 +304,9 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
-  setImportanceLevel(level) {
+  setImportanceLevel(evt, level) {
+    evt.stopPropagation(); 
+
     // Update the object
     let importance = level == 1 ? "least" : (level == 2 ? "normal" : "most"); 
     this.element.importance = importance; 
@@ -327,7 +331,9 @@ export default class SVGWidget extends React.Component {
     }; 
   }
 
-  setLabel(shapeId, direction) {
+  setLabel(evt, shapeId, direction) {
+    evt.stopPropagation(); 
+
     // Save the labels relationship to the shape object 
     this.element.labels = shapeId; 
 
@@ -352,7 +358,9 @@ export default class SVGWidget extends React.Component {
     }
   }
 
-  setOrder(index) {
+  setOrder(evt, index) {
+    evt.stopPropagation(); 
+
     this.element.order = index; 
 
     this.setState({
@@ -364,7 +372,9 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
-  setContainerOrder(orderValue) {
+  setContainerOrder(evt, orderValue) {
+    evt.stopPropagation(); 
+
     this.element.containerOrder = orderValue; 
 
     let orderedValue = orderValue == "important"; 

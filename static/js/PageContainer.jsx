@@ -30,6 +30,7 @@ export default class PageContainer extends React.Component {
     this.getConstraintsCanvasShape = this.getConstraintsCanvasShape.bind(this);
     this.highlightWidgetFeedback = this.highlightWidgetFeedback.bind(this);
     this.clearInvalidDesignCanvases = this.clearInvalidDesignCanvases.bind(this); 
+    this.closeRightClickMenu = this.closeRightClickMenu.bind(this);
     
     this.canvas = undefined; 
 
@@ -45,6 +46,12 @@ export default class PageContainer extends React.Component {
     this.solutionsMap ={};
 
     this.constraintsCanvasRef = React.createRef();
+  }
+
+  closeRightClickMenu() {
+    if(this.constraintsCanvasRef) {
+      this.constraintsCanvasRef.current.closeRightClickMenu(); 
+    }
   }
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
@@ -234,8 +241,6 @@ export default class PageContainer extends React.Component {
     });
   }
 
-
-
   getRelativeDesigns(elements, action) {
     // get more designs relative to a specific design
     let jsonShapes = this.getShapesJSON(); 
@@ -290,7 +295,7 @@ export default class PageContainer extends React.Component {
               }
           });      
     return (
-      <div className="page-container">
+      <div className="page-container" onClick={this.closeRightClickMenu}>
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">

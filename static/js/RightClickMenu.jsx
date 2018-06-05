@@ -12,7 +12,7 @@ class FontSizeMenuItem extends React.Component {
 
   render () {
     var self = this;
-	  return <li className="right-click-menu-item" onClick={function() { self.onClick(self.value); }}>{self.value}</li>; 
+	  return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.value); }}>{self.value}</li>; 
   }
 }
 
@@ -28,7 +28,7 @@ class LabelMenuItem extends React.Component {
   render () {
     var self = this;
     let label = this.shapeLabel + " (" + this.direction + ")"; 
-    return <li className="right-click-menu-item" onClick={function() { self.onClick(self.shapeId, self.direction); }}>{label}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.shapeId, self.direction); }}>{label}</li>; 
   }
 }
 
@@ -42,7 +42,7 @@ class OrderMenuItem extends React.Component {
   render () {
     var self = this;
     let label = "Keep " + Converter.toWordsOrdinal(this.index+1) + "."; 
-    return <li className="right-click-menu-item" onClick={function() { self.onClick(self.index); }}>{label}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.index); }}>{label}</li>; 
   }
 }
 
@@ -57,7 +57,7 @@ class ContainerOrderMenuItem extends React.Component {
     var self = this;
     let newOrder = this.currentOrderValue == "important" ? "unimportant" : "important"; 
     let label = "Make order " + newOrder + "."; 
-    return <li className="right-click-menu-item" onClick={function() { self.onClick(newOrder); }}>{label}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, newOrder); }}>{label}</li>; 
   }
 }
 
@@ -74,7 +74,7 @@ class ImportanceMenuItem extends React.Component {
     for(var i=0; i<this.numStars; i++) {
       stars.push(<span key={i} className="glyphicon glyphicon-star" aria-hidden="true"></span>); 
     }
-    return <li className="right-click-menu-item" onClick={function() { self.onClick(self.numStars); }}>{stars}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.numStars); }}>{stars}</li>; 
   }
 }
 
@@ -243,7 +243,9 @@ export default class RightClickMenu extends React.Component {
     return menuItems; 
   }
 
-  openFontSizeMenu() {
+  openFontSizeMenu(evt) {
+    evt.stopPropagation(); 
+
     // Close other menus if they are open
     this.setState({
       importanceMenuShown: false, 
@@ -253,7 +255,9 @@ export default class RightClickMenu extends React.Component {
     });
   }
 
-  openImportanceMenu() {
+  openImportanceMenu(evt) {
+    evt.stopPropagation(); 
+
     // Close other menus if they are open
     this.setState({
       fontSizeMenuShown: false, 
@@ -263,7 +267,9 @@ export default class RightClickMenu extends React.Component {
     }); 
   }
 
-  openLabelMenu() {
+  openLabelMenu(evt) {
+    evt.stopPropagation(); 
+
    // Close other menus if they are open
     this.setState({
       fontSizeMenuShown: false, 
@@ -273,7 +279,9 @@ export default class RightClickMenu extends React.Component {
     }); 
   }
 
-  openOrderMenu() {
+  openOrderMenu(evt) {
+    evt.stopPropagation(); 
+
    // Close other menus if they are open
     this.setState({
       fontSizeMenuShown: false, 
