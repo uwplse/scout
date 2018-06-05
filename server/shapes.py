@@ -6,12 +6,14 @@ from dotmap import DotMap
 label_types = ["label", "button", "field"]
 minimum_sizes = {
 	"label": 11, 
-	"image": 40
+	"image": 44,
+	"field": 44
 }
 
 maximum_sizes = {
 	"image": 335, # Need to tweak later
-	"label": 36
+	"label": 36,
+	"field": 335
 }
 
 # Shape classes for constructing the element hierarchy 

@@ -134,6 +134,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const left = this.state.left; 
     const top = this.state.top;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
+    console.log('font size'); 
+    console.log(this.state.fontSize); 
     this.setTextLabel();
     this.rescaleTextLabel();
     return (

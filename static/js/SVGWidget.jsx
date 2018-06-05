@@ -109,7 +109,8 @@ export default class SVGWidget extends React.Component {
 
     this.initialFontSize = 0; 
     if(this.type == "label") {
-      this.initialFontSize = SVGWidget.initialFontSizes(this.controlType); 
+      this.initialFontSize = SVGWidget.initialFontSizes(this.controlType);
+      this.element.fontSize = this.initialFontSize;  
     }
 
     // Callback to notify the parent container to re-check the solution validity
@@ -120,7 +121,6 @@ export default class SVGWidget extends React.Component {
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
-    this.initFontSize = this.initFontSize.bind(this);
     this.setImportanceLevel = this.setImportanceLevel.bind(this); 
     this.setLabel = this.setLabel.bind(this);
     this.setOrder = this.setOrder.bind(this);
@@ -129,14 +129,14 @@ export default class SVGWidget extends React.Component {
     this.computeLabelPosition = this.computeLabelPosition.bind(this);
 
     // Timer for handling text change events
-    this.timer = null; 
+    this.timer = null;  
 
     this.state = {
-      height: SVGWidget.initialHeights(this.controlType),
-      width: SVGWidget.initialWidths(this.controlType),
-      order: -1,  
-      fontSize: this.initialFontSize,
-      importance: "normal", 
+      height: this.element.size.height,
+      width: this.element.size.width,
+      order: (this.element.order ? this.element.order : -1),  
+      fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
+      importance: this.element.importance, 
       showImportance: props.showImportanceLevels, 
       showLabels: false, 
       labelDirection: undefined, 
@@ -155,7 +155,6 @@ export default class SVGWidget extends React.Component {
     return {
       height: prevState.height,  
       width: prevState.width, 
-      fontSize: prevState.fontSize, 
       importance: prevState.importance, 
       showImportance: prevState.showImportance, 
       showLabels: prevState.showLabels, 
@@ -170,10 +169,6 @@ export default class SVGWidget extends React.Component {
   componentDidMount() {
     // Set the initial value for the text label
     this.setTextLabel(true);   
-
-    if(this.type == "label") {
-      this.initFontSize();       
-    }
   }
 
   componentDidUpdate() {
@@ -197,7 +192,6 @@ export default class SVGWidget extends React.Component {
   }
 
   updateTextLabel(evt) {
-    console.log("updateTextLabel");
     let id = "widget-container-" + this.id; 
     let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
     let textValue = editableText[0].innerHTML; 
@@ -205,7 +199,7 @@ export default class SVGWidget extends React.Component {
     this.lockTextLabel()
 
     // After setting the text label, update the height and width of the parent container so that the tree size and widget size recalculates
-    if(this.controlType == "label") {
+    if(this.type == "label") {
       let boundingRect = editableText[0].getBoundingClientRect(); 
       let widthRounded = Math.round(boundingRect.width); 
       let heightRounded = Math.round(boundingRect.height); 
@@ -286,19 +280,6 @@ export default class SVGWidget extends React.Component {
         setOrder: this.setOrder
       }); 
     }
-  }
-
-  initFontSize() {
-    // Update the font size of the SVG element
-    let id = "widget-container-" + this.id; 
-    let svgElement  = document.getElementById(id); 
-
-    let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
-
-    svgElementInline[0].setAttribute("font-size", this.initialFontSize); 
-
-    // Set it on the element object as well
-    this.element.fontSize = this.initialFontSize; 
   }
 
   setFontSize(evt, value) {
@@ -444,6 +425,9 @@ export default class SVGWidget extends React.Component {
 
     const isEditable = this.controlType != "group";
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
+    console.log(this.id); 
+    console.log(fontSize);
+    console.log(source);
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 

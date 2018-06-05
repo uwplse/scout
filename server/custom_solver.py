@@ -175,10 +175,6 @@ class Solver(object):
 			total *= len(variable.domain)
 		return total		
 
-	# def init_global_constraints():
-	# 	# Stay in bounds of the canvas
-	# 	for shape in self.shapes:
-	# 		self.solver_helper.add_bounds_constraints(shape)
 
 	# This function just checks for satisfiability of the current set of constraints
 	# Doesn't return any solutions back 
