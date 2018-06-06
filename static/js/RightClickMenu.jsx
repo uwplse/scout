@@ -21,14 +21,12 @@ class LabelMenuItem extends React.Component {
     super(props); 
     this.shapeId = props.shapeId; 
     this.shapeLabel = props.shapeLabel; 
-    this.direction = props.direction; 
     this.onClick = props.onClick; 
   }
 
   render () {
     var self = this;
-    let label = this.shapeLabel + " (" + this.direction + ")"; 
-    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.shapeId, self.direction); }}>{label}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.shapeId); }}>{this.shapeLabel}</li>; 
   }
 }
 
@@ -87,7 +85,7 @@ export default class RightClickMenu extends React.Component {
 
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
-    this.getSiblingLabelItems = props.getSiblingLabelItems; 
+    this.getSiblingLabelItem = props.getSiblingLabelItem; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
@@ -215,11 +213,11 @@ export default class RightClickMenu extends React.Component {
 
   getLabelItems() {
     // Label items should return the text of the sibling element and the shape ID
-    let labelItems = this.getSiblingLabelItems(this.shapeID); 
+    let labelItems = this.getSiblingLabelItem(this.shapeID); 
     let menuItems = []; 
     for(var i=0; i<labelItems.length; i++) {
       let label = labelItems[i]; 
-      menuItems.push(<LabelMenuItem key={i} shapeId={label.id} shapeLabel={label.label} direction={label.direction} onClick={this.setLabel} />); 
+      menuItems.push(<LabelMenuItem key={i} shapeId={label.id} shapeLabel={label.label} onClick={this.setLabel} />); 
     }
     return menuItems; 
   }

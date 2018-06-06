@@ -5,6 +5,7 @@ import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaul
 import RightClickMenu from './RightClickMenu'; 
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
+import label from '../assets/illustrator/labelContainer.svg';
 import repeatGrid from '../assets/illustrator/repeatGrid.svg';
 import item from '../assets/illustrator/item.svg';
 
@@ -26,11 +27,12 @@ export default class ConstraintsCanvas extends React.Component {
     // this.displayColorPicker = this.displayColorPicker.bind(this);
     this.updateBackgroundColor = this.updateBackgroundColor.bind(this);
     this.findShapeSiblings = this.findShapeSiblings.bind(this);
-    this.getSiblingLabelItems = this.getSiblingLabelItems.bind(this);
+    this.getSiblingLabelItem = this.getSiblingLabelItem.bind(this);
     this.getCurrentShapeIndex = this.getCurrentShapeIndex.bind(this);
     this.getCurrentShapeOrder = this.getCurrentShapeOrder.bind(this);
     this.getCurrentShapeSiblings = this.getCurrentShapeSiblings.bind(this);
     this.getCurrentShapeImportance = this.getCurrentShapeImportance.bind(this);
+    this.createLabelsGroup = this.createLabelsGroup.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
     this.setTypingOnGroup = this.setTypingOnGroup.bind(this);
     this.closeTypingAlert = this.closeTypingAlert.bind(this); 
@@ -127,7 +129,8 @@ export default class ConstraintsCanvas extends React.Component {
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
-              hideRightClickMenu={this.hideRightClickMenu} />);
+              hideRightClickMenu={this.hideRightClickMenu}
+              createLabelsGroup={this.createLabelsGroup} />);
   }
 
   addShapeOfTypeToCanvas(type, controlType, source) {
@@ -147,9 +150,9 @@ export default class ConstraintsCanvas extends React.Component {
     }), this.checkSolutionValidity);
   }
 
-  createNewTreeNode(type, controlType, source) {
+  createNewTreeNode(type, controlType, source, options={}) {
     // Creates a new tree node widget and returns it
-    let shape = this.createConstraintsCanvasShapeObject(type, controlType); 
+    let shape = this.createConstraintsCanvasShapeObject(type, controlType, options); 
     let widget = this.getWidget(shape, source); 
 
     let newTreeNode = {
@@ -197,35 +200,19 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  // displayColorPicker(evt, setColor) {
-  //   this.setState({
-  //     colorPickerShown: true, 
-  //     colorPickerCallback: setColor,
-  //     colorPickerPosition: {
-  //       x: evt.clientX, 
-  //       y: evt.clientY
-  //     }
-  //   });   
-  // }
-
-  findShapePreviousNextSiblings(shapeId, siblings, node) {
+  findShapeNextSibling(shapeId, siblings, node) {
     // Get the two neighboring siblings for a shape in the tree
     for(var i=0; i<node.length; i++) {
       let treeNode = node[i]; 
       let nodeID = treeNode.title.props.id; 
       if(nodeID == shapeId) {
-        if(i > 0) {
-          let prevSibling = node[i-1]; 
-          siblings.previous = prevSibling; 
-        }
-
         if(i < node.length - 1) {
           let nextSibling = node[i+1];
           siblings.next = nextSibling; 
         }
       }
       else if(treeNode.children) {
-        this.findShapePreviousNextSiblings(shapeId, siblings, treeNode.children); 
+        this.findShapeNextSibling(shapeId, siblings, treeNode.children); 
       }      
     }
   }
@@ -249,26 +236,17 @@ export default class ConstraintsCanvas extends React.Component {
     return -1; 
   }
 
-  getSiblingLabelItems(shapeId) {
+  getSiblingLabelItem(shapeId) {
     // Go through tree data (recursive) and find the level of the element
     let siblings = {}; 
     let node = this.state.treeData; 
-    this.findShapePreviousNextSiblings(shapeId, siblings, node);
+    this.findShapeNextSibling(shapeId, siblings, node);
 
     let menuItems = []; 
-    if(siblings.previous) {
-      menuItems.push({
-        id: siblings.previous.title.props.id, 
-        label: siblings.previous.title.props.shape.label, 
-        direction: 'above'
-      }); 
-    }
-
     if(siblings.next) {
       menuItems.push({
         id: siblings.next.title.props.id, 
-        label: siblings.next.title.props.shape.label, 
-        direction: 'below'
+        label: siblings.next.title.props.shape.label
       }); 
     }
 
@@ -492,7 +470,14 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
 
-  createConstraintsCanvasShapeObject(type, controlType) {  
+  createConstraintsCanvasShapeObject(type, controlType, options={}) {
+    // Optional set of initial properties cna be passed in through the intial object
+    let order = options.order ? options.order : -1; 
+    let containerOrder = ((type == "group" || type == "labelGroup") && options.containerOrder ? options.containerOrder : undefined); 
+    let importance = (options.importance ? options.importance : "normal");
+    let width = options.width ? options.width : SVGWidget.initialWidths(controlType); 
+    let height = options.height ? options.height : SVGWidget.initialHeights(controlType); 
+
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
     let label = SVGWidget.initialLabels(controlType); 
@@ -501,9 +486,12 @@ export default class ConstraintsCanvas extends React.Component {
       "label": label, 
       "type": type,
       "controlType": controlType, 
+      "importance": importance, 
+      "containerOrder": containerOrder, 
+      "order": order, 
       "size": {
-        "width": SVGWidget.initialWidths(controlType), 
-        "height": SVGWidget.initialHeights(controlType)
+        "width": width, 
+        "height": height
       }
     }
 
@@ -522,7 +510,7 @@ export default class ConstraintsCanvas extends React.Component {
     let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
     let infoHeight = 23; 
-    let infoShowing = (nodeElement.importance != "normal" || nodeElement.order != -1);
+    let infoShowing = (nodeElement.importance != "normal" || nodeElement.order != -1 || nodeElement.containerOrder);
     rowHeight += (infoShowing ? infoHeight : 0);  
 
     // Row height
@@ -709,6 +697,36 @@ export default class ConstraintsCanvas extends React.Component {
       closeTypingAlert={this.closeTypingAlert} />); 
   }
 
+  createLabelsGroup(labelID, labeledID) {
+    // Create a new group in the hierarchy to contain the labeled shape and the label shape 
+    let labelNode = this.widgetTreeNodeMap[labelID]; 
+    let labeledNode = this.widgetTreeNodeMap[labeledID]; 
+    let labelNodeData = this.getPathAndChildrenForTreeNode(labelNode); 
+    let labeledNodeData = this.getPathAndChildrenForTreeNode(labeledNode);
+    if(labelNodeData && labeledNodeData) {
+      // Remove labeled node from the tree before re-adding to the labels group
+      this.state.treeData = removeNodeAtPath({
+        treeData: this.state.treeData, 
+        path: labeledNodeData.path, 
+        getNodeKey: defaultGetNodeKey,
+      }); 
+      
+      // Create a new labelGroup element. The order should be important so the label always appears first in reading order. 
+      let newLabelGroupNode = this.createNewTreeNode("labelGroup", "labelGroup", label, { containerOrder: "important" }); 
+      newLabelGroupNode.expanded = true; 
+      newLabelGroupNode.children = [labelNode, labeledNode]; 
+
+      // Replace the current node with this new node
+      this.state.treeData = changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: labelNodeData.path,
+        getNodeKey: defaultGetNodeKey,
+        ignoreCollapsed: false,
+        newNode: newLabelGroupNode
+      }); 
+    }
+  }
+
   onMoveNode({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) {
     // If the node was moved into group, check whether group typing should be applied. 
     if(nextParentNode) {
@@ -775,7 +793,7 @@ export default class ConstraintsCanvas extends React.Component {
      <RightClickMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} 
       menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
-      getSiblingLabelItems={this.getSiblingLabelItems}
+      getSiblingLabelItem={this.getSiblingLabelItem}
       getCurrentShapeIndex={this.getCurrentShapeIndex}
       getCurrentShapeOrder={this.getCurrentShapeOrder}
       getCurrentShapeSiblings={this.getCurrentShapeSiblings}

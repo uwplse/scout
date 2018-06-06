@@ -118,6 +118,7 @@ export default class SVGWidget extends React.Component {
     this.displayRightClickMenu = props.displayRightClickMenu; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
     this.displayLabelIndicator = props.displayLabelIndicator; 
+    this.createLabelsGroup = props.createLabelsGroup; 
 
     // Method bindings
     this.setFontSize = this.setFontSize.bind(this); 
@@ -138,8 +139,7 @@ export default class SVGWidget extends React.Component {
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
       showImportance: props.showImportanceLevels, 
-      showLabels: false, 
-      labelDirection: undefined, 
+      showLabels: this.element.labels ? true : false, 
       labelPosition: {
         x: 0, 
         y: 0
@@ -158,7 +158,6 @@ export default class SVGWidget extends React.Component {
       importance: prevState.importance, 
       showImportance: prevState.showImportance, 
       showLabels: prevState.showLabels, 
-      labelDirection: prevState.labelDirection, 
       labelPosition: prevState.labelPosition, 
       orderedGroup: prevState.orderedGroup,
       svgSource: nextProps.source, 
@@ -168,7 +167,10 @@ export default class SVGWidget extends React.Component {
   
   componentDidMount() {
     // Set the initial value for the text label
-    this.setTextLabel(true);   
+    this.setTextLabel(true);  
+    this.setState({
+      labelPosition: this.computeLabelPosition()
+    }); 
   }
 
   componentDidUpdate() {
@@ -340,21 +342,16 @@ export default class SVGWidget extends React.Component {
     }; 
   }
 
-  setLabel(evt, shapeId, direction) {
+  setLabel(evt, shapeId) {
     evt.stopPropagation(); 
 
     // Save the labels relationship to the shape object 
     this.element.labels = shapeId; 
-
-    let labelPosition = this.computeLabelPosition();
-
-    // Notify the constraints canvas that it should set the label decorator arrow
     this.setState({
-      showLabels: true, 
-      labelDirection: direction, 
-      labelPosition: labelPosition
+      showLabels: true 
     }); 
 
+    this.createLabelsGroup(this.id, shapeId); 
     this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
@@ -407,7 +404,6 @@ export default class SVGWidget extends React.Component {
     const importance = this.state.importance; 
     const showImportance = this.state.showImportance; 
     const showLabels = this.state.showLabels; 
-    const labelDirection = this.state.labelDirection; 
     const labelPosition = this.state.labelPosition; 
     const typedGroup = this.state.typedGroup;
     const orderedGroup = this.state.orderedGroup; 
@@ -434,7 +430,7 @@ export default class SVGWidget extends React.Component {
             contentEditable={isEditable} id={"widget-container-" + this.id} className="widget-container">
           <div className="widget-control-row"> 
             <SVGInline style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
-            <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + (labelDirection == "below" ? "widget-control-arrow-down" : "widget-control-arrow-up")}
+            <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + "widget-control-arrow-down"}
                 style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>
             <div className="widget-control-info">
