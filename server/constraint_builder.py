@@ -97,6 +97,7 @@ class ConstraintBuilder(object):
 		proximity = container.variables.proximity.z3
 		container_x = container.variables.x.z3
 		container_y = container.variables.y.z3
+		distribution = container.variables.distribution.z3
 
 		# Limit domains to the set of variable values
 		self.solver.add(arrangement >= 0, "container " + container.shape_id + " arrangment greater than zero")
@@ -104,15 +105,32 @@ class ConstraintBuilder(object):
 		self.solver.add(alignment >= 0, "container " + container.shape_id + " alignment greater than zero")
 		self.solver.add(alignment < len(container.variables.alignment.domain), "container " + container.shape_id + " alignment less than domain")
 
-		or_values = []
-		for prox_value in container.variables.proximity.domain: 
-			or_values.append(proximity == prox_value)
-		self.solver.add(Or(or_values), "container " + container.shape_id + " proximity in domain")
+		# These two variables do not have variable values that correspond to an index so create an OR constraint instead
+		proximity_values = []
+		distribution_values = []
+		for prox_value in container.variables.proximity.domain:
+			print(proximity == prox_value)
+			proximity_values.append(proximity == prox_value)
 
+		for dist_value in container.variables.distribution.domain: 
+			distribution_values.append(distribution == dist_value)
+
+		self.solver.add(Or(distribution_values), "container " + container.shape_id + " distribution in domain")
+		self.solver.add(Or(proximity_values), "container " + container.shape_id + " proximity in domain")
+
+		# Enforce children constraints
 		child_shapes = container.children
 		if len(child_shapes): 
+			has_group = False
 			for s_index in range(0, len(child_shapes)): 
 				shape1 = child_shapes[s_index]
+				if shape1.type == "container": 
+					has_group = True
+
+					# Enforce that the child container proximity value (closeness) should always be smaller than the distribution value 
+					# Of the parent container so that they are more likely to appear as a cohesive element
+					self.solver.add(shape1.variables.proximity.z3 < container.variables.distribution.z3, shape1.shape_id + " proximity within group should be less than parent container " + container.shape_id + " distribution")
+
 				shape1_x = shape1.variables.x.z3
 				shape1_y = shape1.variables.y.z3
 				shape1_width = shape1.computed_height()
@@ -127,9 +145,12 @@ class ConstraintBuilder(object):
 				# Create importance level constraints
 				self.init_importance(shape1)
 
-			self.arrange_container(container)
-			self.align_container(container)
-			self.non_overlapping(container)
+			# If this is a hierarchical container, use the distribution variable. 
+			# If this is a bottom level group, using the proximity value 
+			spacing = container.variables.distribution.z3 if has_group else container.variables.proximity.z3
+			self.arrange_container(container, spacing)
+			self.align_container(container, spacing)
+			self.non_overlapping(container, spacing)
 
 			if container.typed: 
 				# If this is a typed container, enforce all variables on child containers to be the same
@@ -221,8 +242,7 @@ class ConstraintBuilder(object):
 					# Structure message for these constraints to have a specific format so they can be used to identify conflicts in the generated solutions
 					self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], "lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock]))
 
-	def non_overlapping(self, container): 
-		proximity = container.variables.proximity.z3
+	def non_overlapping(self, container, spacing): 
 		child_shapes = container.children 
 		for i in range(0, len(child_shapes)): 
 			for j in range(0, len(child_shapes)): 
@@ -239,10 +259,10 @@ class ConstraintBuilder(object):
 					shape2_height = shape2.computed_height()
 
 					# Non-overlapping
-					left = shape1_x + shape1_width + proximity <= shape2_x
-					right = shape2_x + shape2_width + proximity <= shape1_x
-					top = shape1_y + shape1_height + proximity <= shape2_y
-					bottom = shape2_y + shape2_height + proximity <= shape1_y
+					left = shape1_x + shape1_width + spacing <= shape2_x
+					right = shape2_x + shape2_width + spacing <= shape1_x
+					top = shape1_y + shape1_height + spacing <= shape2_y
+					bottom = shape2_y + shape2_height + spacing <= shape1_y
 					self.solver.add(Or(left,right,top,bottom), "Non-overlapping shapes " + shape1.shape_id + " " + shape2.shape_id)
 
 	def get_max_width_constraint(self, child_i, widest_i, child_shapes): 
@@ -311,9 +331,8 @@ class ConstraintBuilder(object):
 		# self.solver.assert_and_track(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), "canvas_alignment")
 
 	# Sets up the arrangment constrains for a given container
-	def arrange_container(self, container): 
+	def arrange_container(self, container, spacing): 
 		arrangement = container.variables.arrangement.z3
-		proximity = container.variables.proximity.z3
 		container_x = container.variables.x.z3
 		container_y = container.variables.y.z3
 
@@ -337,11 +356,11 @@ class ConstraintBuilder(object):
 				shape2_y = shape2.variables.y.z3
 
 				shape1_height = shape1.computed_height()
-				vertical_pair_y = (shape1_y + shape1_height + proximity) == shape2_y
+				vertical_pair_y = (shape1_y + shape1_height + spacing) == shape2_y
 				vertical_pairs.append(vertical_pair_y)
 
 				shape1_width = shape1.computed_width()
-				horizontal_pair_x = (shape1_x + shape1_width + proximity) == shape2_x
+				horizontal_pair_x = (shape1_x + shape1_width + spacing) == shape2_x
 				horizontal_pairs.append(horizontal_pair_x)
 
 			vertical_arrange = And(vertical_pairs)
@@ -359,9 +378,9 @@ class ConstraintBuilder(object):
 			child_x = child.variables.x.z3
 			child_y = child.variables.y.z3
 
-			add_proximity = 0 if child_i == (len(child_shapes) - 1) else proximity
-			child_widths += child.computed_width() + add_proximity
-			child_heights += child.computed_height() + add_proximity
+			add_spacing = 0 if child_i == (len(child_shapes) - 1) else spacing
+			child_widths += child.computed_width() + add_spacing
+			child_heights += child.computed_height() + add_spacing
 
 			if child.order == last_child_index: 
 				# The bottom of the shape is the bottom of the container
@@ -382,9 +401,8 @@ class ConstraintBuilder(object):
 		self.solver.add(If(is_vertical, m_w_constraint, m_h_constraint), container.shape_id + " max height or width")
 
 
-	def align_container(self, container):
+	def align_container(self, container, spacing):
 		alignment = container.variables.alignment
-		proximity = container.variables.proximity
 		arrangement = container.variables.arrangement
 		container_x = container.variables.x
 		container_y = container.variables.y
@@ -403,11 +421,11 @@ class ConstraintBuilder(object):
 			child_x = child.variables.x.z3
 			child_y = child.variables.y.z3
 
-			left_aligned = child_x == (container_x.z3 + proximity.z3)
-			right_aligned = (child_x + child.computed_width()) == (container_x.z3 + container.computed_width() - proximity.z3)
+			left_aligned = child_x == (container_x.z3 + spacing)
+			right_aligned = (child_x + child.computed_width()) == (container_x.z3 + container.computed_width() - spacing)
 			h_center_aligned = (child_x + (child.computed_width()/2)) == (container_x.z3 + (container.computed_width()/2))
-			top_aligned = child_y == container_y.z3 + proximity.z3
-			bottom_aligned = (child_y + child.computed_height()) == (container_y.z3 + container.computed_height() - proximity.z3)
+			top_aligned = child_y == container_y.z3 + spacing
+			bottom_aligned = (child_y + child.computed_height()) == (container_y.z3 + container.computed_height() - spacing)
 			v_center_aligned = (child_y + (child.computed_height()/2)) == (container_y.z3 + (container.computed_height()/2))
 			horizontal = If(is_left, top_aligned, If(is_center, v_center_aligned, bottom_aligned))
 			vertical = If(is_left, left_aligned, If(is_center, h_center_aligned, right_aligned))

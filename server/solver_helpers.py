@@ -155,9 +155,11 @@ class Solution(object):
 					arrangement = model[shape.variables.arrangement.z3].as_string()
 					alignment = model[shape.variables.alignment.z3].as_string()
 					proximity = model[shape.variables.proximity.z3].as_string()
+					distribution = model[shape.variables.distribution.z3].as_string()
 					element["arrangement"] = int(arrangement)
 					element["alignment"] = int(alignment)
 					element["proximity"] = int(proximity)
+					element["distribution"] = int(distribution)
 				elif shape.type == "canvas": 
 					alignment = model[shape.variables.alignment.z3].as_string()
 					justification = model[shape.variables.justification.z3].as_string()

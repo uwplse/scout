@@ -473,7 +473,12 @@ export default class ConstraintsCanvas extends React.Component {
   createConstraintsCanvasShapeObject(type, controlType, options={}) {
     // Optional set of initial properties cna be passed in through the intial object
     let order = options.order ? options.order : -1; 
-    let containerOrder = ((type == "group" || type == "labelGroup") && options.containerOrder ? options.containerOrder : undefined); 
+
+    let containerOrder = undefined; 
+    if(type == "group" || type == "labelGroup") {
+      containerOrder = options.containerOrder ? options.containerOrder : "unimportant";
+    }
+
     let importance = (options.importance ? options.importance : "normal");
     let width = options.width ? options.width : SVGWidget.initialWidths(controlType); 
     let height = options.height ? options.height : SVGWidget.initialHeights(controlType); 

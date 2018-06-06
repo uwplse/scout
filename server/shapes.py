@@ -116,6 +116,9 @@ class ContainerShape(Shape):
 		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,20,30,40,50])
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
+		# TODO: Have some reasoning why we are picking this range of values
+		self.variables.distribution = sh.Variable(shape_id, "distribution", [20,40,60,80,100,120,140,160,180,200])
+
 		self.container_order = "unimportant"
 		if element is not None: 
 			if "containerOrder" in element: 
@@ -133,6 +136,7 @@ class ContainerShape(Shape):
 
 	def remove_child(self, child):
 		self.children.remove(child)
+		
 
 class CanvasShape(Shape):
 	def __init__(self, shape_id, element): 

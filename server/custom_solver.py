@@ -143,6 +143,7 @@ class Solver(object):
 				first.append(shape.variables.arrangement)
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.proximity)
+				last.append(shape.variables.distribution)
 			
 			elif shape.type == "canvas":
 				last.append(shape.variables.alignment)
@@ -312,15 +313,9 @@ class Solver(object):
 		random.shuffle(randomized_domain)
 		return randomized_domain
 
-	def encode_assigned_variables(self):
-		variable_equals_assigned = []
-		for variable in self.variables:
-			variable_equals_assigned.append(variable.z3 == variable.assigned)
-		self.override_solver.add(And(variable_equals_assigned), "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(variable.assigned))
-
 	def encode_assigned_variable(self, variable):
 		time_encoding_start = time.time()
-		if variable.name == "proximity" or variable.name == "margin":
+		if variable.name == "proximity" or variable.name == "margin" or variable.name == "distribution":
 			prox_value = variable.domain[variable.assigned]
 			self.override_solver.add(variable.z3 == prox_value, "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(prox_value))
 		else:
