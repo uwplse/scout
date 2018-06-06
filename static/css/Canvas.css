@@ -27,6 +27,21 @@ body {
 .panel-body {
 	padding: 5;
 }
+
+.dropdown {
+	position: absolute;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+
+.dropdown-submenu {
+	position: relative;
+}
+
 /**
   General styles
  **/
@@ -53,7 +68,8 @@ body {
 	height: calc(100% - 65px);
 }
 
-.page-container {
+.page-container, .constraints-container {
+	display: flex;
 	flex-direction: column;
 }
 
@@ -70,11 +86,27 @@ body {
     padding-left: 10px;
 }
 
+.header-button-group {
+	margin-left: 10px;
+}
+
+
+.label-info, 
+.label-success {
+	margin-bottom: 0.5em; 
+	margin-left: 0.5em;
+}
+
+.widgets-sortable-tree .label-info, 
+.widgets-sortable-tree .label-success {
+	font-size: 100%; 
+}
+
 /** 
 	Constraints canvas 
 **/
 .constraints-canvas-container {
-	width: 400px;
+	width: 450px;
 }
 
 .constraints-canvas-page-feedback {
@@ -100,13 +132,11 @@ body {
 }
 
 .widget-control-button .widget-editable-text {
-	transform: translate(70px, 18px);
-	pointer-events: none;
+	transform: translate(120px, 18px);
 }
 
 .widget-control-field .widget-editable-text {
 	transform: translate(9.7px, 18px);
-	pointer-events: none;
 }
 
 .widget-control-label > .widget-control-svg {
@@ -120,6 +150,7 @@ body {
 
 .widget-control-row {
 	display: flex; 
+	align-items: center;
 }
 
 .widget-control-labels.widget-control-arrow-down:before {
@@ -130,10 +161,36 @@ body {
 	content: url("../assets/up_arrow.png");
 }
 
+.widget-control-info {
+	align-self: stretch;
+    display: flex;
+    justify-content: center;
+    margin-left: 10px;
+}
+
+.widget-control-info .label-info {
+	margin-left: 0px;
+}
+
+.widget-control-info-left, 
+.widget-control-info-right {
+	display: flex; 
+	flex-direction: column; 
+	justify-content: center;
+}
+
+.widget-control-info-right {
+	margin-left: 10px;
+}
+
 .widget-control-labels {
-	zoom: 50%; 
+	zoom: 40%; 
 	position: absolute;
 	z-index: 1000; 
+}
+
+.widget-control-order {
+	margin-bottom: 0.5em; 
 }
 
 .widget-control-typing {
@@ -189,10 +246,6 @@ body {
 	flex: 1 1 0px;
 }
 
-.designs-area-button-group {
-	margin-left: 10px;
-}
-
 .designs-container {
 	display: flex;
 	margin-bottom: 0;
@@ -208,6 +261,10 @@ body {
     align-items: stretch;
     margin-right: 10px;
     margin-bottom: 10px;
+}
+
+.designs-canvas-container-alert {
+	margin: 0.5em;
 }
 
 .design-canvas {
@@ -258,8 +315,6 @@ body {
 
 .left-container {
 	display: flex;
-	flex: 1 0 0px;
-	align-items: stretch;
 	flex-direction: column;
 }
 
@@ -288,16 +343,6 @@ body {
 /** 
   Right click feedback menu, font size selector menu
   */
-.right-click-menu {
-	list-style-type: none;
-    padding: 0px; 
-}
-
-.right-click-menu > li:hover {
-	background-color: lightgray;
-	cursor: pointer; 
-}
-
 .right-click-menu-item {
 	padding-left: 1em;
 	padding-right: 1em;
@@ -307,28 +352,9 @@ body {
 	white-space: nowrap;
 }
 
-.right-click-menu-label {
-	font-weight: bold;
-	padding-left: 0.5em; 
-	padding-right: 0.5em;
-}
-
-.right-click-menu-label:hover {
+.right-click-menu-item:hover {
 	background-color: lightgray;
 	cursor: pointer; 
-}
-
-.right-click-menu-container, 
-.right-click-submenu-container {
-    position: absolute;
-    background: white;
-    z-index: 1000;
-    font-size: 12px;
-    border: 1px solid gray;
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
-    padding-top: 5px;
-    padding-bottom: 5px;
 }
 
 /*.constraints-color-picker-container {
@@ -405,10 +431,6 @@ body {
 }
 
 /* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
-.widgets-sortable-tree {
-	height: 100%;
-}
-
 .widgets-sortable-tree .rst__rowContents {
 	border: none;
 	box-shadow: none;
@@ -416,8 +438,8 @@ body {
 	background-color: initial;
 }
 
-.widgets-sortable-tree .widgets-sortable-tree-remove {
-	background-color: initial;
+.widgets-sortable-tree .rst__row {
+	align-items: center;
 }
 
 .widgets-sortable-tree .rst__rowWrapper {
@@ -428,45 +450,32 @@ body {
 	height: 44px;
 }
 
-.widgets-sortable-tree .rst__rowTitle {
-	font-weight: normal;
-}
-
 .widgets-sortable-tree .rst__rowTitleWithSubtitle {
     height: inherit; 
+}
+
+.widgets-sortable-tree .widgets-sortable-tree-remove {
+	background-color: initial;
+}
+
+.widgets-sortable-tree .rst__rowTitle {
+	font-weight: normal;
 }
 
 .widgets-sortable-tree .rst__rowSubtitle {
 	font-size: inherit;
 }
 
-.widgets-sortable-tree .rst__lineHalfHorizontalRight:before {
-	top: 22px;
-}
-
-.widgets-sortable-tree .rst__lineHalfHorizontalRight:after {
-	height: calc(100% - 22px);
-}
-
 .widgets-sortable-tree .rst__lineFullVertical:after {
 	height: 100%;
-}
-
-.widgets-sortable-tree .rst__lineHalfVerticalTop:after {
-	height: 22px;
 }
 
 .widgets-sortable-tree .rst__rowLabel {
 	padding-right: 5px;
 }
 
-.widgets-sortable-tree .rst__collapseButton, 
-.widgets-sortable-tree .rst__expandButton {
-	top: 22px;
-}
-
 .widgets-sortable-tree .rst__lineChildren:after {
-	height: calc(100% - 44px); 
+	height: calc(50%); 
 }
 
 .widgets-sortable-tree-remove {

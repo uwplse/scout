@@ -4,12 +4,13 @@ import CanvasMenu from "./CanvasMenu";
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
-import field from '../assets/illustrator/field.svg';
+import field from '../assets/illustrator/field_designs.svg';
 import search from '../assets/illustrator/search.svg';
 import image from '../assets/illustrator/image.svg'
 import placeholder from '../assets/illustrator/placeholder.svg'
 import filledButton from '../assets/illustrator/filledButton.svg';
 import label from '../assets/illustrator/label_designs.svg';
+import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
 import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
 
@@ -21,6 +22,7 @@ export default class DesignCanvas extends React.Component {
       'button': filledButton, 
       'label': label, 
       'multilineLabel': multilineLabel,
+      'smallLabel': smallLabel, 
       'group': group, 
       'placeholder': placeholder, 
       'image': image
@@ -137,10 +139,12 @@ export default class DesignCanvas extends React.Component {
   }
 
   hideMenu() {
-    this.setState({
-      menuShown: false, 
-      activeCanvasMenu: undefined
-    });  
+    if(this.state.menuShown) {
+      this.setState({
+        menuShown: false, 
+        activeCanvasMenu: undefined
+      });  
+    }
   }
 
   initDesignCanvas(shape) {
@@ -155,30 +159,18 @@ export default class DesignCanvas extends React.Component {
     let shapeId = shape.name;
     let source = DesignCanvas.svgElements(shape.controlType);
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
-    if(inMainCanvas) {
-      return (<DesignCanvasSVGWidget 
-              key={shapeId} 
-              shape={shape} 
-              id={shapeId} 
-              source={source}
-              width={width}
-              height={height}
-              left={left}
-              top={top}
-              onContextMenu={this.showConstraintsContextMenu.bind(this, shape)} />); 
-    }
-    else {
-      return (<DesignCanvasSVGWidget 
-              key={shapeId} 
-              shape={shape} 
-              id={shapeId} 
-              source={source}
-              width={width}
-              height={height} 
-              left={left}
-              top={top} />);
-    }
-
+    return (<DesignCanvasSVGWidget 
+            key={shapeId} 
+            shape={shape} 
+            id={shapeId} 
+            source={source}            
+            width={width}
+            height={height}
+            left={left}
+            top={top}
+            scaling={this.scalingFactor}
+            inMainCanvas={inMainCanvas}
+            contextMenu={this.showConstraintsContextMenu.bind(this)}/>); 
   }
 
   createSVGElement(designCanvas, shape) {
@@ -196,11 +188,6 @@ export default class DesignCanvas extends React.Component {
       let computedLeft = ((shape.location.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.location.y * this.scalingFactor) - padding);
 
-      if(controlType == "multilineLabel") {
-        computedHeight = shape.size.height; 
-        computedWidth = shape.size.width;   
-      }
-     
       let designCanvasWidget = this.getDesignCanvasWidget(shape, computedWidth, computedHeight, computedLeft, computedTop);
       this.state.childSVGs.push(designCanvasWidget);
       this.setState({

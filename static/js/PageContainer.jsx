@@ -17,6 +17,8 @@ import labelStatic from '../assets/illustrator/label_widgets.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
 import multilineLabel from '../assets/illustrator/multiline_label.svg';
+import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
+import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -30,6 +32,7 @@ export default class PageContainer extends React.Component {
     this.getConstraintsCanvasShape = this.getConstraintsCanvasShape.bind(this);
     this.highlightWidgetFeedback = this.highlightWidgetFeedback.bind(this);
     this.clearInvalidDesignCanvases = this.clearInvalidDesignCanvases.bind(this); 
+    this.closeRightClickMenus = this.closeRightClickMenus.bind(this);
     
     this.canvas = undefined; 
 
@@ -42,9 +45,24 @@ export default class PageContainer extends React.Component {
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
-    this.solutionsMap ={};
+    this.solutionsMap = {};
 
     this.constraintsCanvasRef = React.createRef();
+  }
+
+  closeRightClickMenus() {
+    console.log("closeright click menus");
+    if(this.constraintsCanvasRef) {
+      this.constraintsCanvasRef.current.closeRightClickMenu(); 
+    }
+
+    for(var i=0; i<this.state.solutions.length; i++) {
+      let canvasID = "design-canvas-" + this.state.solutions[i].id; 
+      let designCanvas = this.refs[canvasID]; 
+      if(designCanvas) {
+        designCanvas.hideMenu();
+      }
+    }
   }
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
@@ -56,6 +74,7 @@ export default class PageContainer extends React.Component {
   getDesignCanvas(solution) {
     return (<DesignCanvas 
               key={solution.id} id={solution.id} 
+              ref={"design-canvas-" + solution.id}
               elements={solution.elements}
               savedState={solution.saved}
               valid={solution.valid}
@@ -234,8 +253,6 @@ export default class PageContainer extends React.Component {
     });
   }
 
-
-
   getRelativeDesigns(elements, action) {
     // get more designs relative to a specific design
     let jsonShapes = this.getShapesJSON(); 
@@ -290,11 +307,12 @@ export default class PageContainer extends React.Component {
               }
           });      
     return (
-      <div className="page-container">
+      <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
         <nav className="navbar navbar-default">
          <div className="container-fluid">
           <div className="navbar-header">
             <h2>Scout</h2>
+            <span><img src="../assets/logo.svg" /></span>
           </div>
          </div>
         </nav>
@@ -317,6 +335,9 @@ export default class PageContainer extends React.Component {
                 height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
                 svg={ labelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', labelDynamic)}/>
               <SVGInline className="widget-control widget-control-label" 
+                height={SVGWidget.initialHeights('smallLabel') + "px"} width={SVGWidget.initialWidths('smallLabel') + "px"} 
+                svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'smallLabel', smallLabelDynamic)}/>
+              <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('multilineLabel') + "px"} width={SVGWidget.initialWidths('multilineLabel') + "px"} 
                 svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'multilineLabel', multilineLabel)}/>
               <SVGInline className="widget-control widget-control-search" 
@@ -334,33 +355,17 @@ export default class PageContainer extends React.Component {
               </div>
             </div>
           </div>
-            {/*<div className="panel panel-default containers-container">
-              <div className="panel-heading"> 
-                <h3 className="panel-title">Containers</h3>
-              </div>  
-              <div className="panel-body containers-panel">         
-                <SVGInline className="widget-control widget-container" svg={ labelContainer } onClick={this.addShapeToConstraintsCanvas.bind(this, 'labelGroup', 'labelGroup', labelContainer)}/>
-              </div>
-            </div>*/}
-         <div className="panel panel-default constraints-container">
-            <div className="panel-heading"> 
-              <h3 className="panel-title">Constraints</h3>
-            </div>
-            <div className="constraints-canvas-container"> 
-              <ConstraintsCanvas ref={this.constraintsCanvasRef} 
-                updateConstraintsCanvas={this.updateConstraintsCanvas} 
-                checkSolutionValidity={this.checkSolutionValidity.bind(this)}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
-            </div>
-           {/*<ConstraintsCanvas ref="constraintsCanvas" />*/}
-          </div>
+          <ConstraintsCanvas ref={this.constraintsCanvasRef} 
+            updateConstraintsCanvas={this.updateConstraintsCanvas} 
+            checkSolutionValidity={this.checkSolutionValidity.bind(this)}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
           <div className="panel panel-default designs-area-container">
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs
-                <div className="btn-group btn-group-xs designs-area-button-group">
+                <div className="btn-group btn-group-xs header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More Designs</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                 </div>
-                <div className="btn-group btn-group-xs designs-area-button-group">
+                <div className="btn-group btn-group-xs header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More not like these</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More like these</button>
                 </div>
@@ -368,9 +373,18 @@ export default class PageContainer extends React.Component {
             </div>  
             <div className="design-canvas-container">
               <div className="left-container">
-                { designCanvases.length? <div className="alert alert-success" role="alert">Here are 10 arandomly selected designs.</div> : undefined }
+                { designCanvases.length ? 
+                  (<div className="designs-canvas-container-alert alert alert-info alert-dismissable" role="alert">
+                    <button type="button" className="close" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                    Here are {designCanvases.length} randomly selected designs.
+                    </div>) : undefined }
                 { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
-                  <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+                  <div>
+                    <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+                    <span>({savedCanvases.length})</span>
+                  </div>
                   <div className="panel-body saved-body">
                     {savedCanvases}
                   </div>
@@ -381,7 +395,10 @@ export default class PageContainer extends React.Component {
                   </div>
                 </div>) : null }
                 { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
-                  <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                  <div>
+                    <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                    <span>({trashedCanvases.length})</span>
+                  </div>
                   <div className="panel-body trashed-body">
                     {trashedCanvases}
                   </div>
@@ -389,7 +406,10 @@ export default class PageContainer extends React.Component {
               </div>
               {invalidatedCanvases.length ? (<div className="right-container"> 
                 <div className="panel invalid-container panel-default"> 
-                  <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                  <div>
+                    <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                    <span>({invalidatedCanvases.length})</span>
+                  </div>
                   <div className="panel-body invalidated-body">
                     {invalidatedCanvases}
                   </div>

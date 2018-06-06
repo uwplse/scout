@@ -6,6 +6,7 @@ import math
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
+MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
 
 def parse_unsat_core(unsat_core):
 	# Parse the conflicting constraints out of the unsat core and return identifiers for each shape and the associated conflicting constraint
@@ -51,11 +52,15 @@ class Variable(object):
 		elif self.name == "x" or self.name == "y":
 			return element["location"][self.name]
 
+		elif self.name == "width" or self.name == "height":
+			return element["size"][self.name]
+
 		return element[self.name]
 
 class Solution(object): 
 	def __init__(self): 
 		self.variables = []
+		self.id = uuid.uuid4().hex
 
 	def add_assigned_variable(self, variable): 
 		self.variables.append(variable)
@@ -112,8 +117,37 @@ class Solution(object):
 				element["location"]["x"] = adj_x
 				element["location"]["y"] = adj_y
 
-				height = shape.height
-				width = shape.width
+				height = shape.height()
+				width = shape.width()
+
+				if shape.type == "container": 
+					height = model[shape.height()].as_string()
+					width = model[shape.width()].as_string()
+					height = int(height)
+					width = int(width)
+					element["size"]["width"] = width
+					element["size"]["height"] = height
+
+				if shape.importance_set: 
+					if shape.importance == "most": 
+						magnification = model[shape.variables.magnification.z3].as_string()
+						magnification = int(magnification)
+						height = height + ((1/magnification) * height)
+						width = width + ((1/magnification) * width)
+						height = int(round(height,0))
+						width = int(round(width,0))
+						element["size"]["height"] = height
+						element["size"]["width"] = height
+					elif shape.importance == "least": 
+						minification = model[shape.variables.minification.z3].as_string()
+						minification = int(minification)
+						height = height - ((1/minification) * height)
+						width = width - ((1/minification) * width)
+						height = int(round(height,0))
+						width = int(round(width, 0))
+						element["size"]["height"] = height
+						element["size"]["width"] = width
+
 				if shape.type == "container": 
 					# Also include the container properties in the element object for each container shape 
 					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
@@ -124,17 +158,6 @@ class Solution(object):
 					element["arrangement"] = int(arrangement)
 					element["alignment"] = int(alignment)
 					element["proximity"] = int(proximity)
-
-					# For containers, retrieve the solved for height and width from the model 
-					if "size" not in element:
-						element["size"] = dict()
-
-					height = model[shape.height].as_string()
-					width = model[shape.width].as_string()
-					height = int(height)
-					width = int(width)
-					element["size"]["width"] = width
-					element["size"]["height"] = height
 				elif shape.type == "canvas": 
 					alignment = model[shape.variables.alignment.z3].as_string()
 					justification = model[shape.variables.justification.z3].as_string()
@@ -142,6 +165,16 @@ class Solution(object):
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
+				elif shape.type == "leaf":
+					if shape.importance == "most":
+						magnification = model[shape.variables.magnification.z3].as_string()
+						element["magnification"] = int(magnification)
+					elif shape.importance == "least":
+						minification = model[shape.variables.minification.z3].as_string()
+						element["minification"] = int(minification)
+					else: 
+						element["minification"] = 0
+						element["magnification"] = 0
 
 				if shape.type == "leaf": 
 					# Only the locations of leaf level shapes to compute the symmetry cost
@@ -151,7 +184,7 @@ class Solution(object):
 
 		# print("Total cost: " + str(cost))
 		sln["elements"] = new_elements
-		sln["id"] = uuid.uuid4().hex
+		sln["id"] = self.id 
 		sln["cost"] = cost
 		sln["valid"] = True
 		sln["saved"] = 0
