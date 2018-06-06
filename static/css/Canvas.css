@@ -95,6 +95,7 @@ body {
 .label-success {
 	margin-bottom: 0.5em; 
 	margin-left: 0.5em;
+	white-space: normal;
 }
 
 .widgets-sortable-tree .label-info, 
@@ -217,7 +218,6 @@ body {
 }
 
 .widget-container > .widget-container-svg {
-	width: 100px;
 	margin-right: 5px;
 	margin-left: 5px;
 }

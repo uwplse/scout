@@ -15,7 +15,7 @@ export default class SVGWidget extends React.Component {
       'button': 238, 
       'field': 238, 
       'search': 238, 
-      'group': 100, 
+      'group': 150, 
       'labelGroup': 100, 
       'label': 83, 
       'smallLabel': 47, 
@@ -37,7 +37,7 @@ export default class SVGWidget extends React.Component {
       'button': 275, 
       'field': 275, 
       'search': 275, 
-      'group': 100, 
+      'group': 160, 
       'labelGroup': 100, 
       'label': 83, 
       'multilineLabel': 200, 
@@ -58,7 +58,7 @@ export default class SVGWidget extends React.Component {
       'button': 34, 
       'field': 25, 
       'search': 25, 
-      'group': 40, 
+      'group': 50, 
       'labelGroup': 40, 
       'label': 43, 
       'smallLabel': 23, 
@@ -415,6 +415,7 @@ export default class SVGWidget extends React.Component {
     const order = this.state.order;
     const orderOrdinal = Converter.toWordsOrdinal(order+1); 
     const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
+    const importanceLabel = importance == "most" ? "Most Important" : (importance == "least" ? "Least Important" : ""); 
 
     const showOrder = this.state.showOrder;  
     // this.setElementSize(width, height); 
@@ -439,18 +440,19 @@ export default class SVGWidget extends React.Component {
             </div>
             <div className="widget-control-info">
               <div className="widget-control-info-left">
+              {/*{this.controlType == "group" ? 
+               (<span className={"label " + (typedGroup ? "label-success" : "label-info")}>{typedGroup ? "Typed" : "Untyped"}</span>) : undefined}*/}
               {this.controlType == "group" ? 
-               (<span className={"label " + (typedGroup ? "label-success" : "label-info")}>{typedGroup ? "Typed" : "Untyped"}</span>) : undefined}
-              {this.controlType == "group" ? 
-               (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{orderedGroup ? "Ordered" : "Unordered"}</span>) : undefined}
+               (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{orderedGroup ? "Order Important" : "No Order"}</span>) : undefined}
+                <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
               </div>
               <div className="widget-control-info-right">
-                <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
-                <div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
+                <span className={"label label-info" + (showImportance ? "" : "hidden")}>{importanceLabel}</span>
+                {/*<div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
                   <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
                   <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
                   <span className={"glyphicon " + (importance == "least" || importance == "normal" ? "glyphicon-star-empty" : "glyphicon-star")}></span>
-                </div>
+                </div>*/}
               </div>
             </div>
           </div>

@@ -16,6 +16,7 @@ import labelDynamic from '../assets/illustrator/label.svg';
 import labelStatic from '../assets/illustrator/label_widgets.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
+import repeatGrid from '../assets/illustrator/repeatGrid.svg';
 import multilineLabel from '../assets/illustrator/multiline_label.svg';
 import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
 import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';

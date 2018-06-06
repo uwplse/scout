@@ -5,6 +5,9 @@ import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaul
 import RightClickMenu from './RightClickMenu'; 
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
+import repeatGrid from '../assets/illustrator/repeatGrid.svg';
+import item from '../assets/illustrator/item.svg';
+
 // import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
 
@@ -631,7 +634,7 @@ export default class ConstraintsCanvas extends React.Component {
     let newChildren = []; 
     for(var i=0; i<groups.length; i++) {
       let currGroup = groups[i]; 
-      let newGroupNode = this.createNewTreeNode("group", "group", group); 
+      let newGroupNode = this.createNewTreeNode("group", "group", item); 
       let isExpanded = (i == 0) ? true : false; 
       newGroupNode.expanded = isExpanded; 
       newGroupNode.children = currGroup; 
@@ -645,7 +648,7 @@ export default class ConstraintsCanvas extends React.Component {
     let groupNode = this.widgetTreeNodeMap[groupID];
     let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
     if(groupNodeData) {
-      let widget = this.getWidget(groupNode.title.props.shape, group, { typedGroup: typed }); 
+      let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typedGroup: typed }); 
       let newGroupChildren = this.restructureTypedGroupChildren(groupNodeData.children, groupSize); 
 
       // Create a new node for the widget

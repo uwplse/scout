@@ -18,9 +18,7 @@ export default class WidgetTyping extends React.Component {
         <button onClick={function() { self.closeAlert(self.groupID) }} type="button" className="close" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        This looks like a <strong>typed</strong> group.
-        <br /><br />
-        Click <a href="#" onClick={function() { self.setTypingOnGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make it typed. 
+        Click <a href="#" onClick={function() { self.setTypingOnGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make this a <strong>repeat grid</strong> group. 
       </div>); 
   }
 }
