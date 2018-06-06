@@ -414,7 +414,7 @@ export default class SVGWidget extends React.Component {
     const order = this.state.order;
     const orderOrdinal = Converter.toWordsOrdinal(order+1); 
     const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
-    const importanceLabel = importance == "most" ? "Most Important" : (importance == "least" ? "Least Important" : ""); 
+    const importanceLabel = importance == "most" ? "Most Salient" : (importance == "least" ? "Least Salient" : ""); 
 
     const showOrder = this.state.showOrder;  
     // this.setElementSize(width, height); 

@@ -66,7 +66,7 @@ class ImportanceMenuItem extends React.Component {
     super(props); 
     this.onClick = props.onClick; 
     this.importanceLevel = props.importanceLevel; 
-    this.label = (this.importanceLevel == "most" ? "Make this salient." : "Deemphasize this element."); 
+    this.label = (this.importanceLevel == "most" ? "Make Salient" : "Deemphasize"); 
   }
 
   render () {
@@ -91,6 +91,7 @@ export default class RightClickMenu extends React.Component {
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
+    this.getCurrentShapeImportance = props.getCurrentShapeImportance; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
 
     // Method bindings
@@ -199,8 +200,16 @@ export default class RightClickMenu extends React.Component {
 
   getImportanceMenuItems() {
     let menuItems = []; 
-    menuItems.push(<ImportanceMenuItem key={"least"} importanceLevel="least" onClick={this.setImportanceLevel} />);
-    menuItems.push(<ImportanceMenuItem key={"most"} importanceLevel="most" onClick={this.setImportanceLevel} />); 
+
+    let currentImportance = this.getCurrentShapeImportance(this.shapeID); 
+    if(currentImportance != "least") {
+      menuItems.push(<ImportanceMenuItem key={"least"} importanceLevel="least" onClick={this.setImportanceLevel} />);      
+    }
+
+    if(currentImportance != "most") {
+      menuItems.push(<ImportanceMenuItem key={"most"} importanceLevel="most" onClick={this.setImportanceLevel} />); 
+    }
+
     return menuItems; 
   }
 
@@ -323,7 +332,7 @@ export default class RightClickMenu extends React.Component {
       <div id="right-click-menu-container" className="right-click-menu-container dropdown" data-toggle="dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
         <ul className="dropdown-menu" style={{display: "block"}}>
           <li className="dropdown-submenu">
-            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Importance Levels<span className="caret"></span></a>
+            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Emphasis<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li> 
         {orderShown ? 
