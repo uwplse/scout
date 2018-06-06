@@ -151,7 +151,8 @@ body {
 
 .widget-control-row {
 	display: flex; 
-	align-items: center;
+	align-items: flex-start;
+	flex-direction: column;
 }
 
 .widget-control-labels.widget-control-arrow-down:before {
@@ -163,14 +164,13 @@ body {
 }
 
 .widget-control-info {
-	align-self: stretch;
     display: flex;
-    justify-content: center;
-    margin-left: 10px;
+    margin-top: 0.5em;
 }
 
 .widget-control-info .label-info {
 	margin-left: 0px;
+	margin-right: 0.5em;
 }
 
 .widget-control-info-left, 

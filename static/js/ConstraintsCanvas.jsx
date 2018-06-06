@@ -496,8 +496,8 @@ export default class ConstraintsCanvas extends React.Component {
       "type": type,
       "controlType": controlType, 
       "size": {
-        "width": SVGWidget.controlWidths(controlType), 
-        "height": SVGWidget.controlHeights(controlType)
+        "width": SVGWidget.initialWidths(controlType), 
+        "height": SVGWidget.initialHeights(controlType)
       }
     }
 
@@ -513,7 +513,11 @@ export default class ConstraintsCanvas extends React.Component {
   calculateRowHeight({treeIndex, node, path}) {
     let padding = 0; 
     let actualRowHeight = node.title.props.shape.size.height + (padding * 2);
+    let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
+    let infoHeight = 23; 
+    let infoShowing = (nodeElement.importance != "normal" || nodeElement.order != -1);
+    rowHeight += (infoShowing ? infoHeight : 0);  
 
     // Row height
     let feedbackItems = node.subtitle.filter(item => item.props.type == "feedback"); 
@@ -784,8 +788,8 @@ export default class ConstraintsCanvas extends React.Component {
                   Order<span className="caret"></span>
                 </button>
                 <ul className="dropdown-menu">
-                  <li onClick={this.togglePageOrder.bind(this, "important")}><a href="#">Important</a></li>
-                  <li onClick={this.togglePageOrder.bind(this, "unimportant")}><a href="#">Unimportant</a></li>
+                  <li onClick={this.togglePageOrder.bind(this, "important")}><a href="#">Order Important</a></li>
+                  <li onClick={this.togglePageOrder.bind(this, "unimportant")}><a href="#">Order unimportant</a></li>
                 </ul>
               </div>
               <span className={"label " + (pageOrder == "important" ? "label-success" : "label-info")}>{pageOrder}</span>

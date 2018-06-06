@@ -65,16 +65,13 @@ class ImportanceMenuItem extends React.Component {
   constructor(props) {
     super(props); 
     this.onClick = props.onClick; 
-    this.numStars = props.numStars;
+    this.importanceLevel = props.importanceLevel; 
+    this.label = (this.importanceLevel == "most" ? "Make this salient." : "Deemphasize this element."); 
   }
 
   render () {
     var self = this;
-    let stars = []; 
-    for(var i=0; i<this.numStars; i++) {
-      stars.push(<span key={i} className="glyphicon glyphicon-star" aria-hidden="true"></span>); 
-    }
-    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.numStars); }}>{stars}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.importanceLevel); }}>{this.label}</li>; 
   }
 }
 
@@ -95,7 +92,6 @@ export default class RightClickMenu extends React.Component {
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
-    this.importanceLevels = [3, 2, 1]; 
 
     // Method bindings
     this.openFontSizeMenu = this.openFontSizeMenu.bind(this); 
@@ -203,11 +199,8 @@ export default class RightClickMenu extends React.Component {
 
   getImportanceMenuItems() {
     let menuItems = []; 
-    for(var i=0; i<this.importanceLevels.length; i++) {
-      let level = this.importanceLevels[i]; 
-      menuItems.push(<ImportanceMenuItem key={level} numStars={level} onClick={this.setImportanceLevel} />);
-    }
-
+    menuItems.push(<ImportanceMenuItem key={"least"} importanceLevel="least" onClick={this.setImportanceLevel} />);
+    menuItems.push(<ImportanceMenuItem key={"most"} importanceLevel="most" onClick={this.setImportanceLevel} />); 
     return menuItems; 
   }
 

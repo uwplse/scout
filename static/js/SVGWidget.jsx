@@ -15,7 +15,7 @@ export default class SVGWidget extends React.Component {
       'button': 238, 
       'field': 238, 
       'search': 238, 
-      'group': 150, 
+      'group': 160, 
       'labelGroup': 100, 
       'label': 83, 
       'smallLabel': 47, 
@@ -318,12 +318,11 @@ export default class SVGWidget extends React.Component {
     evt.stopPropagation(); 
 
     // Update the object
-    let importance = level == 1 ? "least" : (level == 2 ? "normal" : "most"); 
-    this.element.importance = importance; 
+    this.element.importance = level; 
 
     // Update the number of stars showing
     this.setState({
-      importance: importance, 
+      importance: level, 
       showImportance: true
     }); 
 
@@ -439,21 +438,10 @@ export default class SVGWidget extends React.Component {
                 style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
             </div>
             <div className="widget-control-info">
-              <div className="widget-control-info-left">
-              {/*{this.controlType == "group" ? 
-               (<span className={"label " + (typedGroup ? "label-success" : "label-info")}>{typedGroup ? "Typed" : "Untyped"}</span>) : undefined}*/}
               {this.controlType == "group" ? 
                (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{orderedGroup ? "Order Important" : "No Order"}</span>) : undefined}
                 <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
-              </div>
-              <div className="widget-control-info-right">
                 <span className={"label label-info" + (showImportance ? "" : "hidden")}>{importanceLabel}</span>
-                {/*<div className={"widget-control-importance " + (showImportance ? "" : "hidden")}> 
-                  <span className="glyphicon glyphicon-star" aria-hidden="true"></span>
-                  <span className={"glyphicon " + (importance == "least" ? "glyphicon-star-empty" : "glyphicon-star")} aria-hidden="true"></span>
-                  <span className={"glyphicon " + (importance == "least" || importance == "normal" ? "glyphicon-star-empty" : "glyphicon-star")}></span>
-                </div>*/}
-              </div>
             </div>
           </div>
         </div>
