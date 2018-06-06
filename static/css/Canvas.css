@@ -276,6 +276,10 @@ body {
 	cursor: pointer;
 }
 
+.design-canvas .widget-control-leaf {
+	z-index: 1000; 
+}
+
 .design-canvas.design-canvas-hovered {
 	outline: 1px dashed black;
 }

@@ -138,9 +138,10 @@ export default class DesignCanvasSVGWidget extends React.Component {
     console.log(this.state.fontSize); 
     this.setTextLabel();
     this.rescaleTextLabel();
+    let isContainer = (this.type == "group" || this.type == "labelGroup" || this.type == "canvas" || this.type == "page"); 
     return (
       <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} onContextMenu={this.contextMenuClicked}
-        className={"widget-control-parent "  + (this.state.hovered ? "design-canvas-hovered" : "")}
+        className={"widget-control-"  + (isContainer ? "container" : "leaf")+ (this.state.hovered ? " design-canvas-hovered" : "")}
         onMouseEnter={this.setHovered}
         onMouseLeave={this.hideHovered}
         style={{position: "absolute", left: left + "px", top: top + "px"}}>

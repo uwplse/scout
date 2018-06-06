@@ -24,6 +24,7 @@ export default class DesignCanvas extends React.Component {
       'multilineLabel': multilineLabel,
       'smallLabel': smallLabel, 
       'group': group, 
+      'labelGroup': group,
       'placeholder': placeholder, 
       'image': image
       /* Add others here */

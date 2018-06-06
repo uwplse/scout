@@ -290,9 +290,19 @@ export default class PageContainer extends React.Component {
                 }); 
 
     const designCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 0 && (!solution.invalidated)); }) 
+              .sort(function(a, b) {
+                // Do a sort of the designs by cost
+                if(a.cost < b.cost) {
+                  return -1; 
+                }
+                else if(a.cost > b.cost) {
+                  return 1; 
+                }
+                return 0; 
+              })
               .map(function(solution) {
                   return self.getDesignCanvas(solution); 
-                }); 
+              }); 
 
     const trashedCanvases = this.state.solutions.filter(function(solution) { return solution.saved == -1; })
               .map(function(solution) {

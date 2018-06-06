@@ -78,7 +78,7 @@ export default class CanvasMenu extends React.Component {
   	let elementItems = this.getMenuItems(ConstraintActions.elementConstraints);
     let groupItems = []; 
     let pageItems = []; 
-    if(this.menuTrigger.type == "group") {
+    if(this.menuTrigger.type == "group" || this.menuTrigger.type == "labelGroup") {
       groupItems = this.getMenuItems(ConstraintActions.groupConstraints); 
     }
 
@@ -98,10 +98,10 @@ export default class CanvasMenu extends React.Component {
         <ul className="dropdown-menu" style={{display: "block"}}>
         {elementItems}
         {groupItems.length ? 
-          (<li role="separator" class="divider"></li>) : undefined}
+          (<li role="separator" className="divider"></li>) : undefined}
         {groupItems.length ? groupItems : undefined}
         {pageItems.length ? (
-          <li role="separator" class="divider"></li>) : undefined}
+          <li role="separator" className="divider"></li>) : undefined}
         {pageItems.length ? pageItems : undefined}
         </ul>
       </div>

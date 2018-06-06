@@ -16,7 +16,7 @@ export default class SVGWidget extends React.Component {
       'field': 238, 
       'search': 238, 
       'group': 160, 
-      'labelGroup': 100, 
+      'labelGroup': 160, 
       'label': 83, 
       'smallLabel': 47, 
       'multilineLabel': 200, 
@@ -38,7 +38,7 @@ export default class SVGWidget extends React.Component {
       'field': 275, 
       'search': 275, 
       'group': 160, 
-      'labelGroup': 100, 
+      'labelGroup': 160, 
       'label': 83, 
       'multilineLabel': 200, 
       'smallLabel': 47,
@@ -59,7 +59,7 @@ export default class SVGWidget extends React.Component {
       'field': 25, 
       'search': 25, 
       'group': 50, 
-      'labelGroup': 40, 
+      'labelGroup': 50, 
       'label': 43, 
       'smallLabel': 23, 
       'image': 100, 
@@ -421,9 +421,6 @@ export default class SVGWidget extends React.Component {
 
     const isEditable = this.controlType != "group";
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
-    console.log(this.id); 
-    console.log(fontSize);
-    console.log(source);
     return (
       <Resizable maxWidth={300} minWidth={50} enable={enableOptions} onResizeStop={this.onElementResized}>
         <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} 
