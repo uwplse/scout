@@ -7,9 +7,12 @@ import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
 import field from '../assets/illustrator/field_designs.svg';
 import search from '../assets/illustrator/search.svg';
 import image from '../assets/illustrator/image.svg'
+import logo from '../assets/illustrator/logo.svg'
 import placeholder from '../assets/illustrator/placeholder.svg'
 import filledButton from '../assets/illustrator/filledButton.svg';
+import orangeButton from '../assets/illustrator/orangeButton.svg';
 import label from '../assets/illustrator/label_designs.svg';
+import orangeLabel from '../assets/illustrator/orangeLabel_designs.svg';
 import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
 import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
@@ -20,13 +23,16 @@ export default class DesignCanvas extends React.Component {
       'field': field, 
       'search': search, 
       'button': filledButton, 
+      'orangeButton': orangeButton,
       'label': label, 
+      'orangeLabel': orangeLabel,
       'multilineLabel': multilineLabel,
       'smallLabel': smallLabel, 
       'group': group, 
       'labelGroup': group,
       'placeholder': placeholder, 
-      'image': image
+      'image': image, 
+      'logo': logo
       /* Add others here */
     }; 
     return svgElements[controlType]; 

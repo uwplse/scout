@@ -103,6 +103,14 @@ body {
 	font-size: 100%; 
 }
 
+.constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
+.constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
+.constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
+.constraints-canvas-container .widget-control-search > .widget-control-search-svg {
+	width: 238px !important;
+}
+
+
 /** 
 	Constraints canvas 
 **/
@@ -119,6 +127,13 @@ body {
 	width: 250px;
 }
 
+.widgets-container .widget-control-button > .widget-control-button-svg, 
+.widgets-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
+.widgets-container .widget-control-field > .widget-control-field-svg, 
+.widgets-container .widget-control-search > .widget-control-search-svg {
+	width: 238px !important;
+}
+
 .widget-container > .widget-control-importance {
 	margin-top: 5px;
 	display: flex;
@@ -128,16 +143,20 @@ body {
 	margin-right: 10px;
 }
 
-.widget-control-button > .widget-control-svg {
-	width: 10em;
+.constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
+.constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
+.constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
+.constraints-canvas-container .widget-control-search > .widget-control-search-svg {
+	width: 238px !important;
 }
 
-.widget-control-button .widget-editable-text {
-	transform: translate(120px, 18px);
+.widget-control-button .widget-editable-text, 
+.widget-control-orangeButton .widget-editable-text {
+	transform: translate(120px, 22px);
 }
 
 .widget-control-field .widget-editable-text {
-	transform: translate(9.7px, 18px);
+	transform: translate(9.7px, 24px);
 }
 
 .widget-control-label > .widget-control-svg {
@@ -248,6 +267,7 @@ body {
 
 .designs-container {
 	display: flex;
+	flex-direction: column;
 	margin-bottom: 0;
 	margin-top: 10px;
 	margin-left: 10px;
@@ -261,6 +281,11 @@ body {
     align-items: stretch;
     margin-right: 10px;
     margin-bottom: 10px;
+}
+
+.designs-container.current-designs-container {
+	min-height: 700px;
+	flex: 1;
 }
 
 .designs-canvas-container-alert {
@@ -320,6 +345,7 @@ body {
 .left-container {
 	display: flex;
 	flex-direction: column;
+	flex: 1 1 0px;
 }
 
 .saved-body .canvas-container, .trashed-body .canvas-container {

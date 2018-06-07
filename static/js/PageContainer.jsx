@@ -12,14 +12,18 @@ import search from '../assets/illustrator/search.svg';
 import image from '../assets/illustrator/image.svg';
 import placeholder from '../assets/illustrator/placeholder.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
+import orangeButton from '../assets/illustrator/orangeButton.svg';
 import labelDynamic from '../assets/illustrator/label.svg';
 import labelStatic from '../assets/illustrator/label_widgets.svg';
+import orangeLabelDynamic from '../assets/illustrator/orangeLabel.svg'; 
+import orangeLabelStatic from '../assets/illustrator/orangeLabel_widgets.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
 import repeatGrid from '../assets/illustrator/repeatGrid.svg';
 import multilineLabel from '../assets/illustrator/multiline_label.svg';
 import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
 import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
+import logo from '../assets/illustrator/logo.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -342,9 +346,15 @@ export default class PageContainer extends React.Component {
               <SVGInline className="widget-control widget-control-button" 
                 height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
                 svg={ filledButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'button', filledButton)}/>
+              <SVGInline className="widget-control widget-control-button" 
+                height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
+                svg={ orangeButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'orangeButton', orangeButton)}/>
               <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
                 svg={ labelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'label', labelDynamic)}/>
+              <SVGInline className="widget-control widget-control-label" 
+                height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
+                svg={ orangeLabelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'orangeLabel', orangeLabelDynamic)}/>
               <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('smallLabel') + "px"} width={SVGWidget.initialWidths('smallLabel') + "px"} 
                 svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'smallLabel', smallLabelDynamic)}/>
@@ -361,6 +371,9 @@ export default class PageContainer extends React.Component {
                 <SVGInline className="widget-control widget-control-placeholder" 
                   height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
                   svg={ placeholder } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'placeholder', placeholder)}/>
+                <SVGInline className="widget-control widget-control-logo" 
+                  height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+                  svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>    
                 <SVGInline className="widget-control widget-container" svg={ groupContainer } 
                   onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
               </div>
@@ -384,13 +397,6 @@ export default class PageContainer extends React.Component {
             </div>  
             <div className="design-canvas-container">
               <div className="left-container">
-                { designCanvases.length ? 
-                  (<div className="designs-canvas-container-alert alert alert-info alert-dismissable" role="alert">
-                    <button type="button" className="close" aria-label="Close">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                    Here are {designCanvases.length} randomly selected designs.
-                    </div>) : undefined }
                 { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
                   <div>
                     <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
@@ -401,9 +407,15 @@ export default class PageContainer extends React.Component {
                   </div>
                 </div>) : null }
                 { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
-                  <div className="design-body">
-                    {designCanvases}
-                  </div>
+                    <div className="designs-canvas-container-alert alert alert-info alert-dismissable" role="alert">
+                      <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      Here are {designCanvases.length} randomly selected designs.
+                    </div>
+                    <div className="design-body">
+                      {designCanvases}
+                    </div>
                 </div>) : null }
                 { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
                   <div>

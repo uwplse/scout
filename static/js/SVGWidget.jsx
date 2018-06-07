@@ -12,38 +12,19 @@ export default class SVGWidget extends React.Component {
   // TODO: Calculate dynamically from the initial size of the SVG? 
   static initialWidths(controlType) {
     let values = {
-      'button': 238, 
-      'field': 238, 
-      'search': 238, 
+      'button': 288,
+      'orangeButton': 288, 
+      'field': 288, 
+      'search': 288, 
       'group': 160, 
       'labelGroup': 160, 
       'label': 83, 
+      'orangeLabel': 83,
       'smallLabel': 47, 
       'multilineLabel': 200, 
-      'image': 100, 
-      'placeholder': 100
-    }
-
-    if(controlType in values) {
-      return values[controlType]; 
-    }
-
-    return 0; 
-  }
-
-  // TODO: Refactor so don't need two different collections of sizes
-  static controlWidths(controlType) {
-    let values = {
-      'button': 275, 
-      'field': 275, 
-      'search': 275, 
-      'group': 160, 
-      'labelGroup': 160, 
-      'label': 83, 
-      'multilineLabel': 200, 
-      'smallLabel': 47,
-      'image': 100, 
-      'placeholder': 100
+      'image': 80, 
+      'logo': 80,
+      'placeholder': 80
     }
 
     if(controlType in values) {
@@ -55,15 +36,18 @@ export default class SVGWidget extends React.Component {
 
   static initialHeights(controlType) {
     let values = {
-      'button': 34, 
-      'field': 25, 
-      'search': 25, 
+      'button':40,
+      'orangeButton': 40, 
+      'orderLabel': 43,
+      'field': 34, 
+      'search': 34, 
       'group': 50, 
       'labelGroup': 50, 
       'label': 43, 
       'smallLabel': 23, 
-      'image': 100, 
-      'placeholder': 100, 
+      'image': 80, 
+      'logo': 80,
+      'placeholder': 80, 
       'multilineLabel': 80
     }
 
@@ -82,6 +66,7 @@ export default class SVGWidget extends React.Component {
     let values = {
       'button': 'Button', 
       'label': 'Label', 
+      'orangeLabel': 'Label',
       'field': 'Field', 
       'search': 'Search', 
       'group': 'Group', 
@@ -94,6 +79,7 @@ export default class SVGWidget extends React.Component {
   static initialFontSizes(controlType) {
     let values = {
       'label': 36, 
+      'orangeLabel': 36,
       'multilineLabel': 14, 
       'smallLabel': 20
     }
@@ -233,7 +219,9 @@ export default class SVGWidget extends React.Component {
       if(this.state.width == 0 || this.state.height == 0) {
         // give the component an initial size based on the calculated size of the text box
         let sizeContainer = svgElement.querySelectorAll(".widget-size-container"); 
-        this.adjustElementSize(sizeContainer[0]);
+        if(sizeContainer[0]) {
+          this.adjustElementSize(sizeContainer[0]);
+        }
       }
     }
   }
@@ -263,7 +251,7 @@ export default class SVGWidget extends React.Component {
     evt.stopPropagation();
     evt.preventDefault();
 
-    if(this.controlType == "label" || this.controlType == "smallLabel") {
+    if(this.type == "label") {
       this.displayRightClickMenu(evt, this.id, {
         setFontSize: this.setFontSize, 
         setLabel: this.setLabel, 
