@@ -10,6 +10,8 @@ import SVGWidget from './SVGWidget';
 import field from '../assets/illustrator/field.svg';
 import search from '../assets/illustrator/search.svg';
 import image from '../assets/illustrator/image.svg';
+import image2 from '../assets/illustrator/image2.svg';
+import image3 from '../assets/illustrator/image3.svg';
 import placeholder from '../assets/illustrator/placeholder.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
 import orangeButton from '../assets/illustrator/orangeButton.svg';
@@ -368,6 +370,12 @@ export default class PageContainer extends React.Component {
                 <SVGInline className="widget-control widget-control-image" 
                   height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
                   svg={ image } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'image', image)}/> 
+                <SVGInline className="widget-control widget-control-placeholder" 
+                  height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+                  svg={ image2 } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'image2', image2)}/>
+                <SVGInline className="widget-control widget-control-placeholder" 
+                  height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+                  svg={ image3 } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'image3', image3)}/>
                 <SVGInline className="widget-control widget-control-placeholder" 
                   height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
                   svg={ placeholder } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'placeholder', placeholder)}/>

@@ -23,6 +23,8 @@ export default class SVGWidget extends React.Component {
       'smallLabel': 47, 
       'multilineLabel': 200, 
       'image': 80, 
+      'image2': 80,
+      'image3': 80,
       'logo': 80,
       'placeholder': 80
     }
@@ -46,6 +48,8 @@ export default class SVGWidget extends React.Component {
       'label': 43, 
       'smallLabel': 23, 
       'image': 80, 
+      'image2': 80,
+      'image3': 80,
       'logo': 80,
       'placeholder': 80, 
       'multilineLabel': 80
