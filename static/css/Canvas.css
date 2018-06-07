@@ -13,6 +13,12 @@ body {
 	display: none;
 }
 
+.scout-logo {
+	height: 40px;
+	width: 40px;
+	margin-right: 10px;
+}
+
 /**
   Overrides of bootstrap styles 
   **/ 
@@ -42,6 +48,22 @@ body {
 	position: relative;
 }
 
+.navbar, .navbar-header {
+	display: flex; 
+}
+
+.navbar {
+	min-height: 60px;
+}
+
+.navbar-header {
+	align-items: center;
+}
+
+.navbar-header > h2 {
+	margin: 0;
+}
+
 /**
   General styles
  **/
@@ -52,25 +74,34 @@ body {
 }
 
 #content {
-	width: 100%;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: flex; 
+	flex-direction: column;
 }
 
 #constraints-canvas {
 	border: 1px solid #ccc;
 }
 
-.page-container, .top, .bottom {
+.page-container, .top, .page-container, .constraints-container, .widgets-container, .widgets-panel{
 	display: flex;
+	flex-direction: column;
+	flex-grow: 1; 
 }
 
 .bottom {
-	align-items: stretch;
-	height: calc(100% - 65px);
+	display: flex; 
+	flex-direction: row; 
+	flex-grow: 1; 
+	overflow: auto;
 }
 
-.page-container, .constraints-container {
-	display: flex;
-	flex-direction: column;
+.widgets-panel {
+	overflow: auto;
 }
 
 .widgets-container, .constraints-container, .containers-container, .right-container, .designs-area-container {
@@ -124,7 +155,7 @@ body {
 
 .widgets-container {
 	border-right: 1px solid #ccc;
-	width: 250px;
+	width: 260px;
 }
 
 .widgets-container .widget-control-button > .widget-control-button-svg, 
@@ -141,6 +172,10 @@ body {
 
 .widget-control-group .widget-control {
 	margin-right: 10px;
+}
+
+.widget-control-group {
+	width: 200px;
 }
 
 .constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
@@ -245,11 +280,6 @@ body {
 	display: flex;
     flex-direction: row;
     justify-content: center;
-}
-
-.widgets-panel {
-	display: flex;
-    flex-direction: column;
 }
 
 .SVGInline-svg {

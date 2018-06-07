@@ -382,6 +382,7 @@ export default class PageContainer extends React.Component {
                   height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
                   svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>    
                 <SVGInline className="widget-control widget-container" svg={ groupContainer } 
+                  height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group')}
                   onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
               </div>
             </div>
