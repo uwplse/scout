@@ -26,6 +26,7 @@ import multilineLabel from '../assets/illustrator/multiline_label.svg';
 import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
 import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
 import logo from '../assets/illustrator/logo.svg';
+import pageLogo from '../assets/svgs/logo.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -326,12 +327,10 @@ export default class PageContainer extends React.Component {
     return (
       <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
         <nav className="navbar navbar-default">
-         <div className="container-fluid">
           <div className="navbar-header">
+            <SVGInline className="scout-logo" svg={pageLogo} />
             <h2>Scout</h2>
-            <span><img src="../assets/logo.svg" /></span>
           </div>
-         </div>
         </nav>
         <div className="bottom">
           <div className="panel panel-default widgets-container">
