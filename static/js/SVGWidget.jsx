@@ -205,11 +205,7 @@ export default class SVGWidget extends React.Component {
       let boundingRect = editableText[0].getBoundingClientRect(); 
       let widthRounded = Math.round(boundingRect.width); 
       let heightRounded = Math.round(boundingRect.height); 
-
-      this.setState({
-        width: widthRounded, 
-        height: heightRounded
-      });
+      this.setElementSize(widthRounded, heightRounded);
     }
 
     this.checkSolutionValidity();
@@ -222,12 +218,7 @@ export default class SVGWidget extends React.Component {
     let widthRounded = Math.round(boundingRect.width); 
     let heightRounded = Math.round(boundingRect.height);
 
-    this.setElementSize(widthRounded, heightRounded);
-
-    this.setState({
-      width: widthRounded, 
-      height: heightRounded
-    });     
+    this.setElementSize(widthRounded, heightRounded);  
   }
 
   setTextLabel(initSize) {
@@ -247,10 +238,21 @@ export default class SVGWidget extends React.Component {
     }
   }
 
+  setElementFontSize(fontSize) {
+    this.element.fontSize = fontSize; 
+    this.setState({
+      fontSize: fontSize
+    }); 
+  }
+
   setElementSize(width, height) {
     // When height and width are updated by font size changes, update the element object. 
     this.element.size.height = height; 
     this.element.size.width = width; 
+    this.setState({
+      width: width, 
+      height: height
+    });
   }
 
   setElementTyping(typed) {
@@ -301,15 +303,14 @@ export default class SVGWidget extends React.Component {
     svgElementInline[0].setAttribute("font-size", value); 
 
     // Set on the element object
-    this.element.fontSize = value; 
+    this.setElementFontSize(value);
 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     let boundingRect = editableText[0].getBoundingClientRect(); 
-    this.setState({
-      width: Math.round(boundingRect.width,0), 
-      height: Math.round(boundingRect.height,0), 
-      fontSize: value
-    }); 
+
+    let roundedWidth = Math.round(boundingRect.width,0); 
+    let roundedHeight = Math.round(boundingRect.height,0); 
+    this.setElementSize(roundedWidth, roundedHeight);
 
     // Close the right click menu
     this.hideRightClickMenu(); 
@@ -413,7 +414,6 @@ export default class SVGWidget extends React.Component {
     const importanceLabel = importance == "most" ? "Most Salient" : (importance == "least" ? "Least Salient" : ""); 
 
     const showOrder = this.state.showOrder;  
-    // this.setElementSize(width, height); 
     this.setElementTyping(typedGroup);
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false

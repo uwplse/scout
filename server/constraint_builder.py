@@ -421,11 +421,11 @@ class ConstraintBuilder(object):
 			child_x = child.variables.x.z3
 			child_y = child.variables.y.z3
 
-			left_aligned = child_x == (container_x.z3 + spacing)
-			right_aligned = (child_x + child.computed_width()) == (container_x.z3 + container.computed_width() - spacing)
+			left_aligned = child_x == container_x.z3
+			right_aligned = (child_x + child.computed_width()) == (container_x.z3 + container.computed_width())
 			h_center_aligned = (child_x + (child.computed_width()/2)) == (container_x.z3 + (container.computed_width()/2))
-			top_aligned = child_y == container_y.z3 + spacing
-			bottom_aligned = (child_y + child.computed_height()) == (container_y.z3 + container.computed_height() - spacing)
+			top_aligned = child_y == container_y.z3
+			bottom_aligned = (child_y + child.computed_height()) == (container_y.z3 + container.computed_height())
 			v_center_aligned = (child_y + (child.computed_height()/2)) == (container_y.z3 + (container.computed_height()/2))
 			horizontal = If(is_left, top_aligned, If(is_center, v_center_aligned, bottom_aligned))
 			vertical = If(is_left, left_aligned, If(is_center, h_center_aligned, right_aligned))

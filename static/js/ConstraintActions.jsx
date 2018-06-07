@@ -5,10 +5,12 @@ ConstraintActions.locked_location_key = 'location';
 ConstraintActions.locked_size_key = 'size'
 ConstraintActions.locked_arrangement_key = 'arrangement'; 
 ConstraintActions.locked_alignment_key = 'alignment';
+ConstraintActions.locked_justification_key = 'justification';
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
 ConstraintActions.arrangements = ["horizontal", "vertical"];
-ConstraintActions.alignments = ["left", "center", "right"]
+ConstraintActions.alignments = ["left", "center", "right"];
+ConstraintActions.justifications = ["top", "center", "bottom"];
 ConstraintActions.proximities = [10,20,30,40,50];
 
 ConstraintActions.locked_proximity_key = 'proximity'; 
@@ -228,7 +230,53 @@ ConstraintActions.pageConstraints = {
 					return "Unlock " + ConstraintActions.locked_margin_key + " from " + shape[ConstraintActions.locked_margin_key] + "px.";
 				}
 			}
-		}
+		},
+	"alignment": 
+		{
+			"do": {
+				"key": ConstraintActions.locked_alignment_key,
+				"updateConstraintsCanvasShape": function keepAlignment(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]];
+					return ConstraintActions.defaultFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue);
+				}
+			}, 
+			"undo": {
+				"key": ConstraintActions.locked_alignment_key,
+				"updateConstraintsCanvasShape": function undoKeepAlignment(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]]; 
+					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue);
+				}
+			}
+		}, 
+	"justification": 
+		{
+			"do": {
+				"key": ConstraintActions.locked_justification_key,
+				"updateConstraintsCanvasShape": function keepArrangment(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					let justificationValue = ConstraintActions.justifications[shape[ConstraintActions.locked_justification_key]];
+					return ConstraintActions.defaultFeedbackMessage(ConstraintActions.locked_justification_key, justificationValue);
+				}
+			}, 
+			"undo": {
+				"key": ConstraintActions.locked_justification_key,
+				"updateConstraintsCanvasShape": function undoKeepArrangement(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					let justificationValue = ConstraintActions.justifications[shape[ConstraintActions.locked_justification_key]]; 
+					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_justification_key, justificationValue);
+				}
+			}
+		}, 
 }
 
 // ConstraintActions.relationalConstraints = {
