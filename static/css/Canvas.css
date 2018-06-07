@@ -87,7 +87,9 @@ body {
 	border: 1px solid #ccc;
 }
 
-.page-container, .top, .page-container, .constraints-container, .widgets-container, .widgets-panel{
+.page-container, .top, .page-container, .constraints-container, 
+.widgets-container, .widgets-panel, .designs-area-container, 
+.left-container, .right-container, .invalid-container {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1; 
@@ -100,14 +102,24 @@ body {
 	overflow: auto;
 }
 
+.designs-container {
+	display: flex; 
+	flex-direction: column;
+}
+
 .widgets-panel {
 	overflow: auto;
 }
 
-.widgets-container, .constraints-container, .containers-container, .right-container, .designs-area-container {
+.widgets-container, .constraints-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
+}
+
+.right-container {
+	margin-left: 10px;
+	margin-top: 10px;
 }
 
 .navbar-default {
@@ -291,13 +303,8 @@ body {
 	Designs canvas 
 **/
 
-.designs-area-container {
-	flex: 1 1 0px;
-}
 
 .designs-container {
-	display: flex;
-	flex-direction: column;
 	margin-bottom: 0;
 	margin-top: 10px;
 	margin-left: 10px;
@@ -305,16 +312,17 @@ body {
 
 .design-canvas-container {
 	display: flex; 
-	flex: 1 1 0px;
-    align-self: stretch;
     flex-direction: row; 
-    align-items: stretch;
+    flex-grow: 1;
     margin-right: 10px;
     margin-bottom: 10px;
 }
 
+.invalid-container {
+	margin-bottom: 0; 
+}
+
 .designs-container.current-designs-container {
-	min-height: 700px;
 	flex: 1;
 }
 
@@ -370,12 +378,6 @@ body {
 	width: 50px; 
 	display: flex;
 	flex-direction: column;
-}
-
-.left-container {
-	display: flex;
-	flex-direction: column;
-	flex: 1 1 0px;
 }
 
 .saved-body .canvas-container, .trashed-body .canvas-container {
