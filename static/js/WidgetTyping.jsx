@@ -18,7 +18,7 @@ export default class WidgetTyping extends React.Component {
         <button onClick={function() { self.closeAlert(self.groupID) }} type="button" className="close" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        Click <a href="#" onClick={function() { self.createRepeatGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make this a <strong>repeat grid</strong> group. 
+        Click <a href="#" onClick={function() { self.createRepeatGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make this a <strong>repeat group</strong>. 
       </div>); 
   }
 }

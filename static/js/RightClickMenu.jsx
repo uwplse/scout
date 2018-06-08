@@ -64,7 +64,7 @@ class ImportanceMenuItem extends React.Component {
     super(props); 
     this.onClick = props.onClick; 
     this.importanceLevel = props.importanceLevel; 
-    this.label = (this.importanceLevel == "most" ? "Make Salient" : "Deemphasize"); 
+    this.label = (this.importanceLevel == "most" ? "Emphasize" : "Deemphasize"); 
   }
 
   render () {
@@ -200,12 +200,12 @@ export default class RightClickMenu extends React.Component {
     let menuItems = []; 
 
     let currentImportance = this.getCurrentShapeImportance(this.shapeID); 
-    if(currentImportance != "least") {
-      menuItems.push(<ImportanceMenuItem key={"least"} importanceLevel="least" onClick={this.setImportanceLevel} />);      
-    }
-
     if(currentImportance != "most") {
       menuItems.push(<ImportanceMenuItem key={"most"} importanceLevel="most" onClick={this.setImportanceLevel} />); 
+    }
+    
+    if(currentImportance != "least") {
+      menuItems.push(<ImportanceMenuItem key={"least"} importanceLevel="least" onClick={this.setImportanceLevel} />);      
     }
 
     return menuItems; 

@@ -606,6 +606,8 @@ export default class ConstraintsCanvas extends React.Component {
     // iterate through each set of possible groupings starting with the greatest common divisor
     let numChildren = node.children.length; 
     let groupSizes = this.getGroupSizes(numChildren);
+    // We want to split into the largest size group, so reverse the order
+    groupSizes.reverse();
     for(var i=0; i<groupSizes.length; i++) {
       let groupSize = groupSizes[i];
       if(groupSize >= this.minimumGroupSize) {
