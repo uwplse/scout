@@ -26,6 +26,7 @@ import multilineLabel from '../assets/illustrator/multiline_label.svg';
 import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
 import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
 import logo from '../assets/illustrator/logo.svg';
+import newsLogo from '../assets/illustrator/newsLogo.svg';
 import pageLogo from '../assets/svgs/logo.svg';
 
 export default class PageContainer extends React.Component {
@@ -106,23 +107,23 @@ export default class PageContainer extends React.Component {
     // Get all of the solutions so far to check their validity 
     let prevSolutions = JSON.stringify(this.state.solutions);
 
-    var self = this;
-    $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, function(requestData) {
-      let requestParsed = JSON.parse(requestData); 
-      let valid = requestParsed.result; 
-      if(!valid) {
-        self.setState({
-          errorMessageShown: true
-        }); 
-      }else {
-        // TODO: Figure out what we are doing with this
-        self.setState({
-          constraintChanged: true
-        });
-      }
+    // var self = this;
+    // $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, function(requestData) {
+    //   let requestParsed = JSON.parse(requestData); 
+    //   let valid = requestParsed.result; 
+    //   if(!valid) {
+    //     self.setState({
+    //       errorMessageShown: true
+    //     }); 
+    //   }else {
+    //     // TODO: Figure out what we are doing with this
+    //     self.setState({
+    //       constraintChanged: true
+    //     });
+    //   }
 
-      self.updateSolutionValidity(requestParsed.solutions);
-    }); 
+    //   self.updateSolutionValidity(requestParsed.solutions);
+    // }); 
   }
 
   getConstraintsCanvasShape(shapeId) {
@@ -388,7 +389,10 @@ export default class PageContainer extends React.Component {
                   svg={ placeholder } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'placeholder', placeholder)}/>
                 <SVGInline className="widget-control widget-control-logo" 
                   height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                  svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>    
+                  svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>
+                <SVGInline className="widget-control widget-control-logo" 
+                  height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+                  svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', newsLogo)}/>     
                 <SVGInline className="widget-control widget-container" svg={ groupContainer } 
                   height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group')}
                   onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>

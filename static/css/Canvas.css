@@ -167,7 +167,7 @@ body {
 
 .widgets-container {
 	border-right: 1px solid #ccc;
-	width: 260px;
+	width: 270px;
 }
 
 .widgets-container .widget-control-button > .widget-control-button-svg, 
@@ -190,10 +190,6 @@ body {
 
 .widget-control-group .widget-control {
 	margin-right: 10px;
-}
-
-.widget-control-group {
-	width: 200px;
 }
 
 .constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
@@ -228,7 +224,7 @@ body {
 }
 
 .widget-control-labels.widget-control-arrow-down:before {
-	content: url("../assets/down_arrow.png");
+	content: url("../assets/down_arrow2.png");
 }
 
 .widget-control-labels.widget-control-arrow-up:before {
