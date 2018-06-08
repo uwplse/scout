@@ -35,6 +35,7 @@ class Shape(object):
 		self.locks = None
 		self.order = -1
 		self.importance = "normal"
+		self.correspondingIDs = []
 
 		self.variable_values = dict()
 		if element is not None:
@@ -75,6 +76,9 @@ class Shape(object):
 
 			if "typed" in element: 
 				self.typed = element["typed"]
+
+			if "correspondingIDs" in element: 
+				self.correspondingIDs = element["correspondingIDs"]
 
 
 	def width(self): 

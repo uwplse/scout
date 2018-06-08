@@ -54,7 +54,7 @@ class Solver(object):
 			if shape.type == "canvas": 
 				self.cb.init_canvas_constraints(shape)
 			elif shape.type == "container": 
-				self.cb.init_container_constraints(shape)
+				self.cb.init_container_constraints(shape, self.shapes)
 
 		# Initialize the previous solution constraints
 		# self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)

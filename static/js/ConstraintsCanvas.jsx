@@ -34,7 +34,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.getCurrentShapeImportance = this.getCurrentShapeImportance.bind(this);
     this.createLabelsGroup = this.createLabelsGroup.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
-    this.setTypingOnGroup = this.setTypingOnGroup.bind(this);
+    this.createRepeatGroup = this.createRepeatGroup.bind(this);
     this.closeTypingAlert = this.closeTypingAlert.bind(this); 
     this.togglePageOrder = this.togglePageOrder.bind(this);
 
@@ -608,20 +608,49 @@ export default class ConstraintsCanvas extends React.Component {
     let groupSizes = this.getGroupSizes(numChildren);
     for(var i=0; i<groupSizes.length; i++) {
       let groupSize = groupSizes[i];
-      if(this.canSplitIntoGroupOfSize(node, groupSize)) {
-        return groupSize;
+      if(groupSize >= this.minimumGroupSize) {
+        if(this.canSplitIntoGroupOfSize(node, groupSize)) {
+          return groupSize;
+        }
       }
     }
 
     return false;
   }
 
-  restructureTypedGroupChildren(groupChildren, groupSize) {
+  getRepeatGroupMatchingChildren(childIndex, groupChildren, groupSize) {
+    // For a given child, return the shape IDs of the child shapes that are in the
+    // corresponding positions in the other group(s)
+    var correspondingIDs = []; 
+    var index = childIndex - groupSize; 
+    while(index >= 0) {
+      var correspondingChild = groupChildren[index]; 
+      var correspondingChildID = correspondingChild.title.props.id; 
+      correspondingIDs.push(correspondingChildID); 
+      index = index - groupSize; 
+    }
+
+    index = childIndex + groupSize; 
+    while(index < groupChildren.length) {
+      var correspondingChild = groupChildren[index]; 
+      var correspondingChildID = correspondingChild.title.props.id; 
+      correspondingIDs.push(correspondingChildID);
+      index = index + groupSize; 
+    }
+
+    return correspondingIDs; 
+  }
+
+  restructureRepeatGroupChildren(groupChildren, groupSize) {
     // Split the children of this group node into uniformly sized groups 
     let curr = 0; 
     let currGroup = []; 
     let groups = []; 
     for(var i=0; i<groupChildren.length; i++) {
+      // TODO: Refactor at some point to just update the React objects instead of keeping around this extra
+      // object to maintain the metadata for the solver
+      let correspondingChildrenIDs = this.getRepeatGroupMatchingChildren(i, groupChildren, groupSize); 
+      groupChildren[i].title.props.shape.correspondingIDs = correspondingChildrenIDs; 
       currGroup.push(groupChildren[i]); 
       curr++; 
 
@@ -647,12 +676,12 @@ export default class ConstraintsCanvas extends React.Component {
     return newChildren; 
   }
 
-  setTypingOnGroup(groupID, typed, groupSize){
+  createRepeatGroup(groupID, typed, groupSize){
     let groupNode = this.widgetTreeNodeMap[groupID];
     let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
     if(groupNodeData) {
       let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typedGroup: typed }); 
-      let newGroupChildren = this.restructureTypedGroupChildren(groupNodeData.children, groupSize); 
+      let newGroupChildren = this.restructureRepeatGroupChildren(groupNodeData.children, groupSize); 
 
       // Create a new node for the widget
       let newNode = {
@@ -698,7 +727,7 @@ export default class ConstraintsCanvas extends React.Component {
       key={key} type="typing" 
       groupID={groupID} 
       groupSize={groupSize}
-      setTypingOnGroup={this.setTypingOnGroup} 
+      createRepeatGroup={this.createRepeatGroup} 
       closeTypingAlert={this.closeTypingAlert} />); 
   }
 

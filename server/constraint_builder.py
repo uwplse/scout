@@ -91,7 +91,7 @@ class ConstraintBuilder(object):
 		self.justify_canvas(canvas)
 		self.align_canvas(canvas)
 
-	def init_container_constraints(self, container):
+	def init_container_constraints(self, container, shapes):
 		arrangement = container.variables.arrangement.z3
 		alignment = container.variables.alignment.z3
 		proximity = container.variables.proximity.z3
@@ -154,7 +154,7 @@ class ConstraintBuilder(object):
 
 			if container.typed: 
 				# If this is a typed container, enforce all variables on child containers to be the same
-				self.init_typed_container(container)
+				self.init_repeat_group(container, shapes)
 
 	def init_importance_domains(self, shape): 
 		if shape.importance == "most": 
@@ -184,43 +184,43 @@ class ConstraintBuilder(object):
 		if shape.importance_set: 
 			self.init_importance_domains(shape)
 
-	def init_typed_container(self, container): 
-		child_shapes = container.children
+	def init_repeat_group(self, container, shapes): 
+		subgroups = container.children
 		all_same_values = []
 		all_same_heights = []
 		all_same_widths = []
 
-		for i in range(0, len(child_shapes)): 
-			if i < len(child_shapes) - 1: 
-				child1 = child_shapes[i]
-				child2 = child_shapes[i+1]
-				child1_width = child1.computed_width()
-				child1_height = child1.computed_height()
-				child2_width = child2.computed_width()
-				child2_height = child2.computed_height()
+		for i in range(0, len(subgroups)): 
+			if i < len(subgroups) - 1: 
+				group1 = subgroups[i]
+				group2 = subgroups[i+1]
+				group1_width = group1.computed_width()
+				group1_height = group1.computed_height()
+				group2_width = group2.computed_width()
+				group2_height = group2.computed_height()
 
-				child1_variables = child1.variables.toDict()
-				child2_variables = child2.variables.toDict()
+				group1_variables = group1.variables.toDict()
+				group2_variables = group2.variables.toDict()
 
-				child1_keys = list(child1_variables.keys())
-				child2_keys = list(child2_variables.keys())
+				group1_keys = list(group1_variables.keys())
+				group2_keys = list(group2_variables.keys())
 
-				for j in range(0, len(child1_keys)): 
-					child1_key = child1_keys[j]
-					child2_key = child2_keys[j]
-					child1_variable = child1_variables[child1_key]
-					child2_variable = child2_variables[child2_key]
-					children_same = child1_variable.z3 == child2_variable.z3
+				for j in range(0, len(group1_keys)): 
+					group1_key = group1_keys[j]
+					group2_key = group2_keys[j]
+					group1_variable = group1_variables[group1_key]
+					group2_variable = group2_variables[group2_key]
+					groups_same = group1_variable.z3 == group2_variable.z3
 
-					if child1_key != "x" and child1_key != "y": 
+					if group1_key != "x" and group1_key != "y": 
 						if j < len(all_same_values): 
-							all_same_values[j].append(children_same)
+							all_same_values[j].append(groups_same)
 						else: 
-							all_same_values.append([children_same])
+							all_same_values.append([groups_same])
 
 				# Keep the height and width of containers the same 
-				all_same_widths.append(child1_width == child2_width)
-				all_same_heights.append(child1_height == child2_height)
+				all_same_widths.append(group1_width == group2_width)
+				all_same_heights.append(group1_height == group2_height)
 
 		for all_same_variables in all_same_values: 
 			# For each collection of child variable values for a variable
@@ -229,6 +229,25 @@ class ConstraintBuilder(object):
 
 		self.solver.add(And(all_same_heights))
 		self.solver.add(And(all_same_widths))
+
+		# Enforce that the corresponding shapes for each shape in the group items has same relational location
+		# This should hopefully ensure that the order of the elements is uniform
+		for group in subgroups: 
+			group_children = group.children
+			for i in range(0, len(group_children)-1): 
+				child1 = group_children[i]
+				child2 = group_children[i+1]
+				x_distance = child1.variables.x.z3 - child2.variables.x.z3
+				y_distance = child1.variables.y.z3 - child2.variables.y.z3
+				for j in range(0, len(child1.correspondingIDs)): 
+					child1_corrID = child1.correspondingIDs[j]
+					child2_corrID = child2.correspondingIDs[j]
+					child1_corr_shape = shapes[child1_corrID]
+					child2_corr_shape = shapes[child2_corrID]
+					x_distance2 = child1_corr_shape.variables.x.z3 - child2_corr_shape.variables.x.z3
+					y_distance2 = child1_corr_shape.variables.y.z3 - child2_corr_shape.variables.y.z3
+					self.solver.add(x_distance == x_distance2)
+					self.solver.add(y_distance == y_distance2)
 
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
