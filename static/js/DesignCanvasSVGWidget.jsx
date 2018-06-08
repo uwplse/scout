@@ -29,7 +29,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
       top: props.top, 
       hovered: false, 
       fontSize: this.element.fontSize,
-      scaling: props.scalingFactor
+      scaling: props.scaling
     }
   }
 
@@ -48,12 +48,13 @@ export default class DesignCanvasSVGWidget extends React.Component {
   componentDidMount() {
     // Set the initial value for the text label
     this.setTextLabel();  
-    this.rescaleLabelSize();
     this.rescaleTextLabel();
+    this.rescaleLabelSize();
   }
 
   componentDidUpdate() {
     this.setTextLabel();  
+    this.rescaleTextLabel();
   }
 
   rescaleLabelSize() {

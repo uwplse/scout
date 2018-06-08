@@ -66,6 +66,8 @@ export default class DesignCanvas extends React.Component {
       valid: props.valid, 
       invalidated: props.invalidated, 
       conflicts: props.conflicts, // The conflicting constraints current if there are any
+      added: props.added, // The elements that were added since this solution was generated
+      removed: props.removed, // The elements that were removed since this solution was generated
       backgroundColor: "#ffffff", 
       designShape: undefined, 
       hovered: false
@@ -77,6 +79,7 @@ export default class DesignCanvas extends React.Component {
 
     // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
     this.highlightWidgetFeedback = props.highlightWidgetFeedback; 
+    this.highlightAddedWidget = props.highlightAddedWidget; 
 
     this.canvasWidth = 375; 
     this.canvasHeight = 667; 
@@ -245,7 +248,6 @@ export default class DesignCanvas extends React.Component {
   }
 
   showMenuAndHighlightConstraints(e){
-    console.log("show design menu");
     // Check for the status of menuShown to see if we need to close out another menu before opening this one
     if(this.state.designMenu != undefined) {
       this.setState({
@@ -254,16 +256,27 @@ export default class DesignCanvas extends React.Component {
     }
 
     // Trigger constraint highlighting if the solution is not current valid
-    if(!this.state.valid && this.state.conflicts) {
-      for(var i=0; i<this.state.conflicts.length; i++) {
-        var conflict = this.state.conflicts[i];
-        var variable = conflict.variable; 
-        if(variable == "x" || variable == "y") {
-          variable = "location"; 
-        }
+    if(!this.state.valid) {
+      if(this.state.conflicts) {
+        for(var i=0; i<this.state.conflicts.length; i++) {
+          var conflict = this.state.conflicts[i];
+          var variable = conflict.variable; 
+          if(variable == "x" || variable == "y") {
+            variable = "location"; 
+          }
 
-        this.highlightWidgetFeedback(conflict.shape_id, variable, true); 
+          this.highlightWidgetFeedback(conflict.shape_id, variable, true); 
+        }
       }
+
+      if(this.state.added) {
+        for(var i=0; i<this.state.added.length; i++) {
+          var addedID = this.state.added[i]; 
+          this.highlightAddedWidget(addedID, true); 
+        }
+      }
+
+      // TODO: Removed? 
     }
 
     var designCanvas = document.getElementById("design-canvas-" + this.id); 
@@ -279,15 +292,24 @@ export default class DesignCanvas extends React.Component {
 
   closeMenuAndRemoveHighlightConstraints(e) {
     // Trigger constraint highlighting if the solution is not current valid
-    if(!this.state.valid && this.state.conflicts) {
-      for(var i=0; i<this.state.conflicts.length; i++) {
-        var conflict = this.state.conflicts[i];
-        var variable = conflict.variable; 
-        if(variable == "x" || variable == "y") {
-          variable = "location"; 
-        }
+    if(!this.state.valid) {
+      if(this.state.conflicts) {
+        for(var i=0; i<this.state.conflicts.length; i++) {
+          var conflict = this.state.conflicts[i];
+          var variable = conflict.variable; 
+          if(variable == "x" || variable == "y") {
+            variable = "location"; 
+          }
 
-        this.highlightWidgetFeedback(conflict.shape_id, variable, false); 
+          this.highlightWidgetFeedback(conflict.shape_id, variable, false); 
+        }
+      }
+
+      if(this.state.added) {
+        for(var i=0; i<this.state.added.length; i++) {
+          var addedID = this.state.added[i]; 
+          this.highlightAddedWidget(addedID, false); 
+        }
       }
     }
 

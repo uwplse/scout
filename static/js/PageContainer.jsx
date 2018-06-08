@@ -39,6 +39,7 @@ export default class PageContainer extends React.Component {
     this.updateConstraintsCanvas = this.updateConstraintsCanvas.bind(this);
     this.getConstraintsCanvasShape = this.getConstraintsCanvasShape.bind(this);
     this.highlightWidgetFeedback = this.highlightWidgetFeedback.bind(this);
+    this.highlightAddedWidget = this.highlightAddedWidget.bind(this);
     this.clearInvalidDesignCanvases = this.clearInvalidDesignCanvases.bind(this); 
     this.closeRightClickMenus = this.closeRightClickMenus.bind(this);
     
@@ -87,9 +88,12 @@ export default class PageContainer extends React.Component {
               savedState={solution.saved}
               valid={solution.valid}
               conflicts={solution.conflicts}
+              added={solution.added}
+              removed={solution.removed}
               invalidated={solution.invalidated}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
+              highlightAddedWidget={this.highlightAddedWidget}
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas.bind(this)} 
               trashDesignCanvas={this.trashDesignCanvas.bind(this)}
@@ -127,6 +131,10 @@ export default class PageContainer extends React.Component {
 
   highlightWidgetFeedback(shapeId, lock, highlighted) {
     this.constraintsCanvasRef.current.highlightWidgetFeedback(shapeId, lock, highlighted);
+  }
+
+  highlightAddedWidget(shapeId, highlighted) {
+    this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
   updateConstraintsCanvasFromDesignCanvas(designCanvasShape, action, actionType) {

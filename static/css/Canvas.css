@@ -182,6 +182,12 @@ body {
 	display: flex;
 }
 
+.widget-container.highlighted {	
+	border: 1px dashed gray;
+	padding: 2;
+	background-color: #f2dede;
+}
+
 .widget-control-group .widget-control {
 	margin-right: 10px;
 }

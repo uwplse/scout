@@ -120,11 +120,13 @@ export default class ConstraintsCanvas extends React.Component {
   getWidget(shape, src, options={}) {
     let shapeId = shape.name;
     let typedGroup = options.typedGroup ?  options.typedGroup : false;  
+    let highlighted = options.highlighted ? options.highlighted : false;
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
               source={src}
+              highlighted={highlighted}
               typedGroup={typedGroup}
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
@@ -309,6 +311,33 @@ export default class ConstraintsCanvas extends React.Component {
     this.setState({
       rightClickMenuShown: false
     }); 
+  }
+
+  highlightAddedWidget(shapeId, highlighted) {
+    let treeNode = this.widgetTreeNodeMap[shapeId];
+    let treeNodeData = this.getPathAndChildrenForTreeNode(treeNode);
+    if(treeNodeData) {
+      let widget = this.getWidget(treeNode.title.props.shape, treeNode.title.props.source, { highlighted: highlighted }); 
+
+      // Create a new node for the widget
+      let newNode = {
+        title: widget, 
+        subtitle: []
+      }; 
+
+      // Replace the current node with this new node
+      this.state.treeData = changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: treeNodeData.path,
+        getNodeKey: defaultGetNodeKey,
+        ignoreCollapsed: false,
+        newNode: newNode
+      }); 
+
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }), this.checkSolutionValidity); 
+    }
   }
 
   highlightWidgetFeedback(shapeId, lock, highlighted) {
