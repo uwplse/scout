@@ -370,7 +370,7 @@ export default class PageContainer extends React.Component {
                 svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'smallLabel', smallLabelDynamic)}/>
               <SVGInline className="widget-control widget-control-label" 
                 height={SVGWidget.initialHeights('multilineLabel') + "px"} width={SVGWidget.initialWidths('multilineLabel') + "px"} 
-                svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'multilineLabel', multilineLabel)}/>
+                svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas.bind(this, 'paragraph', 'multilineLabel', multilineLabel)}/>
               <SVGInline className="widget-control widget-control-search" 
                 height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
                 svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>

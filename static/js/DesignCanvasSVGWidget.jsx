@@ -63,7 +63,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
 
     if(editableText.length) {    
-      if(this.controlType == "label" || this.controlType == "smallLabel") {
+      if(this.type == "label") {
         let textArea = editableText[0].getBoundingClientRect(); 
         let newHeight = Math.round(textArea.height,0); 
         let newWidth = Math.round(textArea.width,0);

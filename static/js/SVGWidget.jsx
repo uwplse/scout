@@ -20,7 +20,7 @@ export default class SVGWidget extends React.Component {
       'labelGroup': 238, 
       'label': 83, 
       'orangeLabel': 83,
-      'smallLabel': 47, 
+      'smallLabel': 50, 
       'multilineLabel': 200, 
       'image': 80, 
       'image2': 80,
@@ -47,6 +47,7 @@ export default class SVGWidget extends React.Component {
       'group': 50, 
       'labelGroup': 50, 
       'label': 43, 
+      'orangeLabel': 43, 
       'smallLabel': 23, 
       'image': 80, 
       'image2': 80,
@@ -194,7 +195,7 @@ export default class SVGWidget extends React.Component {
     this.element.label = textValue;
     this.lockTextLabel()
 
-    // After setting the text label, update the height and width of the parent container so that the tree size and widget size recalculates
+    // Update the height and widht of the parent container so the height recalculates
     if(this.type == "label") {
       let boundingRect = editableText[0].getBoundingClientRect(); 
       let widthRounded = Math.round(boundingRect.width); 
@@ -407,7 +408,7 @@ export default class SVGWidget extends React.Component {
     const order = this.state.order;
     const orderOrdinal = Converter.toWordsOrdinal(order+1); 
     const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
-    const importanceLabel = importance == "most" ? "Most Salient" : (importance == "least" ? "Least Salient" : ""); 
+    const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
 
     const showOrder = this.state.showOrder;  
@@ -423,12 +424,12 @@ export default class SVGWidget extends React.Component {
           contentEditable={isEditable} id={"widget-container-" + this.id} className={"widget-container " + (highlighted ? "highlighted" : "")}>
         <div className="widget-control-row"> 
           <SVGInline style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
-          <div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + "widget-control-arrow-down"}
+          {/*<div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + "widget-control-arrow-down"}
               style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
-          </div>
+          </div>*/}
           <div className={"widget-control-info " + ((showImportance || showOrder || this.controlType == "group") ? "" : "hidden")}>
             {this.controlType == "group" ? 
-             (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{(orderedGroup ? "Order Important" : "No Order")}</span>) : undefined}
+             (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{(orderedGroup ? "Order Important" : "Order Unimportant")}</span>) : undefined}
               <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
               <span className={"label label-info" + (showImportance ? "" : "hidden")}>{importanceLabel}</span>
           </div>

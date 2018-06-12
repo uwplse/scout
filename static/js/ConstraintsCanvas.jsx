@@ -64,7 +64,7 @@ export default class ConstraintsCanvas extends React.Component {
       }, 
       rightClickShapeID: undefined, 
       showImportanceLevels: false, 
-      pageOrder: "important"
+      pageOrder: "unimportant"
     }; 
   }
 
@@ -100,7 +100,7 @@ export default class ConstraintsCanvas extends React.Component {
         width: this.canvasWidth, 
         height: this.canvasHeight
       }, 
-      "containerOrder": "important",
+      "containerOrder": "unimportant",
       "children": []
     }
 
@@ -879,10 +879,10 @@ export default class ConstraintsCanvas extends React.Component {
                 </button>
                 <ul className="dropdown-menu">
                   <li onClick={this.togglePageOrder.bind(this, "important")}><a href="#">Order Important</a></li>
-                  <li onClick={this.togglePageOrder.bind(this, "unimportant")}><a href="#">Order unimportant</a></li>
+                  <li onClick={this.togglePageOrder.bind(this, "unimportant")}><a href="#">Order Unimportant</a></li>
                 </ul>
               </div>
-              <span className={"label " + (pageOrder == "important" ? "label-success" : "label-info")}>{pageOrder}</span>
+              <span className={"label " + (pageOrder == "important" ? "label-success" : "label-info")}>Order {pageOrder}</span>
             </h3>
           </div>
           <div id="constraints-canvas-container" tabIndex="1" className="constraints-canvas-container panel-body"> 

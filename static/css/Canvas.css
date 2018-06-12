@@ -88,13 +88,13 @@ body {
 }
 
 .page-container, .top, .page-container, .widgets-panel, .designs-area-container, 
-.left-container, .right-container, .invalid-container {
+.left-container, .invalid-container {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1; 
 }
 
-.constraints-container, .widgets-container {
+.constraints-container, .widgets-container, .right-container {
 	display: flex;
 	flex-direction: column; 
 }
@@ -538,10 +538,19 @@ body {
 .widgets-sortable-tree .rst__lineFullVertical:after {
 	height: 100%;
 }
-
+/*
 .widgets-sortable-tree .rst__lineHalfHorizontalRight::before {
-	/* needed to fix bug where only every third line wasn't rendering */ 
+	 needed to fix bug where only every third line wasn't rendering  
 	height: 1.5px;
+	width
+}*/
+
+.widgets-sortable-tree .rst__lineBlock:before {
+	height: 1.5px; 
+}
+
+.widgets-sortable-tree .rst__lineBlock:after {
+	width: 1.5px;
 }
 
 .widgets-sortable-tree .rst__rowLabel {
