@@ -26,6 +26,7 @@ export default class SVGWidget extends React.Component {
       'image2': 80,
       'image3': 80,
       'logo': 80,
+      'logo2': 80,
       'placeholder': 80
     }
 
@@ -51,6 +52,7 @@ export default class SVGWidget extends React.Component {
       'image2': 80,
       'image3': 80,
       'logo': 80,
+      'logo2': 80,
       'placeholder': 80, 
       'multilineLabel': 80
     }

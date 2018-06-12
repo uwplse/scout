@@ -8,7 +8,7 @@ ConstraintActions.locked_alignment_key = 'alignment';
 ConstraintActions.locked_justification_key = 'justification';
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
-ConstraintActions.arrangements = ["horizontal", "vertical"];
+ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
 ConstraintActions.alignments = ["left", "center", "right"];
 ConstraintActions.justifications = ["top", "center", "bottom"];
 ConstraintActions.proximities = [10,20,30,40,50];

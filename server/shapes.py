@@ -18,7 +18,7 @@ maximum_sizes = {
 
 # Shape classes for constructing the element hierarchy 
 class Shape(object):
-	def __init__(self, shape_id, element, shape_type): 
+	def __init__(self, shape_id, element, shape_type, num_siblings): 
 		self.shape_id = shape_id
 		self.shape_type = element["type"]
 		self.element = element
@@ -32,12 +32,16 @@ class Shape(object):
 		if self.shape_type in label_types:
 			self.variables.label = sh.Variable(shape_id, "label", varType="str")
 
+		# self.variables.row = sh.Variable(shape_id, "row", [sh.get_row_column_values(num_siblings)])
+		# self.variables.column = sh.Variable(shape_id, "columns", [sh.get_row_column_values(num_siblings)])
+
 		self.locks = None
 		self.order = -1
 		self.importance = "normal"
 		self.correspondingIDs = []
 
 		self.variable_values = dict()
+
 		if element is not None:
 			if "locks" in element:
 				self.locks = element["locks"]
@@ -91,6 +95,7 @@ class Shape(object):
 			return self.flex_height
 		return self.orig_height
 
+
 	def computed_width(self): 
 		# TAkes the current scaling value into account
 		if self.importance_set: 
@@ -109,12 +114,12 @@ class Shape(object):
 		return self.height()
 
 class LeafShape(Shape): 
-	def __init__(self, shape_id, element): 
-		Shape.__init__(self, shape_id, element, "leaf")
+	def __init__(self, shape_id, element, num_siblings): 
+		Shape.__init__(self, shape_id, element, "leaf", num_siblings)
 
 class ContainerShape(Shape): 
-	def __init__(self, shape_id, element=None): 
-		Shape.__init__(self, shape_id, element, "container")
+	def __init__(self, shape_id, element, num_siblings): 
+		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
 		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
 		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,20,30,40,50])
@@ -143,8 +148,8 @@ class ContainerShape(Shape):
 		
 
 class CanvasShape(Shape):
-	def __init__(self, shape_id, element): 
-		Shape.__init__(self, shape_id, element, "canvas")
+	def __init__(self, shape_id, element, num_siblings): 
+		Shape.__init__(self, shape_id, element, "canvas", num_siblings)
 		self.children = []
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])

@@ -107,23 +107,23 @@ export default class PageContainer extends React.Component {
     // Get all of the solutions so far to check their validity 
     let prevSolutions = JSON.stringify(this.state.solutions);
 
-    // var self = this;
-    // $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, function(requestData) {
-    //   let requestParsed = JSON.parse(requestData); 
-    //   let valid = requestParsed.result; 
-    //   if(!valid) {
-    //     self.setState({
-    //       errorMessageShown: true
-    //     }); 
-    //   }else {
-    //     // TODO: Figure out what we are doing with this
-    //     self.setState({
-    //       constraintChanged: true
-    //     });
-    //   }
+    var self = this;
+    $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, function(requestData) {
+      let requestParsed = JSON.parse(requestData); 
+      let valid = requestParsed.result; 
+      if(!valid) {
+        self.setState({
+          errorMessageShown: true
+        }); 
+      }else {
+        // TODO: Figure out what we are doing with this
+        self.setState({
+          constraintChanged: true
+        });
+      }
 
-    //   self.updateSolutionValidity(requestParsed.solutions);
-    // }); 
+      self.updateSolutionValidity(requestParsed.solutions);
+    }); 
   }
 
   getConstraintsCanvasShape(shapeId) {
@@ -392,9 +392,9 @@ export default class PageContainer extends React.Component {
                   svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>
                 <SVGInline className="widget-control widget-control-logo" 
                   height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                  svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', newsLogo)}/>     
+                  svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo2', newsLogo)}/>     
                 <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-                  height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group')}
+                  height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
                   onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
               </div>
             </div>

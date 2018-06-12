@@ -8,6 +8,14 @@ CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
 MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
 
+def get_row_column_values(num_siblings):
+	values = []
+	rows_or_columns = 2
+	while rows_or_columns < num_siblings: 
+		values.append(rows_or_columns)
+		rows_or_columns += 1
+	return values
+
 def parse_unsat_core(unsat_core):
 	# Parse the conflicting constraints out of the unsat core and return identifiers for each shape and the associated conflicting constraint
 	conflicts = []

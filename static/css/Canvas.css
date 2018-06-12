@@ -87,12 +87,16 @@ body {
 	border: 1px solid #ccc;
 }
 
-.page-container, .top, .page-container, .constraints-container, 
-.widgets-container, .widgets-panel, .designs-area-container, 
+.page-container, .top, .page-container, .widgets-panel, .designs-area-container, 
 .left-container, .right-container, .invalid-container {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1; 
+}
+
+.constraints-container, .widgets-container {
+	display: flex;
+	flex-direction: column; 
 }
 
 .bottom {
@@ -157,8 +161,9 @@ body {
 /** 
 	Constraints canvas 
 **/
-.constraints-canvas-container {
+.constraints-container {
 	width: 450px;
+	min-width: 450px;
 }
 
 .constraints-canvas-page-feedback {
@@ -167,7 +172,7 @@ body {
 
 .widgets-container {
 	border-right: 1px solid #ccc;
-	width: 270px;
+	width: 280px;
 }
 
 .widgets-container .widget-control-button > .widget-control-button-svg, 
@@ -532,6 +537,11 @@ body {
 
 .widgets-sortable-tree .rst__lineFullVertical:after {
 	height: 100%;
+}
+
+.widgets-sortable-tree .rst__lineHalfHorizontalRight::before {
+	/* needed to fix bug where only every third line wasn't rendering */ 
+	height: 1.5px;
 }
 
 .widgets-sortable-tree .rst__rowLabel {

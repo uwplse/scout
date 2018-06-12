@@ -104,6 +104,7 @@ class Solver(object):
 
 	def construct_shape_hierarchy(self, elements, shapes):
 		shape_hierarchy = []
+		num_siblings = len(elements)
 		for i in range(0, len(elements)): 
 			element = elements[i]
 
@@ -114,16 +115,16 @@ class Solver(object):
 
 			shape_object = None
 			if element["type"] == "canvas": 
-				shape_object = shape_classes.CanvasShape(element["name"], element)
+				shape_object = shape_classes.CanvasShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "page":	
-				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shape_object = shape_classes.ContainerShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "group" or element["type"] == "labelGroup":
-				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shape_object = shape_classes.ContainerShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			else:
-				shape_object = shape_classes.LeafShape(element["name"], element)
+				shape_object = shape_classes.LeafShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 
 			if sub_hierarchy is not None: 
@@ -463,7 +464,7 @@ class Solver(object):
 
 		if len(self.unassigned) == 0:
 			# Ask the solver for a solution to the X,Y location varibles
-			constraints = self.solver.sexpr()
+			# constraints = self.solver.sexpr()
 			time_z3_start = time.time()
 			result = self.solver.check();
 			self.z3_calls += 1
@@ -564,8 +565,8 @@ class Solver(object):
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
 			result = self.solver.check()
-			constraints = self.solver.sexpr()
-			unsat_core = self.solver.unsat_core()
+			# constraints = self.solver.sexpr()
+			# unsat_core = self.solver.unsat_core()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
