@@ -345,11 +345,11 @@ export default class RightClickMenu extends React.Component {
               { labelMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{labelItems}</ul> : undefined } 
             </li>) : undefined}
 
-        {fontSizeShown ? 
+        {/*fontSizeShown ? 
           (<li className="dropdown-submenu">
               <a tabIndex="-1" href="#" onClick={this.openFontSizeMenu}>Font Size<span className="caret"></span></a>
               { fontSizeMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{fontSizeSelectorItems}</ul> : undefined } 
-            </li>) : undefined}
+            </li>) : undefined*/}
         </ul>
       </div>
     );

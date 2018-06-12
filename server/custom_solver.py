@@ -11,7 +11,7 @@ import constraint_builder
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 10
+NUM_SOLUTIONS = 100
 NUM_DIFFERENT = 5
 
 class OverrideSolver(object):
@@ -206,7 +206,8 @@ class Solver(object):
 					shapes_removed.append(elementID)
 
 			for shapeID in self.shapes:
-				if shapeID not in elements:
+				shape = self.shapes[shapeID]
+				if shapeID not in elements and (shape.type != "container" or len(shape.children)):
 					shapes_added.append(shapeID)
 
 			if len(shapes_added) or len(shapes_removed):
