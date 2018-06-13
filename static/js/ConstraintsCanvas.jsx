@@ -1,13 +1,14 @@
 import React from "react";
 import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
-import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey, getFlatDataFromTree } from 'react-sortable-tree';
+import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey, getFlatDataFromTree, addNodeUnderParent } from 'react-sortable-tree';
 import RightClickMenu from './RightClickMenu'; 
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
 import label from '../assets/illustrator/labelContainer.svg';
 import repeatGrid from '../assets/illustrator/repeatGrid.svg';
 import item from '../assets/illustrator/item.svg';
+import rootNode from '../assets/illustrator/canvas.svg';
 
 // import { Ios11Picker } from 'react-color';
 import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
@@ -73,6 +74,7 @@ export default class ConstraintsCanvas extends React.Component {
     let canvas = {
       "name": _.uniqueId(),
       "type": "canvas", 
+      "controlType": "canvas",
       "children": [],
       "location": {
         x: 0, 
@@ -91,14 +93,15 @@ export default class ConstraintsCanvas extends React.Component {
     // Create an object to represent the page level object (A container for shapes at the root level)
     let page = {
       "name": _.uniqueId(),
-      "type": "page", 
+      "type": "page",
+      "controlType": "page",
       "location": {
         x: 0, 
         y: 0
       }, 
       "size": {
-        width: this.canvasWidth, 
-        height: this.canvasHeight
+        width: SVGWidget.initialWidths("page"),
+        height: SVGWidget.initialHeights("page")
       }, 
       "containerOrder": "unimportant",
       "children": []
@@ -107,6 +110,19 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsShapesMap[page.name] = page; 
     this.pageLevelShape = page; 
     canvas.children.push(page); 
+
+    let widget = this.getWidget(this.pageLevelShape, rootNode); 
+    let newTreeNode = {
+        title: widget, 
+        subtitle: []
+    }; 
+
+    this.widgetTreeNodeMap[page.name] = newTreeNode; 
+    this.state.treeData = this.state.treeData.concat(newTreeNode); 
+
+    this.setState(state => ({
+      treeData: this.state.treeData
+    }));
   }
 
   togglePageOrder(newOrder) {
@@ -145,10 +161,19 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[shape.name] = newTreeNode; 
-    this.state.treeData = this.state.treeData.concat(newTreeNode); 
+
+    let parentIndex = 0; 
+    let newTreeData = addNodeUnderParent({
+      treeData: this.state.treeData, 
+      newNode: newTreeNode, 
+      parentKey: 0, 
+      getNodeKey: defaultGetNodeKey, 
+      ignoreCollapsed: false, 
+      expandParent: true
+    }); 
 
     this.setState(state => ({
-      treeData: this.state.treeData
+      treeData: newTreeData.treeData, 
     }), this.checkSolutionValidity);
   }
 
@@ -457,7 +482,7 @@ export default class ConstraintsCanvas extends React.Component {
       shapes.push(shape); 
     }
 
-    this.pageLevelShape.children = shapes;
+    this.canvasLevelShape.children = shapes;
     return this.canvasLevelShape;
   }
 

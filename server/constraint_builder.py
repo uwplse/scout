@@ -163,12 +163,14 @@ class ConstraintBuilder(object):
 			magnification = []
 			for domain_value in shape.variables.magnification.domain: 
 				magnification.append(shape.variables.magnification.z3 == domain_value)
+			# magnification.append(shape.variables.magnification.z3 == 0)
 
 			self.solver.add(Or(magnification), "Shape " + shape.shape_id + " magnification values fall within domain.")
 		elif shape.importance == "least": 
 			minification = []
 			for domain_value in shape.variables.minification.domain: 
 				minification.append(shape.variables.minification.z3 == domain_value)
+			# minification.append(shape.variables.minification.z3 == 0)
 
 			self.solver.add(Or(minification), "Shape " + shape.shape_id + " minification values fall within domain.")
 

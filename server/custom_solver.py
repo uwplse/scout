@@ -11,7 +11,7 @@ import constraint_builder
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 100
+NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
 class OverrideSolver(object):
@@ -228,6 +228,7 @@ class Solver(object):
 
 				start_time = time.time()
 				result = self.z3_check(start_time)
+				unsat_core = self.solver.unsat_core()
 
 				# update the valid state of the solution
 				solution["valid"] = result
@@ -567,7 +568,7 @@ class Solver(object):
 			time_z3_start = time.time()
 			result = self.solver.check()
 			# constraints = self.solver.sexpr()
-			# unsat_core = self.solver.unsat_core()
+			unsat_core = self.solver.unsat_core()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start

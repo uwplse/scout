@@ -64,7 +64,7 @@ class ImportanceMenuItem extends React.Component {
     super(props); 
     this.onClick = props.onClick; 
     this.importanceLevel = props.importanceLevel; 
-    this.label = (this.importanceLevel == "most" ? "Emphasize" : "Deemphasize"); 
+    this.label = (this.importanceLevel == "most" ? "More Emphasis" : "Less Emphasis"); 
   }
 
   render () {
