@@ -148,7 +148,9 @@ export default class ConstraintsCanvas extends React.Component {
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
               hideRightClickMenu={this.hideRightClickMenu}
-              createLabelsGroup={this.createLabelsGroup} />);
+              createLabelsGroup={this.createLabelsGroup}
+              getCurrentShapeSiblings={this.getCurrentShapeSiblings}
+              getCurrentShapeIndex={this.getCurrentShapeIndex} />);
   }
 
   addShapeOfTypeToCanvas(type, controlType, source) {
@@ -569,8 +571,7 @@ export default class ConstraintsCanvas extends React.Component {
     let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
     let infoHeight = 23; 
-    let infoShowing = (nodeElement.importance != "normal" || nodeElement.order != -1 || nodeElement.containerOrder);
-    rowHeight += (infoShowing ? infoHeight : 0);  
+    rowHeight += infoHeight; 
 
     // Row height
     let feedbackItems = node.subtitle.filter(item => item.props.type == "feedback"); 
@@ -582,7 +583,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   canReparentWidgetNode({node, nextParent, prevPath, nextPath}) {
-    if(nextParent == null || (nextParent && (nextParent.title.props.shape.type == "group" || nextParent.title.props.shape.type == "labelGroup"))) {
+    if(nextParent && (nextParent.title.props.shape.type == "group" || nextParent.title.props.shape.type == "page")) {
         return true;
     }
 

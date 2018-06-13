@@ -133,18 +133,6 @@ body {
     padding-left: 10px;
 }
 
-.header-button-group {
-	margin-left: 10px;
-}
-
-
-.label-info, 
-.label-success {
-	margin-bottom: 0.5em; 
-	margin-right: 0.5em;
-	white-space: normal;
-}
-
 .widgets-sortable-tree .label-info, 
 .widgets-sortable-tree .label-success {
 	font-size: 100%; 
@@ -244,6 +232,15 @@ body {
 .widget-control-info .label-info {
 	margin-left: 0px;
 	margin-right: 0.5em;
+}
+
+.widget-control-info .btn-group {
+	margin-bottom: 0.5em; 
+	margin-right: 0.5em;
+}
+
+.widget-control-info .btn .caret {
+	margin-left: 5px;
 }
 
 .widget-control-info-left, 
@@ -544,7 +541,7 @@ body {
 	height: 1.5px;
 	width
 }*/
-
+/*
 .widgets-sortable-tree .rst__lineBlock:before {
 	height: 1.5px; 
 }
@@ -552,7 +549,7 @@ body {
 .widgets-sortable-tree .rst__lineBlock:after {
 	width: 1.5px;
 }
-
+*/
 .widgets-sortable-tree .rst__rowLabel {
 	padding-right: 5px;
 }
