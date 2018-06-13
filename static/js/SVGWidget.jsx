@@ -270,7 +270,7 @@ export default class SVGWidget extends React.Component {
         setOrder: this.setOrder
       }); 
     }
-    else if(this.controlType == "group"){
+    else if(this.controlType == "group" || this.controlType == "page"){
       this.displayRightClickMenu(evt, this.id, {
         setImportanceLevel: this.setImportanceLevel, 
         setOrder: this.setOrder,
@@ -429,8 +429,8 @@ export default class SVGWidget extends React.Component {
           {/*<div className={"widget-control-labels " + (showLabels ? " " : "hidden ") + "widget-control-arrow-down"}
               style={{top: labelPosition.y + "px", left: labelPosition.x + "px"}}>
           </div>*/}
-          <div className={"widget-control-info " + ((showImportance || showOrder || this.controlType == "group") ? "" : "hidden")}>
-            {this.controlType == "group" ? 
+          <div className={"widget-control-info " + ((showImportance || showOrder || this.controlType == "group" || this.controlType == "page") ? "" : "hidden")}>
+            {this.controlType == "group" || this.controlType == "page" ? 
              (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{(orderedGroup ? "Order Important" : "Order Unimportant")}</span>) : undefined}
               <span className={"widget-control-order label label-info " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
               <span className={"label label-info" + (showImportance ? "" : "hidden")}>{importanceLabel}</span>

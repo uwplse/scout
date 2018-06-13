@@ -875,6 +875,21 @@ export default class ConstraintsCanvas extends React.Component {
     }), this.checkSolutionValidity); 
   }
 
+  getNodeProps({node, path}) {
+    if(path.length == 1 && path[0] == 0) {
+      return {}; 
+    }
+    else {
+      return {
+        buttons: [
+          <button className="widgets-sortable-tree-remove"  onClick={function() { self.removeWidgetNode(path); }}>
+            <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
+          </button>
+        ]
+      }; 
+    }
+  }
+
   render () {
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
@@ -898,7 +913,7 @@ export default class ConstraintsCanvas extends React.Component {
        <div className="panel panel-default constraints-container">
           <div className="panel-heading"> 
             <h3 className="panel-title">Constraints
-              <div className="btn-group btn-group-xs header-button-group">
+              {/*<div className="btn-group btn-group-xs header-button-group">
                 <button type="button" className="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   Order<span className="caret"></span>
                 </button>
@@ -907,7 +922,7 @@ export default class ConstraintsCanvas extends React.Component {
                   <li onClick={this.togglePageOrder.bind(this, "unimportant")}><a href="#">Order Unimportant</a></li>
                 </ul>
               </div>
-              <span className={"label " + (pageOrder == "important" ? "label-success" : "label-info")}>Order {pageOrder}</span>
+              <span className={"label " + (pageOrder == "important" ? "label-success" : "label-info")}>Order {pageOrder}</span>*/}
             </h3>
           </div>
           <div id="constraints-canvas-container" tabIndex="1" className="constraints-canvas-container panel-body"> 
@@ -929,13 +944,7 @@ export default class ConstraintsCanvas extends React.Component {
                 onMoveNode={this.onMoveNode.bind(this)}
                 rowHeight={this.calculateRowHeight.bind(this)}
                 style={{height: "calc(100% - 80px)"}}
-                generateNodeProps={({node, path}) => ({
-                  buttons: [
-                    <button className="widgets-sortable-tree-remove" onClick={function() { self.removeWidgetNode(path); }}>
-                      <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                    </button>
-                  ]
-                })}
+                generateNodeProps={this.getNodeProps.bind(this)}
               />
             </div>
           </div>

@@ -141,7 +141,7 @@ body {
 .label-info, 
 .label-success {
 	margin-bottom: 0.5em; 
-	margin-left: 0.5em;
+	margin-right: 0.5em;
 	white-space: normal;
 }
 
@@ -162,7 +162,7 @@ body {
 	Constraints canvas 
 **/
 .constraints-container {
-	width: 450px;
+	width: 550px;
 	min-width: 450px;
 }
 
