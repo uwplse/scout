@@ -877,6 +877,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   getNodeProps({node, path}) {
+    var self = this;
     if(path.length == 1 && path[0] == 0) {
       return {}; 
     }

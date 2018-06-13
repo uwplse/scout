@@ -44,7 +44,11 @@ export default class PageContainer extends React.Component {
     this.clearInvalidDesignCanvases = this.clearInvalidDesignCanvases.bind(this); 
     this.closeRightClickMenus = this.closeRightClickMenus.bind(this);
     this.hideDesignsAlert = this.hideDesignsAlert.bind(this);
-    
+    this.checkSolutionValidity = this.checkSolutionValidity.bind(this); 
+
+    // This should only be called at max once after the timeout. 
+    this.checkSolutionValidity = _.debounce(this.checkSolutionValidity, 1000); 
+
     this.canvas = undefined; 
 
     // This is the set of design canvases in the design window
@@ -60,6 +64,8 @@ export default class PageContainer extends React.Component {
     this.solutionsMap = {};
 
     this.constraintsCanvasRef = React.createRef();
+
+    this.solution
   }
 
   closeRightClickMenus() {
@@ -104,6 +110,7 @@ export default class PageContainer extends React.Component {
   }
 
   checkSolutionValidity() {
+    console.log("checking solution validity"); 
     let jsonShapes = this.getShapesJSON(); 
 
     // Get all of the solutions so far to check their validity 
@@ -411,7 +418,7 @@ export default class PageContainer extends React.Component {
           </div>
           <ConstraintsCanvas ref={this.constraintsCanvasRef} 
             updateConstraintsCanvas={this.updateConstraintsCanvas} 
-            checkSolutionValidity={this.checkSolutionValidity.bind(this)}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
+            checkSolutionValidity={this.checkSolutionValidity}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
           <div className="panel panel-default designs-area-container">
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs
@@ -422,6 +429,9 @@ export default class PageContainer extends React.Component {
                 <div className="btn-group btn-group-xs header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More not like these</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More like these</button>
+                </div>
+                <div className="btn-group btn-group-xs header-button-group">
+                  <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
                 </div>
               </h3>
             </div>  
@@ -445,7 +455,7 @@ export default class PageContainer extends React.Component {
                     </div>) : undefined)}
                     <div className="design-body" onScroll={this.hideDesignsAlert}>
                       {designCanvases}
-                    </div>}
+                    </div>
                 </div>) : null }
                 { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
                   <div>

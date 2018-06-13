@@ -64,6 +64,10 @@ body {
 	margin: 0;
 }
 
+.header-button-group {
+	margin-left: 10px;
+}
+
 /**
   General styles
  **/
@@ -150,7 +154,7 @@ body {
 	Constraints canvas 
 **/
 .constraints-container {
-	width: 550px;
+	width: 650px;
 	min-width: 450px;
 }
 
@@ -177,7 +181,7 @@ body {
 
 .widget-container.highlighted {	
 	border: 1px dashed gray;
-	padding: 2;
+	padding: 4;
 	background-color: #f2dede;
 }
 

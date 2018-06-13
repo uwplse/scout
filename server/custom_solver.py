@@ -1,6 +1,3 @@
-import jsonpickle
-import copy
-import uuid
 from z3 import *
 import z3_helper
 import shapes as shape_classes
@@ -583,7 +580,7 @@ class Solver(object):
 				self.time_z3 += time_z3_total
 
 				# Keep the solution & convert to json
-				self.print_solution()
+				# self.print_solution()
 
 				sln = state.convert_to_json(self.shapes, model)
 				self.restore_state()
