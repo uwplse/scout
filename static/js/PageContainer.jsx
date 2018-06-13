@@ -43,6 +43,7 @@ export default class PageContainer extends React.Component {
     this.highlightAddedWidget = this.highlightAddedWidget.bind(this);
     this.clearInvalidDesignCanvases = this.clearInvalidDesignCanvases.bind(this); 
     this.closeRightClickMenus = this.closeRightClickMenus.bind(this);
+    this.hideDesignsAlert = this.hideDesignsAlert.bind(this);
     
     this.canvas = undefined; 
 
@@ -51,7 +52,8 @@ export default class PageContainer extends React.Component {
       solutions: [],
       constraintChanged: false , 
       designsFound: -1, 
-      treeData: []
+      treeData: [], 
+      showDesignsAlert: false
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -248,7 +250,8 @@ export default class PageContainer extends React.Component {
     this.setState({
       designsFound: designsFound,
       solutions: solutions.concat(this.state.solutions), 
-      errorMessageShown: false 
+      errorMessageShown: false, 
+      showDesignsAlert: true
     });
   }
 
@@ -294,11 +297,18 @@ export default class PageContainer extends React.Component {
     });
   }
 
+  hideDesignsAlert() {
+    this.setState({
+      showDesignsAlert: false
+    }); 
+  }
+
   render () {
     var self = this;
     const designsFound = this.state.designsFound; 
     const errorMessageShown = this.state.errorMessageShown; 
     const constraintChanged = this.state.constraintChanged;
+    const designsAlertShown = this.state.showDesignsAlert; 
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 1); })
               .map(function(solution) {
@@ -427,15 +437,15 @@ export default class PageContainer extends React.Component {
                   </div>
                 </div>) : null }
                 { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
-                    <div className="designs-canvas-container-alert alert alert-info alert-dismissable" role="alert">
+                    {(designsAlertShown ? (<div className="designs-canvas-container-alert alert alert-info alert-dismissable" role="alert">
                       <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
-                      Here are {designCanvases.length} randomly selected designs.
-                    </div>
-                    <div className="design-body">
+                      Scout has generated {designCanvases.length} new designs that meet your constraints. 
+                    </div>) : undefined)}
+                    <div className="design-body" onScroll={this.hideDesignsAlert}>
                       {designCanvases}
-                    </div>
+                    </div>}
                 </div>) : null }
                 { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
                   <div>
