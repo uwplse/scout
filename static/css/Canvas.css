@@ -423,6 +423,18 @@ body {
 	cursor: pointer; 
 }
 
+.right-click-menu-container .form-check {
+	display: flex; 
+	padding: 3 20;
+}
+
+.right-click-menu-container .form-check-label {
+	font-weight: normal; 
+	margin-left: 5px;
+	white-space: nowrap;
+}
+
+
 /*.constraints-color-picker-container {
 	position: absolute; 
 	z-index: 1000; 

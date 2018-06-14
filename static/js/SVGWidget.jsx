@@ -353,7 +353,6 @@ export default class SVGWidget extends React.Component {
     }); 
 
     this.createLabelsGroup(this.id, shapeId); 
-    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 
@@ -371,10 +370,9 @@ export default class SVGWidget extends React.Component {
     this.element.order = value; 
     this.setState({
       order: value, 
-      showOrder: true
+      showOrder: (value != -1 && value != undefined)
     });
 
-    this.hideRightClickMenu(); 
     this.checkSolutionValidity();
   }
 
@@ -388,7 +386,6 @@ export default class SVGWidget extends React.Component {
       orderedGroup: orderedValue
     }); 
 
-    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 

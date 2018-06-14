@@ -32,6 +32,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.getCurrentShapeIndex = this.getCurrentShapeIndex.bind(this);
     this.getCurrentShapeOrder = this.getCurrentShapeOrder.bind(this);
     this.getCurrentShapeSiblings = this.getCurrentShapeSiblings.bind(this);
+    this.getCurrentContainerOrder = this.getCurrentContainerOrder.bind(this);
     this.getCurrentShapeImportance = this.getCurrentShapeImportance.bind(this);
     this.createLabelsGroup = this.createLabelsGroup.bind(this);
     this.onMoveNode = this.onMoveNode.bind(this);
@@ -307,9 +308,14 @@ export default class ConstraintsCanvas extends React.Component {
     return this.findShapeIndex(shapeId, node);
   }
 
-  getCurrentShapeOrder(shapeId) {
+  getCurrentContainerOrder(shapeId) {
     let node = this.widgetTreeNodeMap[shapeId]; 
     return node.title.props.shape.containerOrder; 
+  }
+
+  getCurrentShapeOrder(shapeId) {
+    let node = this.widgetTreeNodeMap[shapeId]; 
+    return node.title.props.shape.order; 
   }
 
   getCurrentShapeImportance(shapeId) {
@@ -905,6 +911,7 @@ export default class ConstraintsCanvas extends React.Component {
       getSiblingLabelItem={this.getSiblingLabelItem}
       getCurrentShapeIndex={this.getCurrentShapeIndex}
       getCurrentShapeOrder={this.getCurrentShapeOrder}
+      getCurrentContainerOrder={this.getCurrentContainerOrder}
       getCurrentShapeSiblings={this.getCurrentShapeSiblings}
       getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
     const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
