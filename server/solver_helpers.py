@@ -8,6 +8,22 @@ CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
 MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
 
+def get_row_column_values(num_siblings):
+	values = []
+	rows_or_columns = 2
+	while rows_or_columns < num_siblings: 
+		values.append(rows_or_columns)
+		rows_or_columns += 1
+	return values
+
+def get_possible_row_column_values(num_rows): 
+	values = []
+	start = 1
+	while start <= num_rows: 
+		values.append(start)
+		start += 1
+	return values
+
 def parse_unsat_core(unsat_core):
 	# Parse the conflicting constraints out of the unsat core and return identifiers for each shape and the associated conflicting constraint
 	conflicts = []
@@ -155,9 +171,11 @@ class Solution(object):
 					arrangement = model[shape.variables.arrangement.z3].as_string()
 					alignment = model[shape.variables.alignment.z3].as_string()
 					proximity = model[shape.variables.proximity.z3].as_string()
+					distribution = model[shape.variables.distribution.z3].as_string()
 					element["arrangement"] = int(arrangement)
 					element["alignment"] = int(alignment)
 					element["proximity"] = int(proximity)
+					element["distribution"] = int(distribution)
 				elif shape.type == "canvas": 
 					alignment = model[shape.variables.alignment.z3].as_string()
 					justification = model[shape.variables.justification.z3].as_string()

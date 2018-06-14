@@ -21,14 +21,12 @@ class LabelMenuItem extends React.Component {
     super(props); 
     this.shapeId = props.shapeId; 
     this.shapeLabel = props.shapeLabel; 
-    this.direction = props.direction; 
     this.onClick = props.onClick; 
   }
 
   render () {
     var self = this;
-    let label = this.shapeLabel + " (" + this.direction + ")"; 
-    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.shapeId, self.direction); }}>{label}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.shapeId); }}>{this.shapeLabel}</li>; 
   }
 }
 
@@ -65,16 +63,13 @@ class ImportanceMenuItem extends React.Component {
   constructor(props) {
     super(props); 
     this.onClick = props.onClick; 
-    this.numStars = props.numStars;
+    this.importanceLevel = props.importanceLevel; 
+    this.label = (this.importanceLevel == "most" ? "More Emphasis" : "Less Emphasis"); 
   }
 
   render () {
     var self = this;
-    let stars = []; 
-    for(var i=0; i<this.numStars; i++) {
-      stars.push(<span key={i} className="glyphicon glyphicon-star" aria-hidden="true"></span>); 
-    }
-    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.numStars); }}>{stars}</li>; 
+    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.importanceLevel); }}>{this.label}</li>; 
   }
 }
 
@@ -90,12 +85,12 @@ export default class RightClickMenu extends React.Component {
 
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
-    this.getSiblingLabelItems = props.getSiblingLabelItems; 
+    this.getSiblingLabelItem = props.getSiblingLabelItem; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
+    this.getCurrentShapeImportance = props.getCurrentShapeImportance; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
-    this.importanceLevels = [3, 2, 1]; 
 
     // Method bindings
     this.openFontSizeMenu = this.openFontSizeMenu.bind(this); 
@@ -203,9 +198,14 @@ export default class RightClickMenu extends React.Component {
 
   getImportanceMenuItems() {
     let menuItems = []; 
-    for(var i=0; i<this.importanceLevels.length; i++) {
-      let level = this.importanceLevels[i]; 
-      menuItems.push(<ImportanceMenuItem key={level} numStars={level} onClick={this.setImportanceLevel} />);
+
+    let currentImportance = this.getCurrentShapeImportance(this.shapeID); 
+    if(currentImportance != "most") {
+      menuItems.push(<ImportanceMenuItem key={"most"} importanceLevel="most" onClick={this.setImportanceLevel} />); 
+    }
+    
+    if(currentImportance != "least") {
+      menuItems.push(<ImportanceMenuItem key={"least"} importanceLevel="least" onClick={this.setImportanceLevel} />);      
     }
 
     return menuItems; 
@@ -213,11 +213,11 @@ export default class RightClickMenu extends React.Component {
 
   getLabelItems() {
     // Label items should return the text of the sibling element and the shape ID
-    let labelItems = this.getSiblingLabelItems(this.shapeID); 
+    let labelItems = this.getSiblingLabelItem(this.shapeID); 
     let menuItems = []; 
     for(var i=0; i<labelItems.length; i++) {
       let label = labelItems[i]; 
-      menuItems.push(<LabelMenuItem key={i} shapeId={label.id} shapeLabel={label.label} direction={label.direction} onClick={this.setLabel} />); 
+      menuItems.push(<LabelMenuItem key={i} shapeId={label.id} shapeLabel={label.label} onClick={this.setLabel} />); 
     }
     return menuItems; 
   }
@@ -330,7 +330,7 @@ export default class RightClickMenu extends React.Component {
       <div id="right-click-menu-container" className="right-click-menu-container dropdown" data-toggle="dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
         <ul className="dropdown-menu" style={{display: "block"}}>
           <li className="dropdown-submenu">
-            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Importance Levels<span className="caret"></span></a>
+            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Emphasis<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li> 
         {orderShown ? 
@@ -345,11 +345,11 @@ export default class RightClickMenu extends React.Component {
               { labelMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{labelItems}</ul> : undefined } 
             </li>) : undefined}
 
-        {fontSizeShown ? 
+        {/*fontSizeShown ? 
           (<li className="dropdown-submenu">
               <a tabIndex="-1" href="#" onClick={this.openFontSizeMenu}>Font Size<span className="caret"></span></a>
               { fontSizeMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{fontSizeSelectorItems}</ul> : undefined } 
-            </li>) : undefined}
+            </li>) : undefined*/}
         </ul>
       </div>
     );

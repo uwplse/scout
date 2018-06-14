@@ -1,6 +1,3 @@
-import jsonpickle
-import copy
-import uuid
 from z3 import *
 import z3_helper
 import shapes as shape_classes
@@ -54,7 +51,7 @@ class Solver(object):
 			if shape.type == "canvas": 
 				self.cb.init_canvas_constraints(shape)
 			elif shape.type == "container": 
-				self.cb.init_container_constraints(shape)
+				self.cb.init_container_constraints(shape, self.shapes)
 
 		# Initialize the previous solution constraints
 		# self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
@@ -104,6 +101,7 @@ class Solver(object):
 
 	def construct_shape_hierarchy(self, elements, shapes):
 		shape_hierarchy = []
+		num_siblings = len(elements)
 		for i in range(0, len(elements)): 
 			element = elements[i]
 
@@ -114,16 +112,16 @@ class Solver(object):
 
 			shape_object = None
 			if element["type"] == "canvas": 
-				shape_object = shape_classes.CanvasShape(element["name"], element)
+				shape_object = shape_classes.CanvasShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "page":	
-				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shape_object = shape_classes.ContainerShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "group" or element["type"] == "labelGroup":
-				shape_object = shape_classes.ContainerShape(element["name"], element)
+				shape_object = shape_classes.ContainerShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			else:
-				shape_object = shape_classes.LeafShape(element["name"], element)
+				shape_object = shape_classes.LeafShape(element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 
 			if sub_hierarchy is not None: 
@@ -143,6 +141,7 @@ class Solver(object):
 				first.append(shape.variables.arrangement)
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.proximity)
+				last.append(shape.variables.distribution)
 			
 			elif shape.type == "canvas":
 				last.append(shape.variables.alignment)
@@ -204,7 +203,8 @@ class Solver(object):
 					shapes_removed.append(elementID)
 
 			for shapeID in self.shapes:
-				if shapeID not in elements:
+				shape = self.shapes[shapeID]
+				if shapeID not in elements and (shape.type != "container" or len(shape.children)):
 					shapes_added.append(shapeID)
 
 			if len(shapes_added) or len(shapes_removed):
@@ -225,6 +225,7 @@ class Solver(object):
 
 				start_time = time.time()
 				result = self.z3_check(start_time)
+				unsat_core = self.solver.unsat_core()
 
 				# update the valid state of the solution
 				solution["valid"] = result
@@ -312,15 +313,9 @@ class Solver(object):
 		random.shuffle(randomized_domain)
 		return randomized_domain
 
-	def encode_assigned_variables(self):
-		variable_equals_assigned = []
-		for variable in self.variables:
-			variable_equals_assigned.append(variable.z3 == variable.assigned)
-		self.override_solver.add(And(variable_equals_assigned), "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(variable.assigned))
-
 	def encode_assigned_variable(self, variable):
 		time_encoding_start = time.time()
-		if variable.name == "proximity" or variable.name == "margin":
+		if variable.name == "proximity" or variable.name == "margin" or variable.name == "distribution":
 			prox_value = variable.domain[variable.assigned]
 			self.override_solver.add(variable.z3 == prox_value, "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(prox_value))
 		else:
@@ -468,7 +463,7 @@ class Solver(object):
 
 		if len(self.unassigned) == 0:
 			# Ask the solver for a solution to the X,Y location varibles
-			constraints = self.solver.sexpr()
+			# constraints = self.solver.sexpr()
 			time_z3_start = time.time()
 			result = self.solver.check();
 			self.z3_calls += 1
@@ -569,7 +564,7 @@ class Solver(object):
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
 			result = self.solver.check()
-			constraints = self.solver.sexpr()
+			# constraints = self.solver.sexpr()
 			unsat_core = self.solver.unsat_core()
 			self.z3_calls += 1
 			time_z3_end = time.time()
@@ -585,7 +580,7 @@ class Solver(object):
 				self.time_z3 += time_z3_total
 
 				# Keep the solution & convert to json
-				self.print_solution()
+				# self.print_solution()
 
 				sln = state.convert_to_json(self.shapes, model)
 				self.restore_state()

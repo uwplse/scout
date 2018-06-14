@@ -4,7 +4,7 @@ import React from "react";
 export default class WidgetTyping extends React.Component {
   constructor(props) {
   	super(props);
-    this.setTypingOnGroup = props.setTypingOnGroup;
+    this.createRepeatGroup = props.createRepeatGroup;
     this.closeAlert = props.closeTypingAlert;   
     this.groupID = props.groupID;   
     this.type = props.type;  
@@ -18,9 +18,7 @@ export default class WidgetTyping extends React.Component {
         <button onClick={function() { self.closeAlert(self.groupID) }} type="button" className="close" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        This looks like a <strong>typed</strong> group.
-        <br /><br />
-        Click <a href="#" onClick={function() { self.setTypingOnGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make it typed. 
+        Click <a href="#" onClick={function() { self.createRepeatGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make this a <strong>repeat group</strong>. 
       </div>); 
   }
 }

@@ -33,7 +33,6 @@ def hello():
 @app.route('/solve', methods=['POST','GET'])
 def solve(): 
 	print("solving!")
-	print(request.form)
 	form_data = request.form
 
 	if "elements" in form_data and "solutions" in form_data:
