@@ -91,14 +91,15 @@ body {
 	border: 1px solid #ccc;
 }
 
-.page-container, .top, .page-container, .widgets-panel, .designs-area-container, 
-.left-container, .invalid-container {
+.page-container, .top, .page-container, .widgets-panel, 
+.widgets-container, .designs-area-container, 
+.left-container, .invalid-container  {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1; 
 }
 
-.constraints-container, .widgets-container, .right-container {
+.constraints-container, .widgets-panel-container, .right-container {
 	display: flex;
 	flex-direction: column; 
 }
@@ -119,10 +120,14 @@ body {
 	overflow: auto;
 }
 
-.widgets-container, .constraints-container, .designs-area-container {
+.widgets-panel-container, .constraints-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
+}
+
+.widgets-container {
+	margin-bottom: 0; 
 }
 
 .right-container {
@@ -154,7 +159,7 @@ body {
 	Constraints canvas 
 **/
 .constraints-container {
-	width: 650px;
+	width: 550px;
 	min-width: 450px;
 }
 
@@ -183,6 +188,10 @@ body {
 	border: 1px dashed gray;
 	padding: 4;
 	background-color: #f2dede;
+}
+
+.widgets-panel-container .configure-widgets-button {
+	margin-top: 10px;
 }
 
 .widget-control-group .widget-control {
