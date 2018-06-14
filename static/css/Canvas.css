@@ -233,7 +233,7 @@ body {
     margin-top: 0.5em;
 }
 
-.widget-control-info .label-info {
+.widget-control-info span {
 	margin-left: 0px;
 	margin-right: 0.5em;
 }
@@ -262,10 +262,6 @@ body {
 	zoom: 40%; 
 	position: absolute;
 	z-index: 1000; 
-}
-
-.widget-control-order {
-	margin-bottom: 0.5em; 
 }
 
 .widget-control-typing {

@@ -118,7 +118,7 @@ class ContainerShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
 		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,20,30,40,50])
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 

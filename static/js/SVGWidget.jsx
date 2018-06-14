@@ -135,7 +135,8 @@ export default class SVGWidget extends React.Component {
       order: (this.element.order ? this.element.order : -1),  
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
-      showImportance: props.showImportanceLevels, 
+      showImportance: props.showImportanceLevels,
+      showOrder: false,  
       showLabels: this.element.labels ? true : false, 
       labelPosition: {
         x: 0, 
@@ -157,6 +158,7 @@ export default class SVGWidget extends React.Component {
       showLabels: prevState.showLabels, 
       labelPosition: prevState.labelPosition, 
       orderedGroup: prevState.orderedGroup,
+      showOrder: prevState.showOrder,
       svgSource: nextProps.source, 
       typedGroup: nextProps.typedGroup, 
       highlighted: nextProps.highlighted
@@ -315,7 +317,7 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
-  setImportanceLevel(level, evt) {
+  setImportanceLevel(evt, level) {
     evt.stopPropagation(); 
 
     // Update the object
@@ -327,6 +329,7 @@ export default class SVGWidget extends React.Component {
       showImportance: true
     }); 
 
+    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 
@@ -350,6 +353,7 @@ export default class SVGWidget extends React.Component {
     }); 
 
     this.createLabelsGroup(this.id, shapeId); 
+    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 
@@ -361,25 +365,20 @@ export default class SVGWidget extends React.Component {
     }
   }
 
-  setOrder(index, evt) {
+  setOrder(evt, value) {
     evt.stopPropagation(); 
 
-    if(this.state.order == "first" || this.state.order == "last") {
-      this.element.order = undefined; 
-      this.setState({
-        order: undefined
-      }); 
-    } else {
-      this.element.order = index; 
-      this.setState({
-        order: index
-      });
-    }
+    this.element.order = value; 
+    this.setState({
+      order: value, 
+      showOrder: true
+    });
 
+    this.hideRightClickMenu(); 
     this.checkSolutionValidity();
   }
 
-  setContainerOrder(orderValue, evt) {
+  setContainerOrder(evt, orderValue) {
     evt.stopPropagation(); 
 
     this.element.containerOrder = orderValue; 
@@ -389,6 +388,7 @@ export default class SVGWidget extends React.Component {
       orderedGroup: orderedValue
     }); 
 
+    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 
@@ -402,35 +402,36 @@ export default class SVGWidget extends React.Component {
     const height = this.state.height; 
     const width = this.state.width; 
     const importance = this.state.importance; 
+    const showImportance = this.state.showImportance; 
     const showLabels = this.state.showLabels; 
     const labelPosition = this.state.labelPosition; 
     const typedGroup = this.state.typedGroup;
     const orderedGroup = this.state.orderedGroup; 
-
+    const order = this.state.order;
+    const orderOrdinal = Converter.toWordsOrdinal(order+1); 
+    const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
     const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
 
-    // Show order toggle button
-    let currentIndex = this.getCurrentShapeIndex(this.id);
-    let siblings = this.getCurrentShapeSiblings(this.id);  
-    let showOrder = (this.type != "page" && (currentIndex == 0 || currentIndex == (siblings.length - 1))); 
-    let order = (currentIndex == 0 ? "Keep First" : "Keep Last"); 
-    let orderIndex = (currentIndex == 0 ? "first" : "last"); 
-    let setOrder = this.state.order; 
-
+    const showOrder = this.state.showOrder;  
     this.setElementTyping(typedGroup);
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
 
-    const isEditable = this.controlType != "group" && this.controlType != "page";
+    const isEditable = this.controlType != "group";
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
-      <div suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} id={"widget-container-" + this.id} className={"widget-container " + (highlighted ? "highlighted" : "")}>
+      <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} id={"widget-container-" + this.id} className={"widget-container " + (highlighted ? "highlighted" : "")}>
         <div className="widget-control-row"> 
           <SVGInline contentEditable={isEditable} style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
-          <div className="widget-control-info">
-            {this.controlType == "group" || this.controlType == "page" ? 
+            <div className={"widget-control-info " + ((showImportance || showOrder || this.controlType == "group" || this.controlType == "page") ? "" : "hidden")}>
+              {this.controlType == "group" || this.controlType == "page" ? 
+               (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{(orderedGroup ? "Order Important" : "Order Unimportant")}</span>) : undefined}
+                <span className={"widget-control-order label label-success " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
+                <span className={"label " + (importance == "most" ? "label-success " : "label-info ") + (showImportance ? "" : "hidden")}>{importanceLabel}</span>
+            </div>
+            {/*this.controlType == "group" || this.controlType == "page" ? 
              (<div className="btn-group btn-group-xs">
                 <button type="button" className={"btn dropdown-toggle " + (orderedGroup ? "btn-success" : "btn-info")} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   {(orderedGroup ? "Order Important" : "Order Unimportant")}<span className="caret"></span>
@@ -439,8 +440,8 @@ export default class SVGWidget extends React.Component {
                   <li><a href="#" onClick={this.setContainerOrder.bind(this, "important")}>Order Important</a></li>
                   <li><a href="#" onClick={this.setContainerOrder.bind(this, "unimportant")}>Order Unimportant</a></li>
                 </ul>
-              </div>) : undefined}
-              <div className={"btn-group btn-group-xs"}>
+              </div>) : undefined*/}
+              {/*<div className={"btn-group btn-group-xs"}>
                 <button type="button" className={"btn dropdown-toggle " + (importance == "most" ? "btn-success" : "btn-info")} data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   {(importance == "most" ? "Most Emphasis" : (importance == "least" ? "Least Emphasis" : "Normal Emphasis"))}<span className="caret"></span>
                 </button>
@@ -451,7 +452,7 @@ export default class SVGWidget extends React.Component {
                 </ul>
               </div>
               <button onClick={this.setOrder.bind(this, orderIndex)} type="button" className={"widget-control-order label " + (setOrder == "first" || setOrder == "last" ? "btn-success " : "btn-info ")+ (showOrder ? "" : "hidden")}>{order}</button>
-          </div>
+              */}
         </div>
       </div>); 
   }

@@ -104,6 +104,7 @@ export default class ConstraintsCanvas extends React.Component {
         height: SVGWidget.initialHeights("page")
       }, 
       "containerOrder": "unimportant",
+      "importance": "normal",
       "children": []
     }
 
@@ -570,8 +571,9 @@ export default class ConstraintsCanvas extends React.Component {
     let actualRowHeight = node.title.props.shape.size.height + (padding * 2);
     let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
-    let infoHeight = 23; 
-    rowHeight += infoHeight; 
+    let infoHeight = 23 
+    let infoShowing = (nodeElement.importance != "normal" || nodeElement.order != -1 || nodeElement.containerOrder);
+    rowHeight += (infoShowing ? infoHeight : 0);  
 
     // Row height
     let feedbackItems = node.subtitle.filter(item => item.props.type == "feedback"); 
