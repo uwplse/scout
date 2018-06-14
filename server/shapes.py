@@ -32,9 +32,6 @@ class Shape(object):
 		if self.shape_type in label_types:
 			self.variables.label = sh.Variable(shape_id, "label", varType="str")
 
-		# self.variables.row = sh.Variable(shape_id, "row", [sh.get_row_column_values(num_siblings)])
-		# self.variables.column = sh.Variable(shape_id, "columns", [sh.get_row_column_values(num_siblings)])
-
 		self.locks = None
 		self.order = -1
 		self.importance = "normal"
@@ -121,7 +118,7 @@ class ContainerShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
 		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,20,30,40,50])
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
@@ -145,6 +142,9 @@ class ContainerShape(Shape):
 
 	def remove_child(self, child):
 		self.children.remove(child)
+
+	def num_rows_or_columns(self): 
+		return 1 if len(self.children) <= 2 else 2
 		
 
 class CanvasShape(Shape):

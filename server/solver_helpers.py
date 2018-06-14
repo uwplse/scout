@@ -16,6 +16,14 @@ def get_row_column_values(num_siblings):
 		rows_or_columns += 1
 	return values
 
+def get_possible_row_column_values(num_rows): 
+	values = []
+	start = 1
+	while start <= num_rows: 
+		values.append(start)
+		start += 1
+	return values
+
 def parse_unsat_core(unsat_core):
 	# Parse the conflicting constraints out of the unsat core and return identifiers for each shape and the associated conflicting constraint
 	conflicts = []
