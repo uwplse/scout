@@ -97,17 +97,21 @@ class Shape(object):
 		# TAkes the current scaling value into account
 		if self.importance_set: 
 			if self.importance == "most": 
-				return self.width() + ((1/self.variables.magnification.z3) * self.width())
+				magnification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
+				return self.width() + (magnification_factor * self.width())
 			elif self.importance == "least": 
-				return self.width() - ((1/self.variables.minification.z3) * self.width())
+				minification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
+				return self.width() - (minification_factor * self.width())
 		return self.width()
 
 	def computed_height(self, scale=1): 
 		if self.importance_set: 
 			if self.importance == "most": 
-				return self.height() + ((1/self.variables.magnification.z3) * self.height())
+				magnification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
+				return self.height() + (magnification_factor * self.height())
 			elif self.importance == "least": 
-				return self.height() - ((1/self.variables.minification.z3) * self.height())
+				minification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
+				return self.height() - (minification_factor * self.height())
 		return self.height()
 
 class LeafShape(Shape): 

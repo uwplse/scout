@@ -1,5 +1,6 @@
 // App.jsx
 import React from "react";
+import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
 import DesignCanvas from './DesignCanvas';
@@ -352,15 +353,15 @@ export default class PageContainer extends React.Component {
           });      
     return (
       <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
-        <nav className="navbar navbar-default">
+        <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
           <div className="navbar-header">
             <SVGInline className="scout-logo" svg={pageLogo} />
-            <h2>Scout</h2>
+            <h1>Scout</h1>
           </div>
         </nav>
         <div className="bottom">
           <div className="widgets-panel-container"> 
-            <div className="panel panel-default widgets-container">
+            <div className="panel panel-primary widgets-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Widgets</h3>
               </div>  
@@ -410,10 +411,10 @@ export default class PageContainer extends React.Component {
                     svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>
                   {/*<SVGInline className="widget-control widget-control-logo" 
                     height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo2', newsLogo)}/>     
+                    svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo2', newsLogo)}/>*/}     
                   <SVGInline className="widget-control widget-container" svg={ groupContainer } 
                     height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
-                    onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>*/}
+                    onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
                 </div>
               </div>
             </div>
@@ -422,19 +423,20 @@ export default class PageContainer extends React.Component {
           <ConstraintsCanvas ref={this.constraintsCanvasRef} 
             updateConstraintsCanvas={this.updateConstraintsCanvas} 
             checkSolutionValidity={this.checkSolutionValidity}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
-          <div className="panel panel-default designs-area-container">
+          <div className="panel panel-primary designs-area-container">
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs
                 <div className="btn-group btn-group-xs header-button-group">
-                  <button type="button" className="btn btn-primary design-canvas-button" onClick={this.getMoreDesigns}>More Designs</button>
-                  <button type="button" className="btn btn-primary design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More Designs</button>
+                  <button className="btn btn-default design-canvas-button">{designCanvases.length}</button>
                 </div>
                 <div className="btn-group btn-group-xs header-button-group">
-                  <button type="button" className="btn btn-primary design-canvas-button" onClick={this.getMoreDesigns}>More not like these</button>
-                  <button type="button" className="btn btn-primary design-canvas-button" onClick={this.getMoreDesigns}>More like these</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More not like these</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More like these</button>
                 </div>
                 <div className="btn-group btn-group-xs header-button-group">
-                  <button type="button" className="btn btn-primary design-canvas-button">Export Designs</button>
+                  <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                 </div>
               </h3>
             </div>  
@@ -450,11 +452,11 @@ export default class PageContainer extends React.Component {
                   </div>
                 </div>) : null }
                 { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
-                    {(designsAlertShown ? (<div className="designs-canvas-container-alert alert alert-info alert-dismissable" role="alert">
+                    {(designsAlertShown ? (<div className="designs-canvas-container-alert alert alert-success alert-dismissable" role="alert">
                       <button type="button" className="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
-                      Scout has generated {designCanvases.length} new designs that meet your constraints. 
+                      Scout has generated 10 new designs that meet your constraints. 
                     </div>) : undefined)}
                     <div className="design-body" onScroll={this.hideDesignsAlert}>
                       {designCanvases}

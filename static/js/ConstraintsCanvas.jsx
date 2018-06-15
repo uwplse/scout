@@ -921,7 +921,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Process the queue of shapes to add to the canvas
 	  return (
-       <div className="panel panel-default constraints-container">
+       <div className="panel panel-primary constraints-container">
           <div className="panel-heading"> 
             <h3 className="panel-title">Constraints
               {/*<div className="btn-group btn-group-xs header-button-group">

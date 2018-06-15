@@ -424,9 +424,9 @@ export default class SVGWidget extends React.Component {
           <SVGInline contentEditable={isEditable} style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
             <div className={"widget-control-info " + ((showImportance || showOrder || this.controlType == "group" || this.controlType == "page") ? "" : "hidden")}>
               {this.controlType == "group" || this.controlType == "page" ? 
-               (<span className={"label " + (orderedGroup ? "label-success" : "label-info")}>{(orderedGroup ? "Order Important" : "Order Unimportant")}</span>) : undefined}
-                <span className={"widget-control-order label label-success " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
-                <span className={"label " + (importance == "most" ? "label-success " : "label-info ") + (showImportance ? "" : "hidden")}>{importanceLabel}</span>
+               (<span className={"badge " + (orderedGroup ? "badge-success" : "badge-primary")}>{(orderedGroup ? "Order Important" : "Order Unimportant")}</span>) : undefined}
+                <span className={"widget-control-order badge badge-success " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
+                <span className={"badge " + (importance == "most" ? "badge-success " : "badge-primary ") + (showImportance ? "" : "hidden")}>{importanceLabel}</span>
             </div>
             {/*this.controlType == "group" || this.controlType == "page" ? 
              (<div className="btn-group btn-group-xs">
