@@ -75,8 +75,7 @@ h1, h2, h3 {
 .panel-primary .badge {
 	font-size: 12px;
 	border-radius: 3px;
-	margin-left: 10px;
-	height: 21.5px;
+	margin-right: 5px;
 }
 
 /**
@@ -167,7 +166,7 @@ h1, h2, h3 {
 **/
 .constraints-container {
 	width: 550px;
-	min-width: 450px;
+	min-width: 550px;
 }
 
 .constraints-canvas-page-feedback {
@@ -354,6 +353,7 @@ h1, h2, h3 {
 
 .designs-canvas-container-alert {
 	margin: 0.5em;
+	font-size: 12px;
 }
 
 .designs-canvas-container-alert.alert-dismissable .close {

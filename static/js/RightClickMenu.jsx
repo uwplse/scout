@@ -12,7 +12,7 @@ class FontSizeMenuItem extends React.Component {
 
   render () {
     var self = this;
-	  return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.value); }}>{self.value}</li>; 
+	  return <li onClick={function(evt) { self.onClick(evt, self.value); }}>{self.value}</li>; 
   }
 }
 
@@ -26,11 +26,15 @@ class LabelMenuItem extends React.Component {
 
   render () {
     var self = this;
-    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.shapeId); }}>{this.shapeLabel}</li>; 
+    return (<li>
+               <a tabIndex="-1" href="#" onClick={function(evt) { self.onClick(evt, self.shapeId); }}>
+                {this.shapeLabel}
+               </a>
+            </li>); 
   }
 }
 
-class OrderCheckbox extends React.Component {
+class OrderMenuItem extends React.Component {
   constructor(props) {
     super(props); 
     this.index = props.index;  
@@ -40,21 +44,22 @@ class OrderCheckbox extends React.Component {
 
   render () {
     var self = this;
-    let label = "Keep " + Converter.toWordsOrdinal(this.index+1) + "."; 
-    return (<div className="form-check checkbox">
-               <input id="orderCheckbox" className="form-check-input" type="checkbox" checked={this.currentOrder != -1 && this.currentOrder != undefined} 
-                  onClick={function(evt) { 
-                    self.currentOrder = (self.currentOrder == -1 || self.currentOrder == undefined ? self.index : -1); 
-                    self.onClick(evt, self.currentOrder); 
-                  }} />
-                <label className="form-check-label" htmlFor="orderCheckbox">
-                  {label}
-                </label>
-              </div>); 
+    let position = Converter.toWordsOrdinal(this.index+1) 
+    let label = (self.currentOrder == -1 || self.currentOrder == undefined) ? 
+                  "Keep " + position + "." : "Don't keep " + position;
+    return (<li>
+              <a tabIndex="-1" href="#" 
+                onClick={function(evt) {
+                  self.currentOrder = (self.currentOrder == -1 || self.currentOrder == undefined ? self.index : -1); 
+                  self.onClick(evt, self.currentOrder);         
+                }}>
+                {label}
+              </a>
+            </li>); 
   }
 }
 
-class ContainerOrderCheckbox extends React.Component {
+class ContainerOrderMenuItem extends React.Component {
   constructor(props) {
     super(props); 
     this.currentOrderValue = props.currentOrderValue;  
@@ -64,17 +69,12 @@ class ContainerOrderCheckbox extends React.Component {
   render () {
     var self = this;
     let newOrder = this.currentOrderValue == "important" ? "unimportant" : "important"; 
-    return (<div className="form-check checkbox">
-                <input className="form-check-input"  
-                onClick={function(evt) { 
-                  self.currentOrderValue = newOrder; 
-                  self.onClick(evt, newOrder); 
-                }} 
-                type="checkbox" checked={this.currentOrderValue == "important"} id="containerOrderCheckbox" />
-                <label className="form-check-label" htmlFor="containerOrderCheckbox">
-                  Order Important
-                </label>
-              </div>);   
+    let label = "Order " + (this.currentOrderValue == "important" ? "Unimportant" : "Important"); 
+    return (<li>
+              <a onClick={function(evt){ self.onClick(evt, newOrder); }} tabIndex="-1" href="#">
+                {label}
+              </a>
+            </li>);   
   }
 }
 
@@ -246,32 +246,32 @@ export default class RightClickMenu extends React.Component {
     return menuItems; 
   }
 
-  getOrderCheckBox() {
-    let checkbox = []; 
+  getOrderMenuItems() {
+    let orderMenuItems = []; 
 
     // Decide whether to show the order menu item based on the index of the shape in the 
     // parent container.
     let shapeIndex = this.getCurrentShapeIndex(this.shapeID); 
     let siblings = this.getCurrentShapeSiblings(this.shapeID);
     let currOrder = this.getCurrentShapeOrder(this.shapeID);  
-    let showOrderCheckbox = (shapeIndex == 0 || shapeIndex == (siblings.length - 1)); 
+    let showOrderMenuItem = (shapeIndex == 0 || shapeIndex == (siblings.length - 1)); 
 
-    if(showOrderCheckbox) {
-      checkbox.push(<OrderCheckbox key={this.shapeID} currentOrder={currOrder} index={shapeIndex} onClick={this.setOrder} />); 
+    if(showOrderMenuItem) {
+      orderMenuItems.push(<OrderMenuItem key={this.shapeID} currentOrder={currOrder} index={shapeIndex} onClick={this.setOrder} />); 
     }
 
-    return checkbox;   
+    return orderMenuItems;   
   }
 
-  getContainerOrderCheckbox() {
-    let checkbox = []; 
+  getContainerOrderMenuItems() {
+    let menuItems = []; 
 
     if(this.setContainerOrder) {
       let currentOrder = this.getCurrentContainerOrder(this.shapeID); 
-      checkbox.push(<ContainerOrderCheckbox key={this.shapeID} currentOrderValue={currentOrder} onClick={this.setContainerOrder} />); 
+      menuItems.push(<ContainerOrderMenuItem key={this.shapeID} currentOrderValue={currentOrder} onClick={this.setContainerOrder} />); 
     }
 
-    return checkbox; 
+    return menuItems; 
   }
 
   openFontSizeMenu(evt) {
@@ -340,11 +340,11 @@ export default class RightClickMenu extends React.Component {
     // Importance will be enabled for all controls
     let importanceMenuItems = this.getImportanceMenuItems();
 
-    let containerOrderCheckbox = this.getContainerOrderCheckbox();
-    const containerOrderShown = this.setContainerOrder != undefined && containerOrderCheckbox.length; 
+    let containerOrderMenuItems = this.getContainerOrderMenuItems();
+    const containerOrderShown = this.setContainerOrder != undefined && containerOrderMenuItems.length; 
 
-    let orderCheckbox = this.getOrderCheckBox(); 
-    const orderShown = this.setOrder != undefined && orderCheckbox.length; 
+    let orderMenuItems = this.getOrderMenuItems(); 
+    const orderShown = this.setOrder != undefined && orderMenuItems.length; 
 
     const fontSizeLeft = this.state.fontSizeMenuLocation.left; 
     const fontSizeTop = this.state.fontSizeMenuLocation.top; 
@@ -368,24 +368,9 @@ export default class RightClickMenu extends React.Component {
             <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Emphasis<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li> 
-        {labelShown ? 
-          (<li className="dropdown-submenu">
-              <a tabIndex="-1" href="#" onClick={this.openLabelMenu}>Labels<span className="caret"></span></a>
-              { labelMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{labelItems}</ul> : undefined } 
-            </li>) : undefined}
-        {orderShown ? 
-          (<li className="dropdown-submenu">
-              {orderCheckbox}
-            </li>) : undefined}
-        {containerOrderShown ? 
-          (<li className="dropdown-submenu">
-              {containerOrderCheckbox}
-            </li>) : undefined}
-        {/*fontSizeShown ? 
-          (<li className="dropdown-submenu">
-              <a tabIndex="-1" href="#" onClick={this.openFontSizeMenu}>Font Size<span className="caret"></span></a>
-              { fontSizeMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{fontSizeSelectorItems}</ul> : undefined } 
-            </li>) : undefined*/}
+        {labelShown ? labelItems : undefined}
+        {orderShown ? orderMenuItems : undefined}
+        {containerOrderShown ? containerOrderMenuItems : undefined}
         </ul>
       </div>
     );

@@ -6,6 +6,7 @@ ConstraintActions.locked_size_key = 'size'
 ConstraintActions.locked_arrangement_key = 'arrangement'; 
 ConstraintActions.locked_alignment_key = 'alignment';
 ConstraintActions.locked_justification_key = 'justification';
+ConstraintActions.locked_distribution_key = 'distribution';
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
@@ -258,7 +259,7 @@ ConstraintActions.pageConstraints = {
 		{
 			"do": {
 				"key": ConstraintActions.locked_justification_key,
-				"updateConstraintsCanvasShape": function keepArrangment(constraintsCanvasShape, designCanvasShape) {
+				"updateConstraintsCanvasShape": function keepJustification(constraintsCanvasShape, designCanvasShape) {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
@@ -268,7 +269,7 @@ ConstraintActions.pageConstraints = {
 			}, 
 			"undo": {
 				"key": ConstraintActions.locked_justification_key,
-				"updateConstraintsCanvasShape": function undoKeepArrangement(constraintsCanvasShape, designCanvasShape) {
+				"updateConstraintsCanvasShape": function undoKeepJustification(constraintsCanvasShape, designCanvasShape) {
 					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
@@ -276,7 +277,30 @@ ConstraintActions.pageConstraints = {
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_justification_key, justificationValue);
 				}
 			}
-		}, 
+		},
+	"distribution": 
+		{
+			"do": {
+				"key": ConstraintActions.locked_distribution_key,
+				"updateConstraintsCanvasShape": function keepDistribution(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					let distributionValue = ConstraintActions.distributions[shape[ConstraintActions.locked_distribution_key]];
+					return ConstraintActions.defaultFeedbackMessage(ConstraintActions.locked_distribution_key, distributionValue);
+				}
+			}, 
+			"undo": {
+				"key": ConstraintActions.locked_justification_key,
+				"updateConstraintsCanvasShape": function undoKeepDistribution(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					let distributionValue = ConstraintActions.distributions[shape[ConstraintActions.locked_distribution_key]]; 
+					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_distribution_key, distributionValue);
+				}
+			}
+		} 
 }
 
 // ConstraintActions.relationalConstraints = {

@@ -110,30 +110,55 @@ export default class PageContainer extends React.Component {
               getRelativeDesigns={this.getRelativeDesigns.bind(this)}/>); 
   }
 
-  checkSolutionValidity() {
-    console.log("checking solution validity"); 
+  checkSolutionValidity(options={}) {
+    let getDesigns = options.getDesigns ? true : false; 
+    if(!getDesigns) {
+      // Only check for validity of the current solutions
+      let jsonShapes = this.getShapesJSON(); 
+
+      // Get all of the solutions so far to check their validity 
+      let prevSolutions = JSON.stringify(this.state.solutions);
+
+      var self = this;
+      $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, function(requestData) {
+        let requestParsed = JSON.parse(requestData); 
+        let valid = requestParsed.result; 
+        if(!valid) {
+          self.setState({
+            errorMessageShown: true
+          }); 
+        }else {
+          // TODO: Figure out what we are doing with this
+          self.setState({
+            constraintChanged: true
+          });
+        }
+
+        self.updateSolutionValidity(requestParsed.solutions);
+      }); 
+    }
+    else {
+      // Get design solutions for the current set of constraints
+      this.getMoreDesigns();
+    }
+  }
+
+  getMoreDesigns() {
+    // get more designs
+    // without changing any new constraints
     let jsonShapes = this.getShapesJSON(); 
 
-    // Get all of the solutions so far to check their validity 
+    // Get JSON for already retrieved designs/saved/trashed
     let prevSolutions = JSON.stringify(this.state.solutions);
+   
+   // Send an ajax request to the server 
+   // Solve for the new designs
+    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
 
-    var self = this;
-    $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, function(requestData) {
-      let requestParsed = JSON.parse(requestData); 
-      let valid = requestParsed.result; 
-      if(!valid) {
-        self.setState({
-          errorMessageShown: true
-        }); 
-      }else {
-        // TODO: Figure out what we are doing with this
-        self.setState({
-          constraintChanged: true
-        });
-      }
-
-      self.updateSolutionValidity(requestParsed.solutions);
-    }); 
+    // Reset the state of the designs canvas
+    this.setState({
+      constraintChanged: false
+    });
   }
 
   getConstraintsCanvasShape(shapeId) {
@@ -260,24 +285,6 @@ export default class PageContainer extends React.Component {
       solutions: solutions.concat(this.state.solutions), 
       errorMessageShown: false, 
       showDesignsAlert: true
-    });
-  }
-
-  getMoreDesigns() {
-    // get more designs
-    // without changing any new constraints
-    let jsonShapes = this.getShapesJSON(); 
-
-    // Get JSON for already retrieved designs/saved/trashed
-    let prevSolutions = JSON.stringify(this.state.solutions);
-   
-   // Send an ajax request to the server 
-   // Solve for the new designs
-    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
-
-    // Reset the state of the designs canvas
-    this.setState({
-      constraintChanged: false
     });
   }
 
@@ -427,12 +434,12 @@ export default class PageContainer extends React.Component {
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs
                 <div className="btn-group btn-group-xs header-button-group">
-                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More Designs</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More Designs</button>
                   <button className="btn btn-default design-canvas-button">{designCanvases.length}</button>
                 </div>
                 <div className="btn-group btn-group-xs header-button-group">
-                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More not like these</button>
-                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.getMoreDesigns}>More like these</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these</button>
+                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these</button>
                 </div>
                 <div className="btn-group btn-group-xs header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>

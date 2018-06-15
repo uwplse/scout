@@ -374,6 +374,7 @@ export default class SVGWidget extends React.Component {
       showOrder: (value != -1 && value != undefined)
     });
 
+    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 
@@ -387,6 +388,7 @@ export default class SVGWidget extends React.Component {
       orderedGroup: orderedValue
     }); 
 
+    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 
@@ -417,7 +419,7 @@ export default class SVGWidget extends React.Component {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
 
-    const isEditable = this.controlType != "group";
+    const isEditable = this.controlType != "group" && this.controlType != "page" && this.controlType != "labelGroup";
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <div onContextMenu={this.showContextMenu.bind(this)} suppressContentEditableWarning="true" onInput={this.handleTextChange.bind(this)} id={"widget-container-" + this.id} className={"widget-container " + (highlighted ? "highlighted" : "")}>
