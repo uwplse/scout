@@ -130,7 +130,7 @@ class ConstraintBuilder(object):
 			has_group = False
 			for s_index in range(0, len(child_shapes)): 
 				shape1 = child_shapes[s_index]
-				if shape1.type == "container": 
+				if shape1.type == "container" and shape1.shape_type != "labelGroup": 
 					has_group = True
 
 					# Enforce that the child container proximity value (closeness) should always be smaller than the distribution value 

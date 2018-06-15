@@ -452,13 +452,15 @@ h1, h2, h3 {
 
 .right-click-menu-container .form-check {
 	display: flex; 
-	padding: 3 20;
+	padding-left: 30;
+	padding-right: 10; 
+	margin: 0;
 }
 
 .right-click-menu-container .form-check-label {
 	font-weight: normal; 
-	margin-left: 5px;
 	white-space: nowrap;
+	padding-left: 0;
 }
 
 

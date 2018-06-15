@@ -353,6 +353,7 @@ export default class SVGWidget extends React.Component {
     }); 
 
     this.createLabelsGroup(this.id, shapeId); 
+    this.hideRightClickMenu();
     this.checkSolutionValidity();
   }
 

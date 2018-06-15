@@ -41,13 +41,13 @@ class OrderCheckbox extends React.Component {
   render () {
     var self = this;
     let label = "Keep " + Converter.toWordsOrdinal(this.index+1) + "."; 
-    return (<div className="form-check">
-                <input className="form-check-input" type="checkbox" checked={this.currentOrder != -1 && this.currentOrder != undefined} 
+    return (<div className="form-check checkbox">
+               <input id="orderCheckbox" className="form-check-input" type="checkbox" checked={this.currentOrder != -1 && this.currentOrder != undefined} 
                   onClick={function(evt) { 
                     self.currentOrder = (self.currentOrder == -1 || self.currentOrder == undefined ? self.index : -1); 
                     self.onClick(evt, self.currentOrder); 
                   }} />
-                <label className="form-check-label" for="defaultCheck1">
+                <label className="form-check-label" htmlFor="orderCheckbox">
                   {label}
                 </label>
               </div>); 
@@ -64,14 +64,14 @@ class ContainerOrderCheckbox extends React.Component {
   render () {
     var self = this;
     let newOrder = this.currentOrderValue == "important" ? "unimportant" : "important"; 
-    return (<div className="form-check">
+    return (<div className="form-check checkbox">
                 <input className="form-check-input"  
                 onClick={function(evt) { 
                   self.currentOrderValue = newOrder; 
                   self.onClick(evt, newOrder); 
                 }} 
-                type="checkbox" checked={this.currentOrderValue == "important"} id="defaultCheck1" />
-                <label className="form-check-label" for="defaultCheck1">
+                type="checkbox" checked={this.currentOrderValue == "important"} id="containerOrderCheckbox" />
+                <label className="form-check-label" htmlFor="containerOrderCheckbox">
                   Order Important
                 </label>
               </div>);   
@@ -368,6 +368,11 @@ export default class RightClickMenu extends React.Component {
             <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Emphasis<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li> 
+        {labelShown ? 
+          (<li className="dropdown-submenu">
+              <a tabIndex="-1" href="#" onClick={this.openLabelMenu}>Labels<span className="caret"></span></a>
+              { labelMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{labelItems}</ul> : undefined } 
+            </li>) : undefined}
         {orderShown ? 
           (<li className="dropdown-submenu">
               {orderCheckbox}
@@ -376,12 +381,6 @@ export default class RightClickMenu extends React.Component {
           (<li className="dropdown-submenu">
               {containerOrderCheckbox}
             </li>) : undefined}
-        {labelShown ? 
-          (<li className="dropdown-submenu">
-              <a tabIndex="-1" href="#" onClick={this.openLabelMenu}>Labels<span className="caret"></span></a>
-              { labelMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{labelItems}</ul> : undefined } 
-            </li>) : undefined}
-
         {/*fontSizeShown ? 
           (<li className="dropdown-submenu">
               <a tabIndex="-1" href="#" onClick={this.openFontSizeMenu}>Font Size<span className="caret"></span></a>
