@@ -32,6 +32,7 @@ export default class DesignCanvas extends React.Component {
       'multilineLabel': multilineLabel,
       'smallLabel': smallLabel, 
       'group': group, 
+      'page': group,
       'labelGroup': group,
       'placeholder': placeholder, 
       'image': image, 
@@ -195,7 +196,7 @@ export default class DesignCanvas extends React.Component {
     let svg = DesignCanvas.svgElements(controlType); 
     if(svg != undefined) {
       let padding = 0; 
-      if(controlType == "group" || controlType == "labelGroup") {
+      if(controlType == "group" || controlType == "labelGroup" || controlType == "page") {
         padding = 5;
       }
 

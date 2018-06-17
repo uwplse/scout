@@ -122,12 +122,12 @@ class ContainerShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal"])
 		self.variables.proximity = sh.Variable(shape_id, "proximity", [5,10,15,20,25,30,35,40,45,50])
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values
-		self.variables.distribution = sh.Variable(shape_id, "distribution", [20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,320,340,360,380,400,420, 440,460,480,500])
+		self.variables.distribution = sh.Variable(shape_id, "distribution", [20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,320,340,360,380,400])
 
 		self.container_order = "unimportant"
 		if element is not None: 

@@ -139,7 +139,7 @@ class ConstraintBuilder(object):
 
 				shape1_x = shape1.variables.x.z3
 				shape1_y = shape1.variables.y.z3
-				shape1_width = shape1.computed_height()
+				shape1_width = shape1.computed_width()
 				shape1_height = shape1.computed_height()
 
 				# Shapes cannot exceed the bounds of their parent containers
@@ -561,8 +561,10 @@ class ConstraintBuilder(object):
 		# ====== Arrangement constraints =======
 		# Vertical and horizontal arrangments
 		# In order that elements were defined
-		v_index = container.variables.arrangement.domain.index("vertical")
-		is_vertical = arrangement == v_index
+		# v_index = container.variables.arrangement.domain.index("vertical")
+		# is_vertical = arrangement == v_index
+		is_vertical = False
+		
 		h_index = container.variables.arrangement.domain.index("horizontal")
 		is_horizontal = arrangement == h_index
 		# rows_index = container.variables.arrangement.domain.index("rows")
@@ -664,8 +666,9 @@ class ConstraintBuilder(object):
 		c_index = alignment.domain.index("center")
 		is_left = alignment.z3 == l_index
 		is_center = alignment.z3 == c_index
-		v_index = arrangement.domain.index("vertical")
-		is_vertical = arrangement.z3 == v_index
+		# v_index = arrangement.domain.index("vertical")
+		# is_vertical = arrangement.z3 == v_index
+		is_vertical = False
 
 		# Alignment
 		# Differs based on if the arrangment of the container is horizontal or vertical 

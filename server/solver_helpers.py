@@ -187,6 +187,7 @@ class Solution(object):
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
+					element["grid"] = 5
 				elif shape.type == "leaf":
 					if shape.importance == "most":
 						magnification = model[shape.variables.magnification.z3].as_string()

@@ -15,7 +15,9 @@ class CanvasMenuItem extends React.Component {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
 	  // let menuProperty = menuTextToProperty[this.text]; 
 	  let menuText = this.action[this.actionType].getFeedbackMessage(this.menuTrigger);
-	  return <li className="right-click-menu-item" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action, this.actionType)} >{menuText}</li>; 
+	  return (<li>
+            <a href="#" tabIndex="-1" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action, this.actionType)}>{menuText}</a>
+          </li>); 
   }
 }
 
@@ -69,21 +71,42 @@ export default class CanvasMenu extends React.Component {
   }
 
   getRelationalMenuItems() {
-    let menuCollection = ConstraintActions.relationalConstraints; 
-
-
+    // These are just hard coded right now, they don't do anything
+    let menuItems = []; 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep global alignment.</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep alignment relative to container.</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep position relative to container.</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep position relative to neighbor 1.</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep position relative to neighbor 2.</a>
+      </li>)); 
+    return menuItems;
   }
 
   render () {
   	let elementItems = this.getMenuItems(ConstraintActions.elementConstraints);
     let groupItems = []; 
-    let pageItems = []; 
-    if(this.menuTrigger.type == "group" || this.menuTrigger.type == "labelGroup") {
+    let canvasItems = []; 
+    let relationalItems = [];
+
+    if(this.menuTrigger.type != "page" && this.menuTrigger.type != "canvas") {
+      relationalItems = this.getRelationalMenuItems();
+    }
+
+    if(this.menuTrigger.type == "group" || this.menuTrigger.type == "labelGroup" || this.menuTrigger.type == "page") {
       groupItems = this.getMenuItems(ConstraintActions.groupConstraints); 
     }
 
     if(this.menuTrigger.type == "canvas") {
-      pageItems = this.getMenuItems(ConstraintActions.pageConstraints); 
+      canvasItems = this.getMenuItems(ConstraintActions.canvasConstraints); 
     }
 
     // if(this.menuTrigger.type == "element" || this.menuTrigger.type == "group") {
@@ -96,13 +119,17 @@ export default class CanvasMenu extends React.Component {
 	  return (
       <div className="right-click-menu-container dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}} >
         <ul className="dropdown-menu" style={{display: "block"}}>
+        <li role="separator" className="divider divider-top">Element</li>
         {elementItems}
         {groupItems.length ? 
-          (<li role="separator" className="divider"></li>) : undefined}
+          (<li role="separator" className="divider">Container</li>) : undefined}
         {groupItems.length ? groupItems : undefined}
-        {pageItems.length ? (
-          <li role="separator" className="divider"></li>) : undefined}
-        {pageItems.length ? pageItems : undefined}
+        {canvasItems.length ? (
+          <li role="separator" className="divider">Global</li>) : undefined}
+        {canvasItems.length ? canvasItems : undefined}  
+        {relationalItems.length ? (
+          <li role="separator" className="divider">Relational</li>) : undefined}
+        {relationalItems.length ? relationalItems : undefined}  
         </ul>
       </div>
     );

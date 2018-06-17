@@ -26,10 +26,11 @@ body {
   **/ 
 .navbar {
 	margin-bottom: 0px;
+	border-radius: 0; 
 }
 
-.navbar-btn {
-	margin-left: 10px; 
+.designs-area-container .btn {
+	font-size: 16px;
 }
 
 .panel-body {
@@ -38,6 +39,29 @@ body {
 
 .dropdown {
 	position: absolute;
+}
+
+.dropdown-menu {
+	padding-top: 0;
+	font-size: initial;
+}
+
+.dropdown-menu .caret {
+	margin-left: 10px;
+}
+
+.dropdown-menu .divider {
+	height: auto;
+	overflow: visible; 
+	border-bottom: 1px solid #e5e5e5;
+    border-top: 1px solid #e5e5e5;
+    background-color: #ffffff; 
+    display: flex; 
+    justify-content: center;
+}
+
+.dropdown-menu .divider.divider-top {
+	margin-top: 0;
 }
 
 .dropdown-submenu .dropdown-menu {
@@ -53,6 +77,7 @@ body {
 .navbar, .navbar-header {
 	display: flex; 
 	justify-content: flex-start;
+	align-items: center;
 }
 
 .navbar {
@@ -174,7 +199,6 @@ h1, h2, h3 {
 }
 
 .widgets-container {
-	border-right: 1px solid #ccc;
 	width: 280px;
 }
 
@@ -255,15 +279,6 @@ h1, h2, h3 {
 	margin-right: 0.5em;
 }
 
-.widget-control-info .btn-group {
-	margin-bottom: 0.5em; 
-	margin-right: 0.5em;
-}
-
-.widget-control-info .btn .caret {
-	margin-left: 5px;
-}
-
 .widget-control-info-left, 
 .widget-control-info-right {
 	display: flex; 
@@ -320,7 +335,7 @@ h1, h2, h3 {
 }
 
 .widget-container .badge {
-	font-size: 10px;
+	font-size: 14px;
 	border-radius: 3px;
 }
 
@@ -436,7 +451,7 @@ h1, h2, h3 {
 /** 
   Right click feedback menu, font size selector menu
   */
-.right-click-menu-item {
+/*.right-click-menu-item {
 	padding-left: 1em;
 	padding-right: 1em;
 	padding-top: 0.25em; 
@@ -461,7 +476,7 @@ h1, h2, h3 {
 	font-weight: normal; 
 	white-space: nowrap;
 	padding-left: 0;
-}
+}*/
 
 
 /*.constraints-color-picker-container {

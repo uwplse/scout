@@ -26,9 +26,10 @@ class LabelMenuItem extends React.Component {
 
   render () {
     var self = this;
+    let label = "Make label for \"" + this.shapeLabel + "\"."; 
     return (<li>
                <a tabIndex="-1" href="#" onClick={function(evt) { self.onClick(evt, self.shapeId); }}>
-                {this.shapeLabel}
+                {label}
                </a>
             </li>); 
   }
@@ -46,7 +47,7 @@ class OrderMenuItem extends React.Component {
     var self = this;
     let position = Converter.toWordsOrdinal(this.index+1) 
     let label = (self.currentOrder == -1 || self.currentOrder == undefined) ? 
-                  "Keep " + position + "." : "Don't keep " + position;
+                  "Keep " + position + " in order." : "Don't keep " + position + " in order.";
     return (<li>
               <a tabIndex="-1" href="#" 
                 onClick={function(evt) {
@@ -365,7 +366,7 @@ export default class RightClickMenu extends React.Component {
       <div id="right-click-menu-container" className="right-click-menu-container dropdown" data-toggle="dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
         <ul className="dropdown-menu" style={{display: "block"}}>
           <li className="dropdown-submenu">
-            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Emphasis<span className="caret"></span></a>
+            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set Emphasis<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li> 
         {labelShown ? labelItems : undefined}

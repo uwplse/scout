@@ -331,16 +331,16 @@ export default class PageContainer extends React.Component {
                 }); 
 
     const designCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 0 && (!solution.invalidated)); }) 
-              .sort(function(a, b) {
-                // Do a sort of the designs by cost
-                if(a.cost < b.cost) {
-                  return -1; 
-                }
-                else if(a.cost > b.cost) {
-                  return 1; 
-                }
-                return 0; 
-              })
+              // .sort(function(a, b) {
+              //   // Do a sort of the designs by cost
+              //   if(a.cost < b.cost) {
+              //     return -1; 
+              //   }
+              //   else if(a.cost > b.cost) {
+              //     return 1; 
+              //   }
+              //   return 0; 
+              // })
               .map(function(solution) {
                   return self.getDesignCanvas(solution); 
               }); 
@@ -418,7 +418,7 @@ export default class PageContainer extends React.Component {
                     svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>
                   {/*<SVGInline className="widget-control widget-control-logo" 
                     height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo2', newsLogo)}/>*/}     
+                    svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo2', newsLogo)}/> */}  
                   <SVGInline className="widget-control widget-container" svg={ groupContainer } 
                     height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
                     onClick={this.addShapeToConstraintsCanvas.bind(this, 'group', 'group', groupContainer)}/>
@@ -433,15 +433,15 @@ export default class PageContainer extends React.Component {
           <div className="panel panel-primary designs-area-container">
             <div className="panel-heading"> 
               <h3 className="panel-title">Designs
-                <div className="btn-group btn-group-xs header-button-group">
+                <div className="btn-group header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More Designs</button>
                   <button className="btn btn-default design-canvas-button">{designCanvases.length}</button>
                 </div>
-                <div className="btn-group btn-group-xs header-button-group">
+                <div className="btn-group header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these</button>
                 </div>
-                <div className="btn-group btn-group-xs header-button-group">
+                <div className="btn-group header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
                   <button type="button" className="btn btn-default design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                 </div>
