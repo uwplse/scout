@@ -202,15 +202,22 @@ export default class SVGWidget extends React.Component {
 
     // Update the height and widht of the parent container so the height recalculates
     if(this.type == "label") {
-      let boundingRect = editableText[0].getBoundingClientRect(); 
-      let widthRounded = Math.round(boundingRect.width); 
-      let heightRounded = Math.round(boundingRect.height); 
+      let textBounding = editableText[0].getBoundingClientRect(); 
+      let widthRounded = Math.round(textBounding.width); 
+      let heightRounded = Math.round(textBounding.height); 
       this.setElementSize(widthRounded, heightRounded);
+
+      // Measure and set the baseline value
+      let textSizeMeasure = document.getElementById(id).querySelectorAll(".widget-size-measure"); 
+      if(textSizeMeasure[0]){
+        let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
+        let baseline = textBounding.y - textSizeBounding.y
+        this.element.baseline = baseline; 
+      }
     }
 
     this.checkSolutionValidity();
   }
-
   adjustElementSize(element) {
     let boundingRect = element.getBoundingClientRect(); 
 
@@ -226,7 +233,16 @@ export default class SVGWidget extends React.Component {
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     if(editableText[0]) {
-      editableText[0].innerHTML = this.element.label;   
+      editableText[0].innerHTML = this.element.label; 
+
+      // Measure and set the baseline value
+      let textSizeMeasure = document.getElementById(id).querySelectorAll(".widget-size-measure"); 
+      if(textSizeMeasure[0]){
+        let textBounding = editableText[0].getBoundingClientRect();
+        let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
+        let baseline = textBounding.y - textSizeBounding.y
+        this.element.baseline = baseline; 
+      }  
     }
 
     if(initSize) {

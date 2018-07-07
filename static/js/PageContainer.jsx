@@ -29,6 +29,7 @@ import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
 import logo from '../assets/illustrator/logo.svg';
 import newsLogo from '../assets/illustrator/newsLogo.svg';
 import pageLogo from '../assets/svgs/logo.svg';
+import Snap from "snapsvg"; 
 
 export default class PageContainer extends React.Component {
   constructor(props) {

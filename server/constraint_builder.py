@@ -57,6 +57,10 @@ class ConstraintBuilder(object):
 
 		return all_values	
 
+	def init_shape_baseline(self, shape): 
+		if shape.variables.baseline: 
+			self.solver.add(shape.variables.baseline.z3 == shape.variables.y.z3 + shape.orig_baseline)
+
 	def init_shape_bounds(self, shape, canvas_width, canvas_height):
 		self.solver.add(shape.variables.x.z3 >= 0, shape.shape_id + " x must be greater than zero.")
 		self.solver.add((shape.variables.x.z3 + shape.computed_width()) <= canvas_width, shape.shape_id + " right must be less than width.")
@@ -142,11 +146,13 @@ class ConstraintBuilder(object):
 				shape1_width = shape1.computed_width()
 				shape1_height = shape1.computed_height()
 
+				bottom_axis = shape1.variables.baseline.z3 if shape1.has_baseline else shape1_y + shape1_height
+
 				# Shapes cannot exceed the bounds of their parent containers
 				self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
 				self.solver.add(shape1_y >= container_y, "child shape " + shape1.shape_id + " inside parent container (greater than top)")
 				self.solver.add((shape1_x + shape1_width) <= (container_x + container.computed_width()), "child shape " + shape1.shape_id + " inside parent container (less than width)")
-				self.solver.add((shape1_y + shape1_height) <= (container_y + container.computed_height()), "child shape " + shape1.shape_id + " inside parent container (less than height)")
+				self.solver.add(bottom_axis <= (container_y + container.computed_height()), "child shape " + shape1.shape_id + " inside parent container (less than height)")
 
 				# Create importance level constraints
 				self.init_importance(shape1)
@@ -561,10 +567,9 @@ class ConstraintBuilder(object):
 		# ====== Arrangement constraints =======
 		# Vertical and horizontal arrangments
 		# In order that elements were defined
-		# v_index = container.variables.arrangement.domain.index("vertical")
-		# is_vertical = arrangement == v_index
-		is_vertical = False
-		
+		v_index = container.variables.arrangement.domain.index("vertical")
+		is_vertical = arrangement == v_index
+
 		h_index = container.variables.arrangement.domain.index("horizontal")
 		is_horizontal = arrangement == h_index
 		# rows_index = container.variables.arrangement.domain.index("rows")
@@ -666,9 +671,8 @@ class ConstraintBuilder(object):
 		c_index = alignment.domain.index("center")
 		is_left = alignment.z3 == l_index
 		is_center = alignment.z3 == c_index
-		# v_index = arrangement.domain.index("vertical")
-		# is_vertical = arrangement.z3 == v_index
-		is_vertical = False
+		v_index = arrangement.domain.index("vertical")
+		is_vertical = arrangement.z3 == v_index
 
 		# Alignment
 		# Differs based on if the arrangment of the container is horizontal or vertical 
@@ -677,11 +681,13 @@ class ConstraintBuilder(object):
 			child_x = child.variables.x.z3
 			child_y = child.variables.y.z3
 
+			bottom_axis = child.variables.baseline.z3 if child.has_baseline else child_y + child.computed_height()
+
 			left_aligned = child_x == container_x.z3
 			right_aligned = (child_x + child.computed_width()) == (container_x.z3 + container.computed_width())
 			h_center_aligned = (child_x + (child.computed_width()/2)) == (container_x.z3 + (container.computed_width()/2))
 			top_aligned = child_y == container_y.z3
-			bottom_aligned = (child_y + child.computed_height()) == (container_y.z3 + container.computed_height())
+			bottom_aligned = (bottom_axis) == (container_y.z3 + container.computed_height())
 			v_center_aligned = (child_y + (child.computed_height()/2)) == (container_y.z3 + (container.computed_height()/2))
 			horizontal = If(is_left, top_aligned, If(is_center, v_center_aligned, bottom_aligned))
 			vertical = If(is_left, left_aligned, If(is_center, h_center_aligned, right_aligned))

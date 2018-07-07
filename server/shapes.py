@@ -24,6 +24,7 @@ class Shape(object):
 		self.element = element
 		self.typed = False
 		self.importance_set = False
+		self.has_baseline = False
 		self.variables = DotMap() 
 		self.variables.x = sh.Variable(shape_id, "x")
 		self.variables.y = sh.Variable(shape_id, "y")
@@ -50,6 +51,11 @@ class Shape(object):
 					elif lock != "location":  
 						# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
 						self.variable_values[lock] = element[lock]
+
+			if "baseline" in element: 
+				self.has_baseline = True
+				self.orig_baseline = element["baseline"]
+				self.variables.baseline = sh.Variable(shape_id, "baseline")
 
 			if "importance" in element: 
 				self.importance = element["importance"]
@@ -122,8 +128,8 @@ class ContainerShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal"])
-		self.variables.proximity = sh.Variable(shape_id, "proximity", [5,10,15,20,25,30,35,40,45,50])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
+		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,15,20,25,30,35,40,45,50])
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values

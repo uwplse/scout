@@ -48,6 +48,7 @@ class Solver(object):
 		# Initialize the set of constraints on shapes and containers
 		for shape in self.shapes.values(): 
 			self.cb.init_shape_bounds(shape, canvas_width, canvas_height)
+			self.cb.init_shape_baseline(shape)
 			if shape.type == "canvas": 
 				self.cb.init_canvas_constraints(shape)
 			elif shape.type == "container": 
