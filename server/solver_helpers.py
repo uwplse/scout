@@ -65,9 +65,6 @@ class Variable(object):
 		if self.type == "str": 
 			return StringVal(element[self.name])
 
-		elif self.name == "x" or self.name == "y":
-			return element["location"][self.name]
-
 		elif self.name == "width" or self.name == "height":
 			return element["size"][self.name]
 
@@ -127,11 +124,8 @@ class Solution(object):
 				element = copy.deepcopy(shape.element)
 				new_elements[element["name"]] = element
 
-				if "location" not in element:
-					element["location"] = dict()
-
-				element["location"]["x"] = adj_x
-				element["location"]["y"] = adj_y
+				element["x"] = adj_x
+				element["y"] = adj_y
 
 				height = shape.height()
 				width = shape.width()

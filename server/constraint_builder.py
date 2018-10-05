@@ -265,15 +265,10 @@ class ConstraintBuilder(object):
 
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
-		# TODO: Make generic at some point
 		if shape.locks is not None: 
 			for lock in shape.locks:
-				if lock == "location": 
-					self.solver.add(shape.variables.y.z3 == shape.orig_y, "lock_" + shape.shape_id + "_" + shape.variables.y.name + "_" + str(shape.orig_y))
-					self.solver.add(shape.variables.x.z3 == shape.orig_x, "lock_" + shape.shape_id + "_" + shape.variables.x.name + "_" + str(shape.orig_x))
-				else: 
-					# Structure message for these constraints to have a specific format so they can be used to identify conflicts in the generated solutions
-					self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], "lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock]))
+				# Structure message for these constraints to have a specific format so they can be used to identify conflicts in the generated solutions
+				self.solver.add(shape.variables[lock].z3 == shape.variable_values[lock], "lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock]))
 
 	def non_overlapping(self, container, spacing): 
 		child_shapes = container.children 
@@ -400,118 +395,6 @@ class ConstraintBuilder(object):
 		center_aligned = (child_x + (first_child_width/2)) == (canvas_x + (canvas.computed_width()/2))
 		right_aligned = (child_x + first_child_width) == (canvas_x + canvas.computed_width() - margin.z3)
 		self.solver.add(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), 'canvas_alignment')
-		# self.solver.assert_and_track(If(is_left, left_aligned, If(is_center, center_aligned, right_aligned)), "canvas_alignment")
-
-	
-	# def child_in_between(self, child_shapes, child1, child2, variable): 
-	# 	constraints = []
-	# 	for child in child_shapes: 
-	# 		if child.shape_id != child1.shape_id and child.shape_id != child2.shape_id: 
-	# 			constraint = If(Or(And(child.variables[variable].z3 > child1.variables[variable].z3, child.variables[variable].z3 < child2.variables[variable].z3),
-	# 							   And(child.variables[variable].z3 < child1.variables[variable].z3, child.variables[variable].z3 > child2.variables[variable].z3)), True, False)
-	# 			constraints.append(constraint)
-	# 	return Or(constraints)
-
-	# def consecutive_rows_or_columns(self, container, variable): 
-	# 	child_shapes = container.children
-	# 	constraints = []
-	# 	for i in range(0, len(child_shapes)): 
-	# 		for j in range(0, len(child_shapes)): 
-	# 			if i != j: 
-	# 				child1 = child_shapes[i]
-	# 				child2 = child_shapes[j]
-	# 				constraint = If((abs(child1.variables[variable].z3 - child2.variables[variable].z3) > 1), self.child_in_between(child_shapes, child1, child2, variable), True)
-	# 				constraints.append(constraint)
-	# 	return And(constraints)
-
-	# def aligned_pair(self, child1, child2, alignment, x_or_y, width_or_height): 
-	# 	l_index = alignment.domain.index("left")
-	# 	c_index = alignment.domain.index("center")
-	# 	is_left = alignment.z3 == l_index
-	# 	is_center = alignment.z3 == c_index
-	# 	w_or_h = child1.computed_width() if width_or_height == "width" else child1.computed_height()
-	# 	w_or_h2 = child2.computed_width() if width_or_height == "width" else child2.computed_height()
-
-	# 	left_aligned = child1.variables[x_or_y].z3 == child2.variables[x_or_y].z3
-	# 	center_aligned = ((child1.variables[x_or_y].z3 + (w_or_h/2)) == (child2.variables[x_or_y].z3 + (w_or_h2/2)))
-	# 	right_aligned = child1.variables[x_or_y].z3 + w_or_h == child2.variables[x_or_y].z3 + w_or_h2
-	# 	return If(is_left, left_aligned, If(is_center, center_aligned, right_aligned))
-
-	# def aligned_rows_or_columns(self, container, column_or_row, x_or_y, width_or_height): 
-	# 	child_shapes = container.children
-	# 	constraints = []
-	# 	for i in range(0, len(child_shapes)): 
-	# 		for j in range(0, len(child_shapes)): 
-	# 			if i != j: 
-	# 				child1 = child_shapes[i]
-	# 				child2 = child_shapes[j]
-	# 				constraint = If(child1.variables[column_or_row].z3 == child2.variables[column_or_row].z3,
-	# 					self.aligned_pair(child1, child2, container.variables.alignment, x_or_y, width_or_height),True)
-	# 				constraints.append(constraint)
-	# 	return And(constraints)
-
-	# def aligned_across_rows_or_columns(self, container, column_or_row, x_or_y, width_or_height): 
-	# 	child_shapes = container.children
-
-
-	# def gap(self, child1, child2, x_or_y, width_or_height):
-	# 	w_or_h = child1.computed_width() if width_or_height == "width" else child1.computed_height()
-	# 	w_or_h2 = child2.computed_width() if width_or_height == "height" else child2.computed_width()
-
-	# 	gap1 = (child2.variables[x_or_y].z3 - (child1.variables[x_or_y].z3 + w_or_h))
-	# 	gap2 = (child1.variables[x_or_y].z3 - (child2.variables[x_or_y].z3 + w_or_h2))
-	# 	return If(child1.variables[x_or_y].z3 < child2.variables[x_or_y].z3, gap1, gap2)
-
-	# def in_between(self, child, child1, child2, x_or_y, width_or_height):
-	# 	constraint = If(Or(And(child.variables[x_or_y].z3 > child1.variables[x_or_y].z3, child.variables[x_or_y].z3 < child2.variables[x_or_y].z3), 
-	# 					And(child.variables[x_or_y].z3 < child1.variables[x_or_y].z3, child.variables[x_or_y].z3 > child2.variables[x_or_y].z3)), True, False)
-	# 	return constraint
-
-	# def no_children_between(self, child1, child2, child_shapes, column_or_row, x_or_y, width_or_height): 
-	# 	constraints = []
-	# 	for i in range(0, len(child_shapes)): 
-	# 		child = child_shapes[i]
-	# 		if child.shape_id != child2.shape_id and child.shape_id != child1.shape_id: 
-	# 			# ASsume that child1 and child2 are in the same row
-	# 			constraint = If(child.variables[column_or_row].z3 == child1.variables[column_or_row].z3, self.in_between(child, child1, child2, x_or_y, width_or_height), False)
-	# 			constraints.append(constraint)
-	# 	return Not(Or(constraints))
-
-	# def no_gaps_in_rows_or_columns(self, container, column_or_row, x_or_y, width_or_height): 
-	# 	child_shapes = container.children
-	# 	constraints = []
-	# 	for i in range(0, len(child_shapes)): 
-	# 		for j in range(0, len(child_shapes)): 
-	# 			if i != j: 
-	# 				child1 = child_shapes[i]
-	# 				child2 = child_shapes[j]
-	# 				constraint = If(child1.variables[column_or_row].z3 == child2.variables[column_or_row].z3, Not(And((self.gap(child1,child2,x_or_y,width_or_height) > container.variables.proximity.z3), self.no_children_between(child1, child2, child_shapes, column_or_row, x_or_y, width_or_height))), True)
-	# 				constraints.append(constraint)
-	# 	return And(constraints)
-
-	# def child_rows_columns_in_domain(self, container, column_or_row): 
-	# 	child_shapes = container.children
-	# 	constraints = []
-	# 	for i in range(0, len(child_shapes)): 
-	# 		child = child_shapes[i]
-	# 		num_domain_values = len(child.variables[column_or_row].domain) 
-	# 		highest = child.variables[column_or_row].domain[num_domain_values-1]
-	# 		lowest = child.variables[column_or_row].domain[0]
-	# 		constraints.append(child.variables[column_or_row].z3 >= lowest)
-	# 		constraints.append(child.variables[column_or_row].z3 <= highest)
-	# 	return And(constraints)
-
-	# def correct_number_of_rows_columns(self, container, column_or_row): 
-	# 	row_number = 1
-	# 	constraints = [] 
-	# 	while row_number <= container.num_rows():
-	# 		child_shapes = container.children
-	# 		child_equals_row = []
-	# 		for child in child_shapes: 
-	# 			child_equals_row.append(child.variables[column_or_row].z3 == row_number)
-	# 		constraints.append(Or(child_equals_row))
-	# 		row_number += 1
-	# 	return And(constraints)
 
 	def align_rows_or_columns(self, container, proximity, rows, column_or_row, aligned_axis, aligned_axis_size, layout_axis, layout_axis_size):
 		constraints = []

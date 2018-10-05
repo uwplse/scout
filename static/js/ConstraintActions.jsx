@@ -2,7 +2,6 @@ import Constants from "./Constants";
 
 class ConstraintActions {}
 
-ConstraintActions.locked_location_key = 'location'; 
 ConstraintActions.locked_size_key = 'size'
 ConstraintActions.locked_arrangement_key = 'arrangement'; 
 ConstraintActions.locked_alignment_key = 'alignment';
@@ -57,7 +56,7 @@ ConstraintActions.defaultUndoFeedbackMessage = function undoFeedbackMessage(cons
 ConstraintActions.elementConstraints = {
 	"x" : {
 		"do": {
-			"key": ConstraintActions.locked_location_key,
+			"key": "x",
 			"updateConstraintsCanvasShape": function keepPosition(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
 			    // Use the server key for locking a shape into a specific location
@@ -66,18 +65,16 @@ ConstraintActions.elementConstraints = {
 			    } 
 
 			    constraintsCanvasShape[ConstraintActions.locksKey].push("x"); 
-			    let y_val = constraintsCanvasShape[ConstraintActions.locked_location_key] ? constraintsCanvasShape[ConstraintActions.locked_location_key]["y"] : 0; 
-			    constraintsCanvasShape[ConstraintActions.locked_location_key] = {
-			    	x: designCanvasShape[ConstraintActions.locked_location_key]["x"], 
-			    	y: y_val
-			    }
+			    let y_val = constraintsCanvasShape["y"] ? constraintsCanvasShape["y"] : 0; 
+			    constraintsCanvasShape["x"] = designCanvasShape["x"]; 
+			    constraintsCanvasShape["y"] = y_val; 
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Keep x position at " + shape[ConstraintActions.locked_location_key]["x"] + "px.";
+				return "Keep x position at " + shape["x"] + "px.";
 			}
 		}, 
 		"undo": {
-			"key": ConstraintActions.locked_location_key,
+			"key": "y",
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
 				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("x"); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
@@ -86,13 +83,13 @@ ConstraintActions.elementConstraints = {
 				}
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Unlock x position from " + shape[ConstraintActions.locked_location_key]["x"] + "px.";
+				return "Unlock x position from " + shape["x"] + "px.";
 			}
 		}
 	}, 
 	"y" : {
 		"do": {
-			"key": ConstraintActions.locked_location_key,
+			"key": "y",
 			"updateConstraintsCanvasShape": function keepPosition(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
 			    // Use the server key for locking a shape into a specific location
@@ -101,18 +98,16 @@ ConstraintActions.elementConstraints = {
 			    } 
 
 			    constraintsCanvasShape[ConstraintActions.locksKey].push("y"); 
-			    let x_val = constraintsCanvasShape[ConstraintActions.locked_location_key] ? constraintsCanvasShape[ConstraintActions.locked_location_key]["x"] : 0; 
-			    constraintsCanvasShape[ConstraintActions.locked_location_key] = {
-			    	x: x_val, 
-			    	y: designCanvasShape[ConstraintActions.locked_location_key]["y"]
-			    }
+			    let x_val = constraintsCanvasShape["x"] ? constraintsCanvasShape["x"] : 0; 
+			    constraintsCanvasShape["x"] = x_val; 
+			    constraintsCanvasShape["y"] = designCanvasShape["y"];
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Keep y position at " + shape[ConstraintActions.locked_location_key]["y"] + "px.";
+				return "Keep y position at " + shape["y"] + "px.";
 			}
 		}, 
 		"undo": {
-			"key": ConstraintActions.locked_location_key,
+			"key": "y",
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
 				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("y"); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
@@ -121,7 +116,7 @@ ConstraintActions.elementConstraints = {
 				}
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Unlock y position from " + shape[ConstraintActions.locked_location_key]["y"] + "px.";
+				return "Unlock y position from " + shape["y"] + "px.";
 			}
 		}
 	}, 

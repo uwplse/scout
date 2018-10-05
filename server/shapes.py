@@ -43,6 +43,9 @@ class Shape(object):
 		self.variable_values = dict()
 
 		if element is not None:
+			self.orig_x = element["x"]
+			self.orig_y = element["y"]
+			
 			if "locks" in element:
 				self.locks = element["locks"]
 				
@@ -50,8 +53,7 @@ class Shape(object):
 				for lock in self.locks:
 					if lock == "label": 
 						self.variable_values[lock] = StringVal(element[lock])
-					elif lock != "location":  
-						# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
+					else:  
 						self.variable_values[lock] = element[lock]
 
 			if "baseline" in element: 
@@ -78,10 +80,6 @@ class Shape(object):
 				if self.importance == "least": 
 					minification_values = sh.MAGNIFICATION_VALUES
 					self.variables.minification = sh.Variable(shape_id, "minification", minification_values)
-
-			if "location" in element:
-				self.orig_x = element["location"]["x"]
-				self.orig_y = element["location"]["y"]
 
 			if "typed" in element: 
 				self.typed = element["typed"]

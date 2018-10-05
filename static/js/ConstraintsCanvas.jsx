@@ -59,10 +59,8 @@ export default class ConstraintsCanvas extends React.Component {
       "type": "canvas", 
       "controlType": "canvas",
       "children": [],
-      "location": {
-        x: 0, 
-        y: 0
-      }, 
+      "x": 0, 
+      "y": 0, 
       "size": {
         width: this.canvasWidth, 
         height: this.canvasHeight
@@ -78,10 +76,8 @@ export default class ConstraintsCanvas extends React.Component {
       "name": "page",
       "type": "page",
       "controlType": "page",
-      "location": {
-        x: 0, 
-        y: 0
-      }, 
+      "x": 0, 
+      "y": 0, 
       "size": {
         width: SVGWidget.initialWidths("page"),
         height: SVGWidget.initialHeights("page")

@@ -208,8 +208,8 @@ export default class DesignCanvas extends React.Component {
 
       let computedHeight = (shape.size.height * this.scalingFactor + (padding * 2));
       let computedWidth = (shape.size.width * this.scalingFactor + (padding * 2)); 
-      let computedLeft = ((shape.location.x * this.scalingFactor) - padding); 
-      let computedTop = ((shape.location.y * this.scalingFactor) - padding);
+      let computedLeft = ((shape.x * this.scalingFactor) - padding); 
+      let computedTop = ((shape.y * this.scalingFactor) - padding);
 
       let designCanvasWidget = this.getDesignCanvasWidget(shape, computedWidth, computedHeight, computedLeft, computedTop);
       this.state.childSVGs.push(designCanvasWidget);
@@ -277,11 +277,7 @@ export default class DesignCanvas extends React.Component {
       if(this.state.conflicts) {
         for(var i=0; i<this.state.conflicts.length; i++) {
           var conflict = this.state.conflicts[i];
-          var variable = conflict.variable; 
-          if(variable == "x" || variable == "y") {
-            variable = "location"; 
-          }
-
+          var variable = conflict.variable;
           this.highlightWidgetFeedback(conflict.shape_id, variable, true); 
         }
       }
@@ -317,10 +313,6 @@ export default class DesignCanvas extends React.Component {
         for(var i=0; i<this.state.conflicts.length; i++) {
           var conflict = this.state.conflicts[i];
           var variable = conflict.variable; 
-          if(variable == "x" || variable == "y") {
-            variable = "location"; 
-          }
-
           this.highlightWidgetFeedback(conflict.shape_id, variable, false); 
         }
       }
