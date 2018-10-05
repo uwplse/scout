@@ -47,8 +47,6 @@ export default class DesignCanvas extends React.Component {
 
   constructor(props) {
   	super(props);
-  	this.showConstraintsContextMenu.bind(this); 
-    this.performDesignCanvasMenuAction.bind(this);
 
   	// Object shapes to be drawn onto the canvas
   	this.elements = props.elements; 
@@ -109,7 +107,7 @@ export default class DesignCanvas extends React.Component {
     this.drawDesign();
   }
  
-  getScalingFactor() {
+  getScalingFactor = () => {
     if(this.state.savedState == 1) {
       return 0.10; 
     } 
@@ -125,37 +123,45 @@ export default class DesignCanvas extends React.Component {
     return 0.5;
   }
 
-  showConstraintsContextMenu(shape, evt) {
-    evt.stopPropagation();
-    evt.preventDefault();
+  showConstraintsContextMenu = (shape) => {
+    return (evt) => {
+      evt.stopPropagation();
+      evt.preventDefault();
 
-		// Check for the status of menuShown to see if we need to close out another menu before opening this one
-		if(this.state.menuShown) {
-			this.setState({
-				activeCanvasMenu: undefined, 
-				menuShown: false
-			}); 
-		}
+      // Check for the status of menuShown to see if we need to close out another menu before opening this one
+      if(this.state.menuShown) {
+        this.setState({
+          activeCanvasMenu: undefined, 
+          menuShown: false
+        }); 
+      }
 
-		// Show the context menu. 
-    var designCanvas = document.getElementById("design-canvas-" + this.id); 
-		let componentBoundingBox = designCanvas.getBoundingClientRect();
+      // Show the context menu. 
+      var designCanvas = document.getElementById("design-canvas-" + this.id); 
+      let componentBoundingBox = designCanvas.getBoundingClientRect();
 
-    this.setState({
-      activeCanvasMenu: <CanvasMenu left={evt.clientX} top={evt.clientY} menuTrigger={shape} onClick={this.performActionAndCloseMenu.bind(this)} getConstraintsCanvasShape={this.getConstraintsCanvasShape} />,
-      menuShown: true
-    });
+      this.setState({
+        activeCanvasMenu: <CanvasMenu 
+                            left={evt.clientX} 
+                            top={evt.clientY} 
+                            menuTrigger={shape} 
+                            onClick={this.performActionAndCloseMenu} 
+                            getConstraintsCanvasShape={this.getConstraintsCanvasShape} />,
+        menuShown: true
+      });
+    }
   }
 
-  // hideConstraintsContextMenu
-  performActionAndCloseMenu(menuTriggerShape, action, actionType, evt) {
-  	// Shape and option clicked on should be the arguments here
-  	// The linked shape in the constraints canvass
-  	this.updateConstraintsCanvas(menuTriggerShape, action, actionType); 
-  	this.hideMenu();
+  performActionAndCloseMenu = (menuTriggerShape, action, actionType) => {
+    return (evt) => {
+      // Shape and option clicked on should be the arguments here
+      // The linked shape in the constraints canvass
+      this.updateConstraintsCanvas(menuTriggerShape, action, actionType); 
+      this.hideMenu();
+    }
   }
 
-  hideMenu() {
+  hideMenu = () => {
     if(this.state.menuShown) {
       this.setState({
         menuShown: false, 
@@ -164,7 +170,7 @@ export default class DesignCanvas extends React.Component {
     }
   }
 
-  initDesignCanvas(shape) {
+  initDesignCanvas = (shape) => {
     // Intialize the background color
     this.setState({
       designShape: shape,
@@ -172,7 +178,7 @@ export default class DesignCanvas extends React.Component {
     });
   }
 
-  getDesignCanvasWidget(shape, width, height, left, top){
+  getDesignCanvasWidget = (shape, width, height, left, top) => {
     let shapeId = shape.name;
     let source = DesignCanvas.svgElements(shape.controlType);
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
@@ -187,10 +193,10 @@ export default class DesignCanvas extends React.Component {
             top={top}
             scaling={this.scalingFactor}
             inMainCanvas={inMainCanvas}
-            contextMenu={this.showConstraintsContextMenu.bind(this)}/>); 
+            contextMenu={this.showConstraintsContextMenu}/>); 
   }
 
-  createSVGElement(designCanvas, shape) {
+  createSVGElement = (designCanvas, shape) => {
     // Get the control SVG element from the control type
     let controlType = shape.controlType;
     let svg = DesignCanvas.svgElements(controlType); 
@@ -213,7 +219,7 @@ export default class DesignCanvas extends React.Component {
     }
   }
 
-  drawDesign() {
+  drawDesign = () => {
     // When the component mounts, draw the shapes onto the canvas
     let designId = "design-canvas-" + this.id;
     let designCanvas = document.getElementById(designId);  
@@ -230,7 +236,7 @@ export default class DesignCanvas extends React.Component {
     }
   }
 
-  performDesignCanvasMenuAction(action) {
+  performDesignCanvasMenuAction = (action) => {
     if(action == "save") {
       this.props.saveDesignCanvas(this.id);
       this.state.savedState = 1; 
@@ -250,7 +256,15 @@ export default class DesignCanvas extends React.Component {
     });
   }
 
-  showMenuAndHighlightConstraints(e){
+  showMenuAndHighlightConstraints = (e) => {
+    let saved = this.state.savedState == 1; 
+    let trashed = this.state.savedState == -1; 
+    let invalidated = this.state.invalidated; 
+    if(saved || trashed || invalidated) {
+      // Return if the canvas is currently in the saved, trashed areas or is an invalidated design 
+      return; 
+    }
+
     // Check for the status of menuShown to see if we need to close out another menu before opening this one
     if(this.state.designMenu != undefined) {
       this.setState({
@@ -287,13 +301,16 @@ export default class DesignCanvas extends React.Component {
     
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
-      designMenu: <DesignMenu left={componentBoundingBox.x} top={componentBoundingBox.y} menuAction={this.performDesignCanvasMenuAction.bind(this)} />, 
+      designMenu: <DesignMenu 
+                    left={componentBoundingBox.x} 
+                    top={componentBoundingBox.y} 
+                    menuAction={this.performDesignCanvasMenuAction} />, 
       hovered: true
     
     });
   }
 
-  closeMenuAndRemoveHighlightConstraints(e) {
+  closeMenuAndRemoveHighlightConstraints = (e) => {
     // Trigger constraint highlighting if the solution is not current valid
     if(!this.state.valid) {
       if(this.state.conflicts) {
@@ -348,8 +365,8 @@ export default class DesignCanvas extends React.Component {
     let childSVGs = this.state.childSVGs; 
 
     return  (
-      <div onMouseEnter={((saved || trashed || invalidated) ? undefined : this.showMenuAndHighlightConstraints.bind(this))} 
-           onMouseLeave={((saved || trashed || invalidated) ? undefined : this.closeMenuAndRemoveHighlightConstraints.bind(this))} 
+      <div onMouseEnter={this.showMenuAndHighlightConstraints} 
+           onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
            id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
   			<div className={(menuShown ? "" : "hidden")}>
@@ -360,8 +377,8 @@ export default class DesignCanvas extends React.Component {
         </div>
         <div id={"design-canvas-" + this.id} 
             className={"design-canvas " + (!this.state.valid ? "canvas-container-invalid " : " ") 
-            + (this.state.hovered ? "design-canvas-hovered" : "")}
-            onContextMenu={this.showConstraintsContextMenu.bind(this, this.state.designShape)}
+            + (this.state.hovered ? "hovered" : "")}
+            onContextMenu={this.showConstraintsContextMenu(this.state.designShape)}
             style={{height: "100%", width: "100%", backgroundColor: ""}}>
           {childSVGs}
         </div>

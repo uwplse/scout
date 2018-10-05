@@ -11,8 +11,9 @@ class FontSizeMenuItem extends React.Component {
   }
 
   render () {
-    var self = this;
-	  return <li onClick={function(evt) { self.onClick(evt, self.value); }}>{self.value}</li>; 
+	  return <li onClick={this.onClick(this.value)}>
+            {this.value}
+          </li>; 
   }
 }
 
@@ -25,10 +26,12 @@ class LabelMenuItem extends React.Component {
   }
 
   render () {
-    var self = this;
     let label = "Make label for \"" + this.shapeLabel + "\"."; 
     return (<li>
-               <a tabIndex="-1" href="#" onClick={function(evt) { self.onClick(evt, self.shapeId); }}>
+               <a 
+                tabIndex="-1" 
+                href="#" 
+                onClick={this.onClick(this.shapeID)}>
                 {label}
                </a>
             </li>); 
@@ -44,16 +47,14 @@ class OrderMenuItem extends React.Component {
   }
 
   render () {
-    var self = this;
     let position = Converter.toWordsOrdinal(this.index+1) 
-    let label = (self.currentOrder == -1 || self.currentOrder == undefined) ? 
+    let label = (this.currentOrder == -1 || this.currentOrder == undefined) ? 
                   "Keep " + position + " in order." : "Don't keep " + position + " in order.";
+    let newOrder = (this.currentOrder == -1 || this.currentOrder == undefined ? this.index : -1); 
+
     return (<li>
               <a tabIndex="-1" href="#" 
-                onClick={function(evt) {
-                  self.currentOrder = (self.currentOrder == -1 || self.currentOrder == undefined ? self.index : -1); 
-                  self.onClick(evt, self.currentOrder);         
-                }}>
+                onClick={this.onClick(newOrder)}>
                 {label}
               </a>
             </li>); 
@@ -68,11 +69,10 @@ class ContainerOrderMenuItem extends React.Component {
   }
 
   render () {
-    var self = this;
     let newOrder = this.currentOrderValue == "important" ? "unimportant" : "important"; 
     let label = "Order " + (this.currentOrderValue == "important" ? "Unimportant" : "Important"); 
     return (<li>
-              <a onClick={function(evt){ self.onClick(evt, newOrder); }} tabIndex="-1" href="#">
+              <a onClick={this.onClick(newOrder)} tabIndex="-1" href="#">
                 {label}
               </a>
             </li>);   
@@ -88,8 +88,11 @@ class ImportanceMenuItem extends React.Component {
   }
 
   render () {
-    var self = this;
-    return <li className="right-click-menu-item" onClick={function(evt) { self.onClick(evt, self.importanceLevel); }}>{this.label}</li>; 
+    return <li 
+            className="right-click-menu-item" 
+            onClick={this.onClick(this.importanceLevel)}>
+            {this.label}
+          </li>; 
   }
 }
 
@@ -112,12 +115,6 @@ export default class RightClickMenu extends React.Component {
     this.getCurrentShapeImportance = props.getCurrentShapeImportance; 
     this.getCurrentContainerOrder = props.getCurrentContainerOrder; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
-
-    // Method bindings
-    this.openFontSizeMenu = this.openFontSizeMenu.bind(this); 
-    this.openLabelMenu = this.openLabelMenu.bind(this);
-    this.openImportanceMenu = this.openImportanceMenu.bind(this);
-    this.openOrderMenu = this.openOrderMenu.bind(this);
 
     this.state = {
       fontSizeMenuLocation: {
@@ -145,69 +142,7 @@ export default class RightClickMenu extends React.Component {
     }
   }
 
-  componentDidMount() {
-    // this.computeSubMenuPositions();
-  }
-
-  computeSubMenuPositions() {
-    // Compute the left positioning of the submenu based on the width of this container
-    let rightClickMenu = document.getElementById("right-click-menu-container"); 
-    let bbox = rightClickMenu.getBoundingClientRect(); 
-    let left = bbox.width; 
-
-    let importanceMenu = document.getElementById("importance-menu-label");
-    let importanceMenuBox = importanceMenu.getBoundingClientRect(); 
-
-    let currentTop = 0; 
-    let importanceLocation = {
-      top: currentTop, 
-      left: left
-    }; 
-
-    currentTop = currentTop + importanceMenuBox.height; 
-    let orderLocation = this.state.orderMenuLocation; 
-    if(this.setOrder) {
-      let orderMenu = document.getElementById("order-menu-label");
-      if(orderMenu) {
-        let orderMenuBox = orderMenu.getBoundingClientRect(); 
-
-        orderLocation = {
-          top: currentTop, 
-          left: left
-        }; 
-
-        currentTop = currentTop + orderMenuBox.height; 
-      }
-    }
-
-    let labelLocation = this.state.labelMenuLocation; 
-    let fontLocation = this.state.fontSizeMenuLocation; 
-    if(this.setFontSize) {
-      let labelMenu = document.getElementById("label-menu-label"); 
-      if(labelMenu) {
-        let labelBox = labelMenu.getBoundingClientRect(); 
-        labelLocation = {
-          top: currentTop, 
-          left: left
-        }; 
-
-        currentTop = currentTop + labelBox.height; 
-        fontLocation = {
-          top: currentTop, 
-          left: left
-        };
-      } 
-    }
-
-    this.setState({
-      importanceMenuLocation: importanceLocation, 
-      orderMenuLocation: orderLocation, 
-      labelMenuLocation: labelLocation, 
-      fontSizeMenuLocation: fontLocation
-    }); 
-  }
-
-  getFontSizeMenuItems() {
+  getFontSizeMenuItems = () => {
     let menuItems = []; 
     for(var i=0; i<this.fontSizes.length; i++) {
       let size = this.fontSizes[i];
@@ -217,7 +152,7 @@ export default class RightClickMenu extends React.Component {
     return menuItems; 
   }
 
-  getImportanceMenuItems() {
+  getImportanceMenuItems = () => {
     let menuItems = []; 
 
     let currentImportance = this.getCurrentShapeImportance(this.shapeID); 
@@ -236,7 +171,7 @@ export default class RightClickMenu extends React.Component {
     return menuItems; 
   }
 
-  getLabelItems() {
+  getLabelItems = () => {
     // Label items should return the text of the sibling element and the shape ID
     let labelItems = this.getSiblingLabelItem(this.shapeID); 
     let menuItems = []; 
@@ -247,7 +182,7 @@ export default class RightClickMenu extends React.Component {
     return menuItems; 
   }
 
-  getOrderMenuItems() {
+  getOrderMenuItems = () => {
     let orderMenuItems = []; 
 
     // Decide whether to show the order menu item based on the index of the shape in the 
@@ -264,7 +199,7 @@ export default class RightClickMenu extends React.Component {
     return orderMenuItems;   
   }
 
-  getContainerOrderMenuItems() {
+  getContainerOrderMenuItems = () => {
     let menuItems = []; 
 
     if(this.setContainerOrder) {
@@ -275,7 +210,7 @@ export default class RightClickMenu extends React.Component {
     return menuItems; 
   }
 
-  openFontSizeMenu(evt) {
+  openFontSizeMenu = (evt) => {
     evt.stopPropagation(); 
 
     // Close other menus if they are open
@@ -287,7 +222,7 @@ export default class RightClickMenu extends React.Component {
     });
   }
 
-  openImportanceMenu(evt) {
+  openImportanceMenu = (evt) => {
     evt.stopPropagation(); 
 
     // Close other menus if they are open
@@ -299,7 +234,7 @@ export default class RightClickMenu extends React.Component {
     }); 
   }
 
-  openLabelMenu(evt) {
+  openLabelMenu = (evt) => {
     evt.stopPropagation(); 
 
    // Close other menus if they are open
@@ -311,7 +246,7 @@ export default class RightClickMenu extends React.Component {
     }); 
   }
 
-  openOrderMenu(evt) {
+  openOrderMenu = (evt) => {
     evt.stopPropagation(); 
 
    // Close other menus if they are open
@@ -363,7 +298,10 @@ export default class RightClickMenu extends React.Component {
     const orderMenuShown = this.state.orderMenuShown; 
 
 	  return (
-      <div id="right-click-menu-container" className="right-click-menu-container dropdown" data-toggle="dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
+      <div id="right-click-menu-container" 
+        className="right-click-menu-container dropdown" 
+        data-toggle="dropdown" 
+        style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
         <ul className="dropdown-menu" style={{display: "block"}}>
           <li className="dropdown-submenu">
             <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set Emphasis<span className="caret"></span></a>

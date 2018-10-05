@@ -13,10 +13,14 @@ class CanvasMenuItem extends React.Component {
 
   render () {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
-	  // let menuProperty = menuTextToProperty[this.text]; 
 	  let menuText = this.action[this.actionType].getFeedbackMessage(this.menuTrigger);
 	  return (<li>
-            <a href="#" tabIndex="-1" onClick={this.props.onClick.bind(this, this.menuTrigger, this.action, this.actionType)}>{menuText}</a>
+            <a
+              href="#" 
+              tabIndex="-1" 
+              onClick={this.props.onClick(this.menuTrigger, this.action, this.actionType)}>
+                {menuText}
+            </a>
           </li>); 
   }
 }
@@ -63,7 +67,12 @@ export default class CanvasMenu extends React.Component {
         // Check if this property is set on the menu trigger already to 
         // Decide whether to show the do or undo option 
         let action = this.getAction(constraint, menuCollection); 
-        menuItems.push(<CanvasMenuItem onClick={this.props.onClick} action={action.action} actionType={action.type} menuTrigger={this.menuTrigger} key={constraint} />);
+        menuItems.push(<CanvasMenuItem 
+          onClick={this.props.onClick} 
+          action={action.action} 
+          actionType={action.type} 
+          menuTrigger={this.menuTrigger} 
+          key={constraint} />);
       }
     }
 
@@ -109,10 +118,6 @@ export default class CanvasMenu extends React.Component {
       canvasItems = this.getMenuItems(ConstraintActions.canvasConstraints); 
     }
 
-    // if(this.menuTrigger.type == "element" || this.menuTrigger.type == "group") {
-    //   // Relational constraints
-    //   relationalItems = this.getRelationalMenuItems(); 
-    // }
     const menuLeft = this.state.left; 
     const menuTop = this.state.top;
 
@@ -135,7 +140,3 @@ export default class CanvasMenu extends React.Component {
     );
   }
 }
-
-
-// Menu items
-// - Element cl

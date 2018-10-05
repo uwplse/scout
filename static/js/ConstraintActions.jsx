@@ -1,6 +1,7 @@
 import Constants from "./Constants"; 
 
 class ConstraintActions {}
+
 ConstraintActions.locked_location_key = 'location'; 
 ConstraintActions.locked_size_key = 'size'
 ConstraintActions.locked_arrangement_key = 'arrangement'; 
@@ -78,7 +79,7 @@ ConstraintActions.elementConstraints = {
 		"undo": {
 			"key": ConstraintActions.locked_location_key,
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
-				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("x"); 
+				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("x"); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
@@ -113,7 +114,7 @@ ConstraintActions.elementConstraints = {
 		"undo": {
 			"key": ConstraintActions.locked_location_key,
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
-				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("y"); 
+				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("y"); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
@@ -148,7 +149,7 @@ ConstraintActions.elementConstraints = {
 		"undo": {
 			"key": ConstraintActions.locked_size_key,
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
-				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_size_key); 
+				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_size_key); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
@@ -183,7 +184,7 @@ ConstraintActions.elementConstraints = {
 		"undo": {
 			"key": ConstraintActions.locked_size_key,
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
-				var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_size_key); 
+				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_size_key); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
@@ -314,7 +315,7 @@ ConstraintActions.canvasConstraints = {
 			"undo": {
 				"key": ConstraintActions.locked_proximity_key,
 				"updateConstraintsCanvasShape": function undoKeepProximity(constraintsCanvasShape, designCanvasShape) {
-					var index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_margin_key); 
+					let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_margin_key); 
 					constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 					if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 						delete constraintsCanvasShape[ConstraintActions.locksKey]; 

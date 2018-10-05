@@ -15,11 +15,6 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.contextMenu = props.contextMenu; 
     this.timer = null;
 
-    // Method bindings
-    this.setHovered = this.setHovered.bind(this); 
-    this.hideHovered = this.hideHovered.bind(this);
-    this.contextMenuClicked = this.contextMenuClicked.bind(this);
-
     this.uniqueID = _.uniqueId();
 
     this.state = {
@@ -57,7 +52,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.rescaleTextLabel();
   }
 
-  rescaleLabelSize() {
+  rescaleLabelSize = () => {
     let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
@@ -75,7 +70,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     }
   }
 
-  setTextLabel() {
+  setTextLabel = () => {
     let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
     let svgElement = document.getElementById(id); 
     if(svgElement) {
@@ -86,7 +81,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     }
   }
 
-  rescaleTextLabel() {
+  rescaleTextLabel = () => {
     let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
     let svgElement = document.getElementById(id); 
     if(svgElement) {
@@ -102,19 +97,19 @@ export default class DesignCanvasSVGWidget extends React.Component {
     }
   }
 
-  setElementSize(width, height) {
+  setElementSize = (width, height) => {
     // When height and width are updated by font size changes, update the element object. 
     this.element.size.height = height; 
     this.element.size.width = width; 
   }
 
-  setHovered(evt) {
+  setHovered = (evt) => {
     this.setState({
       hovered: true
     }); 
   }
 
-  hideHovered(evt) {
+  hideHovered = (evt) => {
     let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
     let element = document.getElementById(id); 
     let elementBox = element.getBoundingClientRect();
@@ -124,7 +119,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     }); 
   }
 
-  contextMenuClicked(evt) {
+  contextMenuClicked = (evt) => {
     this.contextMenu(this.element, evt);
   }
 
@@ -135,18 +130,24 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const left = this.state.left; 
     const top = this.state.top;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
-    console.log('font size'); 
-    console.log(this.state.fontSize); 
+
     this.setTextLabel();
     this.rescaleTextLabel();
     let isContainer = (this.type == "group" || this.type == "labelGroup" || this.type == "canvas" || this.type == "page"); 
     return (
-      <div id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} onContextMenu={this.contextMenuClicked}
+      <div 
+        id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} 
+        onContextMenu={this.contextMenuClicked}
         className={"widget-control-"  + (isContainer ? "container" : "leaf")+ (this.state.hovered ? " design-canvas-hovered" : "")}
         onMouseEnter={this.setHovered}
         onMouseLeave={this.hideHovered}
         style={{position: "absolute", left: left + "px", top: top + "px"}}>
-        <SVGInline style={fontSize} className={"widget-control-" + this.controlType} svg={source} height={this.state.height + "px"} width={this.state.width + "px"} />
+        <SVGInline 
+          style={fontSize} 
+          className={"widget-control-" + this.controlType} 
+          svg={source} 
+          height={this.state.height + "px"} 
+          width={this.state.width + "px"} />
       </div>); 
   }
 }

@@ -7,13 +7,15 @@ label_types = ["label", "button", "field"]
 minimum_sizes = {
 	"label": 11, 
 	"image": 44,
-	"field": 44
+	"field": 44, 
+	"button": 44
 }
 
 maximum_sizes = {
 	"image": 335, # Need to tweak later
 	"label": 36,
-	"field": 335
+	"field": 335,
+	"button": 335
 }
 
 # Shape classes for constructing the element hierarchy 
@@ -128,8 +130,8 @@ class ContainerShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
-		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,15,20,25,30,35,40,45,50])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
+		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,15,20,25,30,35,40])
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values

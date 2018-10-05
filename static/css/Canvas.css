@@ -330,10 +330,6 @@ h1, h2, h3 {
     justify-content: center;
 }
 
-.SVGInline-svg {
-	cursor: pointer;
-}
-
 .widget-container .badge {
 	font-size: 14px;
 	border-radius: 3px;
@@ -389,12 +385,13 @@ h1, h2, h3 {
 	z-index: 500; 
 }
 
-.design-canvas.design-canvas-hovered {
+.design-canvas.hovered, 
+.design-canvas.hovered .design-canvas-hovered {
 	outline: 1px dashed black;
 }
 
-.design-canvas .design-canvas-hovered {
-	outline: 1px dashed black;
+.design-canvas.hovered .SVGInline-svg {
+	cursor: pointer; 
 }
 
 .design-body > .canvas-container {
@@ -447,42 +444,6 @@ h1, h2, h3 {
 .design-canvas-button {
 	margin-left: 10px;
 }
-
-/** 
-  Right click feedback menu, font size selector menu
-  */
-/*.right-click-menu-item {
-	padding-left: 1em;
-	padding-right: 1em;
-	padding-top: 0.25em; 
-	padding-bottom: 0.25em;
-	display: flex;
-	white-space: nowrap;
-}
-
-.right-click-menu-item:hover {
-	background-color: lightgray;
-	cursor: pointer; 
-}
-
-.right-click-menu-container .form-check {
-	display: flex; 
-	padding-left: 30;
-	padding-right: 10; 
-	margin: 0;
-}
-
-.right-click-menu-container .form-check-label {
-	font-weight: normal; 
-	white-space: nowrap;
-	padding-left: 0;
-}*/
-
-
-/*.constraints-color-picker-container {
-	position: absolute; 
-	z-index: 1000; 
-}*/
 
 /** 
   Actions menu that appears on design canvas 
