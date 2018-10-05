@@ -17,8 +17,7 @@ import placeholder from '../assets/illustrator/placeholder.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
 import orangeButton from '../assets/illustrator/orangeButton.svg';
 import label from '../assets/illustrator/label.svg';
-import orangeLabelDynamic from '../assets/illustrator/orangeLabel.svg'; 
-import orangeLabelStatic from '../assets/illustrator/orangeLabel_widgets.svg';
+import orangeLabel from '../assets/illustrator/orangeLabel.svg'; 
 import labelContainer from '../assets/illustrator/labelContainer.svg';
 import groupContainer from '../assets/illustrator/groupContainer.svg';
 import repeatGrid from '../assets/illustrator/repeatGrid.svg';
@@ -44,15 +43,14 @@ export default class PageContainer extends React.Component {
       constraintChanged: false , 
       designsFound: -1, 
       treeData: [], 
-      showDesignsAlert: false
+      showDesignsAlert: false, 
+      currentPallette: 'hollywood'
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
     this.solutionsMap = {};
 
     this.constraintsCanvasRef = React.createRef();
-
-    this.solution
   }
 
   closeRightClickMenus = () => {
@@ -307,46 +305,128 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  getWidgetPallette = () => {
+    if(this.state.currentPallette == "hollywood") {
+      return (
+        <div>
+          <SVGInline className="widget-control widget-control-button" 
+            height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
+            svg={ filledButton } onClick={this.addShapeToConstraintsCanvas('button', 'button', filledButton)}/>
+          <div className="widget-control-group">
+            <SVGInline className="widget-control widget-control-label" 
+              height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
+              svg={ label } onClick={this.addShapeToConstraintsCanvas('label', 'label', label)}/>
+            <SVGInline className="widget-control widget-control-label" 
+              height={SVGWidget.initialHeights('smallLabel') + "px"} width={SVGWidget.initialWidths('smallLabel') + "px"} 
+              svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel', smallLabelDynamic)}/>
+            <SVGInline className="widget-control widget-control-label" 
+              height={SVGWidget.initialHeights('multilineLabel') + "px"} width={SVGWidget.initialWidths('multilineLabel') + "px"} 
+              svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas('paragraph', 'multilineLabel', multilineLabel)}/>
+          </div>
+          <div className="widget-control-group">
+            <SVGInline className="widget-control widget-control-image" 
+              height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+              svg={ image } onClick={this.addShapeToConstraintsCanvas('image', 'image', image)}/> 
+            <SVGInline className="widget-control widget-control-placeholder" 
+              height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+              svg={ image2 } onClick={this.addShapeToConstraintsCanvas('image', 'image2', image2)}/>
+            <SVGInline className="widget-control widget-control-placeholder" 
+              height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+              svg={ image3 } onClick={this.addShapeToConstraintsCanvas('image', 'image3', image3)}/>
+            <SVGInline className="widget-control widget-control-placeholder" 
+              height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
+              svg={ placeholder } onClick={this.addShapeToConstraintsCanvas('image', 'placeholder', placeholder)}/>
+          </div>
+          <SVGInline className="widget-control widget-container" svg={ groupContainer } 
+            height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
+            onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
+        </div>); 
+    }
+    else {
+      return (
+      <div className="widget-control-group">
+        <SVGInline className="widget-control widget-control-field" 
+                  height={SVGWidget.initialHeights('field') + "px"} width={SVGWidget.initialWidths('field') + "px"} 
+                  svg={ field } onClick={this.addShapeToConstraintsCanvas('field', 'field', field)}/>
+        <SVGInline className="widget-control widget-control-button" 
+          height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
+          svg={ orangeButton } onClick={this.addShapeToConstraintsCanvas('button', 'orangeButton', orangeButton)}/>
+        <SVGInline className="widget-control widget-control-label" 
+          height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
+          svg={ orangeLabel } onClick={this.addShapeToConstraintsCanvas('label', 'orangeLabel', orangeLabel)}/>
+        <SVGInline className="widget-control widget-container" svg={ groupContainer } 
+          height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
+          onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
+        <SVGInline className="widget-control widget-control-logo" 
+          height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+          svg={ logo } onClick={this.addShapeToConstraintsCanvas('image', 'logo', logo)}/>
+      </div>); 
+    }
+  }
+
+  configureWidgetPallette = (e) => {
+    // Configure later to enable more sets of pallettes to be loaded
+    if(this.state.currentPallette == 'hollywood') {
+      this.setState({
+        currentPallette: 'farming'
+      }); 
+    }
+    else {
+      this.setState({
+        currentPallette: 'hollywood'
+      }); 
+    }
+  }
+
   render () {
-    let self = this; 
+    const self = this;
     const designsFound = this.state.designsFound; 
     const errorMessageShown = this.state.errorMessageShown; 
     const constraintChanged = this.state.constraintChanged;
     const designsAlertShown = this.state.showDesignsAlert; 
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
-    const savedCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 1); })
+    const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
               .map((solution) => {
                   return this.getDesignCanvas(solution); 
                 }); 
 
-    const designCanvases = this.state.solutions.filter(function(solution) { return (solution.saved == 0 && (!solution.invalidated)); }) 
-              .sort(function(a, b) {
-                // Do a sort of the designs by cost
-                if(a.cost < b.cost) {
-                  return -1; 
-                }
-                else if(a.cost > b.cost) {
-                  return 1; 
-                }
-                return 0; 
-              })
-              .map((solution) => {
-                  return self.getDesignCanvas(solution); 
-              }); 
+    const designCanvases = this.state.solutions
+      .filter((solution) => { 
+        return (solution.saved == 0 && (!solution.invalidated)); 
+      }) 
+      .sort(function(a, b) {
+        // Do a sort of the designs by cost
+        if(a.cost < b.cost) {
+          return -1; 
+        }
+        else if(a.cost > b.cost) {
+          return 1; 
+        }
+        return 0; 
+      })
+      .map((solution) => {
+          return self.getDesignCanvas(solution); 
+      }); 
 
-    const trashedCanvases = this.state.solutions.filter(function(solution) { return solution.saved == -1; })
-              .map((solution) => {
-                    if(solution.saved == -1) {
-                      return self.getDesignCanvas(solution); 
-                    }
-                });
+    const trashedCanvases = this.state.solutions
+      .filter((solution) => { return solution.saved == -1; })
+      .map((solution) => {
+            if(solution.saved == -1) {
+              return self.getDesignCanvas(solution); 
+            }
+        });
 
-    const invalidatedCanvases = this.state.solutions.filter(function(solution) { return solution.invalidated == true; })
-        .map((solution) => {
-              if(solution.invalidated == true) {
-                return self.getDesignCanvas(solution); 
-              }
-          });      
+    const invalidatedCanvases = this.state.solutions
+      .filter((solution) => { 
+        return solution.invalidated == true; 
+      })
+      .map((solution) => {
+            if(solution.invalidated == true) {
+              return self.getDesignCanvas(solution); 
+            }
+      });    
+
+    const currentWidgetPallette = this.getWidgetPallette();  
     return (
       <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -362,59 +442,15 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">Widgets</h3>
               </div>  
               <div className="panel-body widgets-panel">         
-                { /*<canvas id="widgets-canvas" width="150px" height="400px">
-                </canvas> */ }
-                {/*<SVGInline className="widget-control widget-control-field" 
-                  height={SVGWidget.initialHeights('field') + "px"} width={SVGWidget.initialWidths('field') + "px"} 
-                  svg={ field } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'field', field)}/>
-                { /*<SVGInline className="widget-control" svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/> */}
-                <SVGInline className="widget-control widget-control-button" 
-                  height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
-                  svg={ filledButton } onClick={this.addShapeToConstraintsCanvas('button', 'button', filledButton)}/>
-                {/*<SVGInline className="widget-control widget-control-button" 
-                  height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
-                  svg={ orangeButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'orangeButton', orangeButton)}/>*/}
-                <SVGInline className="widget-control widget-control-label" 
-                  height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
-                  svg={ label } onClick={this.addShapeToConstraintsCanvas('label', 'label', label)}/>
-                {/*<SVGInline className="widget-control widget-control-label" 
-                  height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
-                  svg={ orangeLabelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'orangeLabel', orangeLabelDynamic)}/>*/}
-                <SVGInline className="widget-control widget-control-label" 
-                  height={SVGWidget.initialHeights('smallLabel') + "px"} width={SVGWidget.initialWidths('smallLabel') + "px"} 
-                  svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel', smallLabelDynamic)}/>
-                <SVGInline className="widget-control widget-control-label" 
-                  height={SVGWidget.initialHeights('multilineLabel') + "px"} width={SVGWidget.initialWidths('multilineLabel') + "px"} 
-                  svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas('paragraph', 'multilineLabel', multilineLabel)}/>
-                {/*<SVGInline className="widget-control widget-control-search" 
-                  height={SVGWidget.initialHeights('search') + "px"} width={SVGWidget.initialWidths('search') + "px"} 
-                  svg={ search } onClick={this.addShapeToConstraintsCanvas.bind(this, 'field', 'search', search)}/>*/}
-                <div className="widget-control-group">
-                  <SVGInline className="widget-control widget-control-image" 
-                    height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ image } onClick={this.addShapeToConstraintsCanvas('image', 'image', image)}/> 
-                  <SVGInline className="widget-control widget-control-placeholder" 
-                    height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ image2 } onClick={this.addShapeToConstraintsCanvas('image', 'image2', image2)}/>
-                  <SVGInline className="widget-control widget-control-placeholder" 
-                    height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ image3 } onClick={this.addShapeToConstraintsCanvas('image', 'image3', image3)}/>
-                  <SVGInline className="widget-control widget-control-placeholder" 
-                    height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
-                    svg={ placeholder } onClick={this.addShapeToConstraintsCanvas('image', 'placeholder', placeholder)}/>
-                  {/*<SVGInline className="widget-control widget-control-logo" 
-                    height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ logo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo', logo)}/>*/}
-                  {/*<SVGInline className="widget-control widget-control-logo" 
-                    height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
-                    svg={ newsLogo } onClick={this.addShapeToConstraintsCanvas.bind(this, 'image', 'logo2', newsLogo)}/> */}  
-                  <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-                    height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
-                    onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
-                </div>
+                {currentWidgetPallette}
               </div>
             </div>
-            <button type="button" className="btn btn-primary configure-widgets-button">Configure Widget Pallette</button>
+            <button 
+              type="button" 
+              className="btn btn-primary configure-widgets-button"
+              onClick={this.configureWidgetPallette}>
+              Configure Widget Pallette
+            </button>
           </div>
           <ConstraintsCanvas ref={this.constraintsCanvasRef} 
             updateConstraintsCanvas={this.updateConstraintsCanvas} 
@@ -442,7 +478,8 @@ export default class PageContainer extends React.Component {
                 <div 
                   className="btn-group header-button-group">
                   <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
-                  <button type="button" className="btn btn-default design-canvas-button" onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
+                  <button type="button" className="btn btn-default design-canvas-button" 
+                    onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                 </div>
               </h3>
             </div>  

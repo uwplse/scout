@@ -1,5 +1,8 @@
 <svg data-name="Layer 1" id="widget-control-label" xmlns="http://www.w3.org/2000/svg">
 	<title>label</title>
+	<text  class="widget-size-measure" style="visibility: hidden;" width="100%" height="100%" alignment-baseline="hanging">
+		<tspan>Label</tspan>
+	</text>
 	<text class="widget-editable-text widget-size-container" height="100%" alignment-baseline="hanging"
 		width="100%">Label</text>
 </svg>
