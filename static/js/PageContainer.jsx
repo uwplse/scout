@@ -16,8 +16,7 @@ import image3 from '../assets/illustrator/image3.svg';
 import placeholder from '../assets/illustrator/placeholder.svg';
 import filledButton from '../assets/illustrator/filledButton.svg';
 import orangeButton from '../assets/illustrator/orangeButton.svg';
-import labelDynamic from '../assets/illustrator/label.svg';
-import labelStatic from '../assets/illustrator/label_widgets.svg';
+import label from '../assets/illustrator/label.svg';
 import orangeLabelDynamic from '../assets/illustrator/orangeLabel.svg'; 
 import orangeLabelStatic from '../assets/illustrator/orangeLabel_widgets.svg';
 import labelContainer from '../assets/illustrator/labelContainer.svg';
@@ -377,7 +376,7 @@ export default class PageContainer extends React.Component {
                   svg={ orangeButton } onClick={this.addShapeToConstraintsCanvas.bind(this, 'button', 'orangeButton', orangeButton)}/>*/}
                 <SVGInline className="widget-control widget-control-label" 
                   height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
-                  svg={ labelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'label', labelDynamic)}/>
+                  svg={ label } onClick={this.addShapeToConstraintsCanvas('label', 'label', label)}/>
                 {/*<SVGInline className="widget-control widget-control-label" 
                   height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
                   svg={ orangeLabelStatic } onClick={this.addShapeToConstraintsCanvas.bind(this, 'label', 'orangeLabel', orangeLabelDynamic)}/>*/}

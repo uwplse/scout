@@ -79,8 +79,8 @@ export default class ConstraintsCanvas extends React.Component {
       "x": 0, 
       "y": 0, 
       "size": {
-        width: SVGWidget.initialWidths("page"),
-        height: SVGWidget.initialHeights("page")
+        width: SVGWidget.initialWidths('page'),
+        height: SVGWidget.initialHeights('page')
       }, 
       "containerOrder": "unimportant",
       "importance": "normal",
@@ -507,7 +507,9 @@ export default class ConstraintsCanvas extends React.Component {
       "size": {
         "width": width, 
         "height": height
-      }
+      }, 
+      "x": 0, 
+      "y": 0
     }
 
     if (type == "group" || type == "labelGroup") {

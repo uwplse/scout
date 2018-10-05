@@ -185,6 +185,16 @@ h1, h2, h3 {
 	width: 238px !important;
 }
 
+/**
+	Sizing of SVG elements in widgets panel 
+**/ 
+.widgets-panel .widget-control-label {
+	font-size: 36; 
+}
+
+#widget-control-label {
+	height: 30px;
+}
 
 /** 
 	Constraints canvas 
@@ -259,14 +269,6 @@ h1, h2, h3 {
 	display: flex; 
 	align-items: flex-start;
 	flex-direction: column;
-}
-
-.widget-control-labels.widget-control-arrow-down:before {
-	content: url("../assets/down_arrow2.png");
-}
-
-.widget-control-labels.widget-control-arrow-up:before {
-	content: url("../assets/up_arrow.png");
 }
 
 .widget-control-info {
@@ -552,21 +554,7 @@ h1, h2, h3 {
 .widgets-sortable-tree .rst__lineFullVertical:after {
 	height: 100%;
 }
-/*
-.widgets-sortable-tree .rst__lineHalfHorizontalRight::before {
-	 needed to fix bug where only every third line wasn't rendering  
-	height: 1.5px;
-	width
-}*/
-/*
-.widgets-sortable-tree .rst__lineBlock:before {
-	height: 1.5px; 
-}
 
-.widgets-sortable-tree .rst__lineBlock:after {
-	width: 1.5px;
-}
-*/
 .widgets-sortable-tree .rst__rowLabel {
 	padding-right: 5px;
 }

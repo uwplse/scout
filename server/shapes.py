@@ -43,9 +43,9 @@ class Shape(object):
 		self.variable_values = dict()
 
 		if element is not None:
-			self.orig_x = element["x"]
-			self.orig_y = element["y"]
-			
+			self.x = element["x"]
+			self.y = element["y"]
+
 			if "locks" in element:
 				self.locks = element["locks"]
 				
@@ -164,8 +164,8 @@ class CanvasShape(Shape):
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
 		self.variables.margin = sh.Variable("canvas", "margin", [10,20,30,40,50])
-		self.orig_x = 0
-		self.orig_y = 0
+		self.x = 0
+		self.y = 0
 
 		self.container_order = "unimportant"
 		if element is not None: 

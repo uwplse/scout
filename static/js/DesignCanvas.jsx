@@ -14,7 +14,7 @@ import newsLogo from '../assets/illustrator/newsLogo.svg'
 import placeholder from '../assets/illustrator/placeholder.svg'
 import filledButton from '../assets/illustrator/filledButton.svg';
 import orangeButton from '../assets/illustrator/orangeButton.svg';
-import label from '../assets/illustrator/label_designs.svg';
+import label from '../assets/illustrator/label.svg';
 import orangeLabel from '../assets/illustrator/orangeLabel_designs.svg';
 import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
 import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';

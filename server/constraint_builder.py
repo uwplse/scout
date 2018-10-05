@@ -93,8 +93,8 @@ class ConstraintBuilder(object):
 		self.solver.add((page_shape.variables.y.z3 + page_shape.computed_height()) <= (canvas_y + canvas.computed_height() - margin.z3), page_shape.shape_id + ' gt canvas_bottom')
 
 		# Fix the canvas X,Y to their original valuess
-		self.solver.add(canvas_x == canvas.orig_x, 'canvas orig x')
-		self.solver.add(canvas_y == canvas.orig_y, 'canvas orig y')
+		self.solver.add(canvas_x == canvas.x, 'canvas orig x')
+		self.solver.add(canvas_y == canvas.y, 'canvas orig y')
 
 		self.justify_canvas(canvas)
 		self.align_canvas(canvas)
