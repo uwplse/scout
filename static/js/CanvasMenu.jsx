@@ -52,8 +52,13 @@ export default class CanvasMenu extends React.Component {
       let constraintsCanvasShape = this.getConstraintsCanvasShape(this.menuTrigger.name);
       if(constraintsCanvasShape[ConstraintActions.locksKey]
         && constraintsCanvasShape[ConstraintActions.locksKey].indexOf(constraint) >= 0) {
-        // The constraint is active and set to true, show the undo option
-        return { type: "undo", action: constraintsMenu[constraint]}; 
+        if(constraintsCanvasShape[constraint] == this.menuTrigger[constraint]) {
+          // The constraint is active and set to true, show the undo option
+          return { type: "undo", action: constraintsMenu[constraint]};           
+        }
+        else {
+          return { type: "do", action: constraintsMenu[constraint]};  
+        }
       } else {
         // Show the do option
         return { type: "do", action: constraintsMenu[constraint]}; 
@@ -101,12 +106,13 @@ export default class CanvasMenu extends React.Component {
   }
 
   render () {
-  	let elementItems = this.getMenuItems(ConstraintActions.elementConstraints);
     let groupItems = []; 
     let canvasItems = []; 
     let relationalItems = [];
+    let elementItems = []; 
 
-    if(this.menuTrigger.type != "page" && this.menuTrigger.type != "canvas") {
+    if(this.menuTrigger.type != "canvas") {
+      elementItems = this.getMenuItems(ConstraintActions.elementConstraints); 
       relationalItems = this.getRelationalMenuItems();
     }
 
@@ -124,7 +130,8 @@ export default class CanvasMenu extends React.Component {
 	  return (
       <div className="right-click-menu-container dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}} >
         <ul className="dropdown-menu" style={{display: "block"}}>
-        <li role="separator" className="divider divider-top">Element</li>
+        {elementItems.length ? 
+          (<li role="separator" className="divider divider-top">Element</li>) : undefined}
         {elementItems}
         {groupItems.length ? 
           (<li role="separator" className="divider">Container</li>) : undefined}
