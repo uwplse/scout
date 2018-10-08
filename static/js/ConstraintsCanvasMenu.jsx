@@ -88,10 +88,10 @@ class ImportanceMenuItem extends React.Component {
   }
 
   render () {
-    return <li 
-            className="right-click-menu-item" 
-            onClick={this.onClick(this.importanceLevel)}>
-            {this.label}
+    return <li> 
+              <a onClick={this.onClick(this.importanceLevel)} tabIndex="-1" href="#">
+                {this.label}
+              </a>
           </li>; 
   }
 }
