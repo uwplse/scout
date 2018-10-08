@@ -36,7 +36,6 @@ class CanvasMenuItem extends React.Component {
 export default class CanvasMenu extends React.Component {
   constructor(props) {
   	super(props); 
-  	this.menuShown = props.menuShown; 
   	this.menuTrigger = props.menuTrigger; // This is the JSON of the shape that triggered the menu open 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape; // Gets the shape on the constraints canvas used to construct the menu options
 
@@ -113,7 +112,7 @@ export default class CanvasMenu extends React.Component {
 
     if(this.menuTrigger.type != "canvas") {
       elementItems = this.getMenuItems(ConstraintActions.elementConstraints); 
-      relationalItems = this.getRelationalMenuItems();
+      // relationalItems = this.getRelationalMenuItems();
     }
 
     if(this.menuTrigger.type == "group" || this.menuTrigger.type == "labelGroup" || this.menuTrigger.type == "page") {

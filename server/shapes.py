@@ -133,7 +133,9 @@ class ContainerShape(Shape):
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values
-		self.variables.distribution = sh.Variable(shape_id, "distribution", [20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,320,340,360,380,400])
+		self.variables.distribution = sh.Variable(shape_id, "distribution",
+												  [20,40,60,80,100,120,140,160,180,200,220,240,
+												   260,280,300,320,340,360,380,400])
 
 		self.container_order = "unimportant"
 		if element is not None: 
@@ -164,6 +166,8 @@ class CanvasShape(Shape):
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
 		self.variables.margin = sh.Variable("canvas", "margin", [10,20,30,40,50])
+		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20])
+
 		self.x = 0
 		self.y = 0
 

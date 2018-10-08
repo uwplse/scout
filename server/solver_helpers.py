@@ -178,10 +178,11 @@ class Solution(object):
 					alignment = model[shape.variables.alignment.z3].as_string()
 					justification = model[shape.variables.justification.z3].as_string()
 					margin = model[shape.variables.margin.z3].as_string()
+					grid = model[shape.variables.grid.z3].as_string()
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
-					element["grid"] = 5
+					element["grid"] = int(grid)
 				elif shape.type == "leaf":
 					if shape.importance == "most":
 						magnification = model[shape.variables.magnification.z3].as_string()

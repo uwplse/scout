@@ -67,6 +67,13 @@ class ConstraintBuilder(object):
 		self.solver.add(shape.variables.y.z3 >= 0, shape.shape_id + " y must be greater than zero.")
 		self.solver.add((shape.variables.y.z3 + shape.computed_height()) <= canvas_height, shape.shape_id + " bottom must be less than height.")
 
+	def init_shape_grid_values(self, shape, canvas): 
+		grid = canvas.variables.grid.z3
+		shape_x = shape.variables.x.z3
+		shape_y = shape.variables.y.z3
+		self.solver.add((shape_x % grid) == 0, shape.shape_id + " x multiple of grid value.")
+		self.solver.add((shape_y % grid) == 0, shape.shape_id + " y multiple of grid value.")
+
 	def init_canvas_constraints(self, canvas): 
 		alignment = canvas.variables.alignment
 		justification = canvas.variables.justification
@@ -98,6 +105,14 @@ class ConstraintBuilder(object):
 
 		self.justify_canvas(canvas)
 		self.align_canvas(canvas)
+		self.init_grid_constraints(canvas)
+
+	def init_grid_constraints(self, canvas): 
+		grid = canvas.variables.grid
+		grid_values = []
+		for grid_value in grid.domain:
+			grid_values.append(grid.z3 == grid_value)
+		self.solver.add(Or(grid_values), "canvas grid value is within the domain")	
 
 	def init_container_constraints(self, container, shapes):
 		arrangement = container.variables.arrangement.z3
@@ -566,8 +581,8 @@ class ConstraintBuilder(object):
 
 		m_w_constraint = container.computed_width() == (self.get_max_width_constraint(1,0,child_shapes))
 		m_h_constraint = container.computed_height() == (self.get_max_height_constraint(1,0,child_shapes))
-		self.solver.add(If(is_vertical, m_w_constraint, True), container.shape_id + " max height vertical")
-		self.solver.add(If(is_horizontal, m_h_constraint, True), container.shape_id + " max width horizontal")
+		self.solver.add(If(is_vertical, m_w_constraint, True), container.shape_id + " max width vertical")
+		self.solver.add(If(is_horizontal, m_h_constraint, True), container.shape_id + " max height horizontal")
 
 		groups = self.split_children_into_groups(container)
 		self.solver.add(If(is_rows, self.align_rows_or_columns(container, spacing, groups, "row", "y", "height", "x", "width"), True), container.shape_id + " align rows")

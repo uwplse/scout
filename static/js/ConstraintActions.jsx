@@ -14,9 +14,6 @@ ConstraintActions.locked_grid_key = 'grid';
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
 ConstraintActions.alignments = ["left", "center", "right"];
 ConstraintActions.justifications = ["top", "center", "bottom"];
-ConstraintActions.proximities = [10,20,30,40,50];
-ConstraintActions.grids = [5];
-ConstraintActions.distributions = [20,40,60,80,100,120,140,160,180,200,220,240,260,280,300,320,340,360,380,400];
 
 ConstraintActions.locked_proximity_key = 'proximity'; 
 ConstraintActions.locked_margin_key = 'margin';

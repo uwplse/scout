@@ -54,7 +54,7 @@ export default class PageContainer extends React.Component {
   }
 
   closeRightClickMenus = () => {
-    console.log("closeright click menus");
+    // Close all of the right click menus in response to a click on the PageContainer
     if(this.constraintsCanvasRef) {
       this.constraintsCanvasRef.current.closeRightClickMenu(); 
     }
@@ -93,7 +93,8 @@ export default class PageContainer extends React.Component {
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
-              getRelativeDesigns={this.getRelativeDesigns}/>); 
+              getRelativeDesigns={this.getRelativeDesigns}
+              closeRightClickMenus={this.closeRightClickMenus} />); 
   }
 
   checkSolutionValidity = (options={}) => {
