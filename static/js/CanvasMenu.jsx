@@ -36,22 +36,35 @@ class CanvasMenuItem extends React.Component {
 export default class CanvasMenu extends React.Component {
   constructor(props) {
   	super(props); 
-  	this.menuTrigger = props.menuTrigger; // This is the JSON of the shape that triggered the menu open 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape; // Gets the shape on the constraints canvas used to construct the menu options
 
     this.state = {
       left: props.left, 
-      top: props.top
+      top: props.top, 
+      menuTrigger: props.menuTrigger // This is the JSON of the shape that triggered the menu open
     }
+  }
+
+  componentDidUpdate() {
+    console.log("component updated"); 
+    console.log(this.state.menuTrigger.type); 
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      left: nextProps.left, 
+      top: nextProps.top, 
+      menuTrigger: nextProps.menuTrigger
+    };     
   }
 
   getAction(constraint, constraintsMenu) {
       // Find the corresponding shape on the cosntraints canvas for the menu trigger shape
       // Use the state of that shape to determine what shows up
-      let constraintsCanvasShape = this.getConstraintsCanvasShape(this.menuTrigger.name);
+      let constraintsCanvasShape = this.getConstraintsCanvasShape(this.state.menuTrigger.name);
       if(constraintsCanvasShape[ConstraintActions.locksKey]
         && constraintsCanvasShape[ConstraintActions.locksKey].indexOf(constraint) >= 0) {
-        if(constraintsCanvasShape[constraint] == this.menuTrigger[constraint]) {
+        if(constraintsCanvasShape[constraint] == this.state.menuTrigger[constraint]) {
           // The constraint is active and set to true, show the undo option
           return { type: "undo", action: constraintsMenu[constraint]};           
         }
@@ -62,25 +75,6 @@ export default class CanvasMenu extends React.Component {
         // Show the do option
         return { type: "do", action: constraintsMenu[constraint]}; 
       }    
-  }
-
-  getMenuItems(menuCollection) {
-    let menuItems = []; 
-    for(let constraint in menuCollection) {
-      if(menuCollection.hasOwnProperty(constraint)) {
-        // Check if this property is set on the menu trigger already to 
-        // Decide whether to show the do or undo option 
-        let action = this.getAction(constraint, menuCollection); 
-        menuItems.push(<CanvasMenuItem 
-          onClick={this.props.onClick} 
-          action={action.action} 
-          actionType={action.type} 
-          menuTrigger={this.menuTrigger} 
-          key={constraint} />);
-      }
-    }
-
-    return menuItems; 
   }
 
   getRelationalMenuItems() {
@@ -105,42 +99,50 @@ export default class CanvasMenu extends React.Component {
   }
 
   render () {
-    let groupItems = []; 
-    let canvasItems = []; 
-    let relationalItems = [];
-    let elementItems = []; 
-
-    if(this.menuTrigger.type != "canvas") {
-      elementItems = this.getMenuItems(ConstraintActions.elementConstraints); 
-      // relationalItems = this.getRelationalMenuItems();
-    }
-
-    if(this.menuTrigger.type == "group" || this.menuTrigger.type == "labelGroup" || this.menuTrigger.type == "page") {
-      groupItems = this.getMenuItems(ConstraintActions.groupConstraints); 
-    }
-
-    if(this.menuTrigger.type == "canvas") {
-      canvasItems = this.getMenuItems(ConstraintActions.canvasConstraints); 
-    }
-
+    const isContainer = this.state.menuTrigger.type == "group" || this.state.menuTrigger.type == "labelGroup" || this.state.menuTrigger.type == "page"; 
     const menuLeft = this.state.left; 
     const menuTop = this.state.top;
-
 	  return (
       <div className="right-click-menu-container dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}} >
         <ul className="dropdown-menu" style={{display: "block"}}>
-        {elementItems.length ? 
+        {this.state.menuTrigger.type != "canvas" ? 
           (<li role="separator" className="divider divider-top">Element</li>) : undefined}
-        {elementItems}
-        {groupItems.length ? 
-          (<li role="separator" className="divider">Container</li>) : undefined}
-        {groupItems.length ? groupItems : undefined}
-        {canvasItems.length ? (
-          <li role="separator" className="divider">Global</li>) : undefined}
-        {canvasItems.length ? canvasItems : undefined}  
-        {relationalItems.length ? (
-          <li role="separator" className="divider">Relational</li>) : undefined}
-        {relationalItems.length ? relationalItems : undefined}  
+        {this.state.menuTrigger.type != "canvas" ? 
+            Object.keys(ConstraintActions.elementConstraints).map((key) => {
+              let action = this.getAction(key, ConstraintActions.elementConstraints);
+              return (<CanvasMenuItem onClick={this.props.onClick} 
+                        action={action.action} 
+                        actionType={action.type} 
+                        menuTrigger={this.state.menuTrigger} 
+                        key={key} />);
+            }) : undefined}
+
+        {isContainer ? 
+          (<li role="separator" className="divider divider-top">Container</li>) : undefined}
+        {isContainer ? 
+            Object.keys(ConstraintActions.groupConstraints).map((key) => {
+              let action = this.getAction(key, ConstraintActions.groupConstraints);
+              return (<CanvasMenuItem onClick={this.props.onClick} 
+                        action={action.action} 
+                        actionType={action.type} 
+                        menuTrigger={this.state.menuTrigger} 
+                        key={key} />);
+            }) : undefined}
+
+        {this.state.menuTrigger.type == "canvas" ? 
+          (<li role="separator" className="divider divider-top">Canvas</li>) : undefined}
+        {this.state.menuTrigger.type == "canvas" ? 
+            Object.keys(ConstraintActions.canvasConstraints).map((key) => {
+              let action = this.getAction(key, ConstraintActions.canvasConstraints);
+              return (<CanvasMenuItem onClick={this.props.onClick} 
+                        action={action.action} 
+                        actionType={action.type} 
+                        menuTrigger={this.state.menuTrigger} 
+                        key={key} />);
+            }) : undefined} 
+        {/*relationalItems.length ? (
+          <li role="separator" className="divider">Relational</li>) : undefined*/}
+        {/*relationalItems.length ? relationalItems : undefined*/}  
         </ul>
       </div>
     );

@@ -338,6 +338,7 @@ export default class DesignCanvas extends React.Component {
     let constraintsMenuShape = this.state.constraintsMenuShape; 
 
     if(constraintsMenuShape != undefined) {
+      console.log("design canvas");
       console.log(constraintsMenuShape.type); 
     }
 

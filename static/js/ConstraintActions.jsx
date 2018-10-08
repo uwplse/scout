@@ -71,7 +71,7 @@ ConstraintActions.elementConstraints = {
 			}
 		}, 
 		"undo": {
-			"key": "y",
+			"key": "x",
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
 				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("x"); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
