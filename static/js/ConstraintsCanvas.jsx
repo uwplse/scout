@@ -764,6 +764,9 @@ export default class ConstraintsCanvas extends React.Component {
       }); 
       
       // Create a new labelGroup element. The order should be important so the label always appears first in reading order. 
+      // Have to set the children on the object here when creating a new node
+      labeledNode.children = labeledNodeData.children; 
+
       let newLabelGroupNode = this.createNewTreeNode("labelGroup", "labelGroup", label, { containerOrder: "important" }); 
       newLabelGroupNode.expanded = true; 
       newLabelGroupNode.children = [labelNode, labeledNode]; 

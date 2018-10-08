@@ -80,7 +80,8 @@ export default class SVGWidget extends React.Component {
       'search': 'Search', 
       'group': 'Group', 
       'labelGroup': 'Label', 
-      'smallLabel': 'Label'
+      'smallLabel': 'Label', 
+      'image': 'image'
     }
     return values[controlType]; 
   }; 

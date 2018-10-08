@@ -20,7 +20,7 @@ class FontSizeMenuItem extends React.Component {
 class LabelMenuItem extends React.Component {
   constructor(props) {
     super(props); 
-    this.shapeId = props.shapeId; 
+    this.shapeID = props.shapeID; 
     this.shapeLabel = props.shapeLabel; 
     this.onClick = props.onClick; 
   }
@@ -177,7 +177,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
     let menuItems = []; 
     for(var i=0; i<labelItems.length; i++) {
       let label = labelItems[i]; 
-      menuItems.push(<LabelMenuItem key={i} shapeId={label.id} shapeLabel={label.label} onClick={this.setLabel} />); 
+      menuItems.push(<LabelMenuItem key={i} shapeID={label.id} shapeLabel={label.label} onClick={this.setLabel} />); 
     }
     return menuItems; 
   }
