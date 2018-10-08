@@ -1,6 +1,6 @@
 // App.jsx
 import React from "react";
-import CanvasMenu from "./CanvasMenu"; 
+import DesignCanvasMenu from "./DesignCanvasMenu"; 
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
@@ -359,7 +359,7 @@ export default class DesignCanvas extends React.Component {
            id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
   			<div className={(constraintsMenuShape ? "" : "hidden")}>
         {constraintsMenuShape ? 
-          (<CanvasMenu 
+          (<DesignCanvasMenu 
             left={constraintsMenuX} 
             top={constraintsMenuY} 
             menuTrigger={constraintsMenuShape} 

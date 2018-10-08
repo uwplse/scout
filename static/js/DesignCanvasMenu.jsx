@@ -2,7 +2,7 @@
 import React from "react";
 import ConstraintActions from "./ConstraintActions"; 
 
-class CanvasMenuItem extends React.Component {
+class DesignCanvasMenuItem extends React.Component {
   constructor(props) {
   	super(props); 
   	this.menuTrigger = props.menuTrigger;  // Pass this along from parent so we can return the shape/selected menu item combination when the menu closes
@@ -33,7 +33,7 @@ class CanvasMenuItem extends React.Component {
 // One is relational (updates 2 or more shapes and the constraint canvs shape)
 // One is singular (updates only one shape)
 
-export default class CanvasMenu extends React.Component {
+export default class DesignCanvasMenu extends React.Component {
   constructor(props) {
   	super(props); 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape; // Gets the shape on the constraints canvas used to construct the menu options
@@ -110,7 +110,7 @@ export default class CanvasMenu extends React.Component {
         {this.state.menuTrigger.type != "canvas" ? 
             Object.keys(ConstraintActions.elementConstraints).map((key) => {
               let action = this.getAction(key, ConstraintActions.elementConstraints);
-              return (<CanvasMenuItem onClick={this.props.onClick} 
+              return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action} 
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 
@@ -122,7 +122,7 @@ export default class CanvasMenu extends React.Component {
         {isContainer ? 
             Object.keys(ConstraintActions.groupConstraints).map((key) => {
               let action = this.getAction(key, ConstraintActions.groupConstraints);
-              return (<CanvasMenuItem onClick={this.props.onClick} 
+              return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action} 
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 
@@ -134,7 +134,7 @@ export default class CanvasMenu extends React.Component {
         {this.state.menuTrigger.type == "canvas" ? 
             Object.keys(ConstraintActions.canvasConstraints).map((key) => {
               let action = this.getAction(key, ConstraintActions.canvasConstraints);
-              return (<CanvasMenuItem onClick={this.props.onClick} 
+              return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action} 
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 

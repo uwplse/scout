@@ -2,7 +2,7 @@ import React from "react";
 import SVGWidget from './SVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey, getFlatDataFromTree, addNodeUnderParent } from 'react-sortable-tree';
-import RightClickMenu from './RightClickMenu'; 
+import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
 import label from '../assets/illustrator/labelContainer.svg';
@@ -861,7 +861,7 @@ export default class ConstraintsCanvas extends React.Component {
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
     const rightClickMenu = (this.state.rightClickMenuShown ?
-     <RightClickMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} 
+     <ConstraintsCanvasMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} 
       menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
       getSiblingLabelItem={this.getSiblingLabelItem}

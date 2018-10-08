@@ -96,7 +96,7 @@ class ImportanceMenuItem extends React.Component {
   }
 }
 
-export default class RightClickMenu extends React.Component {
+export default class ConstraintsCanvasMenu extends React.Component {
   constructor(props) {
   	super(props); 
     this.setFontSize = props.menuCallbacks.setFontSize; 
