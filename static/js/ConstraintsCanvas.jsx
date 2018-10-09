@@ -760,32 +760,6 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  removeRepeatGroup = (groupID) => {
-    let groupNode = this.widgetTreeNodeMap[groupID];
-    let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
-    if(groupNodeData) {
-      let widget = this.getWidget(groupNode.title.props.shape, group); 
-
-      // Create a new node for the widget
-      let newNode = {
-        title: widget, 
-        subtitle: [], 
-        expanded: true, 
-        children: groupNodeData.children
-      }; 
-
-      // Replace the current node with this new node
-      this.state.treeData = changeNodeAtPath({
-        treeData: this.state.treeData,
-        path: groupNodeData.path,
-        getNodeKey: defaultGetNodeKey,
-        ignoreCollapsed: false,
-        newNode: newNode
-      }); 
-    }
-  }
-
-
   closeTypingAlert = (groupID) => {
     return () => {
       // Close the group typing alert dialog without doing anything. 
@@ -846,7 +820,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  undoTypedGroup(groupNode) {
+  removeTypedGroup(groupNode) {
    // Ungroup childen from the item containers
     let children = groupNode.children; 
     if(children) {
@@ -889,26 +863,49 @@ export default class ConstraintsCanvas extends React.Component {
         }
       }
     }
+
+    // once children have been restructured, replace
+    // the group container with a regular group container
+    this.replaceTypedGroup(groupNode); 
+  }
+
+  replaceTypedGroup = (groupNode) => {
+    let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
+    if(groupNodeData) {
+      let shape = groupNode.title.props.shape; 
+      shape.typed = false; 
+
+      let widget = this.getWidget(shape, group); 
+
+      // Create a new node for the widget
+      let newNode = {
+        title: widget, 
+        subtitle: [], 
+        expanded: true, 
+        children: groupNodeData.children
+      }; 
+
+      // Replace the current node with this new node
+      this.state.treeData = changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: groupNodeData.path,
+        getNodeKey: defaultGetNodeKey,
+        ignoreCollapsed: false,
+        newNode: newNode
+      }); 
+    }
   }
 
   onMoveNode = ({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) => {
     // If the node was moved into group, check whether group typing should be applied. 
     if(nextParentNode) {
       if(nextParentNode.title.props.shape.type == "group") {
+        this.removeWidgetTypingAlert(nextParentNode);
         if(nextParentNode.title.props.typed) {
           // The group is already typed. 
           // Remove the group typing 
           // Check first whether the widget typing alert has already been activated for this group
-          if(nextParentNode.subtitle && nextParentNode.subtitle.length) {
-            let firstSubtitle = nextParentNode.subtitle[0]; 
-            if(firstSubtitle.props.type == "typing") {
-              // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
-              nextParentNode.subtitle.splice(0,1);
-            }
-          }
-
-          this.undoTypedGroup(nextParentNode);
-          this.removeRepeatGroup(nextParentNode.title.props.id);
+          this.removeTypedGroup(nextParentNode);
         } 
 
         let groupSize = this.checkGroupTyping(nextParentNode); 
@@ -928,6 +925,16 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
+  removeWidgetTypingAlert = (node) => {
+    if(node.subtitle && node.subtitle.length) {
+      let firstSubtitle = node.subtitle[0]; 
+      if(firstSubtitle.props.type == "typing") {
+        // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
+        node.subtitle.splice(0,1);
+      }
+    }
+  }
+
   removeWidgetNode = (path) => { 
     return () => {
       const getNodeKey = ({ treeIndex }) => treeIndex;
@@ -939,18 +946,55 @@ export default class ConstraintsCanvas extends React.Component {
           getNodeKey: defaultGetNodeKey,
       }); 
 
+      this.state.treeData = removeNodeAtPath({
+        treeData: this.state.treeData, 
+        path, 
+        getNodeKey,
+      })
+
+      // Check if the parent node is an item or a typed group 
+      // If it is either an item or typed group
+      // Remove the typed group and unparent the children 
+      // from the item groups. 
+      let parentPath = path.slice(0, path.length-1); 
+      if(parentPath.length) {
+        let parentNode = getNodeAtPath({
+          treeData: this.state.treeData, 
+          path: parentPath, 
+          getNodeKey: defaultGetNodeKey
+        }); 
+
+        if(parentNode.node.title.props.typed) {
+          if(parentNode.node.children.length == 1) {
+            this.removeTypedGroup(parentNode.node); 
+          }
+        }
+        else if(parentNode.node.title.props.item) {
+          let typedGroupPath = parentPath.slice(0, parentPath.length-1); 
+          let typedGroupNode = getNodeAtPath({
+            treeData: this.state.treeData, 
+            path: typedGroupPath, 
+            getNodeKey: defaultGetNodeKey
+          }); 
+
+          this.removeTypedGroup(typedGroupNode.node);
+        }
+        else if(parentNode.node.title.props.isContainer) {
+          // Hide the typing alert that was shown on the container, if there is one
+          this.removeWidgetTypingAlert(parentNode.node);
+        }
+      }
+
+      // Remove from the global map of widgets
       let shapeID = treeNode.node.title.props.id; 
       delete this.widgetTreeNodeMap[shapeID]; 
 
       // Delete the entry in the constraints canvas shape map 
       delete this.constraintsShapesMap[shapeID];
 
+
       this.setState(state => ({
-        treeData: removeNodeAtPath({
-          treeData: this.state.treeData, 
-          path, 
-          getNodeKey,
-        })
+        treeData: this.state.treeData,
       }), this.checkSolutionValidity); 
     }
   }
