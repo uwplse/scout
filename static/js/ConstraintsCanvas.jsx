@@ -2,7 +2,7 @@ import React from "react";
 import SVGWidget from './SVGWidget';
 import ContainerSVGWidget from './ContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
-import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey, getFlatDataFromTree, addNodeUnderParent } from 'react-sortable-tree';
+import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey, insertNode, getFlatDataFromTree, addNodeUnderParent } from 'react-sortable-tree';
 import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import Constants from './Constants';
 import WidgetTyping from './WidgetTyping'; 
@@ -483,11 +483,11 @@ export default class ConstraintsCanvas extends React.Component {
       let node = flatData[i]; 
       let nodeItem = node.node; 
       if(nodeItem.title.props.shape && nodeItem.title.props.shape.name == treeNodeID) {
-        return { path: node.path, children: node.node.children }; 
+        return { path: node.path, children: node.node.children, treeIndex: node.treeIndex }; 
       }
     }
 
-    return { path: [-1], children: [] }; 
+    return { path: [-1], children: [], treeIndex: 0 }; 
   }
 
 
@@ -735,33 +735,27 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   removeRepeatGroup = (groupID) => {
-    return () => {
-      let groupNode = this.widgetTreeNodeMap[groupID];
-      let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
-      if(groupNodeData) {
-        let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typed: true }); 
+    let groupNode = this.widgetTreeNodeMap[groupID];
+    let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
+    if(groupNodeData) {
+      let widget = this.getWidget(groupNode.title.props.shape, group); 
 
-        // Create a new node for the widget
-        let newNode = {
-          title: widget, 
-          subtitle: [], 
-          expanded: true, 
-          children: newGroupChildren
-        }; 
+      // Create a new node for the widget
+      let newNode = {
+        title: widget, 
+        subtitle: [], 
+        expanded: true, 
+        children: groupNodeData.children
+      }; 
 
-        // Replace the current node with this new node
-        this.state.treeData = changeNodeAtPath({
-          treeData: this.state.treeData,
-          path: groupNodeData.path,
-          getNodeKey: defaultGetNodeKey,
-          ignoreCollapsed: false,
-          newNode: newNode
-        }); 
-
-        this.setState(state => ({
-          treeData: this.state.treeData
-        }), this.checkSolutionValidity); 
-      }
+      // Replace the current node with this new node
+      this.state.treeData = changeNodeAtPath({
+        treeData: this.state.treeData,
+        path: groupNodeData.path,
+        getNodeKey: defaultGetNodeKey,
+        ignoreCollapsed: false,
+        newNode: newNode
+      }); 
     }
   }
 
@@ -826,40 +820,84 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
+  undoTypedGroup(groupNode) {
+   // Ungroup childen from the item containers
+    let children = groupNode.children; 
+    if(children) {
+      for(let i=0; i<children.length; i++){
+        let child = children[i]; 
+        if(child.title.props.item) {
+          let nodePath = this.getPathAndChildrenForTreeNode(child); 
+
+          this.state.treeData = removeNodeAtPath({
+            treeData: this.state.treeData, 
+            path: nodePath.path, 
+            getNodeKey: defaultGetNodeKey,
+          }); 
+
+          // Remove the children of the item and place
+          // at the parent level
+          let itemChildren = child.children; 
+          if(itemChildren) {
+            let startingIndex = nodePath.treeIndex; 
+            for(let i=0; i<itemChildren.length; i++) {
+              let itemChild = itemChildren[i]; 
+              // Reinsert the children at the item node level
+              let result = insertNode({
+                treeData: this.state.treeData, 
+                depth: nodePath.path.length - 1, 
+                minimumTreeIndex: startingIndex, 
+                newNode: itemChild, 
+                getNodeKey: defaultGetNodeKey, 
+                ignoreCollapsed: false, 
+                expandParent: true
+              });  
+
+              if(result.treeData) {
+                this.state.treeData = result.treeData; 
+              }                     
+
+              startingIndex += 1; 
+            }
+          }
+        }
+      }
+    }
+  }
+
   onMoveNode = ({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) => {
     // If the node was moved into group, check whether group typing should be applied. 
     if(nextParentNode) {
       if(nextParentNode.title.props.shape.type == "group") {
-        // Check first whether the widget typing alert has already been activated for this group
-        if(nextParentNode.subtitle && nextParentNode.subtitle.length) {
-          let firstSubtitle = nextParentNode.subtitle[0]; 
-          if(firstSubtitle.props.type == "typing") {
-            // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
-            nextParentNode.subtitle.splice(0,1);
-          }
-        }
-
         if(nextParentNode.title.props.typed) {
           // The group is already typed. 
           // Remove the group typing 
+          // Check first whether the widget typing alert has already been activated for this group
+          if(nextParentNode.subtitle && nextParentNode.subtitle.length) {
+            let firstSubtitle = nextParentNode.subtitle[0]; 
+            if(firstSubtitle.props.type == "typing") {
+              // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
+              nextParentNode.subtitle.splice(0,1);
+            }
+          }
 
+          this.undoTypedGroup(nextParentNode);
+          this.removeRepeatGroup(nextParentNode.title.props.id);
+        } 
 
+        let groupSize = this.checkGroupTyping(nextParentNode); 
+        let parentID = nextParentNode.title.props.shape.name; 
 
-        } else {
-          let groupSize = this.checkGroupTyping(nextParentNode); 
-          let parentID = nextParentNode.title.props.shape.name; 
+          // Find the group in the tree, remove it, and display the label to apply the typing
+        if(groupSize >= this.minimumGroupSize) {
+          let typingIndex = 0; 
+          let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
+          nextParentNode.subtitle.unshift(widgetTypingElement);
+        }   
 
-            // Find the group in the tree, remove it, and display the label to apply the typing
-          if(groupSize >= this.minimumGroupSize) {
-            let typingIndex = 0; 
-            let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
-            nextParentNode.subtitle.unshift(widgetTypingElement);
-
-            this.setState(state => ({
-              treeData: this.state.treeData
-            }), this.checkSolutionValidity); 
-          }          
-        }
+        this.setState(state => ({
+          treeData: this.state.treeData
+        }), this.checkSolutionValidity); 
       }
     }
   }
