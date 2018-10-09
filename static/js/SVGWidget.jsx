@@ -4,98 +4,11 @@ import Resizable from 're-resizable';
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
 import Converter from "number-to-words";
+import Constants from "./Constants";
 
 const WAIT_INTERVAL = 1000; 
 
 export default class SVGWidget extends React.Component {
-
-  // TODO: Calculate dynamically from the initial size of the SVG? 
-  static initialWidths(controlType) {
-    let values = {
-      'button': 288,
-      'orangeButton': 288, 
-      'field': 288, 
-      'search': 288, 
-      'group': 238, 
-      'page': 238,
-      'labelGroup': 238, 
-      'label': 84, 
-      'orangeLabel': 83,
-      'smallLabel': 50, 
-      'multilineLabel': 130, 
-      'image': 80, 
-      'image2': 80,
-      'image3': 80,
-      'logo': 80,
-      'logo2': 80,
-      'placeholder': 80
-    }
-
-    if(controlType in values) {
-      return values[controlType]; 
-    }
-
-    return 0; 
-  }
-
-  static initialHeights(controlType) {
-    let values = {
-      'button':40,
-      'orangeButton': 40, 
-      'orderLabel': 43,
-      'field': 34, 
-      'search': 34, 
-      'group': 50, 
-      'page': 50,
-      'labelGroup': 50, 
-      'label': 30,
-      'orangeLabel': 43, 
-      'smallLabel': 23, 
-      'image': 80, 
-      'image2': 80,
-      'image3': 80,
-      'logo': 80,
-      'logo2': 80,
-      'placeholder': 80, 
-      'multilineLabel': 40
-    }
-
-    if(controlType in values) {
-      return values[controlType]; 
-    }
-
-    return 0; 
-  }
-
-  static controlHeights(controlType) {
-    return SVGWidget.initialHeights(controlType);
-  }
-
-  static initialLabels(controlType) {
-    let values = {
-      'button': 'Button', 
-      'label': 'Label', 
-      'orangeLabel': 'Label',
-      'field': 'Field', 
-      'search': 'Search', 
-      'group': 'Group', 
-      'labelGroup': 'Label', 
-      'smallLabel': 'Label', 
-      'image': 'image'
-    }
-    return values[controlType]; 
-  }; 
-
-  static initialFontSizes(controlType) {
-    let values = {
-      'label': 36, 
-      'orangeLabel': 36,
-      'multilineLabel': 14, 
-      'smallLabel': 20
-    }
-    return values[controlType];
-  }
-
   constructor(props) {
   	super(props); 
     this.type = props.shape.type; 
@@ -105,7 +18,7 @@ export default class SVGWidget extends React.Component {
 
     this.initialFontSize = 0; 
     if(this.type == "label") {
-      this.initialFontSize = SVGWidget.initialFontSizes(this.controlType);
+      this.initialFontSize = Constants.controlFontSizes(this.controlType);
       this.element.fontSize = this.initialFontSize;  
     }
 
@@ -117,6 +30,7 @@ export default class SVGWidget extends React.Component {
     this.createLabelsGroup = props.createLabelsGroup; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
+    this.isContainer = props.isContainer; 
 
     // Timer for handling text change events
     this.timer = null;  
@@ -125,6 +39,7 @@ export default class SVGWidget extends React.Component {
       height: this.element.size.height,
       width: this.element.size.width,
       order: (this.element.order ? this.element.order : -1),  
+      ordered: this.element.ordered, 
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
       showImportance: props.showImportanceLevels,
@@ -135,8 +50,6 @@ export default class SVGWidget extends React.Component {
         y: 0
       }, 
       svgSource: props.source, 
-      typedGroup: props.typedGroup, 
-      orderedGroup: props.orderedGroup, 
       highlighted: props.highlighted
     }
   }
@@ -145,14 +58,15 @@ export default class SVGWidget extends React.Component {
     return {
       height: prevState.height,  
       width: prevState.width, 
+      order: prevState.order, 
+      ordered: prevState.ordered, 
+      fontSize: prevState.fontSize, 
       importance: prevState.importance, 
       showImportance: prevState.showImportance, 
       showLabels: prevState.showLabels, 
       labelPosition: prevState.labelPosition, 
-      orderedGroup: prevState.orderedGroup,
       showOrder: prevState.showOrder,
       svgSource: nextProps.source, 
-      typedGroup: nextProps.typedGroup, 
       highlighted: nextProps.highlighted
     }    
   }
@@ -307,14 +221,6 @@ export default class SVGWidget extends React.Component {
     }; 
   }
 
-  setTypedGroup = (value) => {
-    if(value) {
-      this.setState({
-        typedGroup: true
-      }); 
-    }
-  }
-
   setFontSize = (value) => {
     return (evt) => {
       evt.stopPropagation(); 
@@ -403,17 +309,12 @@ export default class SVGWidget extends React.Component {
 
       let orderedValue = orderValue == "important"; 
       this.setState({
-        orderedGroup: orderedValue
+        ordered: orderedValue
       }); 
 
       this.hideRightClickMenu();
       this.checkSolutionValidity();
     }
-  }
-
-  onElementResized = (evt, direction, element, delta) => {
-    // When resizing finishes, update the size of the element
-    this.adjustElementSize(element);
   }
 
   render () {
@@ -424,21 +325,19 @@ export default class SVGWidget extends React.Component {
     const showImportance = this.state.showImportance; 
     const showLabels = this.state.showLabels; 
     const labelPosition = this.state.labelPosition; 
-    const typedGroup = this.state.typedGroup;
-    const orderedGroup = this.state.orderedGroup; 
     const order = this.state.order;
+    const ordered = this.state.ordered; 
     const orderOrdinal = Converter.toWordsOrdinal(order+1); 
     const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
     const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
 
     const showOrder = this.state.showOrder;  
-    this.setElementTyping(typedGroup);
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
 
-    const isEditable = this.controlType != "group" && this.controlType != "page" && this.controlType != "labelGroup";
+    const isEditable = this.isContainer;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <div 
@@ -456,14 +355,14 @@ export default class SVGWidget extends React.Component {
             height={this.state.height + "px"} 
             width={this.state.width + "px"} />
             <div 
-              className={"widget-control-info " + ((showImportance || showOrder || this.controlType == "group" || this.controlType == "page") ? "" : "hidden")}>
-              {this.controlType == "group" || this.controlType == "page" ? 
-               (<span className={"badge " + (orderedGroup ? "badge-success" : "badge-primary")}>{(orderedGroup ? "Order Important" : "Order Unimportant")}
+              className={"widget-control-info " + ((showImportance || showOrder || this.isContainer) ? "" : "hidden")}>
+              {this.isContainer ? 
+               (<span className={"badge " + (ordered ? "badge-success" : "badge-primary")}>{(ordered ? "Order Important" : "Order Unimportant")}
                 </span>) : undefined}
-                <span className={"widget-control-order badge badge-success " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
-                <span className={"badge " + (importance == "most" ? "badge-success " : "badge-primary ") + (showImportance ? "" : "hidden")}>
-                  {importanceLabel}
-                </span>
+              <span className={"widget-control-order badge badge-success " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
+              <span className={"badge " + (importance == "most" ? "badge-success " : "badge-primary ") + (showImportance ? "" : "hidden")}>
+                {importanceLabel}
+              </span>
             </div>
         </div>
       </div>); 

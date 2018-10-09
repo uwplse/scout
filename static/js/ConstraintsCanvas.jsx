@@ -1,8 +1,10 @@
 import React from "react";
 import SVGWidget from './SVGWidget';
+import ContainerSVGWidget from './ContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey, getFlatDataFromTree, addNodeUnderParent } from 'react-sortable-tree';
 import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
+import Constants from './Constants';
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
 import label from '../assets/illustrator/labelContainer.svg';
@@ -79,8 +81,8 @@ export default class ConstraintsCanvas extends React.Component {
       "x": 0, 
       "y": 0, 
       "size": {
-        width: SVGWidget.initialWidths('page'),
-        height: SVGWidget.initialHeights('page')
+        width: Constants.controlWidths('page'),
+        height: Constants.controlHeights('page')
       }, 
       "containerOrder": "unimportant",
       "importance": "normal",
@@ -107,15 +109,34 @@ export default class ConstraintsCanvas extends React.Component {
 
   getWidget = (shape, src, options={}) => {
     let shapeId = shape.name;
-    let typedGroup = options.typedGroup ?  options.typedGroup : false;  
-    let highlighted = options.highlighted ? options.highlighted : false;
+    let highlighted = options.highlighted ? options.highlighted : false; 
+    let isContainer = shape.type == "group" || shape.type == "page" || shape.type == "canvas";
+
+    if(isContainer) {
+      let item = options.item ? options.item : false; 
+      let typed = options.typed ? options.typed : false;
+      return (<ContainerSVGWidget 
+                key={shapeId} 
+                shape={shape} 
+                id={shapeId} 
+                source={src}
+                highlighted={highlighted}
+                showImportanceLevels={this.state.showImportanceLevels}
+                checkSolutionValidity={this.checkSolutionValidity} 
+                displayRightClickMenu={this.displayRightClickMenu}
+                hideRightClickMenu={this.hideRightClickMenu}
+                createLabelsGroup={this.createLabelsGroup}
+                getCurrentShapeSiblings={this.getCurrentShapeSiblings}
+                getCurrentShapeIndex={this.getCurrentShapeIndex}
+                typed={typed}
+                item={item} />);
+    }
     return (<SVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
               source={src}
               highlighted={highlighted}
-              typedGroup={typedGroup}
               showImportanceLevels={this.state.showImportanceLevels}
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
@@ -127,6 +148,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   addShapeOfTypeToCanvas = (type, controlType, source) => {
     let shape = this.createConstraintsCanvasShapeObject(type, controlType); 
+
     let widget = this.getWidget(shape, source); 
 
     let newTreeNode = {
@@ -154,7 +176,7 @@ export default class ConstraintsCanvas extends React.Component {
   createNewTreeNode = (type, controlType, source, options={}) => {
     // Creates a new tree node widget and returns it
     let shape = this.createConstraintsCanvasShapeObject(type, controlType, options); 
-    let widget = this.getWidget(shape, source); 
+    let widget = this.getWidget(shape, source, options); 
 
     let newTreeNode = {
       title: widget, 
@@ -298,18 +320,6 @@ export default class ConstraintsCanvas extends React.Component {
     return this.findShapeSiblings(shapeId, node); 
   }
  
-  updateBackgroundColor = (color) => {
-    let backgroundElement = document.getElementById("constraints-canvas-container");
-    backgroundElement.style.backgroundColor = color.hex; 
-
-    // When the canvas level background color changes, update the canvas level object
-    this.canvasLevelShape.background = color.hex; 
-
-    this.setState({
-      colorPickerShown: false
-    });   
-  }
-
   hideRightClickMenu = () => {
     // Recheck consistency of the solutions after any of the things are set
     this.setState({
@@ -490,12 +500,12 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     let importance = (options.importance ? options.importance : "normal");
-    let width = options.width ? options.width : SVGWidget.initialWidths(controlType); 
-    let height = options.height ? options.height : SVGWidget.initialHeights(controlType); 
+    let width = options.width ? options.width : Constants.controlWidths(controlType); 
+    let height = options.height ? options.height : Constants.controlHeights(controlType); 
 
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
-    let label = SVGWidget.initialLabels(type); 
+    let label = Constants.controlLabels(type); 
     let shape = {
       "name": _.uniqueId(),
       "label": label, 
@@ -661,8 +671,6 @@ export default class ConstraintsCanvas extends React.Component {
     let currGroup = []; 
     let groups = []; 
     for(let i=0; i<groupChildren.length; i++) {
-      // TODO: Refactor at some point to just update the React objects instead of keeping around this extra
-      // object to maintain the metadata for the solver
       let correspondingChildrenIDs = this.getRepeatGroupMatchingChildren(i, groupChildren, groupSize); 
       groupChildren[i].title.props.shape.correspondingIDs = correspondingChildrenIDs; 
       currGroup.push(groupChildren[i]); 
@@ -680,7 +688,7 @@ export default class ConstraintsCanvas extends React.Component {
     let newChildren = []; 
     for(let i=0; i<groups.length; i++) {
       let currGroup = groups[i]; 
-      let newGroupNode = this.createNewTreeNode("group", "group", item); 
+      let newGroupNode = this.createNewTreeNode("group", "group", item, { item: true }); 
       let isExpanded = (i == 0) ? true : false; 
       newGroupNode.expanded = isExpanded; 
       newGroupNode.children = currGroup; 
@@ -695,7 +703,7 @@ export default class ConstraintsCanvas extends React.Component {
       let groupNode = this.widgetTreeNodeMap[groupID];
       let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
       if(groupNodeData) {
-        let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typedGroup: typed }); 
+        let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typed: true }); 
         let newGroupChildren = this.restructureRepeatGroupChildren(groupNodeData.children, groupSize); 
 
         // Create a new node for the widget
@@ -873,8 +881,8 @@ export default class ConstraintsCanvas extends React.Component {
       getCurrentContainerOrder={this.getCurrentContainerOrder}
       getCurrentShapeSiblings={this.getCurrentShapeSiblings}
       getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
-    const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
-    const colorPickerPosition = this.state.colorPickerPosition; 
+    // const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
+    // const colorPickerPosition = this.state.colorPickerPosition; 
     const pageOrder = this.state.pageOrder; 
 
     // Process the queue of shapes to add to the canvas

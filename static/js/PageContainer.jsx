@@ -3,6 +3,7 @@ import React from "react";
 import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
+import Constants from './Constants'; 
 import DesignCanvas from './DesignCanvas';
 import Sidebar from 'react-sidebar';
 import $ from 'jquery';
@@ -311,35 +312,35 @@ export default class PageContainer extends React.Component {
       return (
         <div>
           <SVGInline className="widget-control widget-control-button" 
-            height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
+            height={Constants.controlHeights('button') + "px"} width={Constants.controlWidths('button') + "px"} 
             svg={ filledButton } onClick={this.addShapeToConstraintsCanvas('button', 'button', filledButton)}/>
           <div className="widget-control-group">
             <SVGInline className="widget-control widget-control-label" 
-              height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
+              height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
               svg={ label } onClick={this.addShapeToConstraintsCanvas('label', 'label', label)}/>
             <SVGInline className="widget-control widget-control-label" 
-              height={SVGWidget.initialHeights('smallLabel') + "px"} width={SVGWidget.initialWidths('smallLabel') + "px"} 
+              height={Constants.controlHeights('smallLabel') + "px"} width={Constants.controlWidths('smallLabel') + "px"} 
               svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel', smallLabelDynamic)}/>
             <SVGInline className="widget-control widget-control-label" 
-              height={SVGWidget.initialHeights('multilineLabel') + "px"} width={SVGWidget.initialWidths('multilineLabel') + "px"} 
+              height={Constants.controlHeights('multilineLabel') + "px"} width={Constants.controlWidths('multilineLabel') + "px"} 
               svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas('paragraph', 'multilineLabel', multilineLabel)}/>
           </div>
           <div className="widget-control-group">
             <SVGInline className="widget-control widget-control-image" 
-              height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+              height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
               svg={ image } onClick={this.addShapeToConstraintsCanvas('image', 'image', image)}/> 
             <SVGInline className="widget-control widget-control-placeholder" 
-              height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+              height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
               svg={ image2 } onClick={this.addShapeToConstraintsCanvas('image', 'image2', image2)}/>
             <SVGInline className="widget-control widget-control-placeholder" 
-              height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+              height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
               svg={ image3 } onClick={this.addShapeToConstraintsCanvas('image', 'image3', image3)}/>
             <SVGInline className="widget-control widget-control-placeholder" 
-              height={SVGWidget.initialHeights('placeholder') + "px"} width={SVGWidget.initialWidths('placeholder') + "px"} 
+              height={Constants.controlHeights('placeholder') + "px"} width={Constants.controlWidths('placeholder') + "px"} 
               svg={ placeholder } onClick={this.addShapeToConstraintsCanvas('image', 'placeholder', placeholder)}/>
           </div>
           <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-            height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
+            height={Constants.controlHeights('group') + "px"} width={Constants.controlWidths('group') + "px"}
             onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
         </div>); 
     }
@@ -347,19 +348,19 @@ export default class PageContainer extends React.Component {
       return (
       <div className="widget-control-group">
         <SVGInline className="widget-control widget-control-field" 
-                  height={SVGWidget.initialHeights('field') + "px"} width={SVGWidget.initialWidths('field') + "px"} 
+                  height={Constants.controlHeights('field') + "px"} width={Constants.controlWidths('field') + "px"} 
                   svg={ field } onClick={this.addShapeToConstraintsCanvas('field', 'field', field)}/>
         <SVGInline className="widget-control widget-control-button" 
-          height={SVGWidget.initialHeights('button') + "px"} width={SVGWidget.initialWidths('button') + "px"} 
+          height={Constants.controlHeights('button') + "px"} width={Constants.controlWidths('button') + "px"} 
           svg={ orangeButton } onClick={this.addShapeToConstraintsCanvas('button', 'orangeButton', orangeButton)}/>
         <SVGInline className="widget-control widget-control-label" 
-          height={SVGWidget.initialHeights('label') + "px"} width={SVGWidget.initialWidths('label') + "px"} 
+          height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
           svg={ orangeLabel } onClick={this.addShapeToConstraintsCanvas('label', 'orangeLabel', orangeLabel)}/>
         <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-          height={SVGWidget.initialHeights('group') + "px"} width={SVGWidget.initialWidths('group') + "px"}
+          height={Constants.controlHeights('group') + "px"} width={Constants.controlWidths('group') + "px"}
           onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
         <SVGInline className="widget-control widget-control-logo" 
-          height={SVGWidget.initialHeights('image') + "px"} width={SVGWidget.initialWidths('image') + "px"} 
+          height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
           svg={ logo } onClick={this.addShapeToConstraintsCanvas('image', 'logo', logo)}/>
       </div>); 
     }
