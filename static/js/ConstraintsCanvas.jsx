@@ -121,6 +121,7 @@ export default class ConstraintsCanvas extends React.Component {
                 id={shapeId} 
                 source={src}
                 highlighted={highlighted}
+                isContainer={true}
                 showImportanceLevels={this.state.showImportanceLevels}
                 checkSolutionValidity={this.checkSolutionValidity} 
                 displayRightClickMenu={this.displayRightClickMenu}
@@ -550,7 +551,10 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   canReparentWidgetNode = ({node, nextParent, prevPath, nextPath}) => {
-    if(nextParent && (nextParent.title.props.shape.type == "group" || nextParent.title.props.shape.type == "page")) {
+    if(nextParent && (nextParent.title.props.isContainer)) {
+        if(nextParent.title.props.item) {
+          return false;
+        }
         return true;
     }
 
@@ -730,6 +734,38 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
+  removeRepeatGroup = (groupID) => {
+    return () => {
+      let groupNode = this.widgetTreeNodeMap[groupID];
+      let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
+      if(groupNodeData) {
+        let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typed: true }); 
+
+        // Create a new node for the widget
+        let newNode = {
+          title: widget, 
+          subtitle: [], 
+          expanded: true, 
+          children: newGroupChildren
+        }; 
+
+        // Replace the current node with this new node
+        this.state.treeData = changeNodeAtPath({
+          treeData: this.state.treeData,
+          path: groupNodeData.path,
+          getNodeKey: defaultGetNodeKey,
+          ignoreCollapsed: false,
+          newNode: newNode
+        }); 
+
+        this.setState(state => ({
+          treeData: this.state.treeData
+        }), this.checkSolutionValidity); 
+      }
+    }
+  }
+
+
   closeTypingAlert = (groupID) => {
     return () => {
       // Close the group typing alert dialog without doing anything. 
@@ -803,21 +839,26 @@ export default class ConstraintsCanvas extends React.Component {
           }
         }
 
-        let groupSize = this.checkGroupTyping(nextParentNode); 
-        let parentID = nextParentNode.title.props.shape.name; 
+        if(nextParentNode.title.props.typed) {
+          // The group is already typed. 
+          // Remove the group typing 
 
-          // Find the group in the tree, remove it, and display the label to apply the typing
-        if(groupSize >= this.minimumGroupSize) {
-          let typingIndex = 0; 
-          let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
-          nextParentNode.subtitle.unshift(widgetTypingElement);
 
-          this.setState(state => ({
-            treeData: this.state.treeData
-          }), this.checkSolutionValidity); 
-        }
-        else {
-          // TODO: Remove the corresponding WidgetTyping item from the subtitle area of the node
+
+        } else {
+          let groupSize = this.checkGroupTyping(nextParentNode); 
+          let parentID = nextParentNode.title.props.shape.name; 
+
+            // Find the group in the tree, remove it, and display the label to apply the typing
+          if(groupSize >= this.minimumGroupSize) {
+            let typingIndex = 0; 
+            let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
+            nextParentNode.subtitle.unshift(widgetTypingElement);
+
+            this.setState(state => ({
+              treeData: this.state.treeData
+            }), this.checkSolutionValidity); 
+          }          
         }
       }
     }

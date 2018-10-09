@@ -2,7 +2,7 @@
 import React from "react";
 import SVGWidget from './SVGWidget';
 
-export default class GroupSVGWidget extends React.Component {
+export default class ContainerSVGWidget extends React.Component {
   constructor(props) {
     super(props); 
   }
@@ -14,7 +14,7 @@ export default class GroupSVGWidget extends React.Component {
         shape={this.props.shape} 
         id={this.props.id}
         source={this.props.source}
-        isContainer={true}
+        isContainer={this.props.isContainer}
         highlighted={this.props.highlighted}
         showImportanceLevels={this.props.showImportanceLevels}
         checkSolutionValidity={this.props.checkSolutionValidity} 

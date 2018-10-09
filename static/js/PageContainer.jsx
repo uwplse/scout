@@ -27,7 +27,7 @@ import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
 import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
 import logo from '../assets/illustrator/logo.svg';
 import newsLogo from '../assets/illustrator/newsLogo.svg';
-import pageLogo from '../assets/svgs/logo.svg';
+import pageLogo from '../assets/logo.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
