@@ -432,7 +432,6 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   getShapeHierarchy = () => {
-    // Not supporting hiearchical trees yet
     let treeNodes = this.state.treeData; 
 
     // Convert this into a hierarchical structure
@@ -444,6 +443,13 @@ export default class ConstraintsCanvas extends React.Component {
       }
 
       let shape = treeNode.title.props.shape; 
+      if(treeNode.title.props.typed) {
+        // If the tree node is a typed group
+        // Update the correspondingID list to
+        // link the child elemeents with their corresponding shapes
+        this.getRepeatGroupMatchingChildren(treeNode); 
+        shape.typed = true; 
+      }
 
       // Add it to the page level shape
       shapes.push(shape); 
@@ -458,6 +464,12 @@ export default class ConstraintsCanvas extends React.Component {
     shape.children = []; 
     for(let i=0; i<node.children.length; i++){
       let child = node.children[i]; 
+
+      if(child.title.props.typed) {
+        this.getRepeatGroupMatchingChildren(child); 
+        child.title.props.shape.typed = true; 
+      }
+
       
       // Add the child shape object to the shape children
       let childShape = child.title.props.shape; 
@@ -646,27 +658,43 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  getRepeatGroupMatchingChildren = (childIndex, groupChildren, groupSize) => {
+  getRepeatGroupMatchingChildren = (group) => {
     // For a given child, return the shape IDs of the child shapes that are in the
     // corresponding positions in the other group(s)
-    let correspondingIDs = []; 
-    let index = childIndex - groupSize; 
-    while(index >= 0) {
-      let correspondingChild = groupChildren[index]; 
-      let correspondingChildID = correspondingChild.title.props.id; 
-      correspondingIDs.push(correspondingChildID); 
-      index = index - groupSize; 
-    }
+    let items = group.children; 
+    if(items) {
+      for(let i=0; i<items.length; i++) {
+        let currItem = items[i]; 
 
-    index = childIndex + groupSize; 
-    while(index < groupChildren.length) {
-      let correspondingChild = groupChildren[index]; 
-      let correspondingChildID = correspondingChild.title.props.id; 
-      correspondingIDs.push(correspondingChildID);
-      index = index + groupSize; 
-    }
+        let correspondingBefore = []
+        if(i > 0) {
+          correspondingBefore = _.range(0, i); 
+        }
 
-    return correspondingIDs; 
+        let correspondingAfter = []; 
+        if(i < items.length - 1) {
+          correspondingAfter = _.range(i+1, items.length); 
+        }
+
+        let correspondingItems = correspondingBefore.concat(correspondingAfter); 
+
+        let itemChildren = currItem.children; 
+        if(itemChildren) {
+          for(let j=0; j<itemChildren.length; j++) {
+            let itemChild = itemChildren[j]; 
+
+            let correspondingIDs = []; 
+            for(let k=0; k<correspondingItems.length; k++) {
+              let correspondingItem = items[correspondingItems[k]]; 
+              let matchingItem = correspondingItem.children[j]; 
+              correspondingIDs.push(matchingItem.title.props.id);
+            }
+
+            itemChild.title.props.shape.correspondingIDs = correspondingIDs; 
+          }
+        }
+      }
+    }
   }
 
   restructureRepeatGroupChildren = (groupChildren, groupSize) => {
@@ -675,8 +703,6 @@ export default class ConstraintsCanvas extends React.Component {
     let currGroup = []; 
     let groups = []; 
     for(let i=0; i<groupChildren.length; i++) {
-      let correspondingChildrenIDs = this.getRepeatGroupMatchingChildren(i, groupChildren, groupSize); 
-      groupChildren[i].title.props.shape.correspondingIDs = correspondingChildrenIDs; 
       currGroup.push(groupChildren[i]); 
       curr++; 
 
