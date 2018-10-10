@@ -50,8 +50,9 @@ export default class SVGWidget extends React.Component {
         y: 0
       }, 
       svgSource: props.source, 
-      highlighted: props.highlighted
-    }
+      highlighted: props.highlighted, 
+      hasText: false
+    }; 
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -73,8 +74,10 @@ export default class SVGWidget extends React.Component {
   
   componentDidMount() {
     // Set the initial value for the text label
-    this.setTextLabel(true);  
+    this.setTextLabel(true); 
+    let hasText = this.getHasText();
     this.setState({
+      hasText: hasText, 
       labelPosition: this.computeLabelPosition()
     }); 
   }
@@ -91,6 +94,17 @@ export default class SVGWidget extends React.Component {
     if(this.element[ConstraintActions.locksKey].indexOf("label") == -1) {
       this.element[ConstraintActions.locksKey].push("label"); 
     }
+  }
+
+  getHasText = () => {
+    let id = "widget-container-" + this.id; 
+    let svgElement = document.getElementById(id); 
+    let editableText = svgElement.querySelectorAll(".widget-editable-text");
+    if(editableText[0]) {
+      return true;  
+    }
+
+    return false;
   }
 
   handleTextChange = (evt) => {
@@ -337,7 +351,7 @@ export default class SVGWidget extends React.Component {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
 
-    const isEditable = this.isContainer;
+    const isEditable = this.state.hasText;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <div 

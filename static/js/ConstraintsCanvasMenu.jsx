@@ -38,6 +38,27 @@ class LabelMenuItem extends React.Component {
   }
 }
 
+// class RelativeMenuItem extends React.Component {
+//   constructor(props) {
+//     super(props); 
+//     this.shapeID = props.shapeID; 
+//     this.shapeLabel = props.shapeLabel; 
+//     this.onClick = props.onClick; 
+//   }
+
+//   render () {
+//     let label = "Make label for \"" + this.shapeLabel + "\"."; 
+//     return (<li>
+//                <a 
+//                 tabIndex="-1" 
+//                 href="#" 
+//                 onClick={this.onClick(this.shapeID)}>
+//                 {label}
+//                </a>
+//             </li>); 
+//   }
+// }
+
 class OrderMenuItem extends React.Component {
   constructor(props) {
     super(props); 
@@ -109,6 +130,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
     this.getSiblingLabelItem = props.getSiblingLabelItem; 
+    this.getBeforeAndAfterSiblings = props.getBeforeAndAfterSiblings; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
@@ -209,6 +231,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
 
     return menuItems; 
   }
+
 
   openFontSizeMenu = (evt) => {
     evt.stopPropagation(); 

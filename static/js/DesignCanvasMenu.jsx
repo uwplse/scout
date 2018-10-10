@@ -80,21 +80,25 @@ export default class DesignCanvasMenu extends React.Component {
   getRelationalMenuItems() {
     // These are just hard coded right now, they don't do anything
     let menuItems = []; 
-    menuItems.push((<li>
-        <a href="#" tabIndex="-1">Keep global alignment.</a>
-      </li>)); 
-    menuItems.push((<li>
-        <a href="#" tabIndex="-1">Keep alignment relative to container.</a>
-      </li>)); 
-    menuItems.push((<li>
-        <a href="#" tabIndex="-1">Keep position relative to container.</a>
-      </li>)); 
+    // menuItems.push((<li>
+    //     <a href="#" tabIndex="-1">Keep global alignment.</a>
+    //   </li>)); 
+    // menuItems.push((<li>
+    //     <a href="#" tabIndex="-1">Keep alignment relative to container.</a>
+    //   </li>)); 
+    // menuItems.push((<li>
+    //     <a href="#" tabIndex="-1">Keep position relative to container.</a>
+    //   </li>)); 
     menuItems.push((<li>
         <a href="#" tabIndex="-1">Keep position relative to neighbor 1.</a>
       </li>)); 
     menuItems.push((<li>
         <a href="#" tabIndex="-1">Keep position relative to neighbor 2.</a>
       </li>)); 
+
+    // Appear below/adjacent to the neighbor element
+    // Appear above/adjacent to the neighbor element
+
     return menuItems;
   }
 
@@ -102,6 +106,7 @@ export default class DesignCanvasMenu extends React.Component {
     const isContainer = this.state.menuTrigger.type == "group" || this.state.menuTrigger.type == "labelGroup" || this.state.menuTrigger.type == "page"; 
     const menuLeft = this.state.left; 
     const menuTop = this.state.top;
+    const relational = this.getRelationalMenuItems();
 	  return (
       <div className="right-click-menu-container dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}} >
         <ul className="dropdown-menu" style={{display: "block"}}>
@@ -140,9 +145,9 @@ export default class DesignCanvasMenu extends React.Component {
                         menuTrigger={this.state.menuTrigger} 
                         key={key} />);
             }) : undefined} 
-        {/*relationalItems.length ? (
-          <li role="separator" className="divider">Relational</li>) : undefined*/}
-        {/*relationalItems.length ? relationalItems : undefined*/}  
+        {this.state.menuTrigger.type != "canvas" ? 
+          (<li role="separator" className="divider divider-top">Canvas</li>) : undefined}
+        {this.state.menuTrigger.type != "canvas" ? relational : undefined}  
         </ul>
       </div>
     );

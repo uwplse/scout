@@ -52,6 +52,8 @@ export default class PageContainer extends React.Component {
     this.solutionsMap = {};
 
     this.constraintsCanvasRef = React.createRef();
+
+    this.prevTime = undefined; 
   }
 
   closeRightClickMenus = () => {
@@ -99,6 +101,15 @@ export default class PageContainer extends React.Component {
   }
 
   checkSolutionValidity = (options={}) => {
+    console.log("check validity");
+    let currTime = Date.now()
+    if(this.prevTime) {
+      let diff = currTime - this.prevTime; 
+      console.log(diff/1000); 
+    }
+
+    this.prevTime = currTime; 
+
     let getDesigns = options.getDesigns ? true : false; 
     if(!getDesigns) {
       // Only check for validity of the current solutions

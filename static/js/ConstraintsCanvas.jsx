@@ -224,7 +224,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  findShapeNextSibling = (shapeId, siblings, node) => {
+  findShapeSiblings = (shapeId, siblings, node) => {
     // Get the two neighboring siblings for a shape in the tree
     for(let i=0; i<node.length; i++) {
       let treeNode = node[i]; 
@@ -234,9 +234,14 @@ export default class ConstraintsCanvas extends React.Component {
           let nextSibling = node[i+1];
           siblings.next = nextSibling; 
         }
+
+        if(i > 0) {
+          let prevSibling = node[i-1]; 
+          siblings.prev = prevSibling; 
+        }
       }
       else if(treeNode.children) {
-        this.findShapeNextSibling(shapeId, siblings, treeNode.children); 
+        this.findShapeSiblings(shapeId, siblings, treeNode.children); 
       }      
     }
   }
@@ -276,24 +281,29 @@ export default class ConstraintsCanvas extends React.Component {
 
     return menuItems; 
   }
+  
+  getBeforeAndAfterSiblings = (shapeId) => {
+    // Go through tree data (recursive) and find the level of the element
+    let siblings = {}; 
+    let node = this.state.treeData; 
+    this.findShapeSiblings(shapeId, siblings, node);
 
-  findShapeSiblings = (shapeId, node) => {
-    // Get the two neighboring siblings for a shape in the tree
-    for(let i=0; i<node.length; i++) {
-      let treeNode = node[i]; 
-      let nodeID = treeNode.title.props.id; 
-      if(nodeID == shapeId) {
-        return node; 
-      }
-      else if(treeNode.children) {
-        let siblings = this.findShapeSiblings(shapeId, treeNode.children); 
-        if(siblings) {
-          return siblings; 
-        }
-      }      
+    let siblingItems = []; 
+    if(siblings.next) {
+      siblingItems.push({
+        id: siblings.next.title.props.id, 
+        label: siblings.next.title.props.shape.label
+      }); 
     }
 
-    return undefined; 
+    if(siblings.prev) {
+      siblingItems.push({
+        id: siblings.prev.title.props.id, 
+        label: siblings.prev.title.props.shape.label
+      }); 
+    }
+
+    return siblingItems; 
   }
 
   getCurrentShapeIndex = (shapeId) => {
@@ -314,11 +324,6 @@ export default class ConstraintsCanvas extends React.Component {
   getCurrentShapeImportance = (shapeId) => {
     let node = this.widgetTreeNodeMap[shapeId]; 
     return node.title.props.shape.importance; 
-  }
-
-  getCurrentShapeSiblings = (shapeId) => {
-    let node = this.state.treeData; 
-    return this.findShapeSiblings(shapeId, node); 
   }
  
   hideRightClickMenu = () => {
@@ -820,7 +825,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  removeTypedGroup(groupNode) {
+  removeTypedGroup = (groupNode) => {
    // Ungroup childen from the item containers
     let children = groupNode.children; 
     if(children) {
@@ -921,6 +926,35 @@ export default class ConstraintsCanvas extends React.Component {
         this.setState(state => ({
           treeData: this.state.treeData
         }), this.checkSolutionValidity); 
+      }
+    }
+
+    // Remove the widget from the tree node map
+    let prevParentPath = prevPath.slice(0, prevPath.length-1);
+    let prevParentNode = getNodeAtPath({
+        treeData: this.state.treeData, 
+        path: prevParentPath, 
+        getNodeKey: defaultGetNodeKey,
+    }); 
+
+    // If the previous node was a typed group or item, remove the typing
+    // Also remove the alert if it was showin
+    prevParentNode = prevParentNode.node;
+    if(prevParentNode && prevParentNode.title.props.shape.type == "group") {
+      this.removeWidgetTypingAlert(prevParentNode); 
+
+      if(prevParentNode.title.props.typed) {
+        this.removeTypedGroup(prevParentNode); 
+      }
+      else if(prevParentNode.title.props.item) {
+        let typedGroupPath = prevParentPath.slice(0, prevParentPath.length-1); 
+        let typedGroupNode = getNodeAtPath({
+          treeData: this.state.treeData, 
+          path: typedGroupPath, 
+          getNodeKey: defaultGetNodeKey
+        }); 
+
+        this.removeTypedGroup(typedGroupNode.node);
       }
     }
   }
@@ -1025,6 +1059,7 @@ export default class ConstraintsCanvas extends React.Component {
       menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
       getSiblingLabelItem={this.getSiblingLabelItem}
+      getBeforeAndAfterSiblings={this.getBeforeAndAfterSiblings}
       getCurrentShapeIndex={this.getCurrentShapeIndex}
       getCurrentShapeOrder={this.getCurrentShapeOrder}
       getCurrentContainerOrder={this.getCurrentContainerOrder}
