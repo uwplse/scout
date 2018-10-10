@@ -55,6 +55,15 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   componentDidMount() {
+    let rootNode = this.initRootNode();
+    this.state.treeData = this.state.treeData.concat(rootNode); 
+
+    this.setState(state => ({
+      treeData: this.state.treeData
+    }));
+  }
+
+  initRootNode = () => {
     // Create an object to represent the  top level canvas shape
     let canvas = {
       "name": "canvas",
@@ -66,8 +75,7 @@ export default class ConstraintsCanvas extends React.Component {
       "size": {
         width: this.canvasWidth, 
         height: this.canvasHeight
-      }, 
-      "background": "#ffffff" 
+      } 
     }
 
     this.canvasLevelShape = canvas;
@@ -100,11 +108,8 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[page.name] = newTreeNode; 
-    this.state.treeData = this.state.treeData.concat(newTreeNode); 
 
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }));
+    return newTreeNode; 
   }
 
   getWidget = (shape, src, options={}) => {
@@ -172,6 +177,15 @@ export default class ConstraintsCanvas extends React.Component {
     this.setState(state => ({
       treeData: newTreeData.treeData, 
     }), this.checkSolutionValidity);
+  }
+
+  clearShapesFromCanvas = () => {
+    let newTreeData = []; 
+    let rootNode = this.initRootNode(); 
+    newTreeData = newTreeData.concat(rootNode); 
+    this.setState({
+      treeData: newTreeData
+    }); 
   }
 
   createNewTreeNode = (type, controlType, source, options={}) => {
@@ -939,7 +953,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // If the previous node was a typed group or item, remove the typing
     // Also remove the alert if it was showin
-    prevParentNode = prevParentNode.node;
+    prevParentNode = prevParentNode
     if(prevParentNode && prevParentNode.title.props.shape.type == "group") {
       this.removeWidgetTypingAlert(prevParentNode); 
 
@@ -1089,7 +1103,6 @@ export default class ConstraintsCanvas extends React.Component {
                 canDrop={this.canReparentWidgetNode}
                 onMoveNode={this.onMoveNode}
                 rowHeight={this.calculateRowHeight}
-                style={{height: "calc(100% - 80px)"}}
                 generateNodeProps={this.getNodeProps}
               />
             </div>

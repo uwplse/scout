@@ -41,9 +41,7 @@ export default class PageContainer extends React.Component {
     // This is the set of design canvases in the design window
     this.state = { 
       solutions: [],
-      constraintChanged: false , 
       designsFound: -1, 
-      treeData: [], 
       showDesignsAlert: false, 
       currentPallette: 'hollywood'
     };   
@@ -77,6 +75,10 @@ export default class PageContainer extends React.Component {
     return () => {
       this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type, controlType, src);
     }
+  }
+
+  clearShapesFromConstraintsCanvas = () => {
+    this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
   }
 
   getDesignCanvas = (solution) => {
@@ -125,11 +127,6 @@ export default class PageContainer extends React.Component {
           this.setState({
             errorMessageShown: true
           }); 
-        }else {
-          // TODO: Figure out what we are doing with this
-          this.setState({
-            constraintChanged: true
-          });
         }
 
         this.updateSolutionValidity(requestParsed.solutions);
@@ -152,11 +149,6 @@ export default class PageContainer extends React.Component {
    // Send an ajax request to the server 
    // Solve for the new designs
     $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
-
-    // Reset the state of the designs canvas
-    this.setState({
-      constraintChanged: false
-    });
   }
 
   getConstraintsCanvasShape = (shapeId) => {
@@ -305,11 +297,6 @@ export default class PageContainer extends React.Component {
         "relative_action": action
       }
     }, this.parseSolutions, 'text');
-
-    // Reset the state of the designs canvas
-    this.setState({
-      constraintChanged: false
-    });
   }
 
   hideDesignsAlert = () => {
@@ -389,13 +376,14 @@ export default class PageContainer extends React.Component {
         currentPallette: 'hollywood'
       }); 
     }
+
+    this.clearShapesFromConstraintsCanvas();
   }
 
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
     const errorMessageShown = this.state.errorMessageShown; 
-    const constraintChanged = this.state.constraintChanged;
     const designsAlertShown = this.state.showDesignsAlert; 
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
