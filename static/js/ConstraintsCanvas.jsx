@@ -352,7 +352,9 @@ export default class ConstraintsCanvas extends React.Component {
       // Create a new node for the widget
       let newNode = {
         title: widget, 
-        subtitle: []
+        subtitle: [], 
+        expanded: treeNode.expanded, 
+        children: treeNodeData.children
       }; 
 
       // Replace the current node with this new node
