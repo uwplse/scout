@@ -281,16 +281,12 @@ export default class ConstraintsCanvas extends React.Component {
 
   getSiblingLabelItem = (shapeId) => {
     // Go through tree data (recursive) and find the level of the element
-    let siblings = {}; 
     let node = this.state.treeData; 
-    this.findShapeNextSibling(shapeId, siblings, node);
+    let siblings = this.getCurrentShapeSiblings(shapeId);
 
     let menuItems = []; 
     if(siblings.next) {
-      menuItems.push({
-        id: siblings.next.title.props.id, 
-        label: siblings.next.title.props.shape.label
-      }); 
+      menuItems.push(siblings.next); 
     }
 
     return menuItems; 
