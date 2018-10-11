@@ -1066,6 +1066,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   render () {
+    console.log("Render ConstraintsCanvas");
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
@@ -1103,6 +1104,7 @@ export default class ConstraintsCanvas extends React.Component {
                 canDrop={this.canReparentWidgetNode}
                 onMoveNode={this.onMoveNode}
                 rowHeight={this.calculateRowHeight}
+                isVirtualized={false}
                 generateNodeProps={this.getNodeProps}
               />
             </div>

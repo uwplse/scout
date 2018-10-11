@@ -110,7 +110,6 @@ export default class SVGWidget extends React.Component {
   handleTextChange = (evt) => {
     // Handle the text change on a timeout so it saves after the user finishes typing
     clearTimeout(this.timer); 
-    console.log("text change");
     this.timer = setTimeout(this.updateTextLabel, WAIT_INTERVAL);  
   }
 
@@ -152,6 +151,7 @@ export default class SVGWidget extends React.Component {
   }
 
   setTextLabel = (initSize) => {
+    console.log("update text label");
     let id = "widget-container-" + this.id; 
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
@@ -334,7 +334,7 @@ export default class SVGWidget extends React.Component {
   }
 
   render () {
-    console.log('render text'); 
+    console.log('render SVGWidget'); 
     const source = this.state.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 

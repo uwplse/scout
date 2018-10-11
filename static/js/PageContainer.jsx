@@ -384,6 +384,7 @@ export default class PageContainer extends React.Component {
   }
 
   render () {
+    console.log("page container render");
     const self = this;
     const designsFound = this.state.designsFound; 
     const errorMessageShown = this.state.errorMessageShown; 
