@@ -25,7 +25,9 @@ ConstraintActions.defaultKeepConstraint = function keepConstraint(constraintsCan
 		constraintsCanvasShape[ConstraintActions.locksKey] = []; 
 	} 
 
-	constraintsCanvasShape[ConstraintActions.locksKey].push(constraintKey); 
+	if(constraintsCanvasShape[ConstraintActions.locksKey].indexOf(constraintKey) == -1) {
+		constraintsCanvasShape[ConstraintActions.locksKey].push(constraintKey); 
+	}
 
 	// Also should the constraints canvas arrange itself in the way of the designs canvas?
 	// Update the constraint property on the object

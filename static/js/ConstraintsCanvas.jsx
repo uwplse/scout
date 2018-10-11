@@ -296,25 +296,25 @@ export default class ConstraintsCanvas extends React.Component {
     return menuItems; 
   }
   
-  getBeforeAndAfterSiblings = (shapeId) => {
+  getCurrentShapeSiblings = (shapeId) => {
     // Go through tree data (recursive) and find the level of the element
     let siblings = {}; 
     let node = this.state.treeData; 
     this.findShapeSiblings(shapeId, siblings, node);
 
-    let siblingItems = []; 
+    let siblingItems = {}; 
     if(siblings.next) {
-      siblingItems.push({
+      siblingItems.next = {
         id: siblings.next.title.props.id, 
         label: siblings.next.title.props.shape.label
-      }); 
+      }; 
     }
 
     if(siblings.prev) {
-      siblingItems.push({
+      siblingItems.prev = {
         id: siblings.prev.title.props.id, 
         label: siblings.prev.title.props.shape.label
-      }); 
+      }; 
     }
 
     return siblingItems; 
@@ -423,27 +423,28 @@ export default class ConstraintsCanvas extends React.Component {
 
     let treeNode = this.widgetTreeNodeMap[shapeId]; 
 
+    // First, see whether there is already a feedback item for this action
+    // If there is, remove it, before updating with the new action
+    let feedbackItems = treeNode.subtitle; 
+    let feedbackIndex = -1; 
+    for(let i=0; i<feedbackItems.length; i++){
+      if(feedbackItems[i].props.action[actionType].key == action[actionType].key) {
+        feedbackIndex = i; 
+      }
+    }
+
+    // Remove the item at that index
+    if(feedbackIndex > -1) {
+      treeNode.subtitle.splice(feedbackIndex, 1);        
+    }
+
     // Check whether to remove or add a widget feedback item
     if(actionType == "do") {
       let message = action[actionType].getFeedbackMessage(shape);
       let id = shapeId + "_" + uniqueId; 
       let widgetFeedback = this.getWidgetFeedback(id, shape, action, message);
       treeNode.subtitle.push(widgetFeedback);       
-    } else {
-      // Remove the corresponding widget feedback item
-      let feedbackItems = treeNode.subtitle; 
-      let feedbackIndex = -1; 
-      for(let i=0; i<feedbackItems.length; i++){
-        if(feedbackItems[i].props.action[actionType].key == action[actionType].key) {
-          feedbackIndex = i; 
-        }
-      }
-
-      // Remove the item at that index
-      if(feedbackIndex > -1) {
-        treeNode.subtitle.splice(feedbackIndex, 1);        
-      }
-    }
+    } 
 
     this.setState(state => ({
       treeData: this.state.treeData
@@ -953,7 +954,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     // If the previous node was a typed group or item, remove the typing
     // Also remove the alert if it was showin
-    prevParentNode = prevParentNode
+    prevParentNode = prevParentNode.node; 
     if(prevParentNode && prevParentNode.title.props.shape.type == "group") {
       this.removeWidgetTypingAlert(prevParentNode); 
 
@@ -1073,7 +1074,6 @@ export default class ConstraintsCanvas extends React.Component {
       menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
       getSiblingLabelItem={this.getSiblingLabelItem}
-      getBeforeAndAfterSiblings={this.getBeforeAndAfterSiblings}
       getCurrentShapeIndex={this.getCurrentShapeIndex}
       getCurrentShapeOrder={this.getCurrentShapeOrder}
       getCurrentContainerOrder={this.getCurrentContainerOrder}

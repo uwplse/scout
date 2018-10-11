@@ -354,6 +354,9 @@ export default class PageContainer extends React.Component {
         <SVGInline className="widget-control widget-control-label" 
           height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
           svg={ orangeLabel } onClick={this.addShapeToConstraintsCanvas('label', 'orangeLabel', orangeLabel)}/>
+       <SVGInline className="widget-control widget-control-label" 
+          height={Constants.controlHeights('smallLabel') + "px"} width={Constants.controlWidths('smallLabel') + "px"} 
+          svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel', smallLabelDynamic)}/>
         <SVGInline className="widget-control widget-container" svg={ groupContainer } 
           height={Constants.controlHeights('group') + "px"} width={Constants.controlWidths('group') + "px"}
           onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>

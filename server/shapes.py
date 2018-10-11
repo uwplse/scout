@@ -8,14 +8,16 @@ minimum_sizes = {
 	"label": 11, 
 	"image": 44,
 	"field": 44, 
-	"button": 44
+	"button": 44, 
+	"group": 44
 }
 
 maximum_sizes = {
 	"image": 335, # Need to tweak later
 	"label": 36,
 	"field": 335,
-	"button": 335
+	"button": 335, 
+	"group": 335
 }
 
 # Shape classes for constructing the element hierarchy 

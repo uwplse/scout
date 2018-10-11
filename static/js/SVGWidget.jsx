@@ -110,6 +110,7 @@ export default class SVGWidget extends React.Component {
   handleTextChange = (evt) => {
     // Handle the text change on a timeout so it saves after the user finishes typing
     clearTimeout(this.timer); 
+    console.log("text change");
     this.timer = setTimeout(this.updateTextLabel, WAIT_INTERVAL);  
   }
 
@@ -117,6 +118,7 @@ export default class SVGWidget extends React.Component {
     let id = "widget-container-" + this.id; 
     let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
     let textValue = editableText[0].innerHTML; 
+    console.log(textValue);
     this.element.label = textValue;
     this.lockTextLabel()
 
@@ -332,6 +334,7 @@ export default class SVGWidget extends React.Component {
   }
 
   render () {
+    console.log('render text'); 
     const source = this.state.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 
@@ -354,7 +357,7 @@ export default class SVGWidget extends React.Component {
     const isEditable = this.state.hasText;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     return (
-      <div 
+      <div  
         onContextMenu={this.showContextMenu} 
         suppressContentEditableWarning="true" 
         onInput={this.handleTextChange} 

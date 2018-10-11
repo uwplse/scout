@@ -133,7 +133,9 @@ export default class DesignCanvasMenu extends React.Component {
                         menuTrigger={this.state.menuTrigger} 
                         key={key} />);
             }) : undefined}
-
+        {this.state.menuTrigger.type != "canvas" ? 
+          (<li role="separator" className="divider divider-top">Relational</li>) : undefined}
+        {this.state.menuTrigger.type != "canvas" ? relational : undefined} 
         {this.state.menuTrigger.type == "canvas" ? 
           (<li role="separator" className="divider divider-top">Canvas</li>) : undefined}
         {this.state.menuTrigger.type == "canvas" ? 
@@ -144,10 +146,7 @@ export default class DesignCanvasMenu extends React.Component {
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 
                         key={key} />);
-            }) : undefined} 
-        {this.state.menuTrigger.type != "canvas" ? 
-          (<li role="separator" className="divider divider-top">Canvas</li>) : undefined}
-        {this.state.menuTrigger.type != "canvas" ? relational : undefined}  
+            }) : undefined}  
         </ul>
       </div>
     );

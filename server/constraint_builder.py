@@ -70,9 +70,9 @@ class ConstraintBuilder(object):
 	def init_shape_grid_values(self, shape, canvas): 
 		grid = canvas.variables.grid.z3
 		shape_x = shape.variables.x.z3
-		shape_y = shape.variables.y.z3
-		self.solver.add((shape_x % grid) == 0, shape.shape_id + " x multiple of grid value.")
-		self.solver.add((shape_y % grid) == 0, shape.shape_id + " y multiple of grid value.")
+		# shape_y = shape.variables.y.z3
+		# self.solver.add((shape_x % grid) == 0, shape.shape_id + " x multiple of grid value.")
+		# self.solver.add((shape_y % grid) == 0, shape.shape_id + " y multiple of grid value.")
 
 	def init_canvas_constraints(self, canvas): 
 		alignment = canvas.variables.alignment

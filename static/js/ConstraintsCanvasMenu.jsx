@@ -212,7 +212,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
     let shapeIndex = this.getCurrentShapeIndex(this.shapeID); 
     let siblings = this.getCurrentShapeSiblings(this.shapeID);
     let currOrder = this.getCurrentShapeOrder(this.shapeID);  
-    let showOrderMenuItem = (shapeIndex == 0 || shapeIndex == (siblings.length - 1)); 
+    let showOrderMenuItem = (!siblings.prev || !siblings.next);  
 
     if(showOrderMenuItem) {
       orderMenuItems.push(<OrderMenuItem key={this.shapeID} currentOrder={currOrder} index={shapeIndex} onClick={this.setOrder} />); 

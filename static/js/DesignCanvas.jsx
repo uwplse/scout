@@ -212,12 +212,18 @@ export default class DesignCanvas extends React.Component {
     let designId = "design-canvas-" + this.id;
     let designCanvas = document.getElementById(designId);  
 
+    // Initialize the canvas and page elements first 
+    // so they are at the top of the dom hierarchy
+    let canvas = this.elements["canvas"]; 
+    this.initDesignCanvas(canvas); 
+
+    let page = this.elements["page"]; 
+    this.createSVGElement(designCanvas, page); 
+
     for(let elementID in this.elements) {
       if(this.elements.hasOwnProperty(elementID)) {
         let element = this.elements[elementID];
-        if(element.type == "canvas") {
-          this.initDesignCanvas(element);
-        }else {
+        if(element.type != "canvas" && element.type != "page") {
           this.createSVGElement(designCanvas, element);
         }
       }

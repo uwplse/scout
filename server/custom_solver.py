@@ -428,7 +428,13 @@ class Solver(object):
 			# print("valid: " + str(self.num_solutions))
 			# Call to Z3 
 			time_z3_start = time.time()
-			result = self.solver.check();
+			try: 
+				result = self.solver.check();
+			except Z3Exception:
+				print("Z3 Exception: Could not check for consistency.")
+				self.num_solutions += 1 
+				continue
+
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
