@@ -85,8 +85,9 @@ export default class DesignCanvasSVGWidget extends React.Component {
     if(svgElement) {
       let editableText = svgElement.querySelectorAll(".widget-editable-text");
       if(editableText.length) {
+        let adjust = 5; 
         let scaledFont = 100 * this.state.scaling; 
-        editableText[0].style.fontSize = scaledFont + "%"; 
+        editableText[0].style.fontSize = (scaledFont-adjust) + "%"; 
 
         if(this.type == "button") {
           editableText[0].style.transform = "translate(" + Math.round(this.state.width/2,0) + "px," + Math.round(this.state.height/2,0) + "px)"; 

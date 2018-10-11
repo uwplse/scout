@@ -353,7 +353,7 @@ export default class ConstraintsCanvas extends React.Component {
       let newNode = {
         title: widget, 
         subtitle: [], 
-        expanded: treeNode.expanded, 
+        expanded: treeNode.expanded || treeNodeData.expanded, 
         children: treeNodeData.children
       }; 
 
@@ -513,7 +513,7 @@ export default class ConstraintsCanvas extends React.Component {
       let node = flatData[i]; 
       let nodeItem = node.node; 
       if(nodeItem.title.props.shape && nodeItem.title.props.shape.name == treeNodeID) {
-        return { path: node.path, children: node.node.children, treeIndex: node.treeIndex }; 
+        return { path: node.path, children: node.node.children, treeIndex: node.treeIndex, expanded: nodeItem.expanded }; 
       }
     }
 
