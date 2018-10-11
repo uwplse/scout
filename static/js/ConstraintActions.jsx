@@ -11,8 +11,13 @@ ConstraintActions.locked_grid_key = 'grid';
 
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
+ConstraintActions.horizontalArrangements = ["horizontal", "rows"];
+ConstraintActions.verticalArrangements = ["vertical", "columns"];
+ConstraintActions.arrangments = ["horizontal", "vertical", "rows", "columns"]; 
+ConstraintActions.verticalAlignments = ["left", "center", "right"];
+ConstraintActions.horizontalAlignments = ["top", "center", "bottom"];
+
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
-ConstraintActions.alignments = ["left", "center", "right"];
 ConstraintActions.justifications = ["top", "center", "bottom"];
 
 ConstraintActions.locked_proximity_key = 'proximity'; 
@@ -223,7 +228,12 @@ ConstraintActions.groupConstraints = {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]];
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}, 
@@ -330,7 +340,12 @@ ConstraintActions.canvasConstraints = {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]];
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}, 
