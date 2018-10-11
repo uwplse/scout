@@ -33,7 +33,6 @@ def hello():
 @app.route('/solve', methods=['POST','GET'])
 def solve(): 
 	print("solving!")
-	print(request.form)
 	form_data = request.form
 
 	if "elements" in form_data and "solutions" in form_data:
@@ -116,8 +115,8 @@ def get_solution_from_solver(elements, canvas_width, canvas_height, tags):
 def get_initial_state(elements): 
 	shapes = []
 	for element in elements: 
-		x = element["location"]["x"]
-		y = element["location"]["y"]
+		x = element["x"]
+		y = element["y"]
 		width = element["size"]["width"]
 		height = element["size"]["height"]
 		shapes.append([x,y,width,height])
@@ -136,8 +135,8 @@ def randomize_initial_positions(state, box_width, box_height):
 def convert_state(elements, state): 
 	for i in range(0, len(state)): 
 		x,y,width,height = state[i]
-		elements[i]["location"]["x"] = x
-		elements[i]["location"]["y"] = y
+		elements[i]["x"] = x
+		elements[i]["y"] = y
 		elements[i]["size"]["width"] = width 
 		elements[i]["size"]["height"] = height
 	return elements

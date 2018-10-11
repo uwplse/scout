@@ -31,7 +31,11 @@ const config = {
 	    {
 	      test: /\.jsx?/,
 	      exclude: /node_modules/,
-	      use: 'babel-loader'
+	      loader: 'babel-loader', 
+        query: {
+          presets: ['react', 'es2015'],
+          plugins: ['transform-class-properties', 'transform-es2015-arrow-functions']
+        }
 	    }, 
       {
         test: /\.css$/, 

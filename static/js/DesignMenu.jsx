@@ -12,7 +12,10 @@ class DesignMenuItem extends React.Component {
   render () {
     const menuAction = this.props.onClick;
     const action = this.props.action;
-	  return <li onClick={function() { menuAction(action); }} className="canvas-actions-menu-item">{this.label}</li>; 
+	  return <li 
+            onClick={function() { menuAction(action); }} 
+            className="canvas-actions-menu-item">{this.label}
+          </li>; 
   }
 }
 
@@ -24,22 +27,22 @@ export default class DesignMenu extends React.Component {
     this.menuAction = props.menuAction; 
   }
 
-  constructDesignMenu() {
+  constructDesignMenu = () => {
   	let menuItems = []; 
     let save = (<span className="glyphicon glyphicon-star" aria-hidden="true"></span>); 
     let trash = (<span className="glyphicon glyphicon-trash" aria-hidden="true"></span>);
 
     menuItems.push(<DesignMenuItem key="save" onClick={this.menuAction} action="save" label={save} />); 
     menuItems.push(<DesignMenuItem key="trash" onClick={this.menuAction} action="trash" label={trash} />); 
-    // menuItems.push(<DesignMenuItem key="like" onClick={this.menuAction} action="like" label="Show me more like this." />);
-
   	return menuItems; 
   }
 
   render () {
   	const menuItems = this.constructDesignMenu();
     return (
-      <div style={{left: this.left, top: this.top}} className={"canvas-actions-menu-container " + (menuItems.length ? "" : "hidden")}>
+      <div 
+        style={{left: this.left, top: this.top}} 
+        className={"canvas-actions-menu-container " + (menuItems.length ? "" : "hidden")}>
         <ul className="canvas-actions-menu">{menuItems}</ul>
       </div>); 
   }

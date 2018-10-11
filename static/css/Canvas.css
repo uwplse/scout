@@ -13,15 +13,24 @@ body {
 	display: none;
 }
 
+.scout-logo {
+	height: 40px;
+	width: 40px;
+	margin-right: 10px;
+}
+
+
+
 /**
   Overrides of bootstrap styles 
   **/ 
 .navbar {
 	margin-bottom: 0px;
+	border-radius: 0; 
 }
 
-.navbar-btn {
-	margin-left: 10px; 
+.designs-area-container .btn {
+	font-size: 16px;
 }
 
 .panel-body {
@@ -30,6 +39,29 @@ body {
 
 .dropdown {
 	position: absolute;
+}
+
+.dropdown-menu {
+	padding-top: 0;
+	font-size: initial;
+}
+
+.dropdown-menu .caret {
+	margin-left: 10px;
+}
+
+.dropdown-menu .divider {
+	height: auto;
+	overflow: visible; 
+	border-bottom: 1px solid #e5e5e5;
+    border-top: 1px solid #e5e5e5;
+    background-color: #ffffff; 
+    display: flex; 
+    justify-content: center;
+}
+
+.dropdown-menu .divider.divider-top {
+	margin-top: 0;
 }
 
 .dropdown-submenu .dropdown-menu {
@@ -42,7 +74,37 @@ body {
 	position: relative;
 }
 
+.navbar, .navbar-header {
+	display: flex; 
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.navbar {
+	min-height: 60px;
+}
+
+.header-button-group {
+	margin-left: 10px;
+}
+
+h1, h2, h3 {
+	font-weight: 600;
+}
+
+.panel-primary > .panel-heading {
+	color: #fff;
+	background-color: #2780E3;
+}
+
+.panel-primary .badge {
+	font-size: 12px;
+	border-radius: 3px;
+	margin-right: 5px;
+}
+
 /**
+
   General styles
  **/
 .canvas {
@@ -52,31 +114,61 @@ body {
 }
 
 #content {
-	width: 100%;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	display: flex; 
+	flex-direction: column;
 }
 
 #constraints-canvas {
 	border: 1px solid #ccc;
 }
 
-.page-container, .top, .bottom {
+.page-container, .top, .page-container, .widgets-panel, 
+.widgets-container, .designs-area-container, 
+.left-container, .invalid-container  {
 	display: flex;
+	flex-direction: column;
+	flex-grow: 1; 
+}
+
+.constraints-container, .widgets-panel-container, .right-container {
+	display: flex;
+	flex-direction: column; 
 }
 
 .bottom {
-	align-items: stretch;
-	height: calc(100% - 65px);
+	display: flex; 
+	flex-direction: row; 
+	flex-grow: 1; 
+	overflow: auto;
 }
 
-.page-container, .constraints-container {
-	display: flex;
+.designs-container {
+	display: flex; 
 	flex-direction: column;
 }
 
-.widgets-container, .constraints-container, .containers-container, .right-container, .designs-area-container {
+.widgets-panel {
+	overflow: auto;
+}
+
+.widgets-panel-container, .constraints-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
+}
+
+.widgets-container {
+	margin-bottom: 0; 
+}
+
+.right-container {
+	margin-left: 10px;
+	margin-top: 10px;
 }
 
 .navbar-default {
@@ -86,27 +178,30 @@ body {
     padding-left: 10px;
 }
 
-.header-button-group {
-	margin-left: 10px;
+.constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
+.constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
+.constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
+.constraints-canvas-container .widget-control-search > .widget-control-search-svg {
+	width: 238px !important;
 }
 
-
-.label-info, 
-.label-success {
-	margin-bottom: 0.5em; 
-	margin-left: 0.5em;
+/**
+	Sizing of SVG elements in widgets panel 
+**/ 
+.widgets-panel .widget-control-label {
+	font-size: 36; 
 }
 
-.widgets-sortable-tree .label-info, 
-.widgets-sortable-tree .label-success {
-	font-size: 100%; 
+#widget-control-label {
+	height: 30px;
 }
 
 /** 
 	Constraints canvas 
 **/
-.constraints-canvas-container {
-	width: 450px;
+.constraints-container {
+	width: 550px;
+	min-width: 550px;
 }
 
 .constraints-canvas-page-feedback {
@@ -114,8 +209,14 @@ body {
 }
 
 .widgets-container {
-	border-right: 1px solid #ccc;
-	width: 250px;
+	width: 280px;
+}
+
+.widgets-container .widget-control-button > .widget-control-button-svg, 
+.widgets-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
+.widgets-container .widget-control-field > .widget-control-field-svg, 
+.widgets-container .widget-control-search > .widget-control-search-svg {
+	width: 238px !important;
 }
 
 .widget-container > .widget-control-importance {
@@ -123,20 +224,36 @@ body {
 	display: flex;
 }
 
+.widget-container.highlighted {	
+	border: 1px dashed gray;
+	padding: 4;
+	background-color: #f2dede;
+}
+
+.widgets-panel-container .configure-widgets-button {
+	margin-top: 10px;
+	font-size: 16px; 
+	font-weight: 500;
+}
+
 .widget-control-group .widget-control {
 	margin-right: 10px;
 }
 
-.widget-control-button > .widget-control-svg {
-	width: 10em;
+.constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
+.constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
+.constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
+.constraints-canvas-container .widget-control-search > .widget-control-search-svg {
+	width: 238px !important;
 }
 
-.widget-control-button .widget-editable-text {
-	transform: translate(120px, 18px);
+.widget-control-button .widget-editable-text, 
+.widget-control-orangeButton .widget-editable-text {
+	transform: translate(120px, 22px);
 }
 
 .widget-control-field .widget-editable-text {
-	transform: translate(9.7px, 18px);
+	transform: translate(9.7px, 24px);
 }
 
 .widget-control-label > .widget-control-svg {
@@ -150,26 +267,18 @@ body {
 
 .widget-control-row {
 	display: flex; 
-	align-items: center;
-}
-
-.widget-control-labels.widget-control-arrow-down:before {
-	content: url("../assets/down_arrow.png");
-}
-
-.widget-control-labels.widget-control-arrow-up:before {
-	content: url("../assets/up_arrow.png");
+	align-items: flex-start;
+	flex-direction: column;
 }
 
 .widget-control-info {
-	align-self: stretch;
     display: flex;
-    justify-content: center;
-    margin-left: 10px;
+    margin-top: 0.5em;
 }
 
-.widget-control-info .label-info {
+.widget-control-info span {
 	margin-left: 0px;
+	margin-right: 0.5em;
 }
 
 .widget-control-info-left, 
@@ -187,10 +296,6 @@ body {
 	zoom: 40%; 
 	position: absolute;
 	z-index: 1000; 
-}
-
-.widget-control-order {
-	margin-bottom: 0.5em; 
 }
 
 .widget-control-typing {
@@ -217,7 +322,6 @@ body {
 }
 
 .widget-container > .widget-container-svg {
-	width: 100px;
 	margin-right: 5px;
 	margin-left: 5px;
 }
@@ -228,26 +332,17 @@ body {
     justify-content: center;
 }
 
-.widgets-panel {
-	display: flex;
-    flex-direction: column;
+.widget-container .badge {
+	font-size: 14px;
+	border-radius: 3px;
 }
-
-.SVGInline-svg {
-	cursor: pointer;
-}
-
 
 /** 
 	Designs canvas 
 **/
 
-.designs-area-container {
-	flex: 1 1 0px;
-}
 
 .designs-container {
-	display: flex;
 	margin-bottom: 0;
 	margin-top: 10px;
 	margin-left: 10px;
@@ -255,16 +350,28 @@ body {
 
 .design-canvas-container {
 	display: flex; 
-	flex: 1 1 0px;
-    align-self: stretch;
     flex-direction: row; 
-    align-items: stretch;
+    flex-grow: 1;
     margin-right: 10px;
     margin-bottom: 10px;
 }
 
+.invalid-container {
+	margin-bottom: 0; 
+}
+
+.designs-container.current-designs-container {
+	flex: 1;
+}
+
 .designs-canvas-container-alert {
 	margin: 0.5em;
+	font-size: 12px;
+}
+
+.designs-canvas-container-alert.alert-dismissable .close {
+	top: 0;
+	right: 0;
 }
 
 .design-canvas {
@@ -276,12 +383,17 @@ body {
 	cursor: pointer;
 }
 
-.design-canvas.design-canvas-hovered {
+.design-canvas .widget-control-leaf {
+	z-index: 500; 
+}
+
+.design-canvas.hovered, 
+.design-canvas.hovered .design-canvas-hovered {
 	outline: 1px dashed black;
 }
 
-.design-canvas .design-canvas-hovered {
-	outline: 1px dashed black;
+.design-canvas.hovered .SVGInline-svg {
+	cursor: pointer; 
 }
 
 .design-body > .canvas-container {
@@ -313,11 +425,6 @@ body {
 	flex-direction: column;
 }
 
-.left-container {
-	display: flex;
-	flex-direction: column;
-}
-
 .saved-body .canvas-container, .trashed-body .canvas-container {
 	margin-right: 5px;
 }
@@ -339,28 +446,6 @@ body {
 .design-canvas-button {
 	margin-left: 10px;
 }
-
-/** 
-  Right click feedback menu, font size selector menu
-  */
-.right-click-menu-item {
-	padding-left: 1em;
-	padding-right: 1em;
-	padding-top: 0.25em; 
-	padding-bottom: 0.25em;
-	display: flex;
-	white-space: nowrap;
-}
-
-.right-click-menu-item:hover {
-	background-color: lightgray;
-	cursor: pointer; 
-}
-
-/*.constraints-color-picker-container {
-	position: absolute; 
-	z-index: 1000; 
-}*/
 
 /** 
   Actions menu that appears on design canvas 

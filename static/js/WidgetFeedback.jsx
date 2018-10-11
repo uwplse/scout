@@ -23,7 +23,6 @@ export default class WidgetFeedback extends React.Component {
   }
 
   render () {
-    var self = this;
     var highlighted = this.state.highlighted; 
     return (
       <div className="widget-feedback-container">
@@ -33,10 +32,9 @@ export default class WidgetFeedback extends React.Component {
               <span className="widget-feedback-items-label">
               {this.feedbackMessage}
               </span>
-              <button className={"widget-feedback-items-remove " + (highlighted ? "highlighted" : "")} onClick={
-                  function() { 
-                    self.updateConstraintsCanvas(self.parentShape, self.action, "undo"); 
-                  }}>
+              <button 
+                className={"widget-feedback-items-remove " + (highlighted ? "highlighted" : "")} 
+                onClick={this.updateConstraintsCanvas(this.parentShape, this.action)}>
                 <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
               </button>
             </li>

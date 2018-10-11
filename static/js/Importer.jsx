@@ -5,17 +5,13 @@ export default class Importer extends React.Component {
   constructor(props) {
   	super(props); 
 
-    // Bind the method to the context of this class
-    this.importSVG = this.importSVG.bind(this); 
-
     this.state  = {
       disabled: false, 
       svg: undefined
     }
   }
 
-  // Draw 
-  importSVG(evt) {
+  importSVG = (evt) => {
     // Update the state
     this.state.disabled = false; 
 
@@ -31,7 +27,10 @@ export default class Importer extends React.Component {
     let disabled = this.state.disabled; 
     let svg = this.state.svg; 
     return (<div>
-      <button disabled={this.state.disabled} className={(this.state.disabled ? "disabled" : "")} onClick={this.importSVG}>Import an SVG</button>
+      <button 
+        disabled={this.state.disabled} 
+        className={(this.state.disabled ? "disabled" : "")} 
+        onClick={this.importSVG}>Import an SVG</button>
       {this.state.svg}
       </div>); 
   }
