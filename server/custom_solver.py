@@ -1,5 +1,4 @@
 from z3 import *
-import z3_helper
 import shapes as shape_classes
 import solver_helpers as sh
 import time
@@ -42,19 +41,10 @@ class Solver(object):
 		# Construct the solver instance we will use for Z3
 		self.solver = z3.Solver()
 		self.override_solver = OverrideSolver(self.solver)
-		self.solver_helper = z3_helper.Z3Helper(self.solver, canvas_width, canvas_height)
 		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
 
-		# Initialize the set of constraints on shapes and containers
-		for shape in self.shapes.values(): 
-			self.cb.init_shape_bounds(shape, canvas_width, canvas_height)
-			if shape.type == "canvas": 
-				self.cb.init_canvas_constraints(shape)
-			elif shape.type == "container": 
-				self.cb.init_container_constraints(shape, self.shapes)
-
-		# Initialize the previous solution constraints
-		# self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+		# Build the initial set of constraints on the shapes and containers 
+		self.init_constraints()
 
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
@@ -74,6 +64,22 @@ class Solver(object):
 		self.num_solutions = 0
 		self.branches_pruned = 0
 		self.z3_calls = 0
+
+	def init_constraints(self):
+		# Initialize the set of constraints on shapes and containers
+		canvas = None
+		for shape in self.shapes.values(): 
+			if shape.type == "canvas":  
+				self.cb.init_canvas_constraints(shape)
+				canvas = shape
+			if shape.type == "container": 
+				self.cb.init_container_constraints(shape, self.shapes)
+
+		for shape in self.shapes.values():
+			if shape.type == "leaf":
+				self.cb.init_shape_bounds(shape, self.canvas_width, self.canvas_height)
+				self.cb.init_shape_baseline(shape)
+				self.cb.init_shape_grid_values(shape, canvas)
 
 	def build_shape_hierarchy(self): 
 		shapes = dict()
@@ -422,7 +428,13 @@ class Solver(object):
 			# print("valid: " + str(self.num_solutions))
 			# Call to Z3 
 			time_z3_start = time.time()
-			result = self.solver.check();
+			try: 
+				result = self.solver.check();
+			except Z3Exception:
+				print("Z3 Exception: Could not check for consistency.")
+				self.num_solutions += 1 
+				continue
+
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start

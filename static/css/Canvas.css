@@ -19,15 +19,18 @@ body {
 	margin-right: 10px;
 }
 
+
+
 /**
   Overrides of bootstrap styles 
   **/ 
 .navbar {
 	margin-bottom: 0px;
+	border-radius: 0; 
 }
 
-.navbar-btn {
-	margin-left: 10px; 
+.designs-area-container .btn {
+	font-size: 16px;
 }
 
 .panel-body {
@@ -36,6 +39,29 @@ body {
 
 .dropdown {
 	position: absolute;
+}
+
+.dropdown-menu {
+	padding-top: 0;
+	font-size: initial;
+}
+
+.dropdown-menu .caret {
+	margin-left: 10px;
+}
+
+.dropdown-menu .divider {
+	height: auto;
+	overflow: visible; 
+	border-bottom: 1px solid #e5e5e5;
+    border-top: 1px solid #e5e5e5;
+    background-color: #ffffff; 
+    display: flex; 
+    justify-content: center;
+}
+
+.dropdown-menu .divider.divider-top {
+	margin-top: 0;
 }
 
 .dropdown-submenu .dropdown-menu {
@@ -50,25 +76,35 @@ body {
 
 .navbar, .navbar-header {
 	display: flex; 
+	justify-content: flex-start;
+	align-items: center;
 }
 
 .navbar {
 	min-height: 60px;
 }
 
-.navbar-header {
-	align-items: center;
-}
-
-.navbar-header > h2 {
-	margin: 0;
-}
-
 .header-button-group {
 	margin-left: 10px;
 }
 
+h1, h2, h3 {
+	font-weight: 600;
+}
+
+.panel-primary > .panel-heading {
+	color: #fff;
+	background-color: #2780E3;
+}
+
+.panel-primary .badge {
+	font-size: 12px;
+	border-radius: 3px;
+	margin-right: 5px;
+}
+
 /**
+
   General styles
  **/
 .canvas {
@@ -91,14 +127,15 @@ body {
 	border: 1px solid #ccc;
 }
 
-.page-container, .top, .page-container, .widgets-panel, .designs-area-container, 
-.left-container, .invalid-container {
+.page-container, .top, .page-container, .widgets-panel, 
+.widgets-container, .designs-area-container, 
+.left-container, .invalid-container  {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1; 
 }
 
-.constraints-container, .widgets-container, .right-container {
+.constraints-container, .widgets-panel-container, .right-container {
 	display: flex;
 	flex-direction: column; 
 }
@@ -119,10 +156,14 @@ body {
 	overflow: auto;
 }
 
-.widgets-container, .constraints-container, .designs-area-container {
+.widgets-panel-container, .constraints-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
+}
+
+.widgets-container {
+	margin-bottom: 0; 
 }
 
 .right-container {
@@ -137,11 +178,6 @@ body {
     padding-left: 10px;
 }
 
-.widgets-sortable-tree .label-info, 
-.widgets-sortable-tree .label-success {
-	font-size: 100%; 
-}
-
 .constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
 .constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
 .constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
@@ -149,13 +185,23 @@ body {
 	width: 238px !important;
 }
 
+/**
+	Sizing of SVG elements in widgets panel 
+**/ 
+.widgets-panel .widget-control-label {
+	font-size: 36; 
+}
+
+#widget-control-label {
+	height: 30px;
+}
 
 /** 
 	Constraints canvas 
 **/
 .constraints-container {
-	width: 650px;
-	min-width: 450px;
+	width: 550px;
+	min-width: 550px;
 }
 
 .constraints-canvas-page-feedback {
@@ -163,7 +209,6 @@ body {
 }
 
 .widgets-container {
-	border-right: 1px solid #ccc;
 	width: 280px;
 }
 
@@ -183,6 +228,12 @@ body {
 	border: 1px dashed gray;
 	padding: 4;
 	background-color: #f2dede;
+}
+
+.widgets-panel-container .configure-widgets-button {
+	margin-top: 10px;
+	font-size: 16px; 
+	font-weight: 500;
 }
 
 .widget-control-group .widget-control {
@@ -220,31 +271,14 @@ body {
 	flex-direction: column;
 }
 
-.widget-control-labels.widget-control-arrow-down:before {
-	content: url("../assets/down_arrow2.png");
-}
-
-.widget-control-labels.widget-control-arrow-up:before {
-	content: url("../assets/up_arrow.png");
-}
-
 .widget-control-info {
     display: flex;
     margin-top: 0.5em;
 }
 
-.widget-control-info .label-info {
+.widget-control-info span {
 	margin-left: 0px;
 	margin-right: 0.5em;
-}
-
-.widget-control-info .btn-group {
-	margin-bottom: 0.5em; 
-	margin-right: 0.5em;
-}
-
-.widget-control-info .btn .caret {
-	margin-left: 5px;
 }
 
 .widget-control-info-left, 
@@ -262,10 +296,6 @@ body {
 	zoom: 40%; 
 	position: absolute;
 	z-index: 1000; 
-}
-
-.widget-control-order {
-	margin-bottom: 0.5em; 
 }
 
 .widget-control-typing {
@@ -302,10 +332,10 @@ body {
     justify-content: center;
 }
 
-.SVGInline-svg {
-	cursor: pointer;
+.widget-container .badge {
+	font-size: 14px;
+	border-radius: 3px;
 }
-
 
 /** 
 	Designs canvas 
@@ -336,6 +366,12 @@ body {
 
 .designs-canvas-container-alert {
 	margin: 0.5em;
+	font-size: 12px;
+}
+
+.designs-canvas-container-alert.alert-dismissable .close {
+	top: 0;
+	right: 0;
 }
 
 .design-canvas {
@@ -351,12 +387,13 @@ body {
 	z-index: 500; 
 }
 
-.design-canvas.design-canvas-hovered {
+.design-canvas.hovered, 
+.design-canvas.hovered .design-canvas-hovered {
 	outline: 1px dashed black;
 }
 
-.design-canvas .design-canvas-hovered {
-	outline: 1px dashed black;
+.design-canvas.hovered .SVGInline-svg {
+	cursor: pointer; 
 }
 
 .design-body > .canvas-container {
@@ -409,28 +446,6 @@ body {
 .design-canvas-button {
 	margin-left: 10px;
 }
-
-/** 
-  Right click feedback menu, font size selector menu
-  */
-.right-click-menu-item {
-	padding-left: 1em;
-	padding-right: 1em;
-	padding-top: 0.25em; 
-	padding-bottom: 0.25em;
-	display: flex;
-	white-space: nowrap;
-}
-
-.right-click-menu-item:hover {
-	background-color: lightgray;
-	cursor: pointer; 
-}
-
-/*.constraints-color-picker-container {
-	position: absolute; 
-	z-index: 1000; 
-}*/
 
 /** 
   Actions menu that appears on design canvas 
@@ -539,21 +554,7 @@ body {
 .widgets-sortable-tree .rst__lineFullVertical:after {
 	height: 100%;
 }
-/*
-.widgets-sortable-tree .rst__lineHalfHorizontalRight::before {
-	 needed to fix bug where only every third line wasn't rendering  
-	height: 1.5px;
-	width
-}*/
-/*
-.widgets-sortable-tree .rst__lineBlock:before {
-	height: 1.5px; 
-}
 
-.widgets-sortable-tree .rst__lineBlock:after {
-	width: 1.5px;
-}
-*/
 .widgets-sortable-tree .rst__rowLabel {
 	padding-right: 5px;
 }

@@ -6,7 +6,7 @@ import math
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
-MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
+MAGNIFICATION_VALUES = [0,1,2,3,4,5,6,7,8,9,10]
 
 def get_row_column_values(num_siblings):
 	values = []
@@ -64,9 +64,6 @@ class Variable(object):
 		# Return a Z3 expression or value to use in Z3 expressions from the element
 		if self.type == "str": 
 			return StringVal(element[self.name])
-
-		elif self.name == "x" or self.name == "y":
-			return element["location"][self.name]
 
 		elif self.name == "width" or self.name == "height":
 			return element["size"][self.name]
@@ -127,11 +124,8 @@ class Solution(object):
 				element = copy.deepcopy(shape.element)
 				new_elements[element["name"]] = element
 
-				if "location" not in element:
-					element["location"] = dict()
-
-				element["location"]["x"] = adj_x
-				element["location"]["y"] = adj_y
+				element["x"] = adj_x
+				element["y"] = adj_y
 
 				height = shape.height()
 				width = shape.width()
@@ -148,8 +142,10 @@ class Solution(object):
 					if shape.importance == "most": 
 						magnification = model[shape.variables.magnification.z3].as_string()
 						magnification = int(magnification)
-						height = height + ((1/magnification) * height)
-						width = width + ((1/magnification) * width)
+
+						magnification_factor = 1/magnification if magnification > 0 else 0
+						height = height + (magnification_factor * height)
+						width = width + (magnification_factor * width)
 						height = int(round(height,0))
 						width = int(round(width,0))
 						element["size"]["height"] = height
@@ -157,8 +153,10 @@ class Solution(object):
 					elif shape.importance == "least": 
 						minification = model[shape.variables.minification.z3].as_string()
 						minification = int(minification)
-						height = height - ((1/minification) * height)
-						width = width - ((1/minification) * width)
+
+						minification_factor = 1/minification if minification > 0 else 0
+						height = height - (minification_factor * height)
+						width = width - (minification_factor * width)
 						height = int(round(height,0))
 						width = int(round(width, 0))
 						element["size"]["height"] = height
@@ -180,9 +178,11 @@ class Solution(object):
 					alignment = model[shape.variables.alignment.z3].as_string()
 					justification = model[shape.variables.justification.z3].as_string()
 					margin = model[shape.variables.margin.z3].as_string()
+					grid = model[shape.variables.grid.z3].as_string()
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
+					element["grid"] = int(grid)
 				elif shape.type == "leaf":
 					if shape.importance == "most":
 						magnification = model[shape.variables.magnification.z3].as_string()

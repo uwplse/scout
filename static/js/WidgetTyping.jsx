@@ -12,13 +12,17 @@ export default class WidgetTyping extends React.Component {
   }
 
   render () {
-    var self = this;
     return (
-      <div className="alert alert-info alert-dismissable widget-control-typing" role="alert">
-        <button onClick={function() { self.closeAlert(self.groupID) }} type="button" className="close" aria-label="Close">
+      <div className="alert alert-info alert-dismissable designs-canvas-container-alert" role="alert">
+        <button 
+          onClick={this.closeAlert(this.groupID)} 
+          type="button" 
+          className="close" 
+          aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        Click <a href="#" onClick={function() { self.createRepeatGroup(self.groupID, true, self.groupSize); }} className="alert-link">here</a> to make this a <strong>repeat group</strong>. 
+        Click <a href="#" onClick={this.createRepeatGroup(this.groupID, true, this.groupSize)}
+          className="alert-link">here</a> to make this a <strong>repeat group</strong>. 
       </div>); 
   }
 }
