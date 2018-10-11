@@ -380,6 +380,12 @@ export default class PageContainer extends React.Component {
       }); 
     }
 
+    // Also clear out the current set of solutions
+    // Later we should probably prompt for exporting before destroying the designs
+    this.setState({
+      solutions: []
+    });
+
     this.clearShapesFromConstraintsCanvas();
   }
 
