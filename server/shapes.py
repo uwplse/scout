@@ -170,7 +170,7 @@ class CanvasShape(Shape):
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
 		self.variables.margin = sh.Variable("canvas", "margin", [10,20,30,40,50], index_domain=False)
 		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
-		self.variables.background_color = sh.Variable("canvas", "backgroundColor", element["colors"], var_type="str",
+		self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], var_type="str",
 													  index_domain=False)
 
 		self.x = 0
@@ -186,8 +186,11 @@ class CanvasShape(Shape):
 
 		if self.locks is not None: 
 			for lock in self.locks:
-				# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
-				self.variable_values[lock] = element[lock]
+				if lock == "background_color": 
+					self.variable_values[lock] = StringVal(element[lock])
+				else: 
+					# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
+					self.variable_values[lock] = element[lock]
 
 	def add_child(self, child): 
 		self.children.append(child)

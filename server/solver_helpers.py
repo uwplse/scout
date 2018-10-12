@@ -33,12 +33,21 @@ def parse_unsat_core(unsat_core):
 		conflict_string = str(conflict)
 		if len(conflict_string) >= 5 and conflict_string.find("lock_", 0, 5) > -1:
 			parts = conflict_string.split("_")
-			lock_id, shape_id, variable, value = parts
-			conflict = dict()
-			conflict["shape_id"] = shape_id
-			conflict["variable"] = variable
-			conflict["value"] = value
-			conflicts.append(conflict)
+			if len(parts) >= 4: 
+				lock_id = parts[0]
+				shape_id = parts[1]
+				variable = parts[2]
+				value = parts[3]
+
+				if len(parts) > 4: 
+					value = parts[4]
+					variable = parts[2] + "_" + parts[3]				
+
+				conflict = dict()
+				conflict["shape_id"] = shape_id
+				conflict["variable"] = variable
+				conflict["value"] = value
+				conflicts.append(conflict)
 	return conflicts
 
 class Variable(object): 
@@ -169,7 +178,7 @@ class Solution(object):
 						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_width)
 
 						# Compute the distance of the shape from the center of the canvas
-						distance_cost += self.compute_distance_cost(shape, CANVAS_HEIGHT, CANVAS_WIDTH)
+						# distance_cost += self.compute_cost(shape, CANVAS_HEIGHT, CANVAS_WIDTH)
 					elif shape.importance == 'least': 
 						importance_change += (shape.orig_height - height)
 						importance_change += (shape.orig_width - width)
@@ -230,7 +239,7 @@ class Solution(object):
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
 					element["grid"] = int(grid)
-					element["backgroundColor"] = background_color.replace("\"", "")
+					element["background_color"] = background_color.replace("\"", "")
 				elif shape.type == "leaf":
 					if shape.importance == "most":
 						magnification = model[shape.variables.magnification.z3].as_string()

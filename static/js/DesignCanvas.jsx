@@ -127,7 +127,7 @@ export default class DesignCanvas extends React.Component {
     console.log(shape.grid); 
     this.setState({
       designShape: shape,
-      backgroundColor: shape.backgroundColor
+      backgroundColor: shape.background_color
     });
   }
 

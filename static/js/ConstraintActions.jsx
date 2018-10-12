@@ -387,7 +387,7 @@ ConstraintActions.canvasConstraints = {
 		{
 			"do": {
 				"key": ConstraintActions.locked_grid_key = 'grid',
-				"updateConstraintsCanvasShape": function keepJustification(constraintsCanvasShape, designCanvasShape) {
+				"updateConstraintsCanvasShape": function keepGrid(constraintsCanvasShape, designCanvasShape) {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_grid_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
@@ -402,6 +402,27 @@ ConstraintActions.canvasConstraints = {
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
 					let gridValue = shape[ConstraintActions.locked_grid_key]; 
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_grid_key, gridValue) + "px.";
+				}
+			}
+		}, 
+	"background_color": 
+		{
+			"do": {
+				"key": "background_color",
+				"updateConstraintsCanvasShape": function keepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Keep the background color";
+				}
+			}, 
+			"undo": {
+				"key": ConstraintActions.locked_grid_key,
+				"updateConstraintsCanvasShape": function undoKeepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Don't keep the background color.";
 				}
 			}
 		}
