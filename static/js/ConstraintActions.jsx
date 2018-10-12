@@ -313,7 +313,7 @@ ConstraintActions.canvasConstraints = {
 					constraintsCanvasShape[ConstraintActions.locked_margin_key] = designCanvasShape[ConstraintActions.locked_margin_key]; 
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Keep the global " + ConstraintActions.locked_margin_key + " at " + shape[ConstraintActions.locked_margin_key] + "px.";
+					return "Keep the " + ConstraintActions.locked_margin_key + " at " + shape[ConstraintActions.locked_margin_key] + "px.";
 				}
 			}, 
 			"undo": {
@@ -391,7 +391,7 @@ ConstraintActions.canvasConstraints = {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_grid_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Keep the global " + ConstraintActions.locked_grid_key + " at " + shape[ConstraintActions.locked_grid_key] + "px.";
+					return "Keep the " + ConstraintActions.locked_grid_key + " at " + shape[ConstraintActions.locked_grid_key] + "px.";
 				}
 			}, 
 			"undo": {

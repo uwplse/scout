@@ -78,6 +78,7 @@ class ConstraintBuilder(object):
 		alignment = canvas.variables.alignment
 		justification = canvas.variables.justification
 		margin = canvas.variables.margin
+		background_color = canvas.variables.background_color
 		canvas_x = canvas.variables.x.z3
 		canvas_y = canvas.variables.y.z3
 
@@ -90,6 +91,11 @@ class ConstraintBuilder(object):
 		for margin_value in margin.domain:
 			or_values.append(margin.z3 == margin_value)
 		self.solver.add(Or(or_values), "canvas margin domain in range")
+
+		bg_values = []
+		for background_value in background_color.domain:
+			bg_values.append(background_color.z3 == background_value)
+		self.solver.add(Or(bg_values), "canvas background_color domain in range")
 
 		page_shape = canvas.children[0]
 		# page shape should stay within the bounds of the canvas container

@@ -71,7 +71,8 @@ export default class DesignCanvas extends React.Component {
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
       designShape: undefined, // The root level shape of the DesignCanvas
-      hovered: false
+      hovered: false, 
+      backgroundColor: "#E1E2E1"
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -99,11 +100,12 @@ export default class DesignCanvas extends React.Component {
       constraintsMenuShape: prevState.constraintsMenuShape,  
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState, 
+      backgroundColor: prevState.backgroundColor,
       valid: nextProps.valid, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
       removed: nextProps.removed, 
-      conflicts: nextProps.conflicts
+      conflicts: nextProps.conflicts,
     }    
   }
 
@@ -125,6 +127,7 @@ export default class DesignCanvas extends React.Component {
     console.log(shape.grid); 
     this.setState({
       designShape: shape,
+      backgroundColor: shape.backgroundColor
     });
   }
 
@@ -362,7 +365,11 @@ export default class DesignCanvas extends React.Component {
       <div onMouseEnter={this.showMenuAndHighlightConstraints} 
            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
-           id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
+           id={"canvas-box-" + this.id} 
+           style={{
+            height: (this.canvasHeight * scalingFactor) + "px", 
+            width: (this.canvasWidth * scalingFactor) + "px", 
+            backgroundColor: this.state.backgroundColor}}> 
   			<div className={(constraintsMenuShape ? "" : "hidden")}>
         {constraintsMenuShape ? 
           (<DesignCanvasMenu 

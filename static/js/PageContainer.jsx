@@ -248,6 +248,11 @@ export default class PageContainer extends React.Component {
   getShapesJSON = () => {
     // Get all of the shapes on the canvas into a collection 
     let shapeObjects = this.constraintsCanvasRef.current.getShapeHierarchy();
+
+    // set the allowed colors here based on the palette
+    // Later need a way to automatically generate these from the uploaded designs
+    shapeObjects.colors = this.getBackgroundColors(); 
+
     return JSON.stringify(shapeObjects); 
   }
 
@@ -364,6 +369,19 @@ export default class PageContainer extends React.Component {
           height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
           svg={ logo } onClick={this.addShapeToConstraintsCanvas('image', 'logo', logo)}/>
       </div>); 
+    }
+  }
+
+  getBackgroundColors = () => {
+    let hollywoodColors = ["#F5F5F6", "#E1E2E1", "#607d8c"]
+    let harvestColors = ["#afb0af", "#ffe14d", "#e1e2e1"]
+
+    // Replace with the above when we can load these in
+    if(this.state.currentPallette == "hollywood") {
+      return hollywoodColors; 
+    }
+    else {
+      return harvestColors; 
     }
   }
 

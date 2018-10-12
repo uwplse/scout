@@ -35,7 +35,7 @@ class Shape(object):
 		self.type = shape_type
 
 		if self.shape_type in label_types:
-			self.variables.label = sh.Variable(shape_id, "label", varType="str")
+			self.variables.label = sh.Variable(shape_id, "label", var_type="str")
 
 		self.locks = None
 		self.order = -1
@@ -77,11 +77,13 @@ class Shape(object):
 				if self.importance == "most":
 					# Make height and width into variables so that the solver can change them
 					magnification_values = sh.MAGNIFICATION_VALUES
-					self.variables.magnification = sh.Variable(shape_id, "magnification", magnification_values)
+					self.variables.magnification = sh.Variable(shape_id, "magnification", 
+						magnification_values, index_domain=False)
 
 				if self.importance == "least": 
 					minification_values = sh.MAGNIFICATION_VALUES
-					self.variables.minification = sh.Variable(shape_id, "minification", minification_values)
+					self.variables.minification = sh.Variable(shape_id, "minification", 
+						minification_values, index_domain=False)
 
 			if "typed" in element: 
 				self.typed = element["typed"]
@@ -131,13 +133,13 @@ class ContainerShape(Shape):
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
 		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
-		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,15,20,25,30,35,40])
+		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,15,20,25,30,35,40], index_domain=False)
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values
 		self.variables.distribution = sh.Variable(shape_id, "distribution",
 												  [20,40,60,80,100,120,140,160,180,200,220,240,
-												   260,280,300,320,340,360,380,400])
+												   260,280,300,320,340,360,380,400], index_domain=False)
 
 		self.container_order = "unimportant"
 		if element is not None: 
@@ -159,7 +161,6 @@ class ContainerShape(Shape):
 
 	def num_rows_or_columns(self): 
 		return 1 if len(self.children) <= 2 else 2
-		
 
 class CanvasShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
@@ -167,8 +168,10 @@ class CanvasShape(Shape):
 		self.children = []
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-		self.variables.margin = sh.Variable("canvas", "margin", [10,20,30,40,50])
-		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20])
+		self.variables.margin = sh.Variable("canvas", "margin", [10,20,30,40,50], index_domain=False)
+		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
+		self.variables.background_color = sh.Variable("canvas", "backgroundColor", element["colors"], var_type="str",
+													  index_domain=False)
 
 		self.x = 0
 		self.y = 0

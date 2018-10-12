@@ -75,7 +75,8 @@ export default class ConstraintsCanvas extends React.Component {
       "size": {
         width: this.canvasWidth, 
         height: this.canvasHeight
-      } 
+      }, 
+      "backgroundColor": "#E1E2E1"
     }
 
     this.canvasLevelShape = canvas;
