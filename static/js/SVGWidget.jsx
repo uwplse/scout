@@ -41,7 +41,7 @@ export default class SVGWidget extends React.Component {
     this.state = {
       height: this.element.size.height,
       width: this.element.size.width,
-      order: (this.element.order ? this.element.order : -1),  
+      order: this.element.order,  
       ordered: this.element.ordered, 
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
@@ -138,14 +138,16 @@ export default class SVGWidget extends React.Component {
       let textValue = editableText[0].innerHTML; 
       this.element.label = textValue;
 
-      let textBounding = this.adjustElementSize(editableText[0]);
+      if(this.type == "label") {
+        let textBounding = this.adjustElementSize(editableText[0]);
 
-      // Measure and set the baseline value
-      let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
-      if(textSizeMeasure[0]){
-        let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
-        let baseline = textBounding.y - textSizeBounding.y
-        this.element.baseline = baseline; 
+        // Measure and set the baseline value
+        let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
+        if(textSizeMeasure[0]){
+          let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
+          let baseline = textBounding.y - textSizeBounding.y
+          this.element.baseline = baseline; 
+        }
       }
     }    
   }
@@ -371,8 +373,11 @@ export default class SVGWidget extends React.Component {
     const labelPosition = this.state.labelPosition; 
     const order = this.state.order;
     const ordered = this.state.ordered; 
-    const orderOrdinal = Converter.toWordsOrdinal(order+1); 
-    const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
+
+    // const orderOrdinal = Converter.toWordsOrdinal(order+1); 
+    // const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1);
+    const orderLabel = order == 0 ? "First" : "Last"; 
+
     const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
 

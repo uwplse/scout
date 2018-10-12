@@ -527,7 +527,9 @@ export default class ConstraintsCanvas extends React.Component {
     let order = options.order ? options.order : -1; 
 
     let containerOrder = undefined; 
-    if(type == "group" || type == "labelGroup") {
+    let isContainer = type == "group" || type == "labelGroup"; 
+
+    if(isContainer) {
       containerOrder = options.containerOrder ? options.containerOrder : "unimportant";
     }
 
@@ -554,7 +556,7 @@ export default class ConstraintsCanvas extends React.Component {
       "y": 0
     }
 
-    if (type == "group" || type == "labelGroup") {
+    if (isContainer) {
       shape.children = []; 
     }
 

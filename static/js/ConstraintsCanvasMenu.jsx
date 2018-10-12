@@ -68,9 +68,11 @@ class OrderMenuItem extends React.Component {
   }
 
   render () {
-    let position = Converter.toWordsOrdinal(this.index+1) 
+    // let position = Converter.toWordsOrdinal(this.index+1) 
+    let orderPosition = this.index == 0 ? "first" : "last"; 
+
     let label = (this.currentOrder == -1 || this.currentOrder == undefined) ? 
-                  "Keep " + position + " in order." : "Don't keep " + position + " in order.";
+                  "Keep " + orderPosition + "." : "Don't keep " + orderPosition + ".";
     let newOrder = (this.currentOrder == -1 || this.currentOrder == undefined ? this.index : -1); 
 
     return (<li>
