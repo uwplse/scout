@@ -118,19 +118,21 @@ export default class PageContainer extends React.Component {
       let jsonShapes = this.getShapesJSON(); 
 
       // Get all of the solutions so far to check their validity 
-      let prevSolutions = JSON.stringify(this.state.solutions);
+      if(this.state.solutions.length) {
+        let prevSolutions = JSON.stringify(this.state.solutions);
 
-      $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
-        let requestParsed = JSON.parse(requestData); 
-        let valid = requestParsed.result; 
-        if(!valid) {
-          this.setState({
-            errorMessageShown: true
-          }); 
-        }
+        $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
+          let requestParsed = JSON.parse(requestData); 
+          let valid = requestParsed.result; 
+          if(!valid) {
+            this.setState({
+              errorMessageShown: true
+            }); 
+          }
 
-        this.updateSolutionValidity(requestParsed.solutions);
-      }); 
+          this.updateSolutionValidity(requestParsed.solutions);
+        });         
+      }
     }
     else {
       // Get design solutions for the current set of constraints

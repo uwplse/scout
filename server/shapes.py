@@ -144,6 +144,8 @@ class ContainerShape(Shape):
 		self.container_order = "unimportant"
 		if element is not None: 
 			if "containerOrder" in element: 
+				print("Page container order")
+				print(element["containerOrder"])
 				self.container_order = element["containerOrder"]
 
 		# Width and Height for container is determined by their contents so allow these values to change
@@ -176,7 +178,7 @@ class CanvasShape(Shape):
 		self.x = 0
 		self.y = 0
 
-		self.container_order = "unimportant"
+		# self.container_order = "unimportant"
 		if element is not None: 
 			if "containerOrder" in element: 
 				self.container_order = element["containerOrder"]
@@ -186,9 +188,9 @@ class CanvasShape(Shape):
 
 		if self.locks is not None: 
 			for lock in self.locks:
-				if lock == "background_color": 
+				if lock == "background_color":
 					self.variable_values[lock] = StringVal(element[lock])
-				else: 
+				else:
 					# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
 					self.variable_values[lock] = element[lock]
 

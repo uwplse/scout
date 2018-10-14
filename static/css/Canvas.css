@@ -178,6 +178,12 @@ h1, h2, h3 {
     padding-left: 10px;
 }
 
+.constraints-canvas-container {
+	/* Needed when we do not have the virtualized grid enabled where it makes its own scrollbar */
+	overflow: auto;
+    height: calc(100% - 120px);
+}
+
 .constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
 .constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
 .constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
@@ -200,8 +206,8 @@ h1, h2, h3 {
 	Constraints canvas 
 **/
 .constraints-container {
-	width: 450px;
-	min-width: 450px;
+	width: 475px;
+	min-width: 475px;
 }
 
 .constraints-canvas-page-feedback {

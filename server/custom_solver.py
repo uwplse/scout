@@ -233,6 +233,8 @@ class Solver(object):
 				start_time = time.time()
 				result = self.z3_check(start_time)
 				unsat_core = self.solver.unsat_core()
+				constraints = self.solver.sexpr()
+				print(unsat_core)
 
 				# update the valid state of the solution
 				solution["valid"] = result

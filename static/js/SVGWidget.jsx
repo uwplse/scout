@@ -35,6 +35,11 @@ export default class SVGWidget extends React.Component {
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
     this.isContainer = props.isContainer; 
 
+    this.setOrder = this.setOrder.bind(this); 
+    this.setContainerOrder = this.setContainerOrder.bind(this); 
+    this.setLabel = this.setLabel.bind(this); 
+    this.setImportanceLevel = this.setImportanceLevel.bind(this); 
+
     // Timer for handling text change events
     this.timer = null;  
 
@@ -42,7 +47,7 @@ export default class SVGWidget extends React.Component {
       height: this.element.size.height,
       width: this.element.size.width,
       order: this.element.order,  
-      ordered: this.element.ordered, 
+      containerOrder: this.element.containerOrder, 
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
       showImportance: props.showImportanceLevels,
@@ -64,7 +69,6 @@ export default class SVGWidget extends React.Component {
       height: prevState.height,  
       width: prevState.width, 
       order: prevState.order, 
-      ordered: prevState.ordered, 
       fontSize: prevState.fontSize, 
       importance: prevState.importance, 
       showImportance: prevState.showImportance, 
@@ -73,6 +77,7 @@ export default class SVGWidget extends React.Component {
       showOrder: prevState.showOrder,
       cursorPos: prevState.cursorPos,
       svgSource: nextProps.source, 
+      containerOrder: prevState.containerOrder, 
       highlighted: nextProps.highlighted
     }    
   }
@@ -295,69 +300,60 @@ export default class SVGWidget extends React.Component {
     }
   }
 
-  setImportanceLevel = (level) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setImportanceLevel = (evt, level) => {
+    evt.stopPropagation(); 
 
-      // Update the object
-      this.element.importance = level; 
+    // Update the object
+    this.element.importance = level; 
 
-      // Update the number of stars showing
-      this.setState({
-        importance: level, 
-        showImportance: true
-      }); 
+    // Update the number of stars showing
+    this.setState({
+      importance: level, 
+      showImportance: true
+    }); 
 
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();
-    }
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
-  setLabel = (shapeId) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setLabel = (evt, shapeId) => {
+    evt.stopPropagation(); 
 
-      // Save the labels relationship to the shape object 
-      this.element.labels = shapeId; 
-      this.setState({
-        showLabels: true 
-      }); 
+    // Save the labels relationship to the shape object 
+    this.element.labels = shapeId; 
+    this.setState({
+      showLabels: true 
+    }); 
 
-      this.createLabelsGroup(this.id, shapeId); 
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();
-    }
+    this.createLabelsGroup(this.id, shapeId); 
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
-  setOrder = (value) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setOrder = (evt, value) => {
+    evt.stopPropagation(); 
 
-      this.element.order = value; 
-      this.setState({
-        order: value, 
-        showOrder: (value != -1 && value != undefined)
-      });
+    this.element.order = value; 
+    this.setState({
+      order: value, 
+      showOrder: (value != -1 && value != undefined)
+    });
 
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();      
-    }
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();      
   }
 
-  setContainerOrder = (orderValue) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setContainerOrder(evt, orderValue) {
+    evt.stopPropagation(); 
 
-      this.element.containerOrder = orderValue; 
+    this.element.containerOrder = orderValue; 
 
-      let orderedValue = orderValue == "important"; 
-      this.setState({
-        ordered: orderedValue
-      }); 
+    this.setState({
+      containerOrder: orderValue
+    }); 
 
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();
-    }
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
   render () {
@@ -372,7 +368,7 @@ export default class SVGWidget extends React.Component {
     const showLabels = this.state.showLabels; 
     const labelPosition = this.state.labelPosition; 
     const order = this.state.order;
-    const ordered = this.state.ordered; 
+    const ordered = this.state.containerOrder == "important"; 
 
     // const orderOrdinal = Converter.toWordsOrdinal(order+1); 
     // const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1);

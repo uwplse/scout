@@ -21,12 +21,12 @@ class ConstraintBuilder(object):
 				self.solver.add(Not(And(all_values)), "prevent previous solution " + solution["id"] + " values")
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
-		# Saved solutions should not appear again in the results
+		# Get the constraints for checking the validity of the previous solution
 		all_values = self.get_solution_constraints_from_elements(shapes, elements)
 
-		# All of the variables that were set for this solution should be maintained (And constraint)
-		if len(all_values): 
-			self.solver.add(And(all_values), "prevent solution " + solutionID + " values")
+		# All of the variables that were set for this solution should be maintained
+		for value in all_values:
+			self.solver.add(value, "fix solution " + solutionID + " values " + str(value))
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements):
 		all_values = []
@@ -53,13 +53,14 @@ class ConstraintBuilder(object):
 			variables = shape.variables.toDict()
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
-				all_values.append(variable.z3 == variable.get_value_from_element(element))
+				if variable.name != "baseline": 
+					all_values.append(variable.z3 == variable.get_value_from_element(element))
 
 		return all_values	
 
 	def init_shape_baseline(self, shape): 
 		if shape.has_baseline:
-			self.solver.add(shape.variables.baseline.z3 == shape.variables.y.z3 + shape.orig_baseline)
+			self.solver.add(shape.variables.baseline.z3 == shape.variables.y.z3 + shape.orig_baseline, "baseline " + shape.shape_id)
 
 	def init_shape_bounds(self, shape, canvas_width, canvas_height):
 		self.solver.add(shape.variables.x.z3 >= 0, shape.shape_id + " x must be greater than zero.")
@@ -168,6 +169,7 @@ class ConstraintBuilder(object):
 				shape1_height = shape1.computed_height()
 
 				bottom_axis = shape1.variables.baseline.z3 if shape1.has_baseline else shape1_y + shape1_height
+				# bottom_axis = shape1_y + shape1_height
 
 				# Shapes cannot exceed the bounds of their parent containers
 				self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
@@ -529,6 +531,9 @@ class ConstraintBuilder(object):
 		not_columns = arrangement != columns_index
 
 		if container.container_order == "important": 
+			print(container.type)
+			print("HERE")
+			print("THE CONTAINER ORDER IS IMPORTANT")
 			vertical_pairs = []
 			horizontal_pairs = []
 			child_shapes = container.children
