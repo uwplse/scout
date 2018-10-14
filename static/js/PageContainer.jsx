@@ -272,9 +272,7 @@ export default class PageContainer extends React.Component {
       let designSolution = this.state.solutions[i]; 
       
       // Invalidate the solution which means it should be moved into the right side panel 
-      if(designSolution.valid) {
-        designSolution.invalidated = false;
-      }
+      designSolution.invalidated = !designSolution.valid; 
     }
 
     this.setState({
