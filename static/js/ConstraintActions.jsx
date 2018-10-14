@@ -243,7 +243,12 @@ ConstraintActions.groupConstraints = {
 					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]]; 
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}
@@ -276,7 +281,7 @@ ConstraintActions.groupConstraints = {
 			"do": {
 				"key": ConstraintActions.locked_distribution_key,
 				"updateConstraintsCanvasShape": function keepDistribution(constraintsCanvasShape, designCanvasShape) {
-					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_distribution_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
 					let distributionValue = shape[ConstraintActions.locked_distribution_key];
@@ -286,7 +291,7 @@ ConstraintActions.groupConstraints = {
 			"undo": {
 				"key": ConstraintActions.locked_justification_key,
 				"updateConstraintsCanvasShape": function undoKeepDistribution(constraintsCanvasShape, designCanvasShape) {
-					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_distribution_key);
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
 					let distributionValue = shape[ConstraintActions.locked_distribution_key]; 

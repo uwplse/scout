@@ -32,7 +32,7 @@ class LabelMenuItem extends React.Component {
                <a 
                 tabIndex="-1" 
                 href="#" 
-                onClick={function (evt) { self.onClick(evt, this.shapeID); }}>
+                onClick={function (evt) { self.onClick(evt, self.shapeID); }}>
                 {label}
                </a>
             </li>); 
@@ -116,7 +116,7 @@ class ImportanceMenuItem extends React.Component {
   render () {
     let self = this; 
     return <li> 
-              <a onClick={function(evt) { self.onClick(evt, this.importanceLevel); }} tabIndex="-1" href="#">
+              <a onClick={function(evt) { self.onClick(evt, self.importanceLevel); }} tabIndex="-1" href="#">
                 {this.label}
               </a>
           </li>; 

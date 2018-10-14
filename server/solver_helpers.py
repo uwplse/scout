@@ -7,7 +7,7 @@ import shapes as shape_objects
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
-MAGNIFICATION_VALUES = [0,1,2,3,4,5,6,7,8,9,10]
+MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
 
 def get_row_column_values(num_siblings):
 	values = []

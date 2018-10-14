@@ -223,13 +223,40 @@ export default class DesignCanvas extends React.Component {
     let page = this.elements["page"]; 
     this.createSVGElement(designCanvas, page); 
 
+    let elementsList = []; 
     for(let elementID in this.elements) {
       if(this.elements.hasOwnProperty(elementID)) {
         let element = this.elements[elementID];
         if(element.type != "canvas" && element.type != "page") {
-          this.createSVGElement(designCanvas, element);
+          elementsList.push(element); 
         }
       }
+    }
+
+    // Make sure the elements are sorted by containment 
+    elementsList.sort(function(a, b) {
+      let a_x = a.x; 
+      let a_y = a.y; 
+      let a_width = a.size.width;
+      let a_height = a.size.height; 
+
+      let b_x = b.x; 
+      let b_y = b.y; 
+      let b_width = b.width; 
+      let b_height = b.height; 
+
+      // Sort by containment
+      if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
+        // Sort b first if b contains a so it appears higher in the DOM hierarchy
+        return 1; 
+      }
+
+      return -1; 
+    }); 
+
+    for(let i=0; i<elementsList.length; i++) {
+      let element = elementsList[i]; 
+      this.createSVGElement(designCanvas, element); 
     }
   }
 
