@@ -200,8 +200,8 @@ h1, h2, h3 {
 	Constraints canvas 
 **/
 .constraints-container {
-	width: 550px;
-	min-width: 550px;
+	width: 500px;
+	min-width: 500px;
 }
 
 .constraints-canvas-page-feedback {

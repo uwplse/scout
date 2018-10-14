@@ -58,7 +58,7 @@ class Variable(object):
 		self.domain = domain
 		self.type = var_type
 
-		# If this is true, the domain values produced by the solver 
+		# If this is true, the domain values produced by the solver `
 		# map directly to the indexes of the variables in the list
 		# If it is false, the domain values the solver produces
 		# will be the actual numerical or string values from the domain

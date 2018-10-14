@@ -373,8 +373,8 @@ export default class PageContainer extends React.Component {
   }
 
   getBackgroundColors = () => {
-    let hollywoodColors = ["#F5F5F6", "#E1E2E1", "#607d8c", "#69a8ff", "#e9edff", "#a7ccbe"]
-    let harvestColors = ["#afb0af", "#ffe14d", "#e1e2e1", "#fffcd7", "#d6d6d6", "#ffffff"]
+    let hollywoodColors = ['#F5F5F6', '#E1E2E1', '#607d8c', '#69a8ff', '#e9edff', '#a7ccbe']
+    let harvestColors = ['#afb0af', '#ffe14d', '#e1e2e1', '#fffcd7', '#d6d6d6', '#ffffff']
 
     // Replace with the above when we can load these in
     if(this.state.currentPallette == "hollywood") {

@@ -355,7 +355,12 @@ ConstraintActions.canvasConstraints = {
 					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]]; 
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}
