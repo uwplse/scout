@@ -44,7 +44,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     // Set the initial value for the text label
     this.setTextLabel();  
     this.rescaleTextLabel();
-    this.rescaleLabelSize();
+    this.rescaleLabelWidth();
   }
 
   componentDidUpdate() {
@@ -52,7 +52,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.rescaleTextLabel();
   }
 
-  rescaleLabelSize = () => {
+  rescaleLabelWidth = () => {
     let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
     let svgElement = document.getElementById(id); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
@@ -60,10 +60,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
     if(editableText.length) {    
       if(this.type == "label") {
         let textArea = editableText[0].getBoundingClientRect(); 
-        let newHeight = Math.round(textArea.height,0); 
         let newWidth = Math.round(textArea.width,0);
         this.setState({
-          height: newHeight, 
           width: newWidth
         }); 
       }
@@ -87,8 +85,9 @@ export default class DesignCanvasSVGWidget extends React.Component {
     if(svgElement) {
       let editableText = svgElement.querySelectorAll(".widget-editable-text");
       if(editableText.length) {
+        let adjust = 5; 
         let scaledFont = 100 * this.state.scaling; 
-        editableText[0].style.fontSize = scaledFont + "%"; 
+        editableText[0].style.fontSize = (scaledFont-adjust) + "%"; 
 
         if(this.type == "button") {
           editableText[0].style.transform = "translate(" + Math.round(this.state.width/2,0) + "px," + Math.round(this.state.height/2,0) + "px)"; 
@@ -126,6 +125,9 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const left = this.state.left; 
     const top = this.state.top;
     const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
+
+    console.log(this.type);
+    console.log(this.state.height);
 
     this.setTextLabel();
     this.rescaleTextLabel();

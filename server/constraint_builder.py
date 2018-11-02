@@ -21,12 +21,12 @@ class ConstraintBuilder(object):
 				self.solver.add(Not(And(all_values)), "prevent previous solution " + solution["id"] + " values")
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
-		# Saved solutions should not appear again in the results
+		# Get the constraints for checking the validity of the previous solution
 		all_values = self.get_solution_constraints_from_elements(shapes, elements)
 
-		# All of the variables that were set for this solution should be maintained (And constraint)
-		if len(all_values): 
-			self.solver.add(And(all_values), "prevent solution " + solutionID + " values")
+		# All of the variables that were set for this solution should be maintained
+		for value in all_values:
+			self.solver.add(value, "fix solution " + solutionID + " values " + str(value))
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements):
 		all_values = []
@@ -53,13 +53,14 @@ class ConstraintBuilder(object):
 			variables = shape.variables.toDict()
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
-				all_values.append(variable.z3 == variable.get_value_from_element(element))
+				if variable.name != "baseline": 
+					all_values.append(variable.z3 == variable.get_value_from_element(element))
 
 		return all_values	
 
 	def init_shape_baseline(self, shape): 
 		if shape.has_baseline:
-			self.solver.add(shape.variables.baseline.z3 == shape.variables.y.z3 + shape.orig_baseline)
+			self.solver.add(shape.variables.baseline.z3 == shape.variables.y.z3 + shape.orig_baseline, "baseline " + shape.shape_id)
 
 	def init_shape_bounds(self, shape, canvas_width, canvas_height):
 		self.solver.add(shape.variables.x.z3 >= 0, shape.shape_id + " x must be greater than zero.")
@@ -78,6 +79,7 @@ class ConstraintBuilder(object):
 		alignment = canvas.variables.alignment
 		justification = canvas.variables.justification
 		margin = canvas.variables.margin
+		background_color = canvas.variables.background_color
 		canvas_x = canvas.variables.x.z3
 		canvas_y = canvas.variables.y.z3
 
@@ -90,6 +92,11 @@ class ConstraintBuilder(object):
 		for margin_value in margin.domain:
 			or_values.append(margin.z3 == margin_value)
 		self.solver.add(Or(or_values), "canvas margin domain in range")
+
+		bg_values = []
+		for background_value in background_color.domain:
+			bg_values.append(background_color.z3 == background_value)
+		self.solver.add(Or(bg_values), "canvas background_color domain in range")
 
 		page_shape = canvas.children[0]
 		# page shape should stay within the bounds of the canvas container
@@ -162,6 +169,7 @@ class ConstraintBuilder(object):
 				shape1_height = shape1.computed_height()
 
 				bottom_axis = shape1.variables.baseline.z3 if shape1.has_baseline else shape1_y + shape1_height
+				# bottom_axis = shape1_y + shape1_height
 
 				# Shapes cannot exceed the bounds of their parent containers
 				self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
@@ -174,7 +182,12 @@ class ConstraintBuilder(object):
 
 			# If this is a hierarchical container, use the distribution variable. 
 			# If this is a bottom level group, using the proximity value 
-			spacing = container.variables.distribution.z3 if has_group and not container.typed else container.variables.proximity.z3
+			use_distribution = (has_group and not container.typed) or container.container_type == "page"
+			print("distribution")
+			print(use_distribution)
+			spacing = container.variables.distribution.z3 if use_distribution else container.variables.proximity.z3
+			
+
 			self.arrange_container(container, spacing)
 			self.align_container(container, spacing)
 			self.non_overlapping(container, spacing)
@@ -204,7 +217,7 @@ class ConstraintBuilder(object):
 		if shape.importance == "most":
 			# Enforce the max size
 			self.solver.add(shape.computed_width() <= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be less than the maximum size.")
-			self.solver.add(shape.computed_height()<= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be less than the maximum size.")
+			self.solver.add(shape.computed_height() <= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be less than the maximum size.")
 		elif shape.importance == "least":
 			# Enforce the minimum size
 			self.solver.add(shape.computed_width() >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be greater than the minimum size.")
@@ -519,7 +532,13 @@ class ConstraintBuilder(object):
 		columns_index = container.variables.arrangement.domain.index("columns")
 		is_columns = arrangement == columns_index
 
+		not_rows = arrangement != rows_index
+		not_columns = arrangement != columns_index
+
 		if container.container_order == "important": 
+			print(container.type)
+			print("HERE")
+			print("THE CONTAINER ORDER IS IMPORTANT")
 			vertical_pairs = []
 			horizontal_pairs = []
 			child_shapes = container.children
@@ -584,15 +603,22 @@ class ConstraintBuilder(object):
 		self.solver.add(If(is_vertical, m_w_constraint, True), container.shape_id + " max width vertical")
 		self.solver.add(If(is_horizontal, m_h_constraint, True), container.shape_id + " max height horizontal")
 
-		groups = self.split_children_into_groups(container)
-		self.solver.add(If(is_rows, self.align_rows_or_columns(container, spacing, groups, "row", "y", "height", "x", "width"), True), container.shape_id + " align rows")
-		self.solver.add(If(is_columns, self.align_rows_or_columns(container, spacing, groups, "column", "x", "width", "y", "height"), True), container.shape_id + " align columns")
-		self.solver.add(If(is_rows, self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), True), container.shape_id + " align rows left")
-		self.solver.add(If(is_columns, self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), True), container.shape_id + " align columns left ")
-		self.solver.add(If(is_rows, self.set_container_size_main_axis(container, spacing, groups, "height"), True), container.shape_id + " max row height")
-		self.solver.add(If(is_columns, self.set_container_size_main_axis(container, spacing, groups, "width"), True), container.shape_id + " max row width")
-		self.solver.add(If(is_rows, self.set_container_size_cross_axis(container, spacing, groups, "width"), True), container.shape_id + " max container height from rows")
-		self.solver.add(If(is_columns, self.set_container_size_cross_axis(container, spacing, groups, "height"), True), container.shape_id + " max container width from columns")
+		# only initialize the row and column constraints if there are more than 2 children 
+		if len(container.children) > 2: 
+			groups = self.split_children_into_groups(container)
+			self.solver.add(If(is_rows, self.align_rows_or_columns(container, spacing, groups, "row", "y", "height", "x", "width"), True), container.shape_id + " align rows")
+			self.solver.add(If(is_columns, self.align_rows_or_columns(container, spacing, groups, "column", "x", "width", "y", "height"), True), container.shape_id + " align columns")
+			self.solver.add(If(is_rows, self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), True), container.shape_id + " align rows left")
+			self.solver.add(If(is_columns, self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), True), container.shape_id + " align columns left ")
+			self.solver.add(If(is_rows, self.set_container_size_main_axis(container, spacing, groups, "height"), True), container.shape_id + " max row height")
+			self.solver.add(If(is_columns, self.set_container_size_main_axis(container, spacing, groups, "width"), True), container.shape_id + " max row width")
+			self.solver.add(If(is_rows, self.set_container_size_cross_axis(container, spacing, groups, "width"), True), container.shape_id + " max container height from rows")
+			self.solver.add(If(is_columns, self.set_container_size_cross_axis(container, spacing, groups, "height"), True), container.shape_id + " max container width from columns")
+		else: 
+			# Prevent columnns and rows variables
+			self.solver.add(arrangement != rows_index)
+			self.solver.add(arrangement != columns_index)
+
 		# self.solver.add(If(is_rows, self.consecutive_rows_or_columns(container, "row"), True), container.shape_id + " consecutive rows")
 		# self.solver.add(If(is_columns, self.consecutive_rows_or_columns(container, "column"),True), container.shape_id + " consecutive columns")
 		# self.solver.add(If(is_rows, self.aligned_within_rows_or_columns(container, "row", "y", "height"), True), container.shape_id + " aligned rows")

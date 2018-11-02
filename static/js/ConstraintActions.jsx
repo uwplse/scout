@@ -11,8 +11,13 @@ ConstraintActions.locked_grid_key = 'grid';
 
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
+ConstraintActions.horizontalArrangements = ["horizontal", "rows"];
+ConstraintActions.verticalArrangements = ["vertical", "columns"];
+ConstraintActions.arrangments = ["horizontal", "vertical", "rows", "columns"]; 
+ConstraintActions.verticalAlignments = ["left", "center", "right"];
+ConstraintActions.horizontalAlignments = ["top", "center", "bottom"];
+
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
-ConstraintActions.alignments = ["left", "center", "right"];
 ConstraintActions.justifications = ["top", "center", "bottom"];
 
 ConstraintActions.locked_proximity_key = 'proximity'; 
@@ -49,7 +54,7 @@ ConstraintActions.defaultFeedbackMessage = function feedbackMessage(constraintKe
 }
 
 ConstraintActions.defaultUndoFeedbackMessage = function undoFeedbackMessage(constraintKey, value) {
-	return "Unlock " + constraintKey + " from " + value;
+	return "Don't keep the " + constraintKey + " " + value;
 }
 
 ConstraintActions.elementConstraints = {
@@ -69,7 +74,7 @@ ConstraintActions.elementConstraints = {
 			    constraintsCanvasShape["y"] = y_val; 
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Keep x position at " + shape["x"] + "px.";
+				return "Keep x location at " + shape["x"] + "px.";
 			}
 		}, 
 		"undo": {
@@ -82,7 +87,7 @@ ConstraintActions.elementConstraints = {
 				}
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Unlock x position from " + shape["x"] + "px.";
+				return "Don't keep x location at " + shape["x"] + "px.";
 			}
 		}
 	}, 
@@ -102,7 +107,7 @@ ConstraintActions.elementConstraints = {
 			    constraintsCanvasShape["y"] = designCanvasShape["y"];
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Keep y position at " + shape["y"] + "px.";
+				return "Keep y location at " + shape["y"] + "px.";
 			}
 		}, 
 		"undo": {
@@ -115,7 +120,7 @@ ConstraintActions.elementConstraints = {
 				}
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Unlock y position from " + shape["y"] + "px.";
+				return "Don't keep y location at " + shape["y"] + "px.";
 			}
 		}
 	}, 
@@ -150,7 +155,7 @@ ConstraintActions.elementConstraints = {
 				}
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Unlock width from " + shape[ConstraintActions.locked_size_key]["width"] + "px.";
+				return "Don't keep width at " + shape[ConstraintActions.locked_size_key]["width"] + "px.";
 			}
 		}	
 	}, 
@@ -178,14 +183,14 @@ ConstraintActions.elementConstraints = {
 		"undo": {
 			"key": ConstraintActions.locked_size_key,
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
-				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_size_key); 
+				let indsex = constraintsCanvasShape[ConstraintActions.locksKey].indexOf(ConstraintActions.locked_size_key); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
 				}; 
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Unlock height from " + shape[ConstraintActions.locked_size_key]["height"] + "px.";
+				return "Don't keep height at " + shape[ConstraintActions.locked_size_key]["height"] + "px.";
 			}
 		}	
 	}
@@ -223,7 +228,12 @@ ConstraintActions.groupConstraints = {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]];
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}, 
@@ -233,7 +243,12 @@ ConstraintActions.groupConstraints = {
 					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]]; 
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}
@@ -266,7 +281,7 @@ ConstraintActions.groupConstraints = {
 			"do": {
 				"key": ConstraintActions.locked_distribution_key,
 				"updateConstraintsCanvasShape": function keepDistribution(constraintsCanvasShape, designCanvasShape) {
-					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_distribution_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
 					let distributionValue = shape[ConstraintActions.locked_distribution_key];
@@ -276,7 +291,7 @@ ConstraintActions.groupConstraints = {
 			"undo": {
 				"key": ConstraintActions.locked_justification_key,
 				"updateConstraintsCanvasShape": function undoKeepDistribution(constraintsCanvasShape, designCanvasShape) {
-					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_justification_key);
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_distribution_key);
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
 					let distributionValue = shape[ConstraintActions.locked_distribution_key]; 
@@ -303,7 +318,7 @@ ConstraintActions.canvasConstraints = {
 					constraintsCanvasShape[ConstraintActions.locked_margin_key] = designCanvasShape[ConstraintActions.locked_margin_key]; 
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Keep the global " + ConstraintActions.locked_margin_key + " at " + shape[ConstraintActions.locked_margin_key] + "px.";
+					return "Keep the " + ConstraintActions.locked_margin_key + " at " + shape[ConstraintActions.locked_margin_key] + "px.";
 				}
 			}, 
 			"undo": {
@@ -318,7 +333,7 @@ ConstraintActions.canvasConstraints = {
 					delete constraintsCanvasShape[ConstraintActions.locked_margin_key]; 
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Unlock " + ConstraintActions.locked_margin_key + " from " + shape[ConstraintActions.locked_margin_key] + "px.";
+					return "Don't keep " + ConstraintActions.locked_margin_key + " at " + shape[ConstraintActions.locked_margin_key] + "px.";
 				}
 			}
 		},
@@ -330,7 +345,12 @@ ConstraintActions.canvasConstraints = {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]];
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}, 
@@ -340,7 +360,12 @@ ConstraintActions.canvasConstraints = {
 					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_alignment_key);
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let alignmentValue = ConstraintActions.alignments[shape[ConstraintActions.locked_alignment_key]]; 
+					let alignmentValue = ConstraintActions.verticalAlignments[shape[ConstraintActions.locked_alignment_key]];
+					let arrangementValue = ConstraintActions.arrangments[shape[ConstraintActions.locked_arrangement_key]]; 
+					if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+						alignmentValue = ConstraintActions.horizontalAlignments[shape[ConstraintActions.locked_alignment_key]]; 
+					}
+
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_alignment_key, alignmentValue) + ".";
 				}
 			}
@@ -372,11 +397,11 @@ ConstraintActions.canvasConstraints = {
 		{
 			"do": {
 				"key": ConstraintActions.locked_grid_key = 'grid',
-				"updateConstraintsCanvasShape": function keepJustification(constraintsCanvasShape, designCanvasShape) {
+				"updateConstraintsCanvasShape": function keepGrid(constraintsCanvasShape, designCanvasShape) {
 					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, ConstraintActions.locked_grid_key);
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Keep the global " + ConstraintActions.locked_grid_key + " at " + shape[ConstraintActions.locked_grid_key] + "px.";
+					return "Keep the " + ConstraintActions.locked_grid_key + " at " + shape[ConstraintActions.locked_grid_key] + "px.";
 				}
 			}, 
 			"undo": {
@@ -387,6 +412,27 @@ ConstraintActions.canvasConstraints = {
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
 					let gridValue = shape[ConstraintActions.locked_grid_key]; 
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_grid_key, gridValue) + "px.";
+				}
+			}
+		}, 
+	"background_color": 
+		{
+			"do": {
+				"key": "background_color",
+				"updateConstraintsCanvasShape": function keepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Keep the background color.";
+				}
+			}, 
+			"undo": {
+				"key": ConstraintActions.locked_grid_key,
+				"updateConstraintsCanvasShape": function undoKeepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Don't keep the background color.";
 				}
 			}
 		}

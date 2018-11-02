@@ -103,6 +103,8 @@ export default class DesignCanvasMenu extends React.Component {
   }
 
   render () {
+    console.log("render");
+    console.log(this.state.menuTrigger.name);
     const isContainer = this.state.menuTrigger.type == "group" || this.state.menuTrigger.type == "labelGroup" || this.state.menuTrigger.type == "page"; 
     const menuLeft = this.state.left; 
     const menuTop = this.state.top;
@@ -115,11 +117,12 @@ export default class DesignCanvasMenu extends React.Component {
         {this.state.menuTrigger.type != "canvas" ? 
             Object.keys(ConstraintActions.elementConstraints).map((key) => {
               let action = this.getAction(key, ConstraintActions.elementConstraints);
+              let menuItemKey = this.state.menuTrigger.name + "_" + key; 
               return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action} 
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 
-                        key={key} />);
+                        key={menuItemKey} />);
             }) : undefined}
 
         {isContainer ? 

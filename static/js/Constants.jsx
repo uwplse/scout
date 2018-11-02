@@ -15,6 +15,7 @@ class Constants {
       'label': 84, 
       'orangeLabel': 83,
       'smallLabel': 50, 
+      'smallLabel2': 50, 
       'multilineLabel': 130, 
       'image': 80, 
       'image2': 80,
@@ -35,15 +36,16 @@ class Constants {
     let values = {
       'button':40,
       'orangeButton': 40, 
-      'orderLabel': 43,
+      'orderLabel': 40,
       'field': 34, 
       'search': 34, 
       'group': 50, 
       'page': 50,
       'labelGroup': 50, 
-      'label': 30,
-      'orangeLabel': 43, 
+      'label': 36,
+      'orangeLabel': 36, 
       'smallLabel': 23, 
+      'smallLabel2': 23, 
       'image': 80, 
       'image2': 80,
       'image3': 80,
@@ -80,7 +82,8 @@ class Constants {
       'label': 36, 
       'orangeLabel': 36,
       'multilineLabel': 14, 
-      'smallLabel': 20
+      'smallLabel': 20, 
+      'smallLabel2': 20 
     }
     return values[controlType];
   }

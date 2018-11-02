@@ -6,7 +6,7 @@ import SVGInline from "react-svg-inline"
 import Converter from "number-to-words";
 import Constants from "./Constants";
 
-const WAIT_INTERVAL = 1000; 
+const WAIT_INTERVAL = 200; 
 
 export default class SVGWidget extends React.Component {
   constructor(props) {
@@ -15,6 +15,9 @@ export default class SVGWidget extends React.Component {
     this.controlType = props.shape.controlType; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
+
+    // ID for querying element from the DOM
+    this.elementId = "widget-container-" + this.id; 
 
     this.initialFontSize = 0; 
     if(this.type == "label") {
@@ -32,14 +35,19 @@ export default class SVGWidget extends React.Component {
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
     this.isContainer = props.isContainer; 
 
+    this.setOrder = this.setOrder.bind(this); 
+    this.setContainerOrder = this.setContainerOrder.bind(this); 
+    this.setLabel = this.setLabel.bind(this); 
+    this.setImportanceLevel = this.setImportanceLevel.bind(this); 
+
     // Timer for handling text change events
     this.timer = null;  
 
     this.state = {
       height: this.element.size.height,
       width: this.element.size.width,
-      order: (this.element.order ? this.element.order : -1),  
-      ordered: this.element.ordered, 
+      order: this.element.order,  
+      containerOrder: this.element.containerOrder, 
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
       showImportance: props.showImportanceLevels,
@@ -51,7 +59,8 @@ export default class SVGWidget extends React.Component {
       }, 
       svgSource: props.source, 
       highlighted: props.highlighted, 
-      hasText: false
+      hasText: false, 
+      cursorPos: 0
     }; 
   }
 
@@ -60,22 +69,26 @@ export default class SVGWidget extends React.Component {
       height: prevState.height,  
       width: prevState.width, 
       order: prevState.order, 
-      ordered: prevState.ordered, 
       fontSize: prevState.fontSize, 
       importance: prevState.importance, 
       showImportance: prevState.showImportance, 
       showLabels: prevState.showLabels, 
       labelPosition: prevState.labelPosition, 
       showOrder: prevState.showOrder,
+      cursorPos: prevState.cursorPos,
       svgSource: nextProps.source, 
+      containerOrder: prevState.containerOrder, 
       highlighted: nextProps.highlighted
     }    
   }
   
   componentDidMount() {
     // Set the initial value for the text label
-    this.setTextLabel(true); 
     let hasText = this.getHasText();
+    if(hasText) {
+      this.setTextLabel(true); 
+    }
+
     this.setState({
       hasText: hasText, 
       labelPosition: this.computeLabelPosition()
@@ -83,7 +96,10 @@ export default class SVGWidget extends React.Component {
   }
 
   componentDidUpdate() {
-    this.setTextLabel(false);
+    if(this.state.hasText) {
+      console.log("compoennt update");
+      this.setTextLabel(false);      
+    }
   }
 
   lockTextLabel = () => {
@@ -97,8 +113,7 @@ export default class SVGWidget extends React.Component {
   }
 
   getHasText = () => {
-    let id = "widget-container-" + this.id; 
-    let svgElement = document.getElementById(id); 
+    let svgElement = document.getElementById(this.elementId); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     if(editableText[0]) {
       return true;  
@@ -110,56 +125,95 @@ export default class SVGWidget extends React.Component {
   handleTextChange = (evt) => {
     // Handle the text change on a timeout so it saves after the user finishes typing
     clearTimeout(this.timer); 
-    this.timer = setTimeout(this.updateTextLabel, WAIT_INTERVAL);  
+    this.timer = setTimeout(this.updateAndResizeText, WAIT_INTERVAL);  
+  }
+
+  updateAndResizeText = (evt) => {
+    console.log("resize text area");
+    // Update the height and widht of the parent container so the height recalculates
+    if(this.state.hasText) {
+      let cursor = window.getSelection(); 
+      let cursorPos = cursor.baseOffset; 
+      this.setState({
+        cursorPos: cursorPos
+      });
+
+      let editableText = document.getElementById(this.elementId).querySelectorAll(".widget-editable-text");
+
+      let textValue = editableText[0].innerHTML; 
+      this.element.label = textValue;
+
+      if(this.type == "label") {
+        let textBounding = this.adjustElementSize(editableText[0]);
+
+        // Measure and set the baseline value
+        let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
+        if(textSizeMeasure[0]){
+          let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
+          let baseline = textBounding.y - textSizeBounding.y
+          this.element.baseline = baseline; 
+        }
+      }
+    }    
   }
 
   updateTextLabel = (evt) => {
-    let id = "widget-container-" + this.id; 
-    let editableText = document.getElementById(id).querySelectorAll(".widget-editable-text");
-    let textValue = editableText[0].innerHTML; 
-    console.log(textValue);
-    this.element.label = textValue;
-    this.lockTextLabel()
+    console.log("udpate text label")
+    // Get the actual value out of the text area and update
+    // it on the object and lock the value
+    // trigger the constraints checking
+    this.lockTextLabel();
 
-    // Update the height and widht of the parent container so the height recalculates
-    if(this.type == "label") {
-      let textBounding = editableText[0].getBoundingClientRect(); 
-      let widthRounded = Math.round(textBounding.width); 
-      let heightRounded = Math.round(textBounding.height); 
-      this.setElementSize(widthRounded, heightRounded);
-
-      // Measure and set the baseline value
-      let textSizeMeasure = document.getElementById(id).querySelectorAll(".widget-size-measure"); 
-      if(textSizeMeasure[0]){
-        let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
-        let baseline = textBounding.y - textSizeBounding.y
-        this.element.baseline = baseline; 
-      }
-    }
+    // Set the cursor positon back to 0 
+    this.setState({
+      cursorPos: 0
+    });
 
     this.checkSolutionValidity();
   }
 
-  adjustElementSize = (element) => {
+  adjustElementSize = (element, includeHeight=false) => {
     let boundingRect = element.getBoundingClientRect(); 
 
     // Set it on the element object
     let widthRounded = Math.round(boundingRect.width); 
     let heightRounded = Math.round(boundingRect.height);
 
-    this.setElementSize(widthRounded, heightRounded);  
+    // When height and width are updated by font size changes, update the element object. 
+    let height = this.state.height; 
+    if(includeHeight) {
+      height = heightRounded; 
+      this.element.size.height = heightRounded; 
+    }
+
+    this.element.size.width = widthRounded; 
+    this.setState({
+      width: widthRounded, 
+      height: height
+    }); 
+
+    return boundingRect; 
   }
 
   setTextLabel = (initSize) => {
-    console.log("update text label");
-    let id = "widget-container-" + this.id; 
-    let svgElement = document.getElementById(id); 
+    let svgElement = document.getElementById(this.elementId); 
     let editableText = svgElement.querySelectorAll(".widget-editable-text");
     if(editableText[0]) {
+      console.log("set text");
       editableText[0].innerHTML = this.element.label; 
 
+      let range = document.createRange(); 
+      var sel = window.getSelection(); 
+      var textNode = editableText[0].childNodes[0]; 
+      if(textNode && this.state.cursorPos != 0) {
+        range.setStart(textNode, this.state.cursorPos);
+        range.collapse(true);
+        sel.removeAllRanges(); 
+        sel.addRange(range);
+      }
+
       // Measure and set the baseline value
-      let textSizeMeasure = document.getElementById(id).querySelectorAll(".widget-size-measure"); 
+      let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
       if(textSizeMeasure[0]){
         let textBounding = editableText[0].getBoundingClientRect();
         let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
@@ -177,23 +231,6 @@ export default class SVGWidget extends React.Component {
         }
       }
     }
-  }
-
-  setElementFontSize = (fontSize) => {
-    this.element.fontSize = fontSize; 
-    this.setState({
-      fontSize: fontSize
-    }); 
-  }
-
-  setElementSize = (width, height) => {
-    // When height and width are updated by font size changes, update the element object. 
-    this.element.size.height = height; 
-    this.element.size.width = width; 
-    this.setState({
-      width: width, 
-      height: height
-    });
   }
 
   setElementTyping = (typed) => {
@@ -228,7 +265,7 @@ export default class SVGWidget extends React.Component {
   }
 
   computeLabelPosition = () => {
-    let svgElement = document.getElementById("widget-container-" + this.id); 
+    let svgElement = document.getElementById(this.elementId); 
     let svgBox = svgElement.getBoundingClientRect(); 
 
     return {
@@ -242,8 +279,7 @@ export default class SVGWidget extends React.Component {
       evt.stopPropagation(); 
 
       // Update the element object size
-      let id = "widget-container-" + this.id; 
-      let svgElement  = document.getElementById(id); 
+      let svgElement  = document.getElementById(this.elementId); 
 
       let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
 
@@ -258,83 +294,75 @@ export default class SVGWidget extends React.Component {
       this.setElementFontSize(value);
 
       let editableText = svgElement.querySelectorAll(".widget-editable-text");
-      let boundingRect = editableText[0].getBoundingClientRect(); 
-
-      let roundedWidth = Math.round(boundingRect.width,0); 
-      let roundedHeight = Math.round(boundingRect.height,0); 
-      this.setElementSize(roundedWidth, roundedHeight);
+      this.adjustElementSize(editableText[0]);
 
       this.checkSolutionValidity();
     }
   }
 
-  setImportanceLevel = (level) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setImportanceLevel(evt, level) {
+    evt.stopPropagation(); 
 
-      // Update the object
-      this.element.importance = level; 
+    // Update the object
+    this.element.importance = level; 
 
-      // Update the number of stars showing
-      this.setState({
-        importance: level, 
-        showImportance: true
-      }); 
+    // Update the number of stars showing
+    this.setState({
+      importance: level, 
+      showImportance: true
+    }); 
 
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();
-    }
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
-  setLabel = (shapeId) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setLabel(evt, shapeId) {
+    evt.stopPropagation(); 
 
-      // Save the labels relationship to the shape object 
-      this.element.labels = shapeId; 
-      this.setState({
-        showLabels: true 
-      }); 
+    // Save the labels relationship to the shape object 
+    this.element.labels = shapeId; 
+    this.setState({
+      showLabels: true 
+    }); 
 
-      this.createLabelsGroup(this.id, shapeId); 
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();
-    }
+    this.createLabelsGroup(this.id, shapeId); 
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
-  setOrder = (value) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setOrder(evt, value) {
+    evt.stopPropagation(); 
 
-      this.element.order = value; 
-      this.setState({
-        order: value, 
-        showOrder: (value != -1 && value != undefined)
-      });
+    this.element.order = value; 
+    this.setState({
+      order: value, 
+      showOrder: (value != -1 && value != undefined)
+    });
 
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();      
-    }
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();      
   }
 
-  setContainerOrder = (orderValue) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  setContainerOrder(evt, orderValue) {
+    evt.stopPropagation(); 
 
-      this.element.containerOrder = orderValue; 
+    this.element.containerOrder = orderValue; 
+    console.log('setting container order'); 
+    console.log(this.element.containerOrder); 
+    console.log(this.element.name); 
+    this.element.test = "test"; 
+    this.setState({
+      containerOrder: orderValue
+    }); 
 
-      let orderedValue = orderValue == "important"; 
-      this.setState({
-        ordered: orderedValue
-      }); 
-
-      this.hideRightClickMenu();
-      this.checkSolutionValidity();
-    }
+    this.hideRightClickMenu();
+    this.checkSolutionValidity();
   }
 
   render () {
     console.log('render SVGWidget'); 
+    console.log(this.state.cursorPos);
+
     const source = this.state.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 
@@ -343,9 +371,12 @@ export default class SVGWidget extends React.Component {
     const showLabels = this.state.showLabels; 
     const labelPosition = this.state.labelPosition; 
     const order = this.state.order;
-    const ordered = this.state.ordered; 
-    const orderOrdinal = Converter.toWordsOrdinal(order+1); 
-    const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1); 
+    const ordered = this.state.containerOrder == "important"; 
+
+    // const orderOrdinal = Converter.toWordsOrdinal(order+1); 
+    // const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1);
+    const orderLabel = order == 0 ? "First" : "Last"; 
+
     const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
 
@@ -360,8 +391,9 @@ export default class SVGWidget extends React.Component {
       <div  
         onContextMenu={this.showContextMenu} 
         suppressContentEditableWarning="true" 
-        onInput={this.handleTextChange} 
-        id={"widget-container-" + this.id} 
+        onInput={this.updateAndResizeText}
+        onBlur={this.updateTextLabel} 
+        id={this.elementId} 
         className={"widget-container " + (highlighted ? "highlighted" : "")}>
         <div className="widget-control-row"> 
           <SVGInline 

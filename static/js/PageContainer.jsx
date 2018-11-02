@@ -25,6 +25,8 @@ import repeatGrid from '../assets/illustrator/repeatGrid.svg';
 import multilineLabel from '../assets/illustrator/multiline_label.svg';
 import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
 import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
+import smallLabelStatic2 from '../assets/illustrator/smallLabel_widgets_2.svg';
+import smallLabelDynamic2 from '../assets/illustrator/smallLabel_2.svg';
 import logo from '../assets/illustrator/logo.svg';
 import newsLogo from '../assets/illustrator/newsLogo.svg';
 import pageLogo from '../assets/logo.svg';
@@ -118,19 +120,21 @@ export default class PageContainer extends React.Component {
       let jsonShapes = this.getShapesJSON(); 
 
       // Get all of the solutions so far to check their validity 
-      let prevSolutions = JSON.stringify(this.state.solutions);
+      if(this.state.solutions.length) {
+        let prevSolutions = JSON.stringify(this.state.solutions);
 
-      $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
-        let requestParsed = JSON.parse(requestData); 
-        let valid = requestParsed.result; 
-        if(!valid) {
-          this.setState({
-            errorMessageShown: true
-          }); 
-        }
+        $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
+          let requestParsed = JSON.parse(requestData); 
+          let valid = requestParsed.result; 
+          if(!valid) {
+            this.setState({
+              errorMessageShown: true
+            }); 
+          }
 
-        this.updateSolutionValidity(requestParsed.solutions);
-      }); 
+          this.updateSolutionValidity(requestParsed.solutions);
+        });         
+      }
     }
     else {
       // Get design solutions for the current set of constraints
@@ -248,6 +252,11 @@ export default class PageContainer extends React.Component {
   getShapesJSON = () => {
     // Get all of the shapes on the canvas into a collection 
     let shapeObjects = this.constraintsCanvasRef.current.getShapeHierarchy();
+
+    // set the allowed colors here based on the palette
+    // Later need a way to automatically generate these from the uploaded designs
+    shapeObjects.colors = this.getBackgroundColors(); 
+
     return JSON.stringify(shapeObjects); 
   }
 
@@ -267,9 +276,7 @@ export default class PageContainer extends React.Component {
       let designSolution = this.state.solutions[i]; 
       
       // Invalidate the solution which means it should be moved into the right side panel 
-      if(designSolution.valid) {
-        designSolution.invalidated = false;
-      }
+      designSolution.invalidated = !designSolution.valid; 
     }
 
     this.setState({
@@ -317,8 +324,8 @@ export default class PageContainer extends React.Component {
               height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
               svg={ label } onClick={this.addShapeToConstraintsCanvas('label', 'label', label)}/>
             <SVGInline className="widget-control widget-control-label" 
-              height={Constants.controlHeights('smallLabel') + "px"} width={Constants.controlWidths('smallLabel') + "px"} 
-              svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel', smallLabelDynamic)}/>
+              height={Constants.controlHeights('smallLabel2') + "px"} width={Constants.controlWidths('smallLabel2') + "px"} 
+              svg={ smallLabelStatic2 } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel2', smallLabelDynamic2)}/>
             <SVGInline className="widget-control widget-control-label" 
               height={Constants.controlHeights('multilineLabel') + "px"} width={Constants.controlWidths('multilineLabel') + "px"} 
               svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas('paragraph', 'multilineLabel', multilineLabel)}/>
@@ -367,6 +374,19 @@ export default class PageContainer extends React.Component {
     }
   }
 
+  getBackgroundColors = () => {
+    let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
+    let harvestColors = ['#FF5722', '#D7CCC8', '#FFFFFF', '#757575', '#795548', '#BDBDBD', '#FFECB3']
+
+    // Replace with the above when we can load these in
+    if(this.state.currentPallette == "hollywood") {
+      return hollywoodColors; 
+    }
+    else {
+      return harvestColors; 
+    }
+  }
+
   configureWidgetPallette = (e) => {
     // Configure later to enable more sets of pallettes to be loaded
     if(this.state.currentPallette == 'hollywood') {
@@ -379,6 +399,12 @@ export default class PageContainer extends React.Component {
         currentPallette: 'hollywood'
       }); 
     }
+
+    // Also clear out the current set of solutions
+    // Later we should probably prompt for exporting before destroying the designs
+    this.setState({
+      solutions: []
+    });
 
     this.clearShapesFromConstraintsCanvas();
   }

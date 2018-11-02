@@ -37,7 +37,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 2; 
+    this.minimumGroupSize = 1; 
 
     this.state = { 
       treeData: [], 
@@ -75,7 +75,8 @@ export default class ConstraintsCanvas extends React.Component {
       "size": {
         width: this.canvasWidth, 
         height: this.canvasHeight
-      } 
+      }, 
+      "background_color": "#E1E2E1"
     }
 
     this.canvasLevelShape = canvas;
@@ -92,7 +93,7 @@ export default class ConstraintsCanvas extends React.Component {
         width: Constants.controlWidths('page'),
         height: Constants.controlHeights('page')
       }, 
-      "containerOrder": "unimportant",
+      "containerOrder": "important",
       "importance": "normal",
       "children": []
     }
@@ -101,7 +102,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.pageLevelShape = page; 
     canvas.children.push(page); 
 
-    let widget = this.getWidget(this.pageLevelShape, rootNode); 
+    let widget = this.getWidget(page, rootNode); 
     let newTreeNode = {
         title: widget, 
         subtitle: []
@@ -131,7 +132,7 @@ export default class ConstraintsCanvas extends React.Component {
                 checkSolutionValidity={this.checkSolutionValidity} 
                 displayRightClickMenu={this.displayRightClickMenu}
                 hideRightClickMenu={this.hideRightClickMenu}
-                createLabelsGroup={this.createLabelsGroup}
+                createLabelsGroup={this.createLabelsGroup.bind(this)}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 typed={typed}
@@ -147,7 +148,7 @@ export default class ConstraintsCanvas extends React.Component {
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
               hideRightClickMenu={this.hideRightClickMenu}
-              createLabelsGroup={this.createLabelsGroup}
+              createLabelsGroup={this.createLabelsGroup.bind(this)}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex} />);
   }
@@ -281,16 +282,12 @@ export default class ConstraintsCanvas extends React.Component {
 
   getSiblingLabelItem = (shapeId) => {
     // Go through tree data (recursive) and find the level of the element
-    let siblings = {}; 
     let node = this.state.treeData; 
-    this.findShapeNextSibling(shapeId, siblings, node);
+    let siblings = this.getCurrentShapeSiblings(shapeId);
 
     let menuItems = []; 
     if(siblings.next) {
-      menuItems.push({
-        id: siblings.next.title.props.id, 
-        label: siblings.next.title.props.shape.label
-      }); 
+      menuItems.push(siblings.next); 
     }
 
     return menuItems; 
@@ -356,7 +353,9 @@ export default class ConstraintsCanvas extends React.Component {
       // Create a new node for the widget
       let newNode = {
         title: widget, 
-        subtitle: []
+        subtitle: [], 
+        expanded: treeNode.expanded || treeNodeData.expanded, 
+        children: treeNodeData.children
       }; 
 
       // Replace the current node with this new node
@@ -515,7 +514,7 @@ export default class ConstraintsCanvas extends React.Component {
       let node = flatData[i]; 
       let nodeItem = node.node; 
       if(nodeItem.title.props.shape && nodeItem.title.props.shape.name == treeNodeID) {
-        return { path: node.path, children: node.node.children, treeIndex: node.treeIndex }; 
+        return { path: node.path, children: node.node.children, treeIndex: node.treeIndex, expanded: nodeItem.expanded }; 
       }
     }
 
@@ -528,7 +527,9 @@ export default class ConstraintsCanvas extends React.Component {
     let order = options.order ? options.order : -1; 
 
     let containerOrder = undefined; 
-    if(type == "group" || type == "labelGroup") {
+    let isContainer = type == "group" || type == "labelGroup"; 
+
+    if(isContainer) {
       containerOrder = options.containerOrder ? options.containerOrder : "unimportant";
     }
 
@@ -555,7 +556,7 @@ export default class ConstraintsCanvas extends React.Component {
       "y": 0
     }
 
-    if (type == "group" || type == "labelGroup") {
+    if (isContainer) {
       shape.children = []; 
     }
 

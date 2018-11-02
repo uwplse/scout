@@ -153,6 +153,7 @@ class Solver(object):
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.justification)
 				last.append(shape.variables.margin)
+				last.append(shape.variables.background_color)
 
 			if shape.importance == "most": 
 				last.append(shape.variables.magnification)
@@ -232,6 +233,8 @@ class Solver(object):
 				start_time = time.time()
 				result = self.z3_check(start_time)
 				unsat_core = self.solver.unsat_core()
+				constraints = self.solver.sexpr()
+				print(unsat_core)
 
 				# update the valid state of the solution
 				solution["valid"] = result
@@ -321,11 +324,13 @@ class Solver(object):
 
 	def encode_assigned_variable(self, variable):
 		time_encoding_start = time.time()
-		if variable.name == "proximity" or variable.name == "margin" or variable.name == "distribution":
-			prox_value = variable.domain[variable.assigned]
-			self.override_solver.add(variable.z3 == prox_value, "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(prox_value))
+		if variable.index_domain:
+			self.override_solver.add(variable.z3 == variable.assigned, "Variable " + variable.shape_id + " "
+									 + variable.name + " assigned to " + str(variable.assigned))
 		else:
-			self.override_solver.add(variable.z3 == variable.assigned, "Variable " + variable.shape_id + " " + variable.name + " assigned to " + str(variable.assigned))
+			dom_value = variable.domain[variable.assigned]
+			self.override_solver.add(variable.z3 == dom_value, "Variable " + variable.shape_id + " " + variable.name
+									 + " assigned to " + str(dom_value))
 
 		time_encoding_end = time.time()
 		self.time_encoding += (time_encoding_end - time_encoding_start)
