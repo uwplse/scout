@@ -142,11 +142,11 @@ class ContainerShape(Shape):
 												   260,280,300,320,340,360,380,400], index_domain=False)
 
 		self.container_order = "unimportant"
+		self.container_type = "group"
 		if element is not None: 
 			if "containerOrder" in element: 
-				print("Page container order")
-				print(element["containerOrder"])
 				self.container_order = element["containerOrder"]
+			self.container_type = element["type"]
 
 		# Width and Height for container is determined by their contents so allow these values to change
 		self.flex_width = Int(shape_id + "_width")

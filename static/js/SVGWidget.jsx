@@ -300,7 +300,7 @@ export default class SVGWidget extends React.Component {
     }
   }
 
-  setImportanceLevel = (evt, level) => {
+  setImportanceLevel(evt, level) {
     evt.stopPropagation(); 
 
     // Update the object
@@ -316,7 +316,7 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
-  setLabel = (evt, shapeId) => {
+  setLabel(evt, shapeId) {
     evt.stopPropagation(); 
 
     // Save the labels relationship to the shape object 
@@ -330,7 +330,7 @@ export default class SVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
-  setOrder = (evt, value) => {
+  setOrder(evt, value) {
     evt.stopPropagation(); 
 
     this.element.order = value; 
@@ -347,7 +347,10 @@ export default class SVGWidget extends React.Component {
     evt.stopPropagation(); 
 
     this.element.containerOrder = orderValue; 
-
+    console.log('setting container order'); 
+    console.log(this.element.containerOrder); 
+    console.log(this.element.name); 
+    this.element.test = "test"; 
     this.setState({
       containerOrder: orderValue
     }); 

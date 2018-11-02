@@ -37,7 +37,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 2; 
+    this.minimumGroupSize = 1; 
 
     this.state = { 
       treeData: [], 
@@ -93,7 +93,7 @@ export default class ConstraintsCanvas extends React.Component {
         width: Constants.controlWidths('page'),
         height: Constants.controlHeights('page')
       }, 
-      "containerOrder": "unimportant",
+      "containerOrder": "important",
       "importance": "normal",
       "children": []
     }
@@ -102,7 +102,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.pageLevelShape = page; 
     canvas.children.push(page); 
 
-    let widget = this.getWidget(this.pageLevelShape, rootNode); 
+    let widget = this.getWidget(page, rootNode); 
     let newTreeNode = {
         title: widget, 
         subtitle: []
@@ -132,7 +132,7 @@ export default class ConstraintsCanvas extends React.Component {
                 checkSolutionValidity={this.checkSolutionValidity} 
                 displayRightClickMenu={this.displayRightClickMenu}
                 hideRightClickMenu={this.hideRightClickMenu}
-                createLabelsGroup={this.createLabelsGroup}
+                createLabelsGroup={this.createLabelsGroup.bind(this)}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 typed={typed}
@@ -148,7 +148,7 @@ export default class ConstraintsCanvas extends React.Component {
               checkSolutionValidity={this.checkSolutionValidity} 
               displayRightClickMenu={this.displayRightClickMenu}
               hideRightClickMenu={this.hideRightClickMenu}
-              createLabelsGroup={this.createLabelsGroup}
+              createLabelsGroup={this.createLabelsGroup.bind(this)}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex} />);
   }

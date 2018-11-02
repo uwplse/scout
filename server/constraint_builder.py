@@ -182,7 +182,12 @@ class ConstraintBuilder(object):
 
 			# If this is a hierarchical container, use the distribution variable. 
 			# If this is a bottom level group, using the proximity value 
-			spacing = container.variables.distribution.z3 if has_group and not container.typed else container.variables.proximity.z3
+			use_distribution = (has_group and not container.typed) or container.container_type == "page"
+			print("distribution")
+			print(use_distribution)
+			spacing = container.variables.distribution.z3 if use_distribution else container.variables.proximity.z3
+			
+
 			self.arrange_container(container, spacing)
 			self.align_container(container, spacing)
 			self.non_overlapping(container, spacing)

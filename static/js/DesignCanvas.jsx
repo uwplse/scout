@@ -17,6 +17,7 @@ import orangeButton from '../assets/illustrator/orangeButton.svg';
 import label from '../assets/illustrator/label.svg';
 import orangeLabel from '../assets/illustrator/orangeLabel.svg';
 import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
+import smallLabel2 from '../assets/illustrator/smallLabel_designs_2.svg';
 import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
 
@@ -31,6 +32,7 @@ export default class DesignCanvas extends React.Component {
       'orangeLabel': orangeLabel,
       'multilineLabel': multilineLabel,
       'smallLabel': smallLabel, 
+      'smallLabel2':  smallLabel2, 
       'group': group, 
       'page': group,
       'labelGroup': group,
@@ -143,11 +145,13 @@ export default class DesignCanvas extends React.Component {
         constraintsMenuShape: undefined
       }); 
 
-      this.setState({
-        constraintsMenuShape: shape, 
-        constraintsMenuX: evt.clientX, 
-        constraintsMenuY: evt.clientY, 
-      });
+      if(this.state.savedState == 0) {
+        this.setState({
+          constraintsMenuShape: shape, 
+          constraintsMenuX: evt.clientX, 
+          constraintsMenuY: evt.clientY, 
+        });
+      }
     }
   }
 
