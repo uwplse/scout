@@ -2,6 +2,7 @@
 import React from "react";
 import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
+import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
 import Constants from './Constants'; 
 import DesignCanvas from './DesignCanvas';
@@ -410,7 +411,6 @@ export default class PageContainer extends React.Component {
   }
 
   render () {
-    console.log("page container render");
     const self = this;
     const designsFound = this.state.designsFound; 
     const errorMessageShown = this.state.errorMessageShown; 
@@ -436,15 +436,15 @@ export default class PageContainer extends React.Component {
         return 0; 
       })
       .map((solution) => {
-          return self.getDesignCanvas(solution); 
+        return self.getDesignCanvas(solution); 
       }); 
 
     const trashedCanvases = this.state.solutions
       .filter((solution) => { return solution.saved == -1; })
       .map((solution) => {
-            if(solution.saved == -1) {
-              return self.getDesignCanvas(solution); 
-            }
+          if(solution.saved == -1) {
+            return self.getDesignCanvas(solution); 
+          }
         });
 
     const invalidatedCanvases = this.state.solutions
@@ -452,9 +452,9 @@ export default class PageContainer extends React.Component {
         return solution.invalidated == true; 
       })
       .map((solution) => {
-            if(solution.invalidated == true) {
-              return self.getDesignCanvas(solution); 
-            }
+        if(solution.invalidated == true) {
+          return self.getDesignCanvas(solution); 
+        }
       });    
 
     const currentWidgetPallette = this.getWidgetPallette();  
@@ -473,15 +473,20 @@ export default class PageContainer extends React.Component {
                 <h3 className="panel-title">Widgets</h3>
               </div>  
               <div className="panel-body widgets-panel">         
-                {currentWidgetPallette}
+               {/*currentWidgetPallette*/}
+                <form class="box has-advanced-upload" method="post" action="" enctype="multipart/form-data">
+                  <div class="box__input">
+                    <svg class="box__icon" xmlns="http://www.w3.org/2000/svg" width="50" height="43" viewBox="0 0 50 43">
+                      <path d="M48.4 26.5c-.9 0-1.7.7-1.7 1.7v11.6h-43.3v-11.6c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v13.2c0 .9.7 1.7 1.7 1.7h46.7c.9 0 1.7-.7 1.7-1.7v-13.2c0-1-.7-1.7-1.7-1.7zm-24.5 6.1c.3.3.8.5 1.2.5.4 0 .9-.2 1.2-.5l10-11.6c.7-.7.7-1.7 0-2.4s-1.7-.7-2.4 0l-7.1 8.3v-25.3c0-.9-.7-1.7-1.7-1.7s-1.7.7-1.7 1.7v25.3l-7.1-8.3c-.7-.7-1.7-.7-2.4 0s-.7 1.7 0 2.4l10 11.6z"></path>
+                    </svg>
+                    <label><span class="box__dragndrop"> Drag your SVGs here.</span>.</label>
+                  </div>
+                  <div class="box__uploading">Uploading&hellip;</div>
+                  <div class="box__success">Done!</div>
+                  <div class="box__error">Error! <span></span>.</div>
+                </form>
               </div>
             </div>
-            <button 
-              type="button" 
-              className="btn btn-primary configure-widgets-button"
-              onClick={this.configureWidgetPallette}>
-              Configure Widget Pallette
-            </button>
           </div>
           <ConstraintsCanvas ref={this.constraintsCanvasRef} 
             updateConstraintsCanvas={this.updateConstraintsCanvas} 
