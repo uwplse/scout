@@ -5,24 +5,9 @@ class Constants {
 
   static controlWidths(controlType) {
     let values = {
-      'button': 288,
-      'orangeButton': 288, 
-      'field': 288, 
-      'search': 288, 
       'group': 238, 
-      'page': 238,
+      'page': 239,
       'labelGroup': 238, 
-      'label': 84, 
-      'orangeLabel': 83,
-      'smallLabel': 50, 
-      'smallLabel2': 50, 
-      'multilineLabel': 130, 
-      'image': 80, 
-      'image2': 80,
-      'image3': 80,
-      'logo': 80,
-      'logo2': 80,
-      'placeholder': 80
     }
 
     if(controlType in values) {
@@ -34,25 +19,9 @@ class Constants {
 
   static controlHeights(controlType) {
     let values = {
-      'button':40,
-      'orangeButton': 40, 
-      'orderLabel': 40,
-      'field': 34, 
-      'search': 34, 
       'group': 50, 
-      'page': 50,
+      'page': 46.5,
       'labelGroup': 50, 
-      'label': 36,
-      'orangeLabel': 36, 
-      'smallLabel': 23, 
-      'smallLabel2': 23, 
-      'image': 80, 
-      'image2': 80,
-      'image3': 80,
-      'logo': 80,
-      'logo2': 80,
-      'placeholder': 80, 
-      'multilineLabel': 40
     }
 
     if(controlType in values) {

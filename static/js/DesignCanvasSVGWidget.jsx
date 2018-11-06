@@ -1,5 +1,4 @@
 import React from "react";
-import Resizable from 're-resizable';
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
 

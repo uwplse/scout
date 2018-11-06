@@ -1,6 +1,5 @@
 // App.jsx
 import React from "react";
-import Resizable from 're-resizable';
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
 import Converter from "number-to-words";
@@ -8,7 +7,7 @@ import Constants from "./Constants";
 
 const WAIT_INTERVAL = 200; 
 
-export default class SVGWidget extends React.Component {
+export default class ConstraintsCanvasSVGWidget extends React.Component {
   constructor(props) {
   	super(props); 
     this.type = props.shape.type; 
@@ -93,6 +92,8 @@ export default class SVGWidget extends React.Component {
       hasText: hasText, 
       labelPosition: this.computeLabelPosition()
     }); 
+
+    this.setInitialSizeToViewBox(); 
   }
 
   componentDidUpdate() {
@@ -100,6 +101,10 @@ export default class SVGWidget extends React.Component {
       console.log("compoennt update");
       this.setTextLabel(false);      
     }
+  }
+
+  setInitialSizeToViewBox = () => {
+
   }
 
   lockTextLabel = () => {
@@ -347,9 +352,6 @@ export default class SVGWidget extends React.Component {
     evt.stopPropagation(); 
 
     this.element.containerOrder = orderValue; 
-    console.log('setting container order'); 
-    console.log(this.element.containerOrder); 
-    console.log(this.element.name); 
     this.element.test = "test"; 
     this.setState({
       containerOrder: orderValue
@@ -360,9 +362,6 @@ export default class SVGWidget extends React.Component {
   }
 
   render () {
-    console.log('render SVGWidget'); 
-    console.log(this.state.cursorPos);
-
     const source = this.state.svgSource; 
     const height = this.state.height; 
     const width = this.state.width; 

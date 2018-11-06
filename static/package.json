@@ -42,8 +42,6 @@
     "jquery": "^3.3.1",
     "number-to-words": "^1.2.3",
     "raw-loader": "^0.5.1",
-    "re-resizable": "^4.4.8",
-    "react-sidebar": "^2.3.2",
     "react-sortable-tree": "file:../../react-sortable-tree/react-sortable-tree-2.1.0.tgz",
     "react-svg-inline": "^2.1.0",
     "script-loader": "^0.7.2",
