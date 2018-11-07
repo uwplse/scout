@@ -4,48 +4,48 @@ import DesignCanvasMenu from "./DesignCanvasMenu";
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
-import field from '../assets/illustrator/field_designs.svg';
-import search from '../assets/illustrator/search.svg';
-import image from '../assets/illustrator/image.svg'
-import image2 from '../assets/illustrator/image2.svg'
-import image3 from '../assets/illustrator/image3.svg'
-import logo from '../assets/illustrator/logo.svg'
-import newsLogo from '../assets/illustrator/newsLogo.svg'
-import placeholder from '../assets/illustrator/placeholder.svg'
-import filledButton from '../assets/illustrator/filledButton.svg';
-import orangeButton from '../assets/illustrator/orangeButton.svg';
-import label from '../assets/illustrator/label.svg';
-import orangeLabel from '../assets/illustrator/orangeLabel.svg';
-import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
-import smallLabel2 from '../assets/illustrator/smallLabel_designs_2.svg';
-import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
+// import field from '../assets/illustrator/field_designs.svg';
+// import search from '../assets/illustrator/search.svg';
+// import image from '../assets/illustrator/image.svg'
+// import image2 from '../assets/illustrator/image2.svg'
+// import image3 from '../assets/illustrator/image3.svg'
+// import logo from '../assets/illustrator/logo.svg'
+// import newsLogo from '../assets/illustrator/newsLogo.svg'
+// import placeholder from '../assets/illustrator/placeholder.svg'
+// import filledButton from '../assets/illustrator/filledButton.svg';
+// import orangeButton from '../assets/illustrator/orangeButton.svg';
+// import label from '../assets/illustrator/label.svg';
+// import orangeLabel from '../assets/illustrator/orangeLabel.svg';
+// import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
+// import smallLabel2 from '../assets/illustrator/smallLabel_designs_2.svg';
+// import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
 
 export default class DesignCanvas extends React.Component {
-  static svgElements(controlType) {
-    let svgElements = {
-      'field': field, 
-      'search': search, 
-      'button': filledButton, 
-      'orangeButton': orangeButton,
-      'label': label, 
-      'orangeLabel': orangeLabel,
-      'multilineLabel': multilineLabel,
-      'smallLabel': smallLabel, 
-      'smallLabel2':  smallLabel2, 
-      'group': group, 
-      'page': group,
-      'labelGroup': group,
-      'placeholder': placeholder, 
-      'image': image, 
-      'image2': image2,
-      'image3': image3,
-      'logo': logo, 
-      'logo2': newsLogo
-      /* Add others here */
-    }; 
-    return svgElements[controlType]; 
-  };
+  // static svgElements(controlType) {
+  //   let svgElements = {
+  //     'field': field, 
+  //     'search': search, 
+  //     'button': filledButton, 
+  //     'orangeButton': orangeButton,
+  //     'label': label, 
+  //     'orangeLabel': orangeLabel,
+  //     'multilineLabel': multilineLabel,
+  //     'smallLabel': smallLabel, 
+  //     'smallLabel2':  smallLabel2, 
+  //     'group': group, 
+  //     'page': group,
+  //     'labelGroup': group,
+  //     'placeholder': placeholder, 
+  //     'image': image, 
+  //     'image2': image2,
+  //     'image3': image3,
+  //     'logo': logo, 
+  //     'logo2': newsLogo
+  //     /* Add others here */
+  //   }; 
+  //   return svgElements[controlType]; 
+  // };
 
   constructor(props) {
   	super(props);

@@ -381,18 +381,18 @@ export default class PageContainer extends React.Component {
   //   }
   // }
 
-  // getBackgroundColors = () => {
-  //   let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
-  //   let harvestColors = ['#FF5722', '#D7CCC8', '#FFFFFF', '#757575', '#795548', '#BDBDBD', '#FFECB3']
+  getBackgroundColors = () => {
+    // let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
+    let harvestColors = ['#FF5722', '#D7CCC8', '#FFFFFF', '#757575', '#795548', '#BDBDBD', '#FFECB3']
 
-  //   // Replace with the above when we can load these in
-  //   if(this.state.currentPallette == "hollywood") {
-  //     return hollywoodColors; 
-  //   }
-  //   else {
-  //     return harvestColors; 
-  //   }
-  // }
+    // Replace with the above when we can load these in
+    // if(this.state.currentPallette == "hollywood") {
+    //   return hollywoodColors; 
+    // }
+    // else {
+    return harvestColors; 
+    //}
+  }
 
   // configureWidgetPallette = (e) => { Configure later to enable more sets of
   // pallettes to be loaded   if(this.state.currentPallette == 'hollywood') {

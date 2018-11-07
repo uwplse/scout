@@ -38,11 +38,12 @@ export default class WidgetsContainerSVGWidget extends React.Component {
   }
 
   render () {
-    return (<SVGInline
-            id={this.state.id}
-            className="widget-control-svg"
-            height={this.state.height + "px"} width={this.state.width + "px"} 
-            svg={ this.props.svgData } 
-            onClick={this.props.addShapeToConstraintsCanvas(this.props.svgData, this.state.width, this.state.height)} />); 
+    return (
+        <SVGInline
+          id={this.state.id}
+          className="widget-control-svg"
+          height={this.state.height + "px"} width={this.state.width + "px"} 
+          svg={ this.props.svgData } 
+          onClick={this.props.addShapeToConstraintsCanvas(this.props.svgData, this.state.width, this.state.height)} />);
   }
 }
