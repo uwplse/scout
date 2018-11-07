@@ -6,6 +6,7 @@ import {
   ConnectDropTarget,
 } from 'react-dnd'; 
 import { NativeTypes } from 'react-dnd-html5-backend'; 
+import WidgetsContainerSVGWidget from "./WidgetsContainerSVGWidget"; 
 
 const { FILE } = NativeTypes; 
 
@@ -34,6 +35,16 @@ class WidgetsContainer extends React.Component {
     const { canDrop, isOver, connectDropTarget } = this.props
     const isActive = canDrop && isOver
     const hasWidgets = this.props.widgets.length; 
+
+    const widgets = this.props.widgets.map((widget) => {
+      return (<WidgetsContainerSVGWidget 
+        className="widget-control" 
+        id={widget.id}
+        svgData={widget.svgData}
+        addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>  
+      ); 
+    });
+
     return (
       connectDropTarget &&
       connectDropTarget(
@@ -43,7 +54,7 @@ class WidgetsContainer extends React.Component {
           </div>  
           <div className="panel-body widgets-panel">         
            {(hasWidgets ? 
-              this.props.widgets : 
+              widgets : 
               (<form 
                 className="box has-advanced-upload" method="post" 
                 action="" 

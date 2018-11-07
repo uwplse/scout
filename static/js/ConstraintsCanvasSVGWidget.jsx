@@ -92,8 +92,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       hasText: hasText, 
       labelPosition: this.computeLabelPosition()
     }); 
-
-    this.setInitialSizeToViewBox(); 
   }
 
   componentDidUpdate() {
@@ -101,10 +99,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       console.log("compoennt update");
       this.setTextLabel(false);      
     }
-  }
-
-  setInitialSizeToViewBox = () => {
-
   }
 
   lockTextLabel = () => {
@@ -119,7 +113,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
 
   getHasText = () => {
     let svgElement = document.getElementById(this.elementId); 
-    let editableText = svgElement.querySelectorAll(".widget-editable-text");
+    let editableText = svgElement.getElementsByTagName('text');
     if(editableText[0]) {
       return true;  
     }

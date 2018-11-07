@@ -7,7 +7,7 @@ export default class WidgetsContainerSVGWidget extends React.Component {
   	super(props);
 
     this.state = {
-      id: "widgets-container-svg-widget-" + props.id
+      selector: "widgets-container-svg-widget-" + props.id
     }
   }
 
@@ -17,7 +17,7 @@ export default class WidgetsContainerSVGWidget extends React.Component {
   }
 
   setWidgetSizeFromViewBox = () => {
-    let svgRoot = document.getElementById(this.state.id); 
+    let svgRoot = document.getElementById(this.state.selector); 
     if(svgRoot) { 
       let svgElement = svgRoot.getElementsByTagName('svg');  
       if(svgElement && svgElement.length) {
@@ -40,10 +40,10 @@ export default class WidgetsContainerSVGWidget extends React.Component {
   render () {
     return (
         <SVGInline
-          id={this.state.id}
+          id={this.state.selector}
           className="widget-control-svg"
           height={this.state.height + "px"} width={this.state.width + "px"} 
           svg={ this.props.svgData } 
-          onClick={this.props.addShapeToConstraintsCanvas(this.props.svgData, this.state.width, this.state.height)} />);
+          onClick={this.props.addShapeToConstraintsCanvas(this.props.id,this.props.svgData, this.state.width, this.state.height)} />);
   }
 }

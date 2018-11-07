@@ -5,7 +5,6 @@ import '../css/Canvas.css';
 import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
 import WidgetsContainer from "./WidgetsContainer"; 
-import WidgetsContainerSVGWidget from "./WidgetsContainerSVGWidget"; 
 import Constants from './Constants'; 
 import DesignCanvas from './DesignCanvas';
 import { DragDropContextProvider } from 'react-dnd'; 
@@ -14,27 +13,6 @@ import $ from 'jquery';
 import SVGInline from "react-svg-inline"; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
-
-// import field from '../assets/illustrator/field.svg';
-// import search from '../assets/illustrator/search.svg';
-// import image from '../assets/illustrator/image.svg';
-// import image2 from '../assets/illustrator/image2.svg';
-// import image3 from '../assets/illustrator/image3.svg';
-// import placeholder from '../assets/illustrator/placeholder.svg';
-// import filledButton from '../assets/illustrator/filledButton.svg';
-// import orangeButton from '../assets/illustrator/orangeButton.svg';
-// import label from '../assets/illustrator/label.svg';
-// import orangeLabel from '../assets/illustrator/orangeLabel.svg'; 
-// import labelContainer from '../assets/illustrator/labelContainer.svg';
-// import groupContainer from '../assets/illustrator/groupContainer.svg';
-// import repeatGrid from '../assets/illustrator/repeatGrid.svg';
-// import multilineLabel from '../assets/illustrator/multiline_label.svg';
-// import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
-// import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
-// import smallLabelStatic2 from '../assets/illustrator/smallLabel_widgets_2.svg';
-// import smallLabelDynamic2 from '../assets/illustrator/smallLabel_2.svg';
-// import logo from '../assets/illustrator/logo.svg';
-// import newsLogo from '../assets/illustrator/newsLogo.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -80,9 +58,9 @@ export default class PageContainer extends React.Component {
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
   // for a shape of this type
-  addShapeToConstraintsCanvas = (src, width, height) => {
+  addShapeToConstraintsCanvas = (id, src, width, height) => {
     return () => {
-      this.constraintsCanvasRef.current.addShapeToCanvas(src, width, height);
+      this.constraintsCanvasRef.current.addShapeToCanvas(id, src, width, height);
     }
   }
 
@@ -101,6 +79,7 @@ export default class PageContainer extends React.Component {
               added={solution.added}
               removed={solution.removed}
               invalidated={solution.invalidated}
+              svgWidgets={this.state.svgWidgets}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               highlightAddedWidget={this.highlightAddedWidget}
@@ -319,68 +298,6 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
-  // getWidgetPallette = () => {
-  //   if(this.state.currentPallette == "hollywood") {
-  //     return (
-  //       <div>
-  //         <SVGInline className="widget-control widget-control-button" 
-  //           height={Constants.controlHeights('button') + "px"} width={Constants.controlWidths('button') + "px"} 
-  //           svg={ filledButton } onClick={this.addShapeToConstraintsCanvas('button', 'button', filledButton)}/>
-  //         <div className="widget-control-group">
-  //           <SVGInline className="widget-control widget-control-label" 
-  //             height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
-  //             svg={ label } onClick={this.addShapeToConstraintsCanvas('label', 'label', label)}/>
-  //           <SVGInline className="widget-control widget-control-label" 
-  //             height={Constants.controlHeights('smallLabel2') + "px"} width={Constants.controlWidths('smallLabel2') + "px"} 
-  //             svg={ smallLabelStatic2 } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel2', smallLabelDynamic2)}/>
-  //           <SVGInline className="widget-control widget-control-label" 
-  //             height={Constants.controlHeights('multilineLabel') + "px"} width={Constants.controlWidths('multilineLabel') + "px"} 
-  //             svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas('paragraph', 'multilineLabel', multilineLabel)}/>
-  //         </div>
-  //         <div className="widget-control-group">
-  //           <SVGInline className="widget-control widget-control-image" 
-  //             height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-  //             svg={ image } onClick={this.addShapeToConstraintsCanvas('image', 'image', image)}/> 
-  //           <SVGInline className="widget-control widget-control-placeholder" 
-  //             height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-  //             svg={ image2 } onClick={this.addShapeToConstraintsCanvas('image', 'image2', image2)}/>
-  //           <SVGInline className="widget-control widget-control-placeholder" 
-  //             height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-  //             svg={ image3 } onClick={this.addShapeToConstraintsCanvas('image', 'image3', image3)}/>
-  //           <SVGInline className="widget-control widget-control-placeholder" 
-  //             height={Constants.controlHeights('placeholder') + "px"} width={Constants.controlWidths('placeholder') + "px"} 
-  //             svg={ placeholder } onClick={this.addShapeToConstraintsCanvas('image', 'placeholder', placeholder)}/>
-  //         </div>
-  //         <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-  //           height={Constants.controlHeights('group') + "px"} width={Constants.controlWidths('group') + "px"}
-  //           onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
-  //       </div>); 
-  //   }
-  //   else {
-  //     return (
-  //     <div className="widget-control-group">
-  //       <SVGInline className="widget-control widget-control-field" 
-  //                 height={Constants.controlHeights('field') + "px"} width={Constants.controlWidths('field') + "px"} 
-  //                 svg={ field } onClick={this.addShapeToConstraintsCanvas('field', 'field', field)}/>
-  //       <SVGInline className="widget-control widget-control-button" 
-  //         height={Constants.controlHeights('button') + "px"} width={Constants.controlWidths('button') + "px"} 
-  //         svg={ orangeButton } onClick={this.addShapeToConstraintsCanvas('button', 'orangeButton', orangeButton)}/>
-  //       <SVGInline className="widget-control widget-control-label" 
-  //         height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
-  //         svg={ orangeLabel } onClick={this.addShapeToConstraintsCanvas('label', 'orangeLabel', orangeLabel)}/>
-  //      <SVGInline className="widget-control widget-control-label" 
-  //         height={Constants.controlHeights('smallLabel') + "px"} width={Constants.controlWidths('smallLabel') + "px"} 
-  //         svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel', smallLabelDynamic)}/>
-  //       <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-  //         height={Constants.controlHeights('group') + "px"} width={Constants.controlWidths('group') + "px"}
-  //         onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
-  //       <SVGInline className="widget-control widget-control-logo" 
-  //         height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-  //         svg={ logo } onClick={this.addShapeToConstraintsCanvas('image', 'logo', logo)}/>
-  //     </div>); 
-  //   }
-  // }
-
   getBackgroundColors = () => {
     // let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
     let harvestColors = ['#FF5722', '#D7CCC8', '#FFFFFF', '#757575', '#795548', '#BDBDBD', '#FFECB3']
@@ -394,56 +311,15 @@ export default class PageContainer extends React.Component {
     //}
   }
 
-  // configureWidgetPallette = (e) => { Configure later to enable more sets of
-  // pallettes to be loaded   if(this.state.currentPallette == 'hollywood') {
-  // this.setState({       currentPallette: 'farming'     });    }   else {
-  // this.setState({       currentPallette: 'hollywood'     });    }
-
-  //   // Also clear out the current set of solutions
-  //   // Later we should probably prompt for exporting before destroying the designs
-  //   this.setState({
-  //     solutions: []
-  //   });
-
-  //   this.clearShapesFromConstraintsCanvas();
-  // }
-
-  // handleWidgetSVGDrag = (evt) => {
-  //   // Prevent the browser's default drag behavior
-  //   evt.preventDefault();
-  // }
-
-  // handleWidgetSVGDrop = (evt) => {
-  //   console.log("being called");
-  //   // Default behavior is to open the file. Prevent this
-  //   evt.preventDefault(); 
-
-  //   if (ev.dataTransfer.items) {
-  //     for (var i = 0; i < ev.dataTransfer.items.length; i++) {
-  //       if (ev.dataTransfer.items[i].kind === 'file') {
-  //         var file = ev.dataTransfer.items[i].getAsFile();
-  //         console.log('... file[' + i + '].name = ' + file.name);
-  //       }
-  //     }
-  //   } else {
-  //     // Use DataTransfer interface to access the file(s)
-  //     for (var i = 0; i < ev.dataTransfer.files.length; i++) {
-  //       console.log('... file[' + i + '].name = ' + ev.dataTransfer.files[i].name);
-  //     }
-  //   } 
-
-  //   this.removeDragData(evt); 
-  // }
-
   readSVGIntoWidgetContainer = (e) => {
     let fileData = e.target.result; 
+    let widgetID = _.uniqueId(); 
     if(fileData) {
       this.setState({
-        svgWidgets: this.state.svgWidgets.concat(
-           <WidgetsContainerSVGWidget 
-            className="widget-control" 
-            svgData={fileData}
-            addShapeToConstraintsCanvas={this.addShapeToConstraintsCanvas}/>
+        svgWidgets: this.state.svgWidgets.concat({
+            id: widgetID, 
+            svgData: fileData
+          }
         )
       })
 
@@ -514,9 +390,8 @@ export default class PageContainer extends React.Component {
         if(solution.invalidated == true) {
           return self.getDesignCanvas(solution); 
         }
-      });    
+      }); 
 
-    // const currentWidgetPallette = this.getWidgetPallette();  
     return (
       <DragDropContextProvider backend={HTML5Backend}>
         <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
@@ -528,7 +403,10 @@ export default class PageContainer extends React.Component {
           </nav>
           <div className="bottom">
               <div className="widgets-panel-container"> 
-                <WidgetsContainer onDrop={this.handleFileDrop} widgets={this.state.svgWidgets} />
+                <WidgetsContainer 
+                  onDrop={this.handleFileDrop} 
+                  widgets={this.state.svgWidgets}
+                  addShapeToConstraintsCanvas={this.addShapeToConstraintsCanvas} />
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
               updateConstraintsCanvas={this.updateConstraintsCanvas} 

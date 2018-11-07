@@ -162,8 +162,8 @@ export default class ConstraintsCanvas extends React.Component {
               getCurrentShapeIndex={this.getCurrentShapeIndex} />);
   }
 
-  addShapeToCanvas = (source, width, height) => {
-    let shape = this.createConstraintsCanvasShapeObject(width, height); 
+  addShapeToCanvas = (id, source, width, height) => {
+    let shape = this.createConstraintsCanvasShapeObject(id, width, height); 
 
     let widget = this.getWidget(shape, source); 
 
@@ -200,7 +200,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   createNewTreeNode = (type, controlType, source, options={}) => {
     // Creates a new tree node widget and returns it
-    let shape = this.createConstraintsCanvasShapeObject(width, height, options); 
+    let shape = this.createConstraintsCanvasShapeObject(id, width, height, options); 
     let widget = this.getWidget(shape, source, options); 
 
     let newTreeNode = {
@@ -535,7 +535,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
 
-  createConstraintsCanvasShapeObject = (width, height, options={}) => {
+  createConstraintsCanvasShapeObject = (id, width, height, options={}) => {
     // Optional set of initial properties cna be passed in through the intial object
     let order = options.order ? options.order : -1; 
 
@@ -555,6 +555,7 @@ export default class ConstraintsCanvas extends React.Component {
     let label = Constants.controlLabels(type); 
     let shape = {
       "name": _.uniqueId(),
+      "id": id, 
       "label": label, 
       "type": type,
       "importance": importance, 
