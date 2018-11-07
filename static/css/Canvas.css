@@ -152,18 +152,10 @@ h1, h2, h3 {
 	flex-direction: column;
 }
 
-.widgets-panel {
-	overflow: auto;
-}
-
 .widgets-panel-container, .constraints-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
-}
-
-.widgets-container {
-	margin-bottom: 0; 
 }
 
 .right-container {
@@ -191,17 +183,6 @@ h1, h2, h3 {
 	width: 238px !important;
 }
 
-/**
-	Sizing of SVG elements in widgets panel 
-**/ 
-.widgets-panel .widget-control-label {
-	font-size: 36; 
-}
-
-#widget-control-label {
-	height: 30px;
-}
-
 /** 
 	Constraints canvas 
 **/
@@ -214,17 +195,6 @@ h1, h2, h3 {
 	display: inline-block;
 }
 
-.widgets-container {
-	width: 280px;
-}
-
-.widgets-container .widget-control-button > .widget-control-button-svg, 
-.widgets-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
-.widgets-container .widget-control-field > .widget-control-field-svg, 
-.widgets-container .widget-control-search > .widget-control-search-svg {
-	width: 238px !important;
-}
-
 .widget-container > .widget-control-importance {
 	margin-top: 5px;
 	display: flex;
@@ -234,12 +204,6 @@ h1, h2, h3 {
 	border: 1px dashed gray;
 	padding: 4;
 	background-color: #f2dede;
-}
-
-.widgets-panel-container .configure-widgets-button {
-	margin-top: 10px;
-	font-size: 16px; 
-	font-weight: 500;
 }
 
 .widget-control-group .widget-control {

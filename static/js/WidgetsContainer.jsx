@@ -1,4 +1,5 @@
 import React from "react";
+import '../css/WidgetsContainer.css';
 import {
   DropTarget,
   DropTargetConnector,
@@ -29,6 +30,22 @@ const boxTarget = {
 class WidgetsContainer extends React.Component {
   constructor(props) {
     super(props); 
+
+    this.state = {
+      hovered: false
+    }
+  }
+
+  onDragOver = () => {
+    this.setState({
+      hovered: true
+    }); 
+  }
+
+  onDragLeave = () => {
+    this.setState({
+      hovered: false
+    }); 
   }
 
   render() {
@@ -52,11 +69,16 @@ class WidgetsContainer extends React.Component {
           <div className="panel-heading"> 
             <h3 className="panel-title">Widgets</h3>
           </div>  
-          <div className="panel-body widgets-panel">         
+          <div 
+            className="panel-body widgets-panel"
+            onDragOver={this.onDragOver}
+            onDragLeave={this.onDragLeave}
+            onDrop={this.onDragOut}>         
            {(hasWidgets ? 
               widgets : 
               (<form 
-                className="box has-advanced-upload" method="post" 
+                className={"box has-advanced-upload " + (this.state.hovered ? "hovered" : "")} 
+                method="post" 
                 action="" 
                 encType="multipart/form-data">
                 <div className="box__input">
