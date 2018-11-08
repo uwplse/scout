@@ -220,9 +220,9 @@ h1, h2, h3 {
 	cursor: pointer;
 }
 
-.design-canvas .widget-control-leaf {
+/*.design-canvas .widget-control-leaf {
 	z-index: 500; 
-}
+}*/
 
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
@@ -284,37 +284,6 @@ h1, h2, h3 {
 	margin-left: 10px;
 }
 
-/** 
-  Actions menu that appears on design canvas 
-
- **/
-
- .canvas-actions-menu-container {
-    position: absolute;
-    background: transparent;
-    z-index: 1000;
-}
-
-.canvas-actions-menu {
-	list-style-type: none;
-    padding: 0px;
-}
-
-.canvas-actions-menu > li, {
-	padding: 0.5em;
-}
-
-.canvas-actions-menu > li:hover {
-	cursor: pointer; 
-}
-
-.canvas-actions-menu-item {
-	display: inline-block;
-	transform: scale(1.5);
-	margin-left: 1em;
-	margin-top: 1em;
-}
-
 
 .constraint-error-message {
 	display: inline-block;
@@ -352,57 +321,7 @@ h1, h2, h3 {
 	border: none;
 }
 
-/* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
-.widgets-sortable-tree .rst__rowContents {
-	border: none;
-	box-shadow: none;
-	min-width: initial;
-	background-color: initial;
-}
 
-.widgets-sortable-tree .rst__row {
-	align-items: center;
-}
-
-.widgets-sortable-tree .rst__rowWrapper {
-	padding: 0px;
-}
-
-.widgets-sortable-tree .rst__moveHandle {
-	height: 44px;
-}
-
-.widgets-sortable-tree .rst__rowTitleWithSubtitle {
-    height: inherit; 
-}
-
-.widgets-sortable-tree .widgets-sortable-tree-remove {
-	background-color: initial;
-}
-
-.widgets-sortable-tree .rst__rowTitle {
-	font-weight: normal;
-}
-
-.widgets-sortable-tree .rst__rowSubtitle {
-	font-size: inherit;
-}
-
-.widgets-sortable-tree .rst__lineFullVertical:after {
-	height: 100%;
-}
-
-.widgets-sortable-tree .rst__rowLabel {
-	padding-right: 5px;
-}
-
-.widgets-sortable-tree .rst__lineChildren:after {
-	height: calc(50%); 
-}
-
-.widgets-sortable-tree-remove {
-	border: none;
-}
 
 /**  
 	Resizable box 

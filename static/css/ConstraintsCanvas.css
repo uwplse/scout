@@ -137,7 +137,8 @@
 .widget-control-labels {
 	zoom: 40%; 
 	position: absolute;
-	z-index: 1000; 
+/*	z-index: 1000; 
+*/
 }
 
 .widget-control-typing {

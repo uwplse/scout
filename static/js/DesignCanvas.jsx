@@ -77,6 +77,10 @@ export default class DesignCanvas extends React.Component {
   }
  
   getScalingFactor = () => {
+    if(this.props.zoomed) {
+      return 1.0; 
+    }
+
     // Return the amount of scaling to use depending on the state of this DesignCanvas
     if(this.state.savedState == 1 || this.state.savedState == -1 || this.state.invalidated) {
       return 0.10; 
@@ -244,6 +248,10 @@ export default class DesignCanvas extends React.Component {
       // Do something here 
       this.props.getRelativeDesigns(this.originalElements, "like"); 
     }
+    else if(action == "zoom") {
+      // Open up the zoomed in design canvas dialog
+      this.props.zoomInOnDesignCanvas(this.id);
+    }
 
     this.setState({
       designMenu: undefined, 
@@ -268,7 +276,8 @@ export default class DesignCanvas extends React.Component {
     }
 
     // Trigger constraint highlighting if the solution is not current valid
-    if(!this.state.valid) {
+    // Do not trigger constraint highlighting if the solution is in the zoom container
+    if(!this.state.valid && !this.props.zoomed) {
       if(this.state.conflicts) {
         for(var i=0; i<this.state.conflicts.length; i++) {
           var conflict = this.state.conflicts[i];
@@ -283,8 +292,6 @@ export default class DesignCanvas extends React.Component {
           this.highlightAddedWidget(addedID, true); 
         }
       }
-
-      // TODO: Removed? 
     }
 
     var designCanvas = document.getElementById("design-canvas-" + this.id); 
@@ -293,9 +300,10 @@ export default class DesignCanvas extends React.Component {
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
       designMenu: <DesignMenu 
-                    left={componentBoundingBox.x} 
-                    top={componentBoundingBox.y} 
-                    menuAction={this.performDesignCanvasMenuAction} />, 
+                    // left={componentBoundingBox.x} 
+                    // top={componentBoundingBox.y} 
+                    showZoom={!this.props.zoomed}
+                    menuAction={this.performDesignCanvasMenuAction} />,
       hovered: true
     
     });

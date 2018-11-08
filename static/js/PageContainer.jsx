@@ -10,6 +10,7 @@ import DesignCanvas from './DesignCanvas';
 import { DragDropContextProvider } from 'react-dnd'; 
 import HTML5Backend from 'react-dnd-html5-backend';
 import $ from 'jquery';
+import uuidv4 from 'uuid/v4'; 
 import SVGInline from "react-svg-inline"; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
@@ -30,7 +31,8 @@ export default class PageContainer extends React.Component {
       showDesignsAlert: false, 
       currentPallette: 'hollywood', 
       droppedFiles: [], 
-      svgWidgets: []
+      svgWidgets: [], 
+      zoomedDesignCanvasID: undefined
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -68,16 +70,18 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
   }
 
-  getDesignCanvas = (solution) => {
+  getDesignCanvas = (solution, id, zoomed=false) => {
     return (<DesignCanvas 
-              key={solution.id} id={solution.id} 
-              ref={"design-canvas-" + solution.id}
+              key={id} 
+              id={id} 
+              ref={"design-canvas-" + id}
               elements={solution.elements}
               savedState={solution.saved}
               valid={solution.valid}
               conflicts={solution.conflicts}
               added={solution.added}
               removed={solution.removed}
+              zoomed={zoomed}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
@@ -86,6 +90,7 @@ export default class PageContainer extends React.Component {
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
+              zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               getRelativeDesigns={this.getRelativeDesigns}
               closeRightClickMenus={this.closeRightClickMenus} />); 
   }
@@ -220,6 +225,25 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  zoomInOnDesignCanvas = (designCanvasID) => {
+    this.setState({
+      zoomedDesignCanvasID: designCanvasID
+    }); 
+  }
+
+  getZoomedDesignCanvas = () => {
+    // Zoom in on the design canvas
+    // Render the same canvas again in a new DesignCanvas container
+    let solution = this.solutionsMap[this.state.zoomedDesignCanvasID];
+
+    // Set isZoomed prop on the DesignCanvas
+    // Inside of DesignCanvas, handle this by making the zoomed in canvas have larger dimensions
+    // Inside of DesignCanvas, hide the zoom button when hovering  
+    let solutionID = uuidv4();
+    let designCanvas = this.getDesignCanvas(solution, solutionID, true); 
+    return designCanvas; 
+  }
+
   clearInvalidDesignCanvases = () => {
     // Go through previous solutions and see which ones need to be invalidated
     for(let i=0; i<this.state.solutions.length; i++) {
@@ -300,7 +324,7 @@ export default class PageContainer extends React.Component {
 
   getBackgroundColors = () => {
     // let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
-    let harvestColors = ['#FF4081', '#0000000', '#304FFE', ]
+    let harvestColors = ['#FF4081', '#000000', '#304FFE', ]
 
     // Replace with the above when we can load these in
     // if(this.state.currentPallette == "hollywood") {
@@ -353,7 +377,7 @@ export default class PageContainer extends React.Component {
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
               .map((solution) => {
-                  return this.getDesignCanvas(solution); 
+                  return this.getDesignCanvas(solution, solution.id); 
                 }); 
 
     const designCanvases = this.state.solutions
@@ -371,14 +395,14 @@ export default class PageContainer extends React.Component {
         return 0; 
       })
       .map((solution) => {
-        return self.getDesignCanvas(solution); 
+        return self.getDesignCanvas(solution, solution.id); 
       }); 
 
     const trashedCanvases = this.state.solutions
       .filter((solution) => { return solution.saved == -1; })
       .map((solution) => {
           if(solution.saved == -1) {
-            return self.getDesignCanvas(solution); 
+            return self.getDesignCanvas(solution, solution.id); 
           }
         });
 
@@ -388,9 +412,12 @@ export default class PageContainer extends React.Component {
       })
       .map((solution) => {
         if(solution.invalidated == true) {
-          return self.getDesignCanvas(solution); 
+          return self.getDesignCanvas(solution, solution.id); 
         }
       }); 
+
+    // Get the zoomed design canvas, if there is one set
+    let zoomedDesignCanvas = this.state.zoomedDesignCanvasID ? this.getZoomedDesignCanvas() : undefined; 
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
@@ -485,6 +512,14 @@ export default class PageContainer extends React.Component {
               </div>
             </div>
           </div>
+          {this.state.zoomedDesignCanvasID ? (
+            <div className="zoomed-design-container-background">
+            </div>
+          ) : undefined}
+          {this.state.zoomedDesignCanvasID ? 
+            (<div className="zoomed-design-container"> 
+              {zoomedDesignCanvas}
+            </div>) : undefined}
         </div>
       </DragDropContextProvider>
     ); 
