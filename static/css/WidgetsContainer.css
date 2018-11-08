@@ -1,7 +1,7 @@
 .widgets-container {
 	margin-bottom: 0; 
 	width: 280px;
-	background-color: #d9d9d9;
+	background-color: #414656;
 }
 
 .widgets-panel {
@@ -44,8 +44,6 @@
 }
 
 .box.has-advanced-upload {
-	outline: 2px dashed #92b0b3;
-	outline-offset: -10px;
 	-webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
 	transition: outline-offset .15s ease-in-out, background-color .15s linear;
 	margin-bottom: 0; 
@@ -65,6 +63,8 @@
 
 .box.has-advanced-upload .box__dragndrop {
   display: inline;
+  color: #ffffff;
+  font-size: 16px;
 }
 
 .box.is-dragover {
@@ -80,5 +80,5 @@
 }
 
 .box.hovered {
-	background-color: #ffffff; 
+	background-color: darkgray; 
 }

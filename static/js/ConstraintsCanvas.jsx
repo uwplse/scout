@@ -1,4 +1,5 @@
 import React from "react";
+import '../css/ConstraintsCanvas.css'; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import ConstraintsCanvasContainerSVGWidget from './ConstraintsCanvasContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
