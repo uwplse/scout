@@ -244,6 +244,12 @@ export default class PageContainer extends React.Component {
     return designCanvas; 
   }
 
+  closeZoomedInDesignCanvas = () => {
+    this.setState({
+      zoomedDesignCanvasID: undefined
+    }); 
+  }
+
   clearInvalidDesignCanvases = () => {
     // Go through previous solutions and see which ones need to be invalidated
     for(let i=0; i<this.state.solutions.length; i++) {
@@ -513,7 +519,9 @@ export default class PageContainer extends React.Component {
             </div>
           </div>
           {this.state.zoomedDesignCanvasID ? (
-            <div className="zoomed-design-container-background">
+            <div 
+              className="zoomed-design-container-background"
+              onClick={this.closeZoomedInDesignCanvas}>
             </div>
           ) : undefined}
           {this.state.zoomedDesignCanvasID ? 
