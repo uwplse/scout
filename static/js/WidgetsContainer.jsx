@@ -8,6 +8,7 @@ import {
 } from 'react-dnd'; 
 import { NativeTypes } from 'react-dnd-html5-backend'; 
 import WidgetsContainerSVGWidget from "./WidgetsContainerSVGWidget"; 
+import groupSVG from '../assets/illustrator/groupContainer.svg';
 
 const { FILE } = NativeTypes; 
 
@@ -32,8 +33,13 @@ class WidgetsContainer extends React.Component {
     super(props); 
 
     this.state = {
-      hovered: false
+      hovered: false, 
+      groupID: _.uniqueId() // Generates an ID for the Group element component 
     }
+  }
+
+  componentDidMount() {
+
   }
 
   onDragOver = () => {
@@ -91,6 +97,14 @@ class WidgetsContainer extends React.Component {
                 <div className="box__success">Done!</div>
                 <div className="box__error">Error! <span></span>.</div>
               </form>))}
+            {/*Group container widget*/}
+            {(hasWidgets ? 
+              (<WidgetsContainerSVGWidget 
+                className="widget-control"
+                id={this.state.groupID}
+                svgData={groupSVG}
+                type={"group"}
+                addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>) : undefined)}
           </div>
         </div>
       )

@@ -47,7 +47,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 1; 
+    this.minimumGroupSize = 2; 
 
     this.state = { 
       treeData: [], 
@@ -163,8 +163,8 @@ export default class ConstraintsCanvas extends React.Component {
               getCurrentShapeIndex={this.getCurrentShapeIndex} />);
   }
 
-  addShapeToCanvas = (id, source, width, height) => {
-    let shape = this.createConstraintsCanvasShapeObject(id, width, height); 
+  addShapeToCanvas = (id, source, type, width, height) => {
+    let shape = this.createConstraintsCanvasShapeObject(id, type, width, height); 
 
     let widget = this.getWidget(shape, source); 
 
@@ -199,9 +199,9 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
   }
 
-  createNewTreeNode = (type, controlType, source, options={}) => {
+  createNewTreeNode = (type, source, options={}) => {
     // Creates a new tree node widget and returns it
-    let shape = this.createConstraintsCanvasShapeObject(id, width, height, options); 
+    let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
     let widget = this.getWidget(shape, source, options); 
 
     let newTreeNode = {
@@ -536,13 +536,12 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
 
-  createConstraintsCanvasShapeObject = (id, width, height, options={}) => {
+  createConstraintsCanvasShapeObject = (id, type, width, height, options={}) => {
     // Optional set of initial properties cna be passed in through the intial object
     let order = options.order ? options.order : -1; 
 
     let containerOrder = undefined; 
 
-    let type = this.inferShapeType();
     let isContainer = type == "group" || type == "labelGroup"; 
 
     if(isContainer) {
@@ -753,7 +752,7 @@ export default class ConstraintsCanvas extends React.Component {
     let newChildren = []; 
     for(let i=0; i<groups.length; i++) {
       let currGroup = groups[i]; 
-      let newGroupNode = this.createNewTreeNode("group", "group", item, { item: true }); 
+      let newGroupNode = this.createNewTreeNode("group", item, { item: true }); 
       let isExpanded = (i == 0) ? true : false; 
       newGroupNode.expanded = isExpanded; 
       newGroupNode.children = currGroup; 
@@ -840,7 +839,7 @@ export default class ConstraintsCanvas extends React.Component {
       // Have to set the children on the object here when creating a new node
       labeledNode.children = labeledNodeData.children; 
 
-      let newLabelGroupNode = this.createNewTreeNode("labelGroup", "labelGroup", label, { containerOrder: "important" }); 
+      let newLabelGroupNode = this.createNewTreeNode("labelGroup", label, { containerOrder: "important" }); 
       newLabelGroupNode.expanded = true; 
       newLabelGroupNode.children = [labelNode, labeledNode]; 
 

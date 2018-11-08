@@ -58,9 +58,9 @@ export default class PageContainer extends React.Component {
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
   // for a shape of this type
-  addShapeToConstraintsCanvas = (id, src, width, height) => {
+  addShapeToConstraintsCanvas = (id, src, type, width, height) => {
     return () => {
-      this.constraintsCanvasRef.current.addShapeToCanvas(id, src, width, height);
+      this.constraintsCanvasRef.current.addShapeToCanvas(id, src, type, width, height);
     }
   }
 
@@ -300,7 +300,7 @@ export default class PageContainer extends React.Component {
 
   getBackgroundColors = () => {
     // let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
-    let harvestColors = ['#FF5722', '#D7CCC8', '#FFFFFF', '#757575', '#795548', '#BDBDBD', '#FFECB3']
+    let harvestColors = ['#FF4081', '#0000000', '#304FFE', ]
 
     // Replace with the above when we can load these in
     // if(this.state.currentPallette == "hollywood") {
