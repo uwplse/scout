@@ -14,7 +14,7 @@
 
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
-	outline: 1px dashed black;
+	outline: 1px dashed #ffffff;
 }
 
 .design-canvas.hovered .SVGInline-svg {

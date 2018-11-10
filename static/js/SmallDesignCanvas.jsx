@@ -9,13 +9,17 @@ import {
 import DesignCanvas from './DesignCanvas';
 
 class SmallDesignCanvas extends React.Component {
+  zoomDesignCanvas = () => {
+    this.props.zoomInOnDesignCanvas(this.props.id);
+  }
+
   render () {
     // Drag and drop components
     const { connectDragSource } = this.props; 
     return (
       connectDragSource &&
       connectDragSource(
-          <div>
+          <div onClick={this.zoomDesignCanvas}>
             <DesignCanvas 
               key={this.props.key} 
               id={this.props.id} 
