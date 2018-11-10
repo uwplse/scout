@@ -5,9 +5,9 @@ import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
 import group from '../assets/illustrator/groupDesign.svg';
+import '../css/DesignCanvas.css'; 
 
 export default class DesignCanvas extends React.Component {
-
   constructor(props) {
   	super(props);
 
@@ -60,7 +60,7 @@ export default class DesignCanvas extends React.Component {
     return {
       constraintsMenuX: prevState.constraintsMenuX,
       constraintsMenuY: prevState.constraintsMenuY, 
-      constraintsMenuShape: prevState.constraintsMenuShape,  
+      constraintsMenuShape: prevState.constraintsMenuShape,
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState, 
       backgroundColor: prevState.backgroundColor,
@@ -91,7 +91,6 @@ export default class DesignCanvas extends React.Component {
 
   initDesignCanvas = (shape) => {
     // Intialize the background color and root level design shape
-    console.log(shape.grid); 
     this.setState({
       designShape: shape,
       backgroundColor: shape.background_color
@@ -133,7 +132,7 @@ export default class DesignCanvas extends React.Component {
   hideMenu = () => {
     if(this.state.constraintsMenuShape) {
       this.setState({
-        constraintsMenuShape: undefined
+        constraintsMenuShape: undefined, 
       });  
     }
   }
@@ -352,11 +351,6 @@ export default class DesignCanvas extends React.Component {
    	let constraintsMenuX = this.state.constraintsMenuX; 
     let constraintsMenuShape = this.state.constraintsMenuShape; 
 
-    if(constraintsMenuShape != undefined) {
-      console.log("design canvas");
-      console.log(constraintsMenuShape.type); 
-    }
-
     // The current design menu object for saving and trashing the designs 
     let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
@@ -367,7 +361,7 @@ export default class DesignCanvas extends React.Component {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     let childSVGs = this.state.childSVGs; 
 
-    return  (
+    return  (      
       <div onMouseEnter={this.showMenuAndHighlightConstraints} 
            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
@@ -398,8 +392,6 @@ export default class DesignCanvas extends React.Component {
 	    </div>); 
   }
 }
-
-
 
 
 

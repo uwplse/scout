@@ -15,3 +15,8 @@
 	z-index: 2; 
 	position: absolute;
 }
+
+.zoomed-design-container .right-click-menu-container.dropdown {
+	position: fixed; 
+	z-index: 4; 
+}

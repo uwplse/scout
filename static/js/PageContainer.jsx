@@ -7,6 +7,8 @@ import ConstraintsCanvas from "./ConstraintsCanvas";
 import WidgetsContainer from "./WidgetsContainer"; 
 import Constants from './Constants'; 
 import DesignCanvas from './DesignCanvas';
+import SmallDesignCanvas from './SmallDesignCanvas';
+import DesignCanvasContainer from './DesignCanvasContainer'; 
 import { DragDropContextProvider } from 'react-dnd'; 
 import HTML5Backend from 'react-dnd-html5-backend';
 import $ from 'jquery';
@@ -32,7 +34,7 @@ export default class PageContainer extends React.Component {
       currentPallette: 'hollywood', 
       droppedFiles: [], 
       svgWidgets: [], 
-      zoomedDesignCanvasID: undefined
+      zoomedDesignCanvasID: undefined 
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -95,8 +97,31 @@ export default class PageContainer extends React.Component {
               closeRightClickMenus={this.closeRightClickMenus} />); 
   }
 
+  getSmallDesignCanvas = (solution, id, zoomed=false) => {
+    return (<SmallDesignCanvas 
+              key={id} 
+              id={id} 
+              elements={solution.elements}
+              savedState={solution.saved}
+              valid={solution.valid}
+              conflicts={solution.conflicts}
+              added={solution.added}
+              removed={solution.removed}
+              zoomed={zoomed}
+              invalidated={solution.invalidated}
+              svgWidgets={this.state.svgWidgets}
+              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
+              updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
+              highlightAddedWidget={this.highlightAddedWidget}
+              highlightWidgetFeedback={this.highlightWidgetFeedback}
+              saveDesignCanvas={this.saveDesignCanvas} 
+              trashDesignCanvas={this.trashDesignCanvas}
+              zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
+              getRelativeDesigns={this.getRelativeDesigns}
+              closeRightClickMenus={this.closeRightClickMenus} />); 
+  }
+
   checkSolutionValidity = (options={}) => {
-    console.log("check validity");
     let currTime = Date.now()
     if(this.prevTime) {
       let diff = currTime - this.prevTime; 
@@ -250,7 +275,7 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
-  clearInvalidDesignCanvases = () => {
+  clearInvalidDesignCanvases = () => {updateWidgetFeedbacks
     // Go through previous solutions and see which ones need to be invalidated
     for(let i=0; i<this.state.solutions.length; i++) {
       let designSolution = this.state.solutions[i]; 
@@ -358,7 +383,8 @@ export default class PageContainer extends React.Component {
 
   handleFileDrop = (item, monitor) => {
     if (monitor) {
-      const droppedFiles = monitor.getItem().files; 
+      const item = monitor.getItem(); 
+      const droppedFiles = item.files;  
       this.setState({
         droppedFiles: droppedFiles
       });
@@ -375,6 +401,19 @@ export default class PageContainer extends React.Component {
     }
   }
 
+  moveDesignCanvas = (id) => {
+    // Move a dragged design canvas into the main designs container 
+    // Can be dragged from the saved, invalid, and trashed designs area
+    let solution = this.solutionsMap[id]; 
+    if(solution) {
+      solution.saved = 0; 
+
+      this.setState({
+        solutions: this.state.solutions
+      }); 
+    }
+  }
+
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
@@ -383,7 +422,7 @@ export default class PageContainer extends React.Component {
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
               .map((solution) => {
-                  return this.getDesignCanvas(solution, solution.id); 
+                  return this.getSmallDesignCanvas(solution, solution.id); 
                 }); 
 
     const designCanvases = this.state.solutions
@@ -408,7 +447,7 @@ export default class PageContainer extends React.Component {
       .filter((solution) => { return solution.saved == -1; })
       .map((solution) => {
           if(solution.saved == -1) {
-            return self.getDesignCanvas(solution, solution.id); 
+            return self.getSmallDesignCanvas(solution, solution.id); 
           }
         });
 
@@ -418,7 +457,7 @@ export default class PageContainer extends React.Component {
       })
       .map((solution) => {
         if(solution.invalidated == true) {
-          return self.getDesignCanvas(solution, solution.id); 
+          return self.getSmallDesignCanvas(solution, solution.id); 
         }
       }); 
 
@@ -490,9 +529,10 @@ export default class PageContainer extends React.Component {
                         </button>
                         Scout has generated 10 new designs that meet your constraints. 
                       </div>) : undefined)}
-                      <div className="design-body" onScroll={this.hideDesignsAlert}>
-                        {designCanvases}
-                      </div>
+                      <DesignCanvasContainer 
+                        onDrop={this.moveDesignCanvas}
+                        designCanvases={designCanvases} 
+                        onScroll={this.hideDesignsAlert} />
                   </div>) : null }
                   { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
                     <div>

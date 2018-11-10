@@ -38,10 +38,6 @@ class WidgetsContainer extends React.Component {
     }
   }
 
-  componentDidMount() {
-
-  }
-
   onDragOver = () => {
     this.setState({
       hovered: true
@@ -55,8 +51,7 @@ class WidgetsContainer extends React.Component {
   }
 
   render() {
-    const { canDrop, isOver, connectDropTarget } = this.props
-    const isActive = canDrop && isOver
+    const { connectDropTarget } = this.props
     const hasWidgets = this.props.widgets.length; 
 
     const widgets = this.props.widgets.map((widget) => {
