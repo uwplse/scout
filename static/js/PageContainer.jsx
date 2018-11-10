@@ -275,7 +275,7 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
-  clearInvalidDesignCanvases = () => {updateWidgetFeedbacks
+  clearInvalidDesignCanvases = () => {
     // Go through previous solutions and see which ones need to be invalidated
     for(let i=0; i<this.state.solutions.length; i++) {
       let designSolution = this.state.solutions[i]; 
@@ -407,6 +407,7 @@ export default class PageContainer extends React.Component {
     let solution = this.solutionsMap[id]; 
     if(solution) {
       solution.saved = 0; 
+      solution.invalidated = false;
 
       this.setState({
         solutions: this.state.solutions
