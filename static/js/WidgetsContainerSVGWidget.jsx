@@ -14,25 +14,41 @@ export default class WidgetsContainerSVGWidget extends React.Component {
 
   componentDidMount() {
     // Set the initial size using the viewBox attribute
-    this.setWidgetSizeFromViewBox();
+    this.initializeSizeAndType();
+  }
 
-    if(!this.state.type) {
-      let shapeType = this.inferShapeType(); 
-      this.setState({
-        type: shapeType
-      }); 
+  containsNotText(node) {
+    // Parse the SVG to determine if it only contains a text node, then the type is "text"
+    // else the type will be "element". Only inferring two types for now as we don't need specialized
+    // rules in the solver for different element types other than "text"
+
+    // Find leaf nodes, if the leaf node is anything other than a text node, return false
+    // otherwise keep 
+    if(node.children && node.children.length) {
+      for(let i=0; i<node.children.length; i++) {
+        let result = this.containsNotText(node.children[i]); 
+        if(result) {
+          return result; 
+        }
+      }
     }
+    else {
+      // Get the tagName of the element
+      let tagName = node.tagName; 
+      if(tagName != "text" && tagName != "title" && tagName != "tspan") {
+        return true; 
+      }
+    }
+
+    return false; 
   }
 
-  inferShapeType() {
-    return "button"; 
-  }
-
-  setWidgetSizeFromViewBox = () => {
+  initializeSizeAndType = () => {
     let svgRoot = document.getElementById(this.state.selector); 
     if(svgRoot) { 
       let svgElement = svgRoot.getElementsByTagName('svg');  
       if(svgElement && svgElement.length) {
+        // Initialize the width and height from the viewBox attribute
         let element = svgElement[0]; 
         let viewBox = element.getAttribute("viewBox"); 
         let parts = viewBox.split(" "); 
@@ -44,6 +60,16 @@ export default class WidgetsContainerSVGWidget extends React.Component {
             height: height
           }); 
         }
+
+        // Initialize the element type: 
+        // Contains leaf level nodes other than text -> 'element'
+        // Contains only text leaf level nodes -> 'text'
+        let containsNotText = this.containsNotText(element); 
+        let type = containsNotText ? 'element' : 'text'; 
+        console.log(type);
+        this.setState({
+          type: type
+        }); 
       }
     }
   }
