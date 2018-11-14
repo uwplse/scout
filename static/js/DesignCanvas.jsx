@@ -4,49 +4,10 @@ import DesignCanvasMenu from "./DesignCanvasMenu";
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
-import field from '../assets/illustrator/field_designs.svg';
-import search from '../assets/illustrator/search.svg';
-import image from '../assets/illustrator/image.svg'
-import image2 from '../assets/illustrator/image2.svg'
-import image3 from '../assets/illustrator/image3.svg'
-import logo from '../assets/illustrator/logo.svg'
-import newsLogo from '../assets/illustrator/newsLogo.svg'
-import placeholder from '../assets/illustrator/placeholder.svg'
-import filledButton from '../assets/illustrator/filledButton.svg';
-import orangeButton from '../assets/illustrator/orangeButton.svg';
-import label from '../assets/illustrator/label.svg';
-import orangeLabel from '../assets/illustrator/orangeLabel.svg';
-import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
-import smallLabel2 from '../assets/illustrator/smallLabel_designs_2.svg';
-import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
+import '../css/DesignCanvas.css'; 
 
 export default class DesignCanvas extends React.Component {
-  static svgElements(controlType) {
-    let svgElements = {
-      'field': field, 
-      'search': search, 
-      'button': filledButton, 
-      'orangeButton': orangeButton,
-      'label': label, 
-      'orangeLabel': orangeLabel,
-      'multilineLabel': multilineLabel,
-      'smallLabel': smallLabel, 
-      'smallLabel2':  smallLabel2, 
-      'group': group, 
-      'page': group,
-      'labelGroup': group,
-      'placeholder': placeholder, 
-      'image': image, 
-      'image2': image2,
-      'image3': image3,
-      'logo': logo, 
-      'logo2': newsLogo
-      /* Add others here */
-    }; 
-    return svgElements[controlType]; 
-  };
-
   constructor(props) {
   	super(props);
 
@@ -99,7 +60,7 @@ export default class DesignCanvas extends React.Component {
     return {
       constraintsMenuX: prevState.constraintsMenuX,
       constraintsMenuY: prevState.constraintsMenuY, 
-      constraintsMenuShape: prevState.constraintsMenuShape,  
+      constraintsMenuShape: prevState.constraintsMenuShape,
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState, 
       backgroundColor: prevState.backgroundColor,
@@ -116,6 +77,10 @@ export default class DesignCanvas extends React.Component {
   }
  
   getScalingFactor = () => {
+    if(this.props.zoomed) {
+      return 1.0; 
+    }
+
     // Return the amount of scaling to use depending on the state of this DesignCanvas
     if(this.state.savedState == 1 || this.state.savedState == -1 || this.state.invalidated) {
       return 0.10; 
@@ -126,7 +91,6 @@ export default class DesignCanvas extends React.Component {
 
   initDesignCanvas = (shape) => {
     // Intialize the background color and root level design shape
-    console.log(shape.grid); 
     this.setState({
       designShape: shape,
       backgroundColor: shape.background_color
@@ -168,20 +132,19 @@ export default class DesignCanvas extends React.Component {
   hideMenu = () => {
     if(this.state.constraintsMenuShape) {
       this.setState({
-        constraintsMenuShape: undefined
+        constraintsMenuShape: undefined, 
       });  
     }
   }
 
-  getDesignCanvasWidget = (shape, width, height, left, top) => {
+  getDesignCanvasWidget = (shape, svgSource, width, height, left, top) => {
     let shapeId = shape.name;
-    let source = DesignCanvas.svgElements(shape.controlType);
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     return (<DesignCanvasSVGWidget 
             key={shapeId} 
             shape={shape} 
             id={shapeId} 
-            source={source}            
+            source={svgSource}            
             width={width}
             height={height}
             left={left}
@@ -191,13 +154,24 @@ export default class DesignCanvas extends React.Component {
             contextMenu={this.showConstraintsContextMenu}/>); 
   }
 
-  createSVGElement = (designCanvas, shape) => {
+  getSVGSourceByID = (id) => {
+    let svgElements = this.props.svgWidgets; 
+    let svgElement = svgElements.filter(element => element.id == id); 
+    if(svgElement && svgElement.length) {
+      svgElement = svgElement[0]; 
+      return svgElement.svgData; 
+    }
+
+    return ""; 
+  }
+
+  createSVGElement = (shape) => {
     // Get the control SVG element from the control type
-    let controlType = shape.controlType;
-    let svg = DesignCanvas.svgElements(controlType); 
-    if(svg != undefined) {
+    let type = shape.type; 
+    let svgSource = this.getSVGSourceByID(shape.id); 
+    if(svgSource != undefined) {
       let padding = 0; 
-      if(controlType == "group" || controlType == "labelGroup" || controlType == "page") {
+      if(type == "group" || type == "labelGroup" || type == "page") {
         padding = 5;
       }
 
@@ -206,7 +180,7 @@ export default class DesignCanvas extends React.Component {
       let computedLeft = ((shape.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.y * this.scalingFactor) - padding);
 
-      let designCanvasWidget = this.getDesignCanvasWidget(shape, computedWidth, computedHeight, computedLeft, computedTop);
+      let designCanvasWidget = this.getDesignCanvasWidget(shape, svgSource, computedWidth, computedHeight, computedLeft, computedTop);
       this.state.childSVGs.push(designCanvasWidget);
       this.setState({
         childSVGs: this.state.childSVGs
@@ -215,17 +189,13 @@ export default class DesignCanvas extends React.Component {
   }
 
   drawDesign = () => {
-    // When the component mounts, draw the shapes onto the canvas
-    let designId = "design-canvas-" + this.id;
-    let designCanvas = document.getElementById(designId);  
-
     // Initialize the canvas and page elements first 
     // so they are at the top of the dom hierarchy
     let canvas = this.elements["canvas"]; 
     this.initDesignCanvas(canvas); 
 
     let page = this.elements["page"]; 
-    this.createSVGElement(designCanvas, page); 
+    this.createSVGElement(page); 
 
     let elementsList = []; 
     for(let elementID in this.elements) {
@@ -260,7 +230,7 @@ export default class DesignCanvas extends React.Component {
 
     for(let i=0; i<elementsList.length; i++) {
       let element = elementsList[i]; 
-      this.createSVGElement(designCanvas, element); 
+      this.createSVGElement(element); 
     }
   }
 
@@ -276,6 +246,10 @@ export default class DesignCanvas extends React.Component {
     else if(action == "like"){
       // Do something here 
       this.props.getRelativeDesigns(this.originalElements, "like"); 
+    }
+    else if(action == "zoom") {
+      // Open up the zoomed in design canvas dialog
+      this.props.zoomInOnDesignCanvas(this.id);
     }
 
     this.setState({
@@ -301,7 +275,8 @@ export default class DesignCanvas extends React.Component {
     }
 
     // Trigger constraint highlighting if the solution is not current valid
-    if(!this.state.valid) {
+    // Do not trigger constraint highlighting if the solution is in the zoom container
+    if(!this.state.valid && !this.props.zoomed) {
       if(this.state.conflicts) {
         for(var i=0; i<this.state.conflicts.length; i++) {
           var conflict = this.state.conflicts[i];
@@ -316,8 +291,6 @@ export default class DesignCanvas extends React.Component {
           this.highlightAddedWidget(addedID, true); 
         }
       }
-
-      // TODO: Removed? 
     }
 
     var designCanvas = document.getElementById("design-canvas-" + this.id); 
@@ -326,9 +299,10 @@ export default class DesignCanvas extends React.Component {
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
       designMenu: <DesignMenu 
-                    left={componentBoundingBox.x} 
-                    top={componentBoundingBox.y} 
-                    menuAction={this.performDesignCanvasMenuAction} />, 
+                    // left={componentBoundingBox.x} 
+                    // top={componentBoundingBox.y} 
+                    showZoom={!this.props.zoomed}
+                    menuAction={this.performDesignCanvasMenuAction} />,
       hovered: true
     
     });
@@ -377,11 +351,6 @@ export default class DesignCanvas extends React.Component {
    	let constraintsMenuX = this.state.constraintsMenuX; 
     let constraintsMenuShape = this.state.constraintsMenuShape; 
 
-    if(constraintsMenuShape != undefined) {
-      console.log("design canvas");
-      console.log(constraintsMenuShape.type); 
-    }
-
     // The current design menu object for saving and trashing the designs 
     let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
@@ -392,7 +361,7 @@ export default class DesignCanvas extends React.Component {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     let childSVGs = this.state.childSVGs; 
 
-    return  (
+    return  (      
       <div onMouseEnter={this.showMenuAndHighlightConstraints} 
            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
@@ -423,8 +392,6 @@ export default class DesignCanvas extends React.Component {
 	    </div>); 
   }
 }
-
-
 
 
 

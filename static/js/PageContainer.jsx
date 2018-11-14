@@ -2,33 +2,19 @@
 import React from "react";
 import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
+import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
+import WidgetsContainer from "./WidgetsContainer"; 
 import Constants from './Constants'; 
 import DesignCanvas from './DesignCanvas';
-import Sidebar from 'react-sidebar';
+import SmallDesignCanvas from './SmallDesignCanvas';
+import DesignCanvasContainer from './DesignCanvasContainer'; 
+import { DragDropContextProvider } from 'react-dnd'; 
+import HTML5Backend from 'react-dnd-html5-backend';
 import $ from 'jquery';
+import uuidv4 from 'uuid/v4'; 
 import SVGInline from "react-svg-inline"; 
-import SVGWidget from './SVGWidget';
-import field from '../assets/illustrator/field.svg';
-import search from '../assets/illustrator/search.svg';
-import image from '../assets/illustrator/image.svg';
-import image2 from '../assets/illustrator/image2.svg';
-import image3 from '../assets/illustrator/image3.svg';
-import placeholder from '../assets/illustrator/placeholder.svg';
-import filledButton from '../assets/illustrator/filledButton.svg';
-import orangeButton from '../assets/illustrator/orangeButton.svg';
-import label from '../assets/illustrator/label.svg';
-import orangeLabel from '../assets/illustrator/orangeLabel.svg'; 
-import labelContainer from '../assets/illustrator/labelContainer.svg';
-import groupContainer from '../assets/illustrator/groupContainer.svg';
-import repeatGrid from '../assets/illustrator/repeatGrid.svg';
-import multilineLabel from '../assets/illustrator/multiline_label.svg';
-import smallLabelStatic from '../assets/illustrator/smallLabel_widgets.svg';
-import smallLabelDynamic from '../assets/illustrator/smallLabel.svg';
-import smallLabelStatic2 from '../assets/illustrator/smallLabel_widgets_2.svg';
-import smallLabelDynamic2 from '../assets/illustrator/smallLabel_2.svg';
-import logo from '../assets/illustrator/logo.svg';
-import newsLogo from '../assets/illustrator/newsLogo.svg';
+import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
 
 export default class PageContainer extends React.Component {
@@ -45,7 +31,10 @@ export default class PageContainer extends React.Component {
       solutions: [],
       designsFound: -1, 
       showDesignsAlert: false, 
-      currentPallette: 'hollywood'
+      currentPallette: 'hollywood', 
+      droppedFiles: [], 
+      svgWidgets: [], 
+      zoomedDesignCanvasID: undefined 
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -73,9 +62,9 @@ export default class PageContainer extends React.Component {
 
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
   // for a shape of this type
-  addShapeToConstraintsCanvas = (type, controlType, src) => {
+  addShapeToConstraintsCanvas = (id, src, type, width, height) => {
     return () => {
-      this.constraintsCanvasRef.current.addShapeOfTypeToCanvas(type, controlType, src);
+      this.constraintsCanvasRef.current.addShapeToCanvas(id, src, type, width, height);
     }
   }
 
@@ -83,29 +72,56 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
   }
 
-  getDesignCanvas = (solution) => {
+  getDesignCanvas = (solution, id, zoomed=false) => {
     return (<DesignCanvas 
-              key={solution.id} id={solution.id} 
-              ref={"design-canvas-" + solution.id}
+              key={id} 
+              id={id} 
+              ref={"design-canvas-" + id}
               elements={solution.elements}
               savedState={solution.saved}
               valid={solution.valid}
               conflicts={solution.conflicts}
               added={solution.added}
               removed={solution.removed}
+              zoomed={zoomed}
               invalidated={solution.invalidated}
+              svgWidgets={this.state.svgWidgets}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
+              zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
+              getRelativeDesigns={this.getRelativeDesigns}
+              closeRightClickMenus={this.closeRightClickMenus} />); 
+  }
+
+  getSmallDesignCanvas = (solution, id, zoomed=false) => {
+    return (<SmallDesignCanvas 
+              key={id} 
+              id={id} 
+              elements={solution.elements}
+              savedState={solution.saved}
+              valid={solution.valid}
+              conflicts={solution.conflicts}
+              added={solution.added}
+              removed={solution.removed}
+              zoomed={zoomed}
+              invalidated={solution.invalidated}
+              svgWidgets={this.state.svgWidgets}
+              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
+              updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
+              highlightAddedWidget={this.highlightAddedWidget}
+              highlightWidgetFeedback={this.highlightWidgetFeedback}
+              saveDesignCanvas={this.saveDesignCanvas} 
+              trashDesignCanvas={this.trashDesignCanvas}
+              zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               getRelativeDesigns={this.getRelativeDesigns}
               closeRightClickMenus={this.closeRightClickMenus} />); 
   }
 
   checkSolutionValidity = (options={}) => {
-    console.log("check validity");
     let currTime = Date.now()
     if(this.prevTime) {
       let diff = currTime - this.prevTime; 
@@ -234,6 +250,31 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  zoomInOnDesignCanvas = (designCanvasID) => {
+    this.setState({
+      zoomedDesignCanvasID: designCanvasID
+    }); 
+  }
+
+  getZoomedDesignCanvas = () => {
+    // Zoom in on the design canvas
+    // Render the same canvas again in a new DesignCanvas container
+    let solution = this.solutionsMap[this.state.zoomedDesignCanvasID];
+
+    // Set isZoomed prop on the DesignCanvas
+    // Inside of DesignCanvas, handle this by making the zoomed in canvas have larger dimensions
+    // Inside of DesignCanvas, hide the zoom button when hovering  
+    let solutionID = uuidv4();
+    let designCanvas = this.getDesignCanvas(solution, solutionID, true); 
+    return designCanvas; 
+  }
+
+  closeZoomedInDesignCanvas = () => {
+    this.setState({
+      zoomedDesignCanvasID: undefined
+    }); 
+  }
+
   clearInvalidDesignCanvases = () => {
     // Go through previous solutions and see which ones need to be invalidated
     for(let i=0; i<this.state.solutions.length; i++) {
@@ -312,105 +353,69 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
-  getWidgetPallette = () => {
-    if(this.state.currentPallette == "hollywood") {
-      return (
-        <div>
-          <SVGInline className="widget-control widget-control-button" 
-            height={Constants.controlHeights('button') + "px"} width={Constants.controlWidths('button') + "px"} 
-            svg={ filledButton } onClick={this.addShapeToConstraintsCanvas('button', 'button', filledButton)}/>
-          <div className="widget-control-group">
-            <SVGInline className="widget-control widget-control-label" 
-              height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
-              svg={ label } onClick={this.addShapeToConstraintsCanvas('label', 'label', label)}/>
-            <SVGInline className="widget-control widget-control-label" 
-              height={Constants.controlHeights('smallLabel2') + "px"} width={Constants.controlWidths('smallLabel2') + "px"} 
-              svg={ smallLabelStatic2 } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel2', smallLabelDynamic2)}/>
-            <SVGInline className="widget-control widget-control-label" 
-              height={Constants.controlHeights('multilineLabel') + "px"} width={Constants.controlWidths('multilineLabel') + "px"} 
-              svg={ multilineLabel } onClick={this.addShapeToConstraintsCanvas('paragraph', 'multilineLabel', multilineLabel)}/>
-          </div>
-          <div className="widget-control-group">
-            <SVGInline className="widget-control widget-control-image" 
-              height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-              svg={ image } onClick={this.addShapeToConstraintsCanvas('image', 'image', image)}/> 
-            <SVGInline className="widget-control widget-control-placeholder" 
-              height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-              svg={ image2 } onClick={this.addShapeToConstraintsCanvas('image', 'image2', image2)}/>
-            <SVGInline className="widget-control widget-control-placeholder" 
-              height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-              svg={ image3 } onClick={this.addShapeToConstraintsCanvas('image', 'image3', image3)}/>
-            <SVGInline className="widget-control widget-control-placeholder" 
-              height={Constants.controlHeights('placeholder') + "px"} width={Constants.controlWidths('placeholder') + "px"} 
-              svg={ placeholder } onClick={this.addShapeToConstraintsCanvas('image', 'placeholder', placeholder)}/>
-          </div>
-          <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-            height={Constants.controlHeights('group') + "px"} width={Constants.controlWidths('group') + "px"}
-            onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
-        </div>); 
-    }
-    else {
-      return (
-      <div className="widget-control-group">
-        <SVGInline className="widget-control widget-control-field" 
-                  height={Constants.controlHeights('field') + "px"} width={Constants.controlWidths('field') + "px"} 
-                  svg={ field } onClick={this.addShapeToConstraintsCanvas('field', 'field', field)}/>
-        <SVGInline className="widget-control widget-control-button" 
-          height={Constants.controlHeights('button') + "px"} width={Constants.controlWidths('button') + "px"} 
-          svg={ orangeButton } onClick={this.addShapeToConstraintsCanvas('button', 'orangeButton', orangeButton)}/>
-        <SVGInline className="widget-control widget-control-label" 
-          height={Constants.controlHeights('label') + "px"} width={Constants.controlWidths('label') + "px"} 
-          svg={ orangeLabel } onClick={this.addShapeToConstraintsCanvas('label', 'orangeLabel', orangeLabel)}/>
-       <SVGInline className="widget-control widget-control-label" 
-          height={Constants.controlHeights('smallLabel') + "px"} width={Constants.controlWidths('smallLabel') + "px"} 
-          svg={ smallLabelStatic } onClick={this.addShapeToConstraintsCanvas('label', 'smallLabel', smallLabelDynamic)}/>
-        <SVGInline className="widget-control widget-container" svg={ groupContainer } 
-          height={Constants.controlHeights('group') + "px"} width={Constants.controlWidths('group') + "px"}
-          onClick={this.addShapeToConstraintsCanvas('group', 'group', groupContainer)}/>
-        <SVGInline className="widget-control widget-control-logo" 
-          height={Constants.controlHeights('image') + "px"} width={Constants.controlWidths('image') + "px"} 
-          svg={ logo } onClick={this.addShapeToConstraintsCanvas('image', 'logo', logo)}/>
-      </div>); 
-    }
-  }
-
   getBackgroundColors = () => {
-    let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
-    let harvestColors = ['#FF5722', '#D7CCC8', '#FFFFFF', '#757575', '#795548', '#BDBDBD', '#FFECB3']
+    // let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
+    let harvestColors = ['#FF4081', '#000000', '#304FFE', ]
 
     // Replace with the above when we can load these in
-    if(this.state.currentPallette == "hollywood") {
-      return hollywoodColors; 
-    }
-    else {
-      return harvestColors; 
+    // if(this.state.currentPallette == "hollywood") {
+    //   return hollywoodColors; 
+    // }
+    // else {
+    return harvestColors; 
+    //}
+  }
+
+  readSVGIntoWidgetContainer = (e) => {
+    let fileData = e.target.result; 
+    let widgetID = _.uniqueId(); 
+    if(fileData) {
+      this.setState({
+        svgWidgets: this.state.svgWidgets.concat({
+            id: widgetID, 
+            svgData: fileData
+          }
+        )
+      })
+
     }
   }
 
-  configureWidgetPallette = (e) => {
-    // Configure later to enable more sets of pallettes to be loaded
-    if(this.state.currentPallette == 'hollywood') {
+  handleFileDrop = (item, monitor) => {
+    if (monitor) {
+      const item = monitor.getItem(); 
+      const droppedFiles = item.files;  
       this.setState({
-        currentPallette: 'farming'
+        droppedFiles: droppedFiles
+      });
+
+      // Ensure the files are SVG 
+
+      // Download the dropped file contents
+      for(let i=0; i<droppedFiles.length; i++) {
+        let file = droppedFiles[i]; 
+        let reader = new FileReader(); 
+        reader.onload = this.readSVGIntoWidgetContainer; 
+        reader.readAsText(file); 
+      }
+    }
+  }
+
+  moveDesignCanvas = (id) => {
+    // Move a dragged design canvas into the main designs container 
+    // Can be dragged from the saved, invalid, and trashed designs area
+    let solution = this.solutionsMap[id]; 
+    if(solution) {
+      solution.saved = 0; 
+      solution.invalidated = false;
+
+      this.setState({
+        solutions: this.state.solutions
       }); 
     }
-    else {
-      this.setState({
-        currentPallette: 'hollywood'
-      }); 
-    }
-
-    // Also clear out the current set of solutions
-    // Later we should probably prompt for exporting before destroying the designs
-    this.setState({
-      solutions: []
-    });
-
-    this.clearShapesFromConstraintsCanvas();
   }
 
   render () {
-    console.log("page container render");
     const self = this;
     const designsFound = this.state.designsFound; 
     const errorMessageShown = this.state.errorMessageShown; 
@@ -418,7 +423,7 @@ export default class PageContainer extends React.Component {
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
               .map((solution) => {
-                  return this.getDesignCanvas(solution); 
+                  return this.getSmallDesignCanvas(solution, solution.id); 
                 }); 
 
     const designCanvases = this.state.solutions
@@ -436,15 +441,15 @@ export default class PageContainer extends React.Component {
         return 0; 
       })
       .map((solution) => {
-          return self.getDesignCanvas(solution); 
+        return self.getDesignCanvas(solution, solution.id); 
       }); 
 
     const trashedCanvases = this.state.solutions
       .filter((solution) => { return solution.saved == -1; })
       .map((solution) => {
-            if(solution.saved == -1) {
-              return self.getDesignCanvas(solution); 
-            }
+          if(solution.saved == -1) {
+            return self.getSmallDesignCanvas(solution, solution.id); 
+          }
         });
 
     const invalidatedCanvases = this.state.solutions
@@ -452,115 +457,120 @@ export default class PageContainer extends React.Component {
         return solution.invalidated == true; 
       })
       .map((solution) => {
-            if(solution.invalidated == true) {
-              return self.getDesignCanvas(solution); 
-            }
-      });    
+        if(solution.invalidated == true) {
+          return self.getSmallDesignCanvas(solution, solution.id); 
+        }
+      }); 
 
-    const currentWidgetPallette = this.getWidgetPallette();  
+    // Get the zoomed design canvas, if there is one set
+    let zoomedDesignCanvas = this.state.zoomedDesignCanvasID ? this.getZoomedDesignCanvas() : undefined; 
+
     return (
-      <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
-        <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
-          <div className="navbar-header">
-            <SVGInline className="scout-logo" svg={pageLogo} />
-            <h1>Scout</h1>
-          </div>
-        </nav>
-        <div className="bottom">
-          <div className="widgets-panel-container"> 
-            <div className="panel panel-primary widgets-container">
+      <DragDropContextProvider backend={HTML5Backend}>
+        <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
+          <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div className="navbar-header">
+              <SVGInline className="scout-logo" svg={pageLogo} />
+              <h1>Scout</h1>
+            </div>
+          </nav>
+          <div className="bottom">
+              <div className="widgets-panel-container"> 
+                <WidgetsContainer 
+                  onDrop={this.handleFileDrop} 
+                  widgets={this.state.svgWidgets}
+                  addShapeToConstraintsCanvas={this.addShapeToConstraintsCanvas} />
+              </div>
+            <ConstraintsCanvas ref={this.constraintsCanvasRef} 
+              updateConstraintsCanvas={this.updateConstraintsCanvas} 
+              checkSolutionValidity={this.checkSolutionValidity}/>
+            <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
-                <h3 className="panel-title">Widgets</h3>
+                <h3 className="panel-title">Designs
+                  <div className="btn-group header-button-group">
+                    <button 
+                      type="button" 
+                      className="btn btn-default design-canvas-button" 
+                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More Designs</button>
+                    <button className="btn btn-default design-canvas-button">{designCanvases.length}</button>
+                  </div>
+                  <div className="btn-group header-button-group">
+                    <button 
+                      type="button" 
+                      className="btn btn-default design-canvas-button" 
+                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these</button>
+                    <button 
+                      type="button" 
+                      className="btn btn-default design-canvas-button" 
+                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these</button>
+                  </div>
+                  <div 
+                    className="btn-group header-button-group">
+                    <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
+                    <button type="button" className="btn btn-default design-canvas-button" 
+                      onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
+                  </div>
+                </h3>
               </div>  
-              <div className="panel-body widgets-panel">         
-                {currentWidgetPallette}
-              </div>
-            </div>
-            <button 
-              type="button" 
-              className="btn btn-primary configure-widgets-button"
-              onClick={this.configureWidgetPallette}>
-              Configure Widget Pallette
-            </button>
-          </div>
-          <ConstraintsCanvas ref={this.constraintsCanvasRef} 
-            updateConstraintsCanvas={this.updateConstraintsCanvas} 
-            checkSolutionValidity={this.checkSolutionValidity}/> {/* Enables the constraints canvas to trigger re-checking solutions for validity when widgets are removed */ }
-          <div className="panel panel-primary designs-area-container">
-            <div className="panel-heading"> 
-              <h3 className="panel-title">Designs
-                <div className="btn-group header-button-group">
-                  <button 
-                    type="button" 
-                    className="btn btn-default design-canvas-button" 
-                    onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More Designs</button>
-                  <button className="btn btn-default design-canvas-button">{designCanvases.length}</button>
-                </div>
-                <div className="btn-group header-button-group">
-                  <button 
-                    type="button" 
-                    className="btn btn-default design-canvas-button" 
-                    onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these</button>
-                  <button 
-                    type="button" 
-                    className="btn btn-default design-canvas-button" 
-                    onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these</button>
-                </div>
-                <div 
-                  className="btn-group header-button-group">
-                  <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
-                  <button type="button" className="btn btn-default design-canvas-button" 
-                    onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
-                </div>
-              </h3>
-            </div>  
-            <div className="design-canvas-container">
-              <div className="left-container">
-                { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
-                  <div>
-                    <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
-                    <span>({savedCanvases.length})</span>
-                  </div>
-                  <div className="panel-body saved-body">
-                    {savedCanvases}
-                  </div>
-                </div>) : null }
-                { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
-                    {(designsAlertShown ? (<div className="designs-canvas-container-alert alert alert-success alert-dismissable" role="alert">
-                      <button type="button" className="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                      </button>
-                      Scout has generated 10 new designs that meet your constraints. 
-                    </div>) : undefined)}
-                    <div className="design-body" onScroll={this.hideDesignsAlert}>
-                      {designCanvases}
+              <div className="design-canvas-container">
+                <div className="left-container">
+                  { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
+                    <div>
+                      <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
+                      <span>({savedCanvases.length})</span>
                     </div>
-                </div>) : null }
-                { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
-                  <div>
-                    <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
-                    <span>({trashedCanvases.length})</span>
-                  </div>
-                  <div className="panel-body trashed-body">
-                    {trashedCanvases}
-                  </div>
-                </div>) : null }
-              </div>
-              {invalidatedCanvases.length ? (<div className="right-container"> 
-                <div className="panel invalid-container panel-default"> 
-                  <div>
-                    <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
-                    <span>({invalidatedCanvases.length})</span>
-                  </div>
-                  <div className="panel-body invalidated-body">
-                    {invalidatedCanvases}
-                  </div>
+                    <div className="panel-body saved-body">
+                      {savedCanvases}
+                    </div>
+                  </div>) : null }
+                  { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
+                      {(designsAlertShown ? (<div className="designs-canvas-container-alert alert alert-success alert-dismissable" role="alert">
+                        <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>
+                        Scout has generated 10 new designs that meet your constraints. 
+                      </div>) : undefined)}
+                      <DesignCanvasContainer 
+                        onDrop={this.moveDesignCanvas}
+                        designCanvases={designCanvases} 
+                        onScroll={this.hideDesignsAlert} />
+                  </div>) : null }
+                  { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
+                    <div>
+                      <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
+                      <span>({trashedCanvases.length})</span>
+                    </div>
+                    <div className="panel-body trashed-body">
+                      {trashedCanvases}
+                    </div>
+                  </div>) : null }
                 </div>
-              </div>) : null}
+                {invalidatedCanvases.length ? (<div className="right-container"> 
+                  <div className="panel invalid-container panel-default"> 
+                    <div>
+                      <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
+                      <span>({invalidatedCanvases.length})</span>
+                    </div>
+                    <div className="panel-body invalidated-body">
+                      {invalidatedCanvases}
+                    </div>
+                  </div>
+                </div>) : null}
+              </div>
             </div>
           </div>
+          {this.state.zoomedDesignCanvasID ? (
+            <div 
+              className="zoomed-design-container-background"
+              onClick={this.closeZoomedInDesignCanvas}>
+            </div>
+          ) : undefined}
+          {this.state.zoomedDesignCanvasID ? 
+            (<div className="zoomed-design-container"> 
+              {zoomedDesignCanvas}
+            </div>) : undefined}
         </div>
-      </div>
+      </DragDropContextProvider>
     ); 
   }
 }

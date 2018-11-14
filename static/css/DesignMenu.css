@@ -1,0 +1,33 @@
+.canvas-actions-menu-container {
+    position: absolute;
+    background: transparent;
+    z-index: 1;
+/*    z-index: 1000;
+*/}
+
+.canvas-actions-menu {
+	list-style-type: none;
+    padding: 0px;
+}
+
+.canvas-actions-menu > li, {
+	padding: 0.5em;
+}
+
+.canvas-actions-menu > li:hover {
+	cursor: pointer; 
+}
+
+.canvas-actions-menu .glyphicon-star, 
+.canvas-actions-menu .glyphicon-trash, 
+.canvas-actions-menu .glyphicon-zoom-in {
+	/* TODO: Color scheme */
+	color: white;
+}
+
+.canvas-actions-menu-item {
+	display: inline-block;
+	transform: scale(1.5);
+	margin-left: 1em;
+	margin-top: 1em;
+}

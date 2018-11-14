@@ -1,8 +1,18 @@
 import React from "react";
-import SVGWidget from './SVGWidget';
-import ContainerSVGWidget from './ContainerSVGWidget';
+import '../css/ConstraintsCanvas.css'; 
+import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
+import ConstraintsCanvasContainerSVGWidget from './ConstraintsCanvasContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
-import SortableTree, { removeNodeAtPath, getNodeAtPath, changeNodeAtPath, defaultGetNodeKey, insertNode, getFlatDataFromTree, addNodeUnderParent } from 'react-sortable-tree';
+import {
+  SortableTreeWithoutDndContext as SortableTree,
+  removeNodeAtPath, 
+  getNodeAtPath, 
+  changeNodeAtPath, 
+  defaultGetNodeKey, 
+  insertNode,
+  getFlatDataFromTree, 
+  addNodeUnderParent } 
+from 'react-sortable-tree';
 import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import Constants from './Constants';
 import WidgetTyping from './WidgetTyping'; 
@@ -37,7 +47,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultTypingAlertHeight = 86;
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
-    this.minimumGroupSize = 1; 
+    this.minimumGroupSize = 2; 
 
     this.state = { 
       treeData: [], 
@@ -121,7 +131,7 @@ export default class ConstraintsCanvas extends React.Component {
     if(isContainer) {
       let item = options.item ? options.item : false; 
       let typed = options.typed ? options.typed : false;
-      return (<ContainerSVGWidget 
+      return (<ConstraintsCanvasContainerSVGWidget 
                 key={shapeId} 
                 shape={shape} 
                 id={shapeId} 
@@ -138,7 +148,7 @@ export default class ConstraintsCanvas extends React.Component {
                 typed={typed}
                 item={item} />);
     }
-    return (<SVGWidget 
+    return (<ConstraintsCanvasSVGWidget 
               key={shapeId} 
               shape={shape} 
               id={shapeId} 
@@ -153,8 +163,8 @@ export default class ConstraintsCanvas extends React.Component {
               getCurrentShapeIndex={this.getCurrentShapeIndex} />);
   }
 
-  addShapeOfTypeToCanvas = (type, controlType, source) => {
-    let shape = this.createConstraintsCanvasShapeObject(type, controlType); 
+  addShapeToCanvas = (id, source, type, width, height) => {
+    let shape = this.createConstraintsCanvasShapeObject(id, type, width, height); 
 
     let widget = this.getWidget(shape, source); 
 
@@ -189,9 +199,9 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
   }
 
-  createNewTreeNode = (type, controlType, source, options={}) => {
+  createNewTreeNode = (type, source, options={}) => {
     // Creates a new tree node widget and returns it
-    let shape = this.createConstraintsCanvasShapeObject(type, controlType, options); 
+    let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
     let widget = this.getWidget(shape, source, options); 
 
     let newTreeNode = {
@@ -521,12 +531,17 @@ export default class ConstraintsCanvas extends React.Component {
     return { path: [-1], children: [], treeIndex: 0 }; 
   }
 
+  inferShapeType = () => {
+    return "button";
+  }
 
-  createConstraintsCanvasShapeObject = (type, controlType, options={}) => {
+
+  createConstraintsCanvasShapeObject = (id, type, width, height, options={}) => {
     // Optional set of initial properties cna be passed in through the intial object
     let order = options.order ? options.order : -1; 
 
     let containerOrder = undefined; 
+
     let isContainer = type == "group" || type == "labelGroup"; 
 
     if(isContainer) {
@@ -534,17 +549,15 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     let importance = (options.importance ? options.importance : "normal");
-    let width = options.width ? options.width : Constants.controlWidths(controlType); 
-    let height = options.height ? options.height : Constants.controlHeights(controlType); 
 
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
     let label = Constants.controlLabels(type); 
     let shape = {
       "name": _.uniqueId(),
+      "id": id, 
       "label": label, 
       "type": type,
-      "controlType": controlType, 
       "importance": importance, 
       "containerOrder": containerOrder, 
       "order": order, 
@@ -739,7 +752,7 @@ export default class ConstraintsCanvas extends React.Component {
     let newChildren = []; 
     for(let i=0; i<groups.length; i++) {
       let currGroup = groups[i]; 
-      let newGroupNode = this.createNewTreeNode("group", "group", item, { item: true }); 
+      let newGroupNode = this.createNewTreeNode("group", item, { item: true }); 
       let isExpanded = (i == 0) ? true : false; 
       newGroupNode.expanded = isExpanded; 
       newGroupNode.children = currGroup; 
@@ -826,7 +839,7 @@ export default class ConstraintsCanvas extends React.Component {
       // Have to set the children on the object here when creating a new node
       labeledNode.children = labeledNodeData.children; 
 
-      let newLabelGroupNode = this.createNewTreeNode("labelGroup", "labelGroup", label, { containerOrder: "important" }); 
+      let newLabelGroupNode = this.createNewTreeNode("labelGroup", label, { containerOrder: "important" }); 
       newLabelGroupNode.expanded = true; 
       newLabelGroupNode.children = [labelNode, labeledNode]; 
 

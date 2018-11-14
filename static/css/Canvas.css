@@ -22,7 +22,7 @@ body {
 
 
 /**
-  Overrides of bootstrap styles 
+  Oversrides of bootstrap styles 
   **/ 
 .navbar {
 	margin-bottom: 0px;
@@ -152,23 +152,14 @@ h1, h2, h3 {
 	flex-direction: column;
 }
 
-.widgets-panel {
-	overflow: auto;
-}
-
 .widgets-panel-container, .constraints-container, .designs-area-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
 }
 
-.widgets-container {
-	margin-bottom: 0; 
-}
-
 .right-container {
-	margin-left: 10px;
-	margin-top: 10px;
+	margin: 5px;
 }
 
 .navbar-default {
@@ -178,169 +169,8 @@ h1, h2, h3 {
     padding-left: 10px;
 }
 
-.constraints-canvas-container {
-	/* Needed when we do not have the virtualized grid enabled where it makes its own scrollbar */
-	overflow: auto;
-    height: calc(100% - 120px);
-}
-
-.constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
-.constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
-.constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
-.constraints-canvas-container .widget-control-search > .widget-control-search-svg {
-	width: 238px !important;
-}
-
-/**
-	Sizing of SVG elements in widgets panel 
-**/ 
-.widgets-panel .widget-control-label {
-	font-size: 36; 
-}
-
-#widget-control-label {
-	height: 30px;
-}
-
-/** 
-	Constraints canvas 
-**/
-.constraints-container {
-	width: 475px;
-	min-width: 475px;
-}
-
 .constraints-canvas-page-feedback {
 	display: inline-block;
-}
-
-.widgets-container {
-	width: 280px;
-}
-
-.widgets-container .widget-control-button > .widget-control-button-svg, 
-.widgets-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
-.widgets-container .widget-control-field > .widget-control-field-svg, 
-.widgets-container .widget-control-search > .widget-control-search-svg {
-	width: 238px !important;
-}
-
-.widget-container > .widget-control-importance {
-	margin-top: 5px;
-	display: flex;
-}
-
-.widget-container.highlighted {	
-	border: 1px dashed gray;
-	padding: 4;
-	background-color: #f2dede;
-}
-
-.widgets-panel-container .configure-widgets-button {
-	margin-top: 10px;
-	font-size: 16px; 
-	font-weight: 500;
-}
-
-.widget-control-group .widget-control {
-	margin-right: 10px;
-}
-
-.constraints-canvas-container .widget-control-button > .widget-control-button-svg, 
-.constraints-canvas-container .widget-control-orangeButton > .widget-control-orangeButton-svg, 
-.constraints-canvas-container .widget-control-field > .widget-control-field-svg, 
-.constraints-canvas-container .widget-control-search > .widget-control-search-svg {
-	width: 238px !important;
-}
-
-.widget-control-button .widget-editable-text, 
-.widget-control-orangeButton .widget-editable-text {
-	transform: translate(120px, 22px);
-}
-
-.widget-control-field .widget-editable-text {
-	transform: translate(9.7px, 24px);
-}
-
-.widget-control-label > .widget-control-svg {
-	width: 5em;
-}
-
-.widget-control-svg {
-	margin-top: 20px;
-	cursor: pointer;
-}
-
-.widget-control-row {
-	display: flex; 
-	align-items: flex-start;
-	flex-direction: column;
-}
-
-.widget-control-info {
-    display: flex;
-    margin-top: 0.5em;
-}
-
-.widget-control-info span {
-	margin-left: 0px;
-	margin-right: 0.5em;
-}
-
-.widget-control-info-left, 
-.widget-control-info-right {
-	display: flex; 
-	flex-direction: column; 
-	justify-content: center;
-}
-
-.widget-control-info-right {
-	margin-left: 10px;
-}
-
-.widget-control-labels {
-	zoom: 40%; 
-	position: absolute;
-	z-index: 1000; 
-}
-
-.widget-control-typing {
-	margin-top: 0.5em;
-	margin-bottom: 0.5em; 
-}
-
-.widget-control-typing span {
-	margin-left: 0.5em;
-	cursor: pointer;
-	color: blue;
-}
-
-.widget-control-typing span:hover {
-	text-decoration: underline;
-}
-
-.widget-stepper {
-	height: 25px; 
-}
-
-.widget-label {
-	height: 30px;
-}
-
-.widget-container > .widget-container-svg {
-	margin-right: 5px;
-	margin-left: 5px;
-}
-
-.containers-panel {
-	display: flex;
-    flex-direction: row;
-    justify-content: center;
-}
-
-.widget-container .badge {
-	font-size: 14px;
-	border-radius: 3px;
 }
 
 /** 
@@ -358,8 +188,12 @@ h1, h2, h3 {
 	display: flex; 
     flex-direction: row; 
     flex-grow: 1;
-    margin-right: 10px;
-    margin-bottom: 10px;
+    background-color: #414656;
+}
+
+.design-canvas-container .current-designs-container {
+	border: none;
+    background-color: #414656;
 }
 
 .invalid-container {
@@ -368,6 +202,11 @@ h1, h2, h3 {
 
 .designs-container.current-designs-container {
 	flex: 1;
+}
+
+.designs-container.saved-designs-container, 
+.designs-container.trashed-designs-container {
+	margin: 5px;
 }
 
 .designs-canvas-container-alert {
@@ -379,111 +218,6 @@ h1, h2, h3 {
 	top: 0;
 	right: 0;
 }
-
-.design-canvas {
-	position: relative;
-	border: 1px solid #ccc;
-}
-
-.design-canvas .widget-control {
-	cursor: pointer;
-}
-
-.design-canvas .widget-control-leaf {
-	z-index: 500; 
-}
-
-.design-canvas.hovered, 
-.design-canvas.hovered .design-canvas-hovered {
-	outline: 1px dashed black;
-}
-
-.design-canvas.hovered .SVGInline-svg {
-	cursor: pointer; 
-}
-
-.design-body > .canvas-container {
-	display: inline-block;
-	margin: 5px;
-}
-
-.canvas-container .canvas-container-invalid {
-	background-image: url("../assets/stripe2.png");
-}
-
-.canvas-container .canvas-container-invalid.canvas-container-invalid-scaled {
-	background-image: url("../assets/stripe_scaled.png");
-}
-
-.design-body {
-    overflow: auto;
-}
-
-.saved-body, .trashed-body {
-	height: 75px;
-	display: flex; 
-	flex-direction: row;
-}
-
-.invalidated-body {
-	width: 50px; 
-	display: flex;
-	flex-direction: column;
-}
-
-.saved-body .canvas-container, .trashed-body .canvas-container {
-	margin-right: 5px;
-}
-
-.invalidated-body .canvas-container {
-	margin-bottom: 5px;
-}
-
-.save-icon {
-	margin-left: 0.5em;
-	margin-top: 0.5em;
-}
-
-.designs-message {
-	margin-bottom: 5px;
-	margin-top: 5px;
-}
-
-.design-canvas-button {
-	margin-left: 10px;
-}
-
-/** 
-  Actions menu that appears on design canvas 
-
- **/
-
- .canvas-actions-menu-container {
-    position: absolute;
-    background: transparent;
-    z-index: 1000;
-}
-
-.canvas-actions-menu {
-	list-style-type: none;
-    padding: 0px;
-}
-
-.canvas-actions-menu > li, {
-	padding: 0.5em;
-}
-
-.canvas-actions-menu > li:hover {
-	cursor: pointer; 
-}
-
-.canvas-actions-menu-item {
-	display: inline-block;
-	transform: scale(1.5);
-	margin-left: 1em;
-	margin-top: 1em;
-}
-
 
 .constraint-error-message {
 	display: inline-block;
@@ -521,57 +255,7 @@ h1, h2, h3 {
 	border: none;
 }
 
-/* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
-.widgets-sortable-tree .rst__rowContents {
-	border: none;
-	box-shadow: none;
-	min-width: initial;
-	background-color: initial;
-}
 
-.widgets-sortable-tree .rst__row {
-	align-items: center;
-}
-
-.widgets-sortable-tree .rst__rowWrapper {
-	padding: 0px;
-}
-
-.widgets-sortable-tree .rst__moveHandle {
-	height: 44px;
-}
-
-.widgets-sortable-tree .rst__rowTitleWithSubtitle {
-    height: inherit; 
-}
-
-.widgets-sortable-tree .widgets-sortable-tree-remove {
-	background-color: initial;
-}
-
-.widgets-sortable-tree .rst__rowTitle {
-	font-weight: normal;
-}
-
-.widgets-sortable-tree .rst__rowSubtitle {
-	font-size: inherit;
-}
-
-.widgets-sortable-tree .rst__lineFullVertical:after {
-	height: 100%;
-}
-
-.widgets-sortable-tree .rst__rowLabel {
-	padding-right: 5px;
-}
-
-.widgets-sortable-tree .rst__lineChildren:after {
-	height: calc(50%); 
-}
-
-.widgets-sortable-tree-remove {
-	border: none;
-}
 
 /**  
 	Resizable box 
