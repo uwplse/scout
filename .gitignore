@@ -4,3 +4,4 @@ static/dist/*
 *__pycache__
 server/__pycache__
 *.pyc
+.idea/*
