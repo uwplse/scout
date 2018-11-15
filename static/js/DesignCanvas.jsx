@@ -222,10 +222,10 @@ export default class DesignCanvas extends React.Component {
       // Sort by containment
       if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
         // Sort b first if b contains a so it appears higher in the DOM hierarchy
-        return 1; 
+        return -1; 
       }
 
-      return -1; 
+      return 1; 
     }); 
 
     for(let i=0; i<elementsList.length; i++) {

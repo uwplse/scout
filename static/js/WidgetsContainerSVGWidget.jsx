@@ -64,12 +64,14 @@ export default class WidgetsContainerSVGWidget extends React.Component {
         // Initialize the element type: 
         // Contains leaf level nodes other than text -> 'element'
         // Contains only text leaf level nodes -> 'text'
-        let containsNotText = this.containsNotText(element); 
-        let type = containsNotText ? 'element' : 'text'; 
-        console.log(type);
-        this.setState({
-          type: type
-        }); 
+        if(this.state.type != "group") {
+          let containsNotText = this.containsNotText(element); 
+          let type = containsNotText ? 'element' : 'text'; 
+          console.log(type);
+          this.setState({
+            type: type
+          }); 
+        }
       }
     }
   }

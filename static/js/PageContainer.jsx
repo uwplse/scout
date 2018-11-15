@@ -16,6 +16,7 @@ import uuidv4 from 'uuid/v4';
 import SVGInline from "react-svg-inline"; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
+import groupSVG from '../assets/illustrator/groupContainer.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -370,15 +371,29 @@ export default class PageContainer extends React.Component {
     let fileData = e.target.result; 
     let widgetID = _.uniqueId(); 
     if(fileData) {
+      // Add widgets to the front of the list 
+      // So that they are rendered at the top of the container
+      // While the automatically added elements (group) appears at the bottom
       this.setState({
         svgWidgets: this.state.svgWidgets.concat({
             id: widgetID, 
             svgData: fileData
-          }
-        )
-      })
-
+        })
+      });  
     }
+  }
+
+  populateGroupNodeIntoWidgetContainer = () => {
+    // Add the group container into the widgets panel 
+    // It will just be automatically added in when the drop happens
+    let groupID = _.uniqueId(); 
+    this.setState({
+      svgWidgets: this.state.svgWidgets.concat({
+        id: groupID, 
+        svgData: groupSVG, 
+        type: "group"
+      }) 
+    }); 
   }
 
   handleFileDrop = (item, monitor) => {
@@ -389,8 +404,6 @@ export default class PageContainer extends React.Component {
         droppedFiles: droppedFiles
       });
 
-      // Ensure the files are SVG 
-
       // Download the dropped file contents
       for(let i=0; i<droppedFiles.length; i++) {
         let file = droppedFiles[i]; 
@@ -398,6 +411,10 @@ export default class PageContainer extends React.Component {
         reader.onload = this.readSVGIntoWidgetContainer; 
         reader.readAsText(file); 
       }
+
+      // Add the group container node into the widgets container
+      // It will be added automatically when the designer drops in the other SVG elementst
+      this.populateGroupNodeIntoWidgetContainer();
     }
   }
 

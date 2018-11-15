@@ -201,6 +201,10 @@ export default class ConstraintsCanvas extends React.Component {
 
   createNewTreeNode = (type, source, options={}) => {
     // Creates a new tree node widget and returns it
+    let id = _.uniqueId();
+
+    let width = Constants.controlWidths(type); 
+    let height = Constants.controlHeights(type);
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
     let widget = this.getWidget(shape, source, options); 
 
@@ -1085,7 +1089,9 @@ export default class ConstraintsCanvas extends React.Component {
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
     const rightClickMenu = (this.state.rightClickMenuShown ?
-     <ConstraintsCanvasMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} 
+     <ConstraintsCanvasMenu 
+      left={rightClickMenuPosition.x} 
+      top={rightClickMenuPosition.y} 
       menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
       getSiblingLabelItem={this.getSiblingLabelItem}
@@ -1118,7 +1124,7 @@ export default class ConstraintsCanvas extends React.Component {
                 canDrop={this.canReparentWidgetNode}
                 onMoveNode={this.onMoveNode}
                 rowHeight={this.calculateRowHeight}
-                isVirtualized={false}
+                // isVirtualized={false}
                 generateNodeProps={this.getNodeProps}
               />
             </div>

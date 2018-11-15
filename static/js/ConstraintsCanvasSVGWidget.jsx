@@ -11,7 +11,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   constructor(props) {
   	super(props); 
     this.type = props.shape.type; 
-    this.controlType = props.shape.controlType; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
 
@@ -19,8 +18,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.elementId = "widget-container-" + this.id; 
 
     this.initialFontSize = 0; 
-    if(this.type == "label") {
-      this.initialFontSize = Constants.controlFontSizes(this.controlType);
+    if(this.type == "text") {
+      this.initialFontSize = Constants.controlFontSizes(this.type);
       this.element.fontSize = this.initialFontSize;  
     }
 
@@ -83,85 +82,85 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   
   componentDidMount() {
     // Set the initial value for the text label
-    let hasText = this.getHasText();
-    if(hasText) {
-      this.setTextLabel(true); 
-    }
+    // let hasText = this.getHasText();
+    // if(hasText) {
+    //   this.setTextLabel(true); 
+    // }
 
     this.setState({
-      hasText: hasText, 
+      hasText: false, 
       labelPosition: this.computeLabelPosition()
     }); 
   }
 
   componentDidUpdate() {
-    if(this.state.hasText) {
-      console.log("compoennt update");
-      this.setTextLabel(false);      
-    }
+    // if(this.state.hasText) {
+    //   console.log("compoennt update");
+    //   this.setTextLabel(false);      
+    // }
   }
 
-  lockTextLabel = () => {
-    if(this.element[ConstraintActions.locksKey] == undefined) {
-      this.element[ConstraintActions.locksKey] = []; 
-    } 
+  // lockTextLabel = () => {
+  //   if(this.element[ConstraintActions.locksKey] == undefined) {
+  //     this.element[ConstraintActions.locksKey] = []; 
+  //   } 
 
-    if(this.element[ConstraintActions.locksKey].indexOf("label") == -1) {
-      this.element[ConstraintActions.locksKey].push("label"); 
-    }
-  }
+  //   if(this.element[ConstraintActions.locksKey].indexOf("label") == -1) {
+  //     this.element[ConstraintActions.locksKey].push("label"); 
+  //   }
+  // }
 
-  getHasText = () => {
-    let svgElement = document.getElementById(this.elementId); 
-    let editableText = svgElement.getElementsByTagName('text');
-    if(editableText[0]) {
-      return true;  
-    }
+  // getHasText = () => {
+  //   let svgElement = document.getElementById(this.elementId); 
+  //   let editableText = svgElement.getElementsByTagName('text');
+  //   if(editableText[0]) {
+  //     return true;  
+  //   }
 
-    return false;
-  }
+  //   return false;
+  // }
 
-  handleTextChange = (evt) => {
-    // Handle the text change on a timeout so it saves after the user finishes typing
-    clearTimeout(this.timer); 
-    this.timer = setTimeout(this.updateAndResizeText, WAIT_INTERVAL);  
-  }
+  // handleTextChange = (evt) => {
+  //   // Handle the text change on a timeout so it saves after the user finishes typing
+  //   clearTimeout(this.timer); 
+  //   this.timer = setTimeout(this.updateAndResizeText, WAIT_INTERVAL);  
+  // }
 
-  updateAndResizeText = (evt) => {
-    console.log("resize text area");
-    // Update the height and widht of the parent container so the height recalculates
-    if(this.state.hasText) {
-      let cursor = window.getSelection(); 
-      let cursorPos = cursor.baseOffset; 
-      this.setState({
-        cursorPos: cursorPos
-      });
+  // updateAndResizeText = (evt) => {
+  //   console.log("resize text area");
+  //   // Update the height and widht of the parent container so the height recalculates
+  //   if(this.state.hasText) {
+  //     let cursor = window.getSelection(); 
+  //     let cursorPos = cursor.baseOffset; 
+  //     this.setState({
+  //       cursorPos: cursorPos
+  //     });
 
-      let editableText = document.getElementById(this.elementId).querySelectorAll(".widget-editable-text");
+  //     let editableText = document.getElementById(this.elementId).querySelectorAll(".widget-editable-text");
 
-      let textValue = editableText[0].innerHTML; 
-      this.element.label = textValue;
+  //     let textValue = editableText[0].innerHTML; 
+  //     this.element.label = textValue;
 
-      if(this.type == "label") {
-        let textBounding = this.adjustElementSize(editableText[0]);
+  //     if(this.type == "label") {
+  //       let textBounding = this.adjustElementSize(editableText[0]);
 
-        // Measure and set the baseline value
-        let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
-        if(textSizeMeasure[0]){
-          let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
-          let baseline = textBounding.y - textSizeBounding.y
-          this.element.baseline = baseline; 
-        }
-      }
-    }    
-  }
+  //       // Measure and set the baseline value
+  //       let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
+  //       if(textSizeMeasure[0]){
+  //         let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
+  //         let baseline = textBounding.y - textSizeBounding.y
+  //         this.element.baseline = baseline; 
+  //       }
+  //     }
+  //   }    
+  // }
 
   updateTextLabel = (evt) => {
     console.log("udpate text label")
     // Get the actual value out of the text area and update
     // it on the object and lock the value
     // trigger the constraints checking
-    this.lockTextLabel();
+    // this.lockTextLabel();
 
     // Set the cursor positon back to 0 
     this.setState({
@@ -194,43 +193,43 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     return boundingRect; 
   }
 
-  setTextLabel = (initSize) => {
-    let svgElement = document.getElementById(this.elementId); 
-    let editableText = svgElement.querySelectorAll(".widget-editable-text");
-    if(editableText[0]) {
-      console.log("set text");
-      editableText[0].innerHTML = this.element.label; 
+  // setTextLabel = (initSize) => {
+  //   let svgElement = document.getElementById(this.elementId); 
+  //   let editableText = svgElement.querySelectorAll(".widget-editable-text");
+  //   if(editableText[0]) {
+  //     console.log("set text");
+  //     editableText[0].innerHTML = this.element.label; 
 
-      let range = document.createRange(); 
-      var sel = window.getSelection(); 
-      var textNode = editableText[0].childNodes[0]; 
-      if(textNode && this.state.cursorPos != 0) {
-        range.setStart(textNode, this.state.cursorPos);
-        range.collapse(true);
-        sel.removeAllRanges(); 
-        sel.addRange(range);
-      }
+  //     let range = document.createRange(); 
+  //     var sel = window.getSelection(); 
+  //     var textNode = editableText[0].childNodes[0]; 
+  //     if(textNode && this.state.cursorPos != 0) {
+  //       range.setStart(textNode, this.state.cursorPos);
+  //       range.collapse(true);
+  //       sel.removeAllRanges(); 
+  //       sel.addRange(range);
+  //     }
 
-      // Measure and set the baseline value
-      let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
-      if(textSizeMeasure[0]){
-        let textBounding = editableText[0].getBoundingClientRect();
-        let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
-        let baseline = textBounding.y - textSizeBounding.y
-        this.element.baseline = baseline; 
-      }  
-    }
+  //     // Measure and set the baseline value
+  //     let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
+  //     if(textSizeMeasure[0]){
+  //       let textBounding = editableText[0].getBoundingClientRect();
+  //       let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
+  //       let baseline = textBounding.y - textSizeBounding.y
+  //       this.element.baseline = baseline; 
+  //     }  
+  //   }
 
-    if(initSize) {
-      if(this.state.width == 0 || this.state.height == 0) {
-        // give the component an initial size based on the calculated size of the text box
-        let sizeContainer = svgElement.querySelectorAll(".widget-size-container"); 
-        if(sizeContainer[0]) {
-          this.adjustElementSize(sizeContainer[0]);
-        }
-      }
-    }
-  }
+  //   if(initSize) {
+  //     if(this.state.width == 0 || this.state.height == 0) {
+  //       // give the component an initial size based on the calculated size of the text box
+  //       let sizeContainer = svgElement.querySelectorAll(".widget-size-container"); 
+  //       if(sizeContainer[0]) {
+  //         this.adjustElementSize(sizeContainer[0]);
+  //       }
+  //     }
+  //   }
+  // }
 
   setElementTyping = (typed) => {
     this.element.typed = typed; 
@@ -240,7 +239,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     evt.stopPropagation();
     evt.preventDefault();
 
-    if(this.type == "label") {
+    if(this.type == "text") {
       this.displayRightClickMenu(evt, this.id, {
         setFontSize: this.setFontSize, 
         setLabel: this.setLabel, 
@@ -248,7 +247,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         setOrder: this.setOrder
       }); 
     }
-    else if(this.controlType == "group" || this.controlType == "page"){
+    else if(this.type == "group" || this.type == "page"){
       this.displayRightClickMenu(evt, this.id, {
         setImportanceLevel: this.setImportanceLevel, 
         setOrder: this.setOrder,
@@ -379,12 +378,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     };
 
     const isEditable = this.state.hasText;
-    const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
+    const fontSize = (this.type == "text" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <div  
         onContextMenu={this.showContextMenu} 
         suppressContentEditableWarning="true" 
-        onInput={this.updateAndResizeText}
+        // onInput={this.updateAndResizeText}
         onBlur={this.updateTextLabel} 
         id={this.elementId} 
         className={"widget-container " + (highlighted ? "highlighted" : "")}>
@@ -392,7 +391,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
           <SVGInline 
             contentEditable={isEditable} 
             style={fontSize} 
-            className={"widget-control-" + this.controlType} 
+            className={"widget-control-" + this.type} 
             svg={source} 
             height={this.state.height + "px"} 
             width={this.state.width + "px"} />
