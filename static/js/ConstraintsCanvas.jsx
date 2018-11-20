@@ -350,6 +350,11 @@ export default class ConstraintsCanvas extends React.Component {
     let node = this.widgetTreeNodeMap[shapeId]; 
     return node.title.props.shape.importance; 
   }
+
+  getCurrentShapeType = (shapeId) => {
+    let node = this.widgetTreeNodeMap[shapeId]; 
+    return node.title.props.shape.type; 
+  }
  
   hideRightClickMenu = () => {
     // Recheck consistency of the solutions after any of the things are set
@@ -1099,6 +1104,7 @@ export default class ConstraintsCanvas extends React.Component {
       getCurrentShapeOrder={this.getCurrentShapeOrder}
       getCurrentContainerOrder={this.getCurrentContainerOrder}
       getCurrentShapeSiblings={this.getCurrentShapeSiblings}
+      getCurrentShapeType={this.getCurrentShapeType}
       getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
     // const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     // const colorPickerPosition = this.state.colorPickerPosition; 

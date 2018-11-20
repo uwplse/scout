@@ -373,6 +373,7 @@ export default class DesignCanvas extends React.Component {
     return  (      
       <div onMouseEnter={this.showMenuAndHighlightConstraints} 
            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
+           onMouseClick={this.hideMenu}
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
            id={"canvas-box-" + this.id} 
            style={{

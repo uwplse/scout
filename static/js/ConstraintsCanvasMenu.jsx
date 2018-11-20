@@ -110,7 +110,7 @@ class ImportanceMenuItem extends React.Component {
     super(props); 
     this.onClick = props.onClick; 
     this.importanceLevel = props.importanceLevel; 
-    this.label = (this.importanceLevel == "most" ? "More emphasis." : (this.importanceLevel == "least" ? "Less emphasis." : "Normal emphasis.")); 
+    this.label = (this.importanceLevel == "most" ? "Add more emphasis." : (this.importanceLevel == "least" ? "Add less emphasis." : "Add normal emphasis.")); 
   }
 
   render () {
@@ -142,6 +142,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
     this.getCurrentShapeImportance = props.getCurrentShapeImportance; 
     this.getCurrentContainerOrder = props.getCurrentContainerOrder; 
+    this.getCurrentShapeType = props.getCurrentShapeType; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
 
     this.state = {
@@ -215,10 +216,11 @@ export default class ConstraintsCanvasMenu extends React.Component {
 
     // Decide whether to show the order menu item based on the index of the shape in the 
     // parent container.
+    let shapeType = this.getCurrentShapeType(this.shapeID); 
     let shapeIndex = this.getCurrentShapeIndex(this.shapeID); 
     let siblings = this.getCurrentShapeSiblings(this.shapeID);
     let currOrder = this.getCurrentShapeOrder(this.shapeID);  
-    let showOrderMenuItem = (!siblings.prev || !siblings.next);  
+    let showOrderMenuItem = (!siblings.prev || !siblings.next) && shapeType != "page";  
 
     if(showOrderMenuItem) {
       orderMenuItems.push(<OrderMenuItem key={this.shapeID} currentOrder={currOrder} index={shapeIndex} onClick={this.setOrder} />); 
@@ -332,10 +334,11 @@ export default class ConstraintsCanvasMenu extends React.Component {
         data-toggle="dropdown" 
         style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
         <ul className="dropdown-menu" style={{display: "block"}}>
-          <li className="dropdown-submenu">
+          {/*<li className="dropdown-submenu">
             <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set the emphasis to ...<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
-          </li> 
+          </li>*/}
+        {importanceMenuItems}
         {labelShown ? labelItems : undefined}
         {orderShown ? orderMenuItems : undefined}
         {containerOrderShown ? containerOrderMenuItems : undefined}
