@@ -73,7 +73,7 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
   }
 
-  getDesignCanvas = (solution, id, zoomed=false) => {
+  getDesignCanvas = (solution, id, zoomed=false, linkedSolutionId=undefined) => {
     return (<DesignCanvas 
               key={id} 
               id={id} 
@@ -85,6 +85,7 @@ export default class PageContainer extends React.Component {
               added={solution.added}
               removed={solution.removed}
               zoomed={zoomed}
+              linkedSolutionId={linkedSolutionId}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
@@ -235,8 +236,11 @@ export default class PageContainer extends React.Component {
     solution.saved = 1;  
 
     // Update the state
+    // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
+    // from the zoomed in view. 
     this.setState({
-      solutions: this.state.solutions
+      solutions: this.state.solutions, 
+      zoomedDesignCanvasID: undefined
     }); 
   }
 
@@ -246,8 +250,11 @@ export default class PageContainer extends React.Component {
     solution.saved = -1; 
 
     // Update the state
+    // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
+    // from the zoomed in view.     
     this.setState({
-      solutions: this.state.solutions
+      solutions: this.state.solutions, 
+      zoomedDesignCanvasID: undefined
     }); 
   }
 
@@ -266,7 +273,7 @@ export default class PageContainer extends React.Component {
     // Inside of DesignCanvas, handle this by making the zoomed in canvas have larger dimensions
     // Inside of DesignCanvas, hide the zoom button when hovering  
     let solutionID = uuidv4();
-    let designCanvas = this.getDesignCanvas(solution, solutionID, true); 
+    let designCanvas = this.getDesignCanvas(solution, solutionID, true, solution.id); 
     return designCanvas; 
   }
 
