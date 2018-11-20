@@ -3,21 +3,15 @@ import solver_helpers as sh
 from dotmap import DotMap
 
 # Types of shapes that have labels
-label_types = ["label", "button", "field"]
+label_types = ["text"]
 minimum_sizes = {
-	"label": 11, 
-	"image": 44,
-	"field": 44, 
-	"button": 44, 
-	"group": 44
+	"text": 11, 
+	"element": 44
 }
 
 maximum_sizes = {
-	"image": 335, # Need to tweak later
-	"label": 36,
-	"field": 335,
-	"button": 335, 
-	"group": 335
+	"text": 36, 
+	"element": 335
 }
 
 # Shape classes for constructing the element hierarchy 

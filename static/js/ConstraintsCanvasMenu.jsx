@@ -96,7 +96,7 @@ class ContainerOrderMenuItem extends React.Component {
   render () {
     let self = this; 
     let newOrder = this.currentOrderValue == "important" ? "unimportant" : "important"; 
-    let label = "Order " + (this.currentOrderValue == "important" ? "Unimportant" : "Important"); 
+    let label = "The order is " + (this.currentOrderValue == "important" ? "unimportant." : "important."); 
     return (<li>
               <a onClick={function (evt) { self.onClick(evt, newOrder); }} tabIndex="-1" href="#">
                 {label}
@@ -110,7 +110,7 @@ class ImportanceMenuItem extends React.Component {
     super(props); 
     this.onClick = props.onClick; 
     this.importanceLevel = props.importanceLevel; 
-    this.label = (this.importanceLevel == "most" ? "More Emphasis" : (this.importanceLevel == "least" ? "Less Emphasis" : "Normal Emphasis")); 
+    this.label = (this.importanceLevel == "most" ? "More emphasis." : (this.importanceLevel == "least" ? "Less emphasis." : "Normal emphasis.")); 
   }
 
   render () {
@@ -333,7 +333,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
         style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
         <ul className="dropdown-menu" style={{display: "block"}}>
           <li className="dropdown-submenu">
-            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set Emphasis<span className="caret"></span></a>
+            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set the emphasis to ...<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li> 
         {labelShown ? labelItems : undefined}

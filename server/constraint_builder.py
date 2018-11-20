@@ -260,36 +260,30 @@ class ConstraintBuilder(object):
 						else: 
 							all_same_values.append([groups_same])
 
-				# Keep the height and width of containers the same 
-				all_same_widths.append(group1_width == group2_width)
-				all_same_heights.append(group1_height == group2_height)
-
 		for all_same_variables in all_same_values: 
 			# For each collection of child variable values for a variable
 			# Enforce all values of that collection to be thes ame 
 			self.solver.add(And(all_same_variables))
 
-		self.solver.add(And(all_same_heights))
-		self.solver.add(And(all_same_widths))
-
-		# Enforce that the corresponding shapes for each shape in the group items has same relational location
-		# This should hopefully ensure that the order of the elements is uniform
+		# The order of the elements within the groups should be uniform
 		for group in subgroups: 
 			group_children = group.children
 			for i in range(0, len(group_children)-1): 
 				child1 = group_children[i]
 				child2 = group_children[i+1]
-				x_distance = child1.variables.x.z3 - child2.variables.x.z3
-				y_distance = child1.variables.y.z3 - child2.variables.y.z3
+				child1_left_or_above = child1.variables.x.z3 + child1.computed_width() < child2.variables.x.z3
+
+
 				for j in range(0, len(child1.correspondingIDs)): 
 					child1_corrID = child1.correspondingIDs[j]
 					child2_corrID = child2.correspondingIDs[j]
 					child1_corr_shape = shapes[child1_corrID]
 					child2_corr_shape = shapes[child2_corrID]
-					x_distance2 = child1_corr_shape.variables.x.z3 - child2_corr_shape.variables.x.z3
-					y_distance2 = child1_corr_shape.variables.y.z3 - child2_corr_shape.variables.y.z3
-					self.solver.add(x_distance == x_distance2)
-					self.solver.add(y_distance == y_distance2)
+
+					child1_corr_left_or_above = child1_corr_shape.variables.x.z3 + child1_corr_shape.computed_width() < child2_corr_shape.variables.x.z3
+					child2_corr_left_or_above = child2_corr_shape.variables.x.z3 + child2_corr_shape.computed_width() < child1_corr_shape.variables.x.z3
+					order_pair = If(child1_left_or_above, child1_corr_left_or_above, child2_corr_left_or_above)
+					self.solver.add(order_pair)
 
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
