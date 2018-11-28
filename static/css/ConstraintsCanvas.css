@@ -127,9 +127,8 @@
 }
 
 .widget-container.highlighted {	
-	border: 1px dashed gray;
+	border: 2px dashed white;
 	padding: 4;
-	background-color: #f2dede;
 }
 
 .widget-control-group .widget-control {
