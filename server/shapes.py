@@ -72,12 +72,12 @@ class Shape(object):
 					# Make height and width into variables so that the solver can change them
 					magnification_values = sh.MAGNIFICATION_VALUES
 					self.variables.magnification = sh.Variable(shape_id, "magnification", 
-						magnification_values, index_domain=False)
+						magnification_values, index_domain=False, var_type="real")
 
 				if self.importance == "least": 
-					minification_values = sh.MAGNIFICATION_VALUES
+					minification_values = sh.MINIFICATION_VALUES
 					self.variables.minification = sh.Variable(shape_id, "minification", 
-						minification_values, index_domain=False)
+						minification_values, index_domain=False, var_type="real")
 
 			if "typed" in element: 
 				self.typed = element["typed"]
@@ -101,21 +101,21 @@ class Shape(object):
 		# TAkes the current scaling value into account
 		if self.importance_set: 
 			if self.importance == "most": 
-				magnification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
-				return self.width() + (magnification_factor * self.width())
+				# magnification_factor = 1/self.variables.magnification.z3
+				return self.width() * self.variables.magnification.z3
 			elif self.importance == "least": 
-				minification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
-				return self.width() - (minification_factor * self.width())
+				# minification_factor = 1/self.variables.magnification.z3
+				return self.width() * self.variables.minification.z3
 		return self.width()
 
 	def computed_height(self, scale=1): 
 		if self.importance_set: 
 			if self.importance == "most": 
-				magnification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
-				return self.height() + (magnification_factor * self.height())
+				# magnification_factor = 1/self.variables.magnification.z3
+				return self.height() * self.variables.magnification.z3
 			elif self.importance == "least": 
-				minification_factor = If(self.variables.magnification.z3 > 0, 1/self.variables.magnification.z3, 0)
-				return self.height() - (minification_factor * self.height())
+				# minification_factor = 1/self.variables.magnification.z3/
+				return self.height() * self.variables.minification.z3
 		return self.height()
 
 class LeafShape(Shape): 
@@ -126,8 +126,9 @@ class ContainerShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
-		self.variables.proximity = sh.Variable(shape_id, "proximity", [10,15,20,25,30,35,40], index_domain=False)
+		# self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
+		self.variables.proximity = sh.Variable(shape_id, "proximity", [5,10,15,20,25,30,35,40], index_domain=False)
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values
@@ -164,7 +165,7 @@ class CanvasShape(Shape):
 		self.children = []
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-		self.variables.margin = sh.Variable("canvas", "margin", [10,20,30,40,50], index_domain=False)
+		self.variables.margin = sh.Variable("canvas", "margin", [2,5,10,20,30,40,50], index_domain=False)
 		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
 		self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], var_type="str",
 													  index_domain=False)

@@ -1,13 +1,15 @@
-from z3 import Int, String, StringVal
+from z3 import Int, String, StringVal, Real
 import copy 
 import uuid 
 import numpy as np
 import math
 import shapes as shape_objects
+from fractions import Fraction
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
-MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
+MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
 def get_row_column_values(num_siblings):
 	values = []
@@ -74,6 +76,8 @@ class Variable(object):
 					dom_value_str = StringVal(dom_value)
 					str_domain.append(dom_value_str)
 				self.domain = str_domain
+		elif self.type == "real": 
+			self.z3 = Real(shape_id + "_" + name)
 		else: 
 			self.z3 = Int(shape_id + "_" + name)
 
@@ -196,26 +200,33 @@ class Solution(object):
 				if shape.importance_set: 
 					if shape.importance == "most": 
 						magnification = model[shape.variables.magnification.z3].as_string()
-						magnification = int(magnification)
+						magnification = Fraction(magnification)
+						magnification = float(magnification)
+						element["magnification"] =  magnification
 
-						magnification_factor = 1/magnification if magnification > 0 else 0
-						height = height + (magnification_factor * height)
-						width = width + (magnification_factor * width)
+						# magnification_factor = 1/magnification if magnification > 0 else 0
+						height = height * magnification
+						width = width * magnification
 						height = int(round(height,0))
 						width = int(round(width,0))
 						element["size"]["height"] = height
 						element["size"]["width"] = height
 					elif shape.importance == "least": 
 						minification = model[shape.variables.minification.z3].as_string()
-						minification = int(minification)
+						minification = Fraction(minification)
+						minification = float(minification)
+						element["minification"] = minification
 
-						minification_factor = 1/minification if minification > 0 else 0
-						height = height - (minification_factor * height)
-						width = width - (minification_factor * width)
+						# minification_factor = 1/minification if minification > 0 else 0
+						height = height * minification
+						width = width * minification
 						height = int(round(height,0))
 						width = int(round(width, 0))
 						element["size"]["height"] = height
 						element["size"]["width"] = width
+					else: 
+						element["minification"] = 0
+						element["magnification"] = 0
 
 				if shape.type == "container": 
 					# Also include the container properties in the element object for each container shape 
@@ -240,16 +251,6 @@ class Solution(object):
 					element["margin"] = int(margin)
 					element["grid"] = int(grid)
 					element["background_color"] = background_color.replace("\"", "")
-				elif shape.type == "leaf":
-					if shape.importance == "most":
-						magnification = model[shape.variables.magnification.z3].as_string()
-						element["magnification"] = int(magnification)
-					elif shape.importance == "least":
-						minification = model[shape.variables.minification.z3].as_string()
-						element["minification"] = int(minification)
-					else: 
-						element["minification"] = 0
-						element["magnification"] = 0
 
 				if shape.type == "leaf": 
 					# Only the locations of leaf level shapes to compute the symmetry cost

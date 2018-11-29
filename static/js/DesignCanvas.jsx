@@ -178,6 +178,12 @@ export default class DesignCanvas extends React.Component {
 
       let computedHeight = (shape.size.height * this.scalingFactor + (padding * 2));
       let computedWidth = (shape.size.width * this.scalingFactor + (padding * 2)); 
+
+      if(isContainer) {
+        console.log(computedWidth); 
+        console.log(computedHeight);
+      } 
+      
       let computedLeft = ((shape.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.y * this.scalingFactor) - padding);
 

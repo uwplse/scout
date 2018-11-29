@@ -514,7 +514,7 @@ class Solver(object):
 				# self.print_solution()
 		else:
 			# Selects the next variable to assign
-			var_i, next_var = self.select_next_variable()
+			next_var = self.select_next_variable()
 			state.add_assigned_variable(next_var)
 
 			# Randomize the order in which we iterate through the domain
@@ -610,11 +610,12 @@ class Solver(object):
 				# self.print_solution()
 		else:
 			# Selects the next variable to assign
-			var_i, next_var = self.select_next_variable_random()
+			next_var = self.select_next_variable()
 			state.add_assigned_variable(next_var)
 
 			# Randomize the order in which we iterate through the domain
 			random_domain = self.get_randomized_domain(next_var)
+			# random_domain = next_var.domain
 			for val_index in range(0, len(random_domain)):
 				dom_value = random_domain[val_index]
 				in_domain_index = next_var.domain.index(dom_value)
@@ -630,6 +631,7 @@ class Solver(object):
 				time_z3_start = time.time()
 				result = self.solver.check()
 				unsat_core = self.solver.unsat_core()
+				constraints = self.solver.sexpr()
 				self.z3_calls += 1
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start
