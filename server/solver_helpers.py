@@ -95,6 +95,9 @@ class Variable(object):
 		elif self.name == "width" or self.name == "height":
 			return element["size"][self.name]
 
+		if 'magnification' not in element and self.name == 'magnification':
+			print('stop')
+
 		return element[self.name]
 
 class Solution(object): 
@@ -252,6 +255,22 @@ class Solution(object):
 
 					# Only the locations of leaf level shapes to compute the symmetry cost
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
+
+				else: 
+					# Only consider emphassis for leaf node elements
+					if shape.importance == "most": 
+						magnification = model[shape.variables.magnification.z3].as_string()
+						magnification = Fraction(magnification)
+						magnification = float(magnification)
+						element["magnification"] =  magnification
+					elif shape.importance == "least": 
+						minification = model[shape.variables.minification.z3].as_string()
+						minification = Fraction(minification)
+						minification = float(minification)
+						element["minification"] = minification
+					else: 
+						element["minification"] = 0
+						element["magnification"] = 0
 
 		symmetry_cost = self.compute_symmetry_cost(cost_matrix)
 		importance_cost = self.compute_importance_cost(importance_change, importance_max)
