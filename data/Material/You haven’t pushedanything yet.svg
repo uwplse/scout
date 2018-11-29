@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 176 44">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: rgba(0,0,0,0.87);
+        font-size: 20px;
+        font-family: Helvetica;
+      }
+    </style>
+  </defs>
+  <text id="You_haven_t_pushed_anything_yet" data-name="You haven’t pushed
+anything yet" class="cls-1" transform="translate(88 15)"><tspan x="-87.485" y="0">You haven’t pushed</tspan><tspan x="-53.926" y="24">anything yet</tspan></text>
+</svg>
