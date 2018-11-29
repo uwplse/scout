@@ -105,16 +105,22 @@ class Solver(object):
 
 		element["children"] = new_children	
 
-	def construct_shape_hierarchy(self, elements, shapes):
+	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal"):
 		shape_hierarchy = []
 		num_siblings = len(elements)
 		for i in range(0, len(elements)): 
 			element = elements[i]
+			
+			# If parent node emphasis is set, cascade that value to the child elements
+			element_emphasis = element["importance"] if "importance" in element else "normal"
+			if parent_emphasis != "normal": 
+				element["importance"] = parent_emphasis
+				element_emphasis = parent_emphasis
 
 			sub_hierarchy = None
 			if "children" in element: 
 				children = element["children"]
-				sub_hierarchy = self.construct_shape_hierarchy(children, shapes)
+				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis)
 
 			shape_object = None
 			if element["type"] == "canvas": 
@@ -488,6 +494,7 @@ class Solver(object):
 			time_z3_total = time_z3_end - time_z3_start
 			self.time_z3 += time_z3_total
 			unsat_core = self.solver.unsat_core()
+			constraints = self.solver.sexpr()
 			self.print_solution()
 
 			if str(result) == 'sat':
@@ -610,12 +617,11 @@ class Solver(object):
 				# self.print_solution()
 		else:
 			# Selects the next variable to assign
-			next_var = self.select_next_variable()
+			var_i, next_var = self.select_next_variable_random()
 			state.add_assigned_variable(next_var)
 
 			# Randomize the order in which we iterate through the domain
 			random_domain = self.get_randomized_domain(next_var)
-			# random_domain = next_var.domain
 			for val_index in range(0, len(random_domain)):
 				dom_value = random_domain[val_index]
 				in_domain_index = next_var.domain.index(dom_value)

@@ -5,13 +5,15 @@ from dotmap import DotMap
 # Types of shapes that have labels
 label_types = ["text"]
 minimum_sizes = {
-	"text": 11, 
-	"element": 44
+	"text": 44, 
+	"element": 44, 
+	"group": 44
 }
 
 maximum_sizes = {
-	"text": 36, 
-	"element": 335
+	"text": 335, 
+	"element": 335, 
+	"group": 335
 }
 
 # Shape classes for constructing the element hierarchy 
@@ -21,7 +23,6 @@ class Shape(object):
 		self.shape_type = element["type"]
 		self.element = element
 		self.typed = False
-		self.importance_set = False
 		self.has_baseline = False
 		self.variables = DotMap() 
 		self.variables.x = sh.Variable(shape_id, "x")
@@ -59,7 +60,6 @@ class Shape(object):
 
 			if "importance" in element: 
 				self.importance = element["importance"]
-				self.importance_set = True
 
 			if "order" in element:
 				self.order = element["order"]
@@ -96,26 +96,27 @@ class Shape(object):
 			return self.flex_height
 		return self.orig_height
 
-
 	def computed_width(self): 
+		# Emphasis should be propagated to leaf level nodes
+		if self.type == "container": 
+			return self.width()
+
 		# TAkes the current scaling value into account
-		if self.importance_set: 
-			if self.importance == "most": 
-				# magnification_factor = 1/self.variables.magnification.z3
-				return self.width() * self.variables.magnification.z3
-			elif self.importance == "least": 
-				# minification_factor = 1/self.variables.magnification.z3
-				return self.width() * self.variables.minification.z3
+		if self.importance == "most": 
+			return self.width() * self.variables.magnification.z3
+		elif self.importance == "least": 
+			return self.width() * self.variables.minification.z3
 		return self.width()
 
-	def computed_height(self, scale=1): 
-		if self.importance_set: 
-			if self.importance == "most": 
-				# magnification_factor = 1/self.variables.magnification.z3
-				return self.height() * self.variables.magnification.z3
-			elif self.importance == "least": 
-				# minification_factor = 1/self.variables.magnification.z3/
-				return self.height() * self.variables.minification.z3
+	def computed_height(self):
+		# Emphasis should be propagated to leaf level nodes
+		if self.type == "container": 
+			return self.height()
+
+		if self.importance == "most": 
+			return self.height() * self.variables.magnification.z3
+		elif self.importance == "least": 
+			return self.height() * self.variables.minification.z3
 		return self.height()
 
 class LeafShape(Shape): 
@@ -126,8 +127,7 @@ class ContainerShape(Shape):
 	def __init__(self, shape_id, element, num_siblings): 
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
-		# self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical"])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
 		self.variables.proximity = sh.Variable(shape_id, "proximity", [5,10,15,20,25,30,35,40], index_domain=False)
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
