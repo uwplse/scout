@@ -201,6 +201,14 @@ ConstraintActions.elementConstraints = {
 	}*/
 }
 
+// For elements
+// Keep position relative to group. 
+// Keep position relative to neighbor 1/2. 
+// Keep global alignment. 
+// Keep alignment relative to group. 
+// Keep alignment relative to neighbor 1/2. 
+// Keep before/after neighbor 1/2. 
+
 ConstraintActions.groupConstraints = {
 	"arrangement": 
 		{

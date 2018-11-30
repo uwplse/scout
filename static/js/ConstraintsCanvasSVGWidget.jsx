@@ -82,13 +82,9 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   
   componentDidMount() {
     // Set the initial value for the text label
-    // let hasText = this.getHasText();
-    // if(hasText) {
-    //   this.setTextLabel(true); 
-    // }
-
+    this.initTextLabel(); 
     this.setState({
-      hasText: false, 
+      hasText: true, 
       labelPosition: this.computeLabelPosition()
     }); 
   }
@@ -110,15 +106,26 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   //   }
   // }
 
-  // getHasText = () => {
-  //   let svgElement = document.getElementById(this.elementId); 
-  //   let editableText = svgElement.getElementsByTagName('text');
-  //   if(editableText[0]) {
-  //     return true;  
-  //   }
+  getHasText = () => {
+    let rootElement = document.getElementById(this.elementId); 
+    let editableText = rootElement.getElementsByTagName('text');
+    if(editableText[0]) {
+      return true;  
+    }
 
-  //   return false;
-  // }
+    return false;
+  }
+
+  initTextLabel = () => {
+    let rootElement = document.getElementById(this.elementId); 
+    let svgElement = rootElement.getElementsByTagName('svg');
+    if(svgElement[0]) {
+      let textValue = svgElement[0].textContent; 
+      if(textValue && textValue.length) {
+        this.element.label = textValue; 
+      }
+    }
+  }
 
   // handleTextChange = (evt) => {
   //   // Handle the text change on a timeout so it saves after the user finishes typing
@@ -389,7 +396,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         className={"widget-container " + (highlighted ? "highlighted" : "")}>
         <div className="widget-control-row"> 
           <SVGInline 
-            contentEditable={isEditable} 
+            //contentEditable={isEditable} 
             style={fontSize} 
             className={"widget-control-" + this.type} 
             svg={source} 
