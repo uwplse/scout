@@ -124,7 +124,7 @@ ConstraintActions.elementConstraints = {
 			}
 		}
 	}, 
-	"width": {
+	/*"width": {
 		"do": {
 			"key": ConstraintActions.locked_size_key,
 			"updateConstraintsCanvasShape": function keepSize(constraintsCanvasShape, designCanvasShape) {
@@ -193,7 +193,7 @@ ConstraintActions.elementConstraints = {
 				return "Don't keep height at " + shape[ConstraintActions.locked_size_key]["height"] + "px.";
 			}
 		}	
-	}
+	}*/
 }
 
 ConstraintActions.groupConstraints = {
