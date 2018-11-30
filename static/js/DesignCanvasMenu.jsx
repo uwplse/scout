@@ -25,14 +25,6 @@ class DesignCanvasMenuItem extends React.Component {
   }
 }
 
-// TODO: Implementation for relational constraints
-// MOve all object update logic to an onClick in the MenuItem class (we have the objects we need to update on the menuTrigger)
-// Then make notifyCanvas method to notify the parent canvas of the update
-// Then make a notifyPage method to notify the parent container to resolve the constraints
-// Make two different types of menu items
-// One is relational (updates 2 or more shapes and the constraint canvs shape)
-// One is singular (updates only one shape)
-
 export default class DesignCanvasMenu extends React.Component {
   constructor(props) {
   	super(props); 
@@ -90,11 +82,39 @@ export default class DesignCanvasMenu extends React.Component {
     //     <a href="#" tabIndex="-1">Keep position relative to container.</a>
     //   </li>)); 
     menuItems.push((<li>
-        <a href="#" tabIndex="-1">Keep position relative to neighbor 1.</a>
+        <a href="#" tabIndex="-1">Keep global <i>position</i>. (TBD)</a>
       </li>)); 
     menuItems.push((<li>
-        <a href="#" tabIndex="-1">Keep position relative to neighbor 2.</a>
+        <a href="#" tabIndex="-1">Keep <i>position</i> relative to container. (TBD)</a>
       </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>position</i> relative to sibling 1. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>position</i> relative to sibling 2. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>position</i> relative to sibling 2. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep global <i>alignment</i>. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>alignment</i> relative to container. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>alignment</i> relative to sibling 2. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>alignment</i> relative to sibling 2. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>after/below</i> sibling 1. (TBD)</a>
+      </li>)); 
+    menuItems.push((<li>
+        <a href="#" tabIndex="-1">Keep <i>before/above</i> sibling 2. (TBD)</a>
+      </li>)); 
+
 
     // Appear below/adjacent to the neighbor element
     // Appear above/adjacent to the neighbor element
