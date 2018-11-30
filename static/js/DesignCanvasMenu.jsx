@@ -126,7 +126,7 @@ export default class DesignCanvasMenu extends React.Component {
             }) : undefined}
 
         {isContainer ? 
-          (<li role="separator" className="divider divider-top">Container</li>) : undefined}
+          (<li role="separator" className="divider">Container</li>) : undefined}
         {isContainer ? 
             Object.keys(ConstraintActions.groupConstraints).map((key) => {
               let action = this.getAction(key, ConstraintActions.groupConstraints);
@@ -137,7 +137,7 @@ export default class DesignCanvasMenu extends React.Component {
                         key={key} />);
             }) : undefined}
         {this.state.menuTrigger.type != "canvas" ? 
-          (<li role="separator" className="divider divider-top">Relational</li>) : undefined}
+          (<li role="separator" className="divider">Relational</li>) : undefined}
         {this.state.menuTrigger.type != "canvas" ? relational : undefined} 
         {this.state.menuTrigger.type == "canvas" ? 
           (<li role="separator" className="divider divider-top">Canvas</li>) : undefined}
