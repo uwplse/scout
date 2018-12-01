@@ -518,16 +518,16 @@ export default class PageContainer extends React.Component {
                       onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More Designs</button>
                     <button className="btn btn-default design-canvas-button">{designCanvases.length}</button>
                   </div>
-                  {/*<div className="btn-group header-button-group">
+                  <div className="btn-group header-button-group">
                     <button 
                       type="button" 
                       className="btn btn-default design-canvas-button" 
-                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these</button>
+                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these (TBD).</button>
                     <button 
                       type="button" 
                       className="btn btn-default design-canvas-button" 
-                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these</button>
-                  </div>*/}
+                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these (TBD).</button>
+                  </div>
                   <div 
                     className="btn-group header-button-group">
                     <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>

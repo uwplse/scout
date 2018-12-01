@@ -92,7 +92,7 @@
 }
 
 .widgets-sortable-tree .rst__rowSubtitle {
-	font-size: inherit;
+	font-size: 14px;
 }
 
 .widgets-sortable-tree .rst__lineFullVertical:after {
@@ -224,4 +224,32 @@
 .widget-container .badge {
 	font-size: 14px;
 	border-radius: 3px;
+}
+
+/* Widgets tree feedback items */ 
+.widget-feedback-items {
+    list-style-type: none;
+    margin-top: 5px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 2px;
+}
+
+.widget-feedback-items.highlighted {
+   	border: 2px dashed #85144b;
+   	background-color: #ef9a9a;
+}
+
+.widget-feedback-items-list {
+	display: flex; 
+}
+
+.widget-feedback-items-remove {
+    background-color: #f5f5f5;
+    border: none;
+}
+
+.widget-feedback-items-remove.highlighted {
+	background-color: #ef9a9a;
 }

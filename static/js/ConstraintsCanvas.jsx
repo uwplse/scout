@@ -1114,7 +1114,7 @@ export default class ConstraintsCanvas extends React.Component {
 	  return (
        <div className="panel panel-primary constraints-container">
           <div className="panel-heading"> 
-            <h3 className="panel-title">Constraints</h3>
+            <h3 className="panel-title">Outline</h3>
           </div>
           <div id="constraints-canvas-container" tabIndex="1" className="constraints-canvas-container panel-body"> 
             <div className="constraints-canvas-page-feedback">
