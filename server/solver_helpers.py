@@ -142,8 +142,40 @@ class Solution(object):
 		# the cost
 		return importance_max - importance_change
 
-	def compute_weighted_cost(self, importance_cost, symmetry_cost):
-		return importance_cost + symmetry_cost
+	def compute_weighted_cost(self, importance_cost, symmetry_cost, distance_cost):
+		return importance_cost + symmetry_cost + distance_cost
+
+	def compute_distance_from_center(self, shape_x, shape_y, shape_width, shape_height): 
+		center_x = CANVAS_WIDTH/2
+		center_y = CANVAS_HEIGHT/2 
+
+		shape_center_x = shape_x + (shape_width/2)
+		shape_center_y = shape_y + (shape_height/2)
+
+		# Euclidian distance from the center
+		x_dist = int(abs(shape_center_x - center_x))
+		y_dist = int(abs(shape_center_y - center_y))
+
+		distance = math.sqrt(x_dist^2 + y_dist^2)
+		return distance
+
+	def compute_inverse_distance_from_center(self, shape_x, shape_y, shape_width, shape_height): 
+		center_x = CANVAS_WIDTH/2
+		center_y = CANVAS_HEIGHT/2 
+
+		shape_center_x = shape_x + (shape_width/2)
+		shape_center_y = shape_y + (shape_height/2)
+
+		# Euclidian distance from the center
+		x_dist = int(abs(shape_center_x - center_x))
+		y_dist = int(abs(shape_center_y - center_y))
+
+		# Subtract again from the center distance so we get distance from edge
+		x_dist = int(abs(x_dist - center_x))
+		y_dist = int(abs(y_dist - center_y))
+
+		distance = math.sqrt(x_dist^2 + y_dist^2)
+		return distance
 
 	def convert_to_json(self, shapes, model):
 		sln = dict()
@@ -228,12 +260,13 @@ class Solution(object):
 						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_height)
 						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_width)
 
-					# Compute the distance of the shape from the center of the canvas
-					# distance_cost += self.compute_cost(shape, CANVAS_HEIGHT, CANVAS_WIDTH)
+						# Compute the distance of the shape from the center of the canvas
+						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
 					elif shape.importance == "least": 
 						minification = model[shape.variables.minification.z3].as_string()
 						minification = Fraction(minification)
 						minification = float(minification)
+						print(minification)
 						element["minification"] = minification
 
 						# minification_factor = 1/minification if minification > 0 else 0
@@ -247,8 +280,10 @@ class Solution(object):
 						# Used for computing importance cost
 						importance_change += (shape.orig_height - height)
 						importance_change += (shape.orig_width - width)
-						importance_max += (shape.orig_height - shapes.minimum_sizes[shape.shape_type])
-						importance_max += (shape.orig_width - shapes.minimum_sizes[shape.shape_type])
+						importance_max += (shape.orig_height - shape_objects.minimum_sizes[shape.shape_type])
+						importance_max += (shape.orig_width - shape_objects.minimum_sizes[shape.shape_type])
+
+						distance_cost += self.compute_inverse_distance_from_center(adj_x, adj_y, width, height)
 					else: 
 						element["minification"] = 0
 						element["magnification"] = 0
@@ -274,7 +309,7 @@ class Solution(object):
 
 		symmetry_cost = self.compute_symmetry_cost(cost_matrix)
 		importance_cost = self.compute_importance_cost(importance_change, importance_max)
-		cost = self.compute_weighted_cost(symmetry_cost, importance_cost)
+		cost = self.compute_weighted_cost(symmetry_cost, importance_cost, distance_cost)
 
 		# print("Total cost: " + str(cost))
 		sln["elements"] = new_elements

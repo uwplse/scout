@@ -188,38 +188,6 @@ h1, h2, h3 {
 	margin-top: 10px;
 }
 
-
-/* Widgets tree feedback items */ 
-.widget-feedback-items {
-    list-style-type: none;
-    margin-top: 5px;
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    padding: 5px;
-    border-radius: 2px;
-}
-
-.widget-feedback-items.highlighted {
-	background-color: #f2dede;
-   	border: 1px dashed gray;
-}
-
-.widget-feedback-items-list {
-	display: flex; 
-}
-
-.widget-feedback-items-remove {
-    background-color: #f5f5f5;
-    border: none;
-}
-
-.widget-feedback-items-remove.highlighted {
-	background-color: #f2dede;
-	border: none;
-}
-
-
-
 /**  
 	Resizable box 
 **/

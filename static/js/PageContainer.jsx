@@ -46,6 +46,11 @@ export default class PageContainer extends React.Component {
     this.prevTime = undefined; 
   }
 
+  componentDidMount = () => {
+    // Initialize the SVGs from local storage if they are cached. 
+    this.readSVGsFromLocalStorage(); 
+  }
+
   closeRightClickMenus = () => {
     // Close all of the right click menus in response to a click on the PageContainer
     if(this.constraintsCanvasRef) {
@@ -125,6 +130,7 @@ export default class PageContainer extends React.Component {
 
   checkSolutionValidity = (options={}) => {
     let currTime = Date.now()
+    console.log(currTime); 
     if(this.prevTime) {
       let diff = currTime - this.prevTime; 
       console.log(diff/1000); 
@@ -374,6 +380,22 @@ export default class PageContainer extends React.Component {
     //}
   }
 
+  readSVGsFromLocalStorage = () => {
+    let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
+    if(svgWidgets && svgWidgets.length){
+      let groupID = _.uniqueId(); 
+      let group = {
+        id: groupID, 
+        svgData: groupSVG, 
+        type: "group"
+      }
+      this.state.svgWidgets.push(group); 
+      this.setState({
+        svgWidgets: this.state.svgWidgets.concat(svgWidgets)
+      });
+    }
+  }
+
   readSVGIntoWidgetContainer = (e) => {
     let fileData = e.target.result; 
     let widgetID = _.uniqueId(); 
@@ -381,12 +403,26 @@ export default class PageContainer extends React.Component {
       // Add widgets to the front of the list 
       // So that they are rendered at the top of the container
       // While the automatically added elements (group) appears at the bottom
+      let svgItem = {
+        id: widgetID, 
+        svgData: fileData
+      }
+
       this.setState({
-        svgWidgets: this.state.svgWidgets.concat({
-            id: widgetID, 
-            svgData: fileData
-        })
+        svgWidgets: this.state.svgWidgets.concat(svgItem)
       });  
+
+      // Look for SVG widgets in local storage and cache them for future refreshes
+      let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
+      if(svgWidgets && svgWidgets.length) {
+        svgWidgets.push(svgItem); 
+        localStorage.setItem('svgWidgets', JSON.stringify(svgWidgets)); 
+      }
+      else {
+        let items = [svgItem]; 
+        items = JSON.stringify(items); 
+        localStorage.setItem('svgWidgets', items); 
+      }
     }
   }
 
@@ -530,7 +566,7 @@ export default class PageContainer extends React.Component {
                   </div>
                   <div 
                     className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
+                    <button type="button" className="btn btn-default design-canvas-button">Export Designs (TBD)</button>
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                   </div>
