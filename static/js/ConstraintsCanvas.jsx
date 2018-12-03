@@ -154,9 +154,17 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  getSVGSourceByID = (id) => {
+  getSVGSource = (node) => {
+    if(node.item) {
+      return item; 
+    }
+
+    if(node.type == "labelGroup") {
+      return label; 
+    }
+
     let svgElements = this.props.svgWidgets; 
-    let svgElement = svgElements.filter(element => element.id == id); 
+    let svgElement = svgElements.filter(element => element.id == node.id); 
     if(svgElement && svgElement.length) {
       svgElement = svgElement[0]; 
       return svgElement.svgData; 
@@ -166,11 +174,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   constructShapeHierarchy = (node, parentKey, nodeIndex, treeData) => {
-    let source =  this.getSVGSourceByID(node.id);
-    if(node.item) {
-      source = item; 
-    }
-
+    let source =  this.getSVGSource(node);
     let widget = this.getWidget(node, source); 
     this.constraintsShapesMap[node.name] = node; 
 

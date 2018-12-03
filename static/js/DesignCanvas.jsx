@@ -155,9 +155,13 @@ export default class DesignCanvas extends React.Component {
             contextMenu={this.showConstraintsContextMenu}/>); 
   }
 
-  getSVGSourceByID = (id) => {
+  getSVGSource = (node) => {
+    if(node.item || node.type == "labelGroup") {
+      return groupDesign;
+    }
+
     let svgElements = this.props.svgWidgets; 
-    let svgElement = svgElements.filter(element => element.id == id); 
+    let svgElement = svgElements.filter(element => element.id == node.id); 
     if(svgElement && svgElement.length) {
       svgElement = svgElement[0]; 
       return svgElement.svgData; 
@@ -170,8 +174,7 @@ export default class DesignCanvas extends React.Component {
     // Get the control SVG element from the control type
     let type = shape.type; 
     let isContainer = type == "group" || type == "labelGroup" || type == "page"; 
-    let isItem = shape.item;
-    let svgSource = isItem ? item : (isContainer ? group : this.getSVGSourceByID(shape.id)); 
+    let svgSource = (isContainer ? group : this.getSVGSource(shape)); 
     if(svgSource != undefined) {
       let padding = 0; 
       if(isContainer) {
