@@ -16,6 +16,7 @@ import uuidv4 from 'uuid/v4';
 import SVGInline from "react-svg-inline"; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
+import groupSVG from '../assets/illustrator/groupContainer.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -45,6 +46,31 @@ export default class PageContainer extends React.Component {
     this.prevTime = undefined; 
   }
 
+  componentDidMount = () => {
+    // Initialize the SVGs from local storage if they are cached. 
+    this.readSVGsFromLocalStorage(); 
+    this.loadSolutionsFromCache();
+  }
+
+  loadSolutionsFromCache = () => {
+    let solutionsCached = JSON.parse(localStorage.getItem('solutions'));
+    if(solutionsCached) {
+      for(let i=0; i<solutionsCached.length; i++){
+        let solution = solutionsCached[i];
+        this.solutionsMap[solution.id] = solution; 
+      }
+
+      this.setState({
+        solutions: solutionsCached
+      }); 
+    }     
+  }
+
+  updateSolutionsCache = () => {
+    let solutionsJSON = JSON.stringify(this.state.solutions); 
+    localStorage.setItem('solutions', solutionsJSON);
+  }
+
   closeRightClickMenus = () => {
     // Close all of the right click menus in response to a click on the PageContainer
     if(this.constraintsCanvasRef) {
@@ -72,7 +98,7 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
   }
 
-  getDesignCanvas = (solution, id, zoomed=false) => {
+  getDesignCanvas = (solution, id, zoomed=false, linkedSolutionId=undefined) => {
     return (<DesignCanvas 
               key={id} 
               id={id} 
@@ -84,6 +110,7 @@ export default class PageContainer extends React.Component {
               added={solution.added}
               removed={solution.removed}
               zoomed={zoomed}
+              linkedSolutionId={linkedSolutionId}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
@@ -123,6 +150,7 @@ export default class PageContainer extends React.Component {
 
   checkSolutionValidity = (options={}) => {
     let currTime = Date.now()
+    console.log(currTime); 
     if(this.prevTime) {
       let diff = currTime - this.prevTime; 
       console.log(diff/1000); 
@@ -190,9 +218,6 @@ export default class PageContainer extends React.Component {
 
     // Notify the constraintss canvas to add or remove the widget feedback to the tree
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
-
-    // Check the validity of the current constraints and update valid state of solutions
-    this.checkSolutionValidity();
   }
 
   updateConstraintsCanvas = (constraintsCanvasShape, action) => {
@@ -225,7 +250,7 @@ export default class PageContainer extends React.Component {
     // Update the state
     this.setState({
       solutions: this.state.solutions
-    }); 
+    }, this.updateSolutionsCache); 
   }
 
   saveDesignCanvas = (designCanvasID) => {
@@ -234,9 +259,12 @@ export default class PageContainer extends React.Component {
     solution.saved = 1;  
 
     // Update the state
+    // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
+    // from the zoomed in view. 
     this.setState({
-      solutions: this.state.solutions
-    }); 
+      solutions: this.state.solutions, 
+      zoomedDesignCanvasID: undefined
+    }, this.updateSolutionsCache); 
   }
 
   trashDesignCanvas = (designCanvasID) => {
@@ -245,9 +273,12 @@ export default class PageContainer extends React.Component {
     solution.saved = -1; 
 
     // Update the state
+    // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
+    // from the zoomed in view.     
     this.setState({
-      solutions: this.state.solutions
-    }); 
+      solutions: this.state.solutions, 
+      zoomedDesignCanvasID: undefined
+    }, this.updateSolutionsCache); 
   }
 
   zoomInOnDesignCanvas = (designCanvasID) => {
@@ -265,7 +296,7 @@ export default class PageContainer extends React.Component {
     // Inside of DesignCanvas, handle this by making the zoomed in canvas have larger dimensions
     // Inside of DesignCanvas, hide the zoom button when hovering  
     let solutionID = uuidv4();
-    let designCanvas = this.getDesignCanvas(solution, solutionID, true); 
+    let designCanvas = this.getDesignCanvas(solution, solutionID, true, solution.id); 
     return designCanvas; 
   }
 
@@ -287,7 +318,7 @@ export default class PageContainer extends React.Component {
     // Update the state
     this.setState({
       solutions: this.state.solutions
-    }); 
+    }, this.updateSolutionsCache); 
   }
 
   getShapesJSON = () => {
@@ -325,7 +356,7 @@ export default class PageContainer extends React.Component {
       solutions: solutions.concat(this.state.solutions), 
       errorMessageShown: false, 
       showDesignsAlert: true
-    });
+    }, this.updateSolutionsCache);
   }
 
   getRelativeDesigns = (elements, action) => {
@@ -366,19 +397,63 @@ export default class PageContainer extends React.Component {
     //}
   }
 
+  readSVGsFromLocalStorage = () => {
+    let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
+    if(svgWidgets && svgWidgets.length){
+      let groupID = _.uniqueId(); 
+      let group = {
+        id: groupID, 
+        svgData: groupSVG, 
+        type: "group"
+      }
+      this.state.svgWidgets.push(group);
+      this.setState({
+        svgWidgets: this.state.svgWidgets.concat(svgWidgets)
+      });
+    }
+  }
+
   readSVGIntoWidgetContainer = (e) => {
     let fileData = e.target.result; 
     let widgetID = _.uniqueId(); 
     if(fileData) {
-      this.setState({
-        svgWidgets: this.state.svgWidgets.concat({
-            id: widgetID, 
-            svgData: fileData
-          }
-        )
-      })
+      // Add widgets to the front of the list 
+      // So that they are rendered at the top of the container
+      // While the automatically added elements (group) appears at the bottom
+      let svgItem = {
+        id: widgetID, 
+        svgData: fileData
+      }
 
+      this.setState({
+        svgWidgets: this.state.svgWidgets.concat(svgItem)
+      });  
+
+      // Look for SVG widgets in local storage and cache them for future refreshes
+      let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
+      if(svgWidgets && svgWidgets.length) {
+        svgWidgets.push(svgItem); 
+        localStorage.setItem('svgWidgets', JSON.stringify(svgWidgets)); 
+      }
+      else {
+        let items = [svgItem]; 
+        items = JSON.stringify(items); 
+        localStorage.setItem('svgWidgets', items); 
+      }
     }
+  }
+
+  populateGroupNodeIntoWidgetContainer = () => {
+    // Add the group container into the widgets panel 
+    // It will just be automatically added in when the drop happens
+    let groupID = _.uniqueId(); 
+    this.setState({
+      svgWidgets: this.state.svgWidgets.concat({
+        id: groupID, 
+        svgData: groupSVG, 
+        type: "group"
+      }) 
+    }); 
   }
 
   handleFileDrop = (item, monitor) => {
@@ -389,8 +464,6 @@ export default class PageContainer extends React.Component {
         droppedFiles: droppedFiles
       });
 
-      // Ensure the files are SVG 
-
       // Download the dropped file contents
       for(let i=0; i<droppedFiles.length; i++) {
         let file = droppedFiles[i]; 
@@ -398,6 +471,10 @@ export default class PageContainer extends React.Component {
         reader.onload = this.readSVGIntoWidgetContainer; 
         reader.readAsText(file); 
       }
+
+      // Add the group container node into the widgets container
+      // It will be added automatically when the designer drops in the other SVG elementst
+      this.populateGroupNodeIntoWidgetContainer();
     }
   }
 
@@ -411,7 +488,7 @@ export default class PageContainer extends React.Component {
 
       this.setState({
         solutions: this.state.solutions
-      }); 
+      }, this.updateSolutionsCache); 
     }
   }
 
@@ -483,7 +560,8 @@ export default class PageContainer extends React.Component {
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
               updateConstraintsCanvas={this.updateConstraintsCanvas} 
-              checkSolutionValidity={this.checkSolutionValidity}/>
+              checkSolutionValidity={this.checkSolutionValidity}
+              svgWidgets={this.state.svgWidgets} />
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Designs
@@ -498,15 +576,15 @@ export default class PageContainer extends React.Component {
                     <button 
                       type="button" 
                       className="btn btn-default design-canvas-button" 
-                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these</button>
+                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these (TBD).</button>
                     <button 
                       type="button" 
                       className="btn btn-default design-canvas-button" 
-                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these</button>
+                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these (TBD).</button>
                   </div>
                   <div 
                     className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button">Export Designs</button>
+                    <button type="button" className="btn btn-default design-canvas-button">Export Designs (TBD)</button>
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
                   </div>

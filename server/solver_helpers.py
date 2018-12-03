@@ -1,13 +1,15 @@
-from z3 import Int, String, StringVal
+from z3 import Int, String, StringVal, Real
 import copy 
 import uuid 
 import numpy as np
 import math
 import shapes as shape_objects
+from fractions import Fraction
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
-MAGNIFICATION_VALUES = [1,2,3,4,5,6,7,8,9,10]
+MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
 def get_row_column_values(num_siblings):
 	values = []
@@ -74,6 +76,8 @@ class Variable(object):
 					dom_value_str = StringVal(dom_value)
 					str_domain.append(dom_value_str)
 				self.domain = str_domain
+		elif self.type == "real": 
+			self.z3 = Real(shape_id + "_" + name)
 		else: 
 			self.z3 = Int(shape_id + "_" + name)
 
@@ -90,6 +94,9 @@ class Variable(object):
 
 		elif self.name == "width" or self.name == "height":
 			return element["size"][self.name]
+
+		if 'magnification' not in element and self.name == 'magnification':
+			print('stop')
 
 		return element[self.name]
 
@@ -135,8 +142,40 @@ class Solution(object):
 		# the cost
 		return importance_max - importance_change
 
-	def compute_weighted_cost(self, importance_cost, symmetry_cost):
-		return importance_cost + symmetry_cost
+	def compute_weighted_cost(self, importance_cost, symmetry_cost, distance_cost):
+		return importance_cost + symmetry_cost + distance_cost
+
+	def compute_distance_from_center(self, shape_x, shape_y, shape_width, shape_height): 
+		center_x = CANVAS_WIDTH/2
+		center_y = CANVAS_HEIGHT/2 
+
+		shape_center_x = shape_x + (shape_width/2)
+		shape_center_y = shape_y + (shape_height/2)
+
+		# Euclidian distance from the center
+		x_dist = int(abs(shape_center_x - center_x))
+		y_dist = int(abs(shape_center_y - center_y))
+
+		distance = math.sqrt(x_dist^2 + y_dist^2)
+		return distance
+
+	def compute_inverse_distance_from_center(self, shape_x, shape_y, shape_width, shape_height): 
+		center_x = CANVAS_WIDTH/2
+		center_y = CANVAS_HEIGHT/2 
+
+		shape_center_x = shape_x + (shape_width/2)
+		shape_center_y = shape_y + (shape_height/2)
+
+		# Euclidian distance from the center
+		x_dist = int(abs(shape_center_x - center_x))
+		y_dist = int(abs(shape_center_y - center_y))
+
+		# Subtract again from the center distance so we get distance from edge
+		x_dist = int(abs(x_dist - center_x))
+		y_dist = int(abs(y_dist - center_y))
+
+		distance = math.sqrt(x_dist^2 + y_dist^2)
+		return distance
 
 	def convert_to_json(self, shapes, model):
 		sln = dict()
@@ -168,23 +207,6 @@ class Solution(object):
 
 				height = shape.height()
 				width = shape.width()
-
-				if shape.importance_set: 
-					if shape.importance == 'most':
-						# Cost will be the distance from the maximum size
-						importance_change += (height - shape.orig_height)
-						importance_change += (width - shape.orig_width)
-						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_height)
-						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_width)
-
-						# Compute the distance of the shape from the center of the canvas
-						# distance_cost += self.compute_cost(shape, CANVAS_HEIGHT, CANVAS_WIDTH)
-					elif shape.importance == 'least': 
-						importance_change += (shape.orig_height - height)
-						importance_change += (shape.orig_width - width)
-						importance_max += (shape.orig_height - shapes.minimum_sizes[shape.shape_type])
-						importance_max += (shape.orig_width - shapes.minimum_sizes[shape.shape_type])
-
 				if shape.type == "container": 
 					height = model[shape.height()].as_string()
 					width = model[shape.width()].as_string()
@@ -193,31 +215,6 @@ class Solution(object):
 					element["size"]["width"] = width
 					element["size"]["height"] = height
 
-				if shape.importance_set: 
-					if shape.importance == "most": 
-						magnification = model[shape.variables.magnification.z3].as_string()
-						magnification = int(magnification)
-
-						magnification_factor = 1/magnification if magnification > 0 else 0
-						height = height + (magnification_factor * height)
-						width = width + (magnification_factor * width)
-						height = int(round(height,0))
-						width = int(round(width,0))
-						element["size"]["height"] = height
-						element["size"]["width"] = height
-					elif shape.importance == "least": 
-						minification = model[shape.variables.minification.z3].as_string()
-						minification = int(minification)
-
-						minification_factor = 1/minification if minification > 0 else 0
-						height = height - (minification_factor * height)
-						width = width - (minification_factor * width)
-						height = int(round(height,0))
-						width = int(round(width, 0))
-						element["size"]["height"] = height
-						element["size"]["width"] = width
-
-				if shape.type == "container": 
 					# Also include the container properties in the element object for each container shape 
 					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
 					# so we don't have to edit this place every time we add a property
@@ -240,24 +237,79 @@ class Solution(object):
 					element["margin"] = int(margin)
 					element["grid"] = int(grid)
 					element["background_color"] = background_color.replace("\"", "")
-				elif shape.type == "leaf":
-					if shape.importance == "most":
+
+				if shape.type == "leaf": 
+					# Only consider emphassis for leaf node elements
+					if shape.importance == "most": 
 						magnification = model[shape.variables.magnification.z3].as_string()
-						element["magnification"] = int(magnification)
-					elif shape.importance == "least":
+						magnification = Fraction(magnification)
+						magnification = float(magnification)
+						element["magnification"] =  magnification
+
+						# magnification_factor = 1/magnification if magnification > 0 else 0
+						height = height * magnification
+						width = width * magnification
+						height = int(round(height,0))
+						width = int(round(width,0))
+						element["size"]["height"] = height
+						element["size"]["width"] = height
+
+						# Cost will be the distance from the maximum size
+						importance_change += (height - shape.orig_height)
+						importance_change += (width - shape.orig_width)
+						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_height)
+						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_width)
+
+						# Compute the distance of the shape from the center of the canvas
+						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
+					elif shape.importance == "least": 
 						minification = model[shape.variables.minification.z3].as_string()
-						element["minification"] = int(minification)
+						minification = Fraction(minification)
+						minification = float(minification)
+						print(minification)
+						element["minification"] = minification
+
+						# minification_factor = 1/minification if minification > 0 else 0
+						height = height * minification
+						width = width * minification
+						height = int(round(height,0))
+						width = int(round(width, 0))
+						element["size"]["height"] = height
+						element["size"]["width"] = width
+
+						# Used for computing importance cost
+						importance_change += (shape.orig_height - height)
+						importance_change += (shape.orig_width - width)
+						importance_max += (shape.orig_height - shape_objects.minimum_sizes[shape.shape_type])
+						importance_max += (shape.orig_width - shape_objects.minimum_sizes[shape.shape_type])
+
+						distance_cost += self.compute_inverse_distance_from_center(adj_x, adj_y, width, height)
 					else: 
 						element["minification"] = 0
 						element["magnification"] = 0
 
-				if shape.type == "leaf": 
 					# Only the locations of leaf level shapes to compute the symmetry cost
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
 
+				else: 
+					# Only consider emphassis for leaf node elements
+					if shape.importance == "most": 
+						magnification = model[shape.variables.magnification.z3].as_string()
+						magnification = Fraction(magnification)
+						magnification = float(magnification)
+						element["magnification"] =  magnification
+					elif shape.importance == "least": 
+						minification = model[shape.variables.minification.z3].as_string()
+						minification = Fraction(minification)
+						minification = float(minification)
+						element["minification"] = minification
+					else: 
+						element["minification"] = 0
+						element["magnification"] = 0
+
 		symmetry_cost = self.compute_symmetry_cost(cost_matrix)
 		importance_cost = self.compute_importance_cost(importance_change, importance_max)
-		cost = self.compute_weighted_cost(symmetry_cost, importance_cost)
+		cost = self.compute_weighted_cost(symmetry_cost, importance_cost, distance_cost)
 
 		# print("Total cost: " + str(cost))
 		sln["elements"] = new_elements

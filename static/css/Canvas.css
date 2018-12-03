@@ -37,43 +37,6 @@ body {
 	padding: 5;
 }
 
-.dropdown {
-	position: absolute;
-}
-
-.dropdown-menu {
-	padding-top: 0;
-	font-size: initial;
-}
-
-.dropdown-menu .caret {
-	margin-left: 10px;
-}
-
-.dropdown-menu .divider {
-	height: auto;
-	overflow: visible; 
-	border-bottom: 1px solid #e5e5e5;
-    border-top: 1px solid #e5e5e5;
-    background-color: #ffffff; 
-    display: flex; 
-    justify-content: center;
-}
-
-.dropdown-menu .divider.divider-top {
-	margin-top: 0;
-}
-
-.dropdown-submenu .dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -1px;
-}
-
-.dropdown-submenu {
-	position: relative;
-}
-
 .navbar, .navbar-header {
 	display: flex; 
 	justify-content: flex-start;
@@ -224,38 +187,6 @@ h1, h2, h3 {
 	margin-left: 10px;
 	margin-top: 10px;
 }
-
-
-/* Widgets tree feedback items */ 
-.widget-feedback-items {
-    list-style-type: none;
-    margin-top: 5px;
-    background-color: #f5f5f5;
-    border: 1px solid #ddd;
-    padding: 5px;
-    border-radius: 2px;
-}
-
-.widget-feedback-items.highlighted {
-	background-color: #f2dede;
-   	border: 1px dashed gray;
-}
-
-.widget-feedback-items-list {
-	display: flex; 
-}
-
-.widget-feedback-items-remove {
-    background-color: #f5f5f5;
-    border: none;
-}
-
-.widget-feedback-items-remove.highlighted {
-	background-color: #f2dede;
-	border: none;
-}
-
-
 
 /**  
 	Resizable box 

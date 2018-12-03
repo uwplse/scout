@@ -3,6 +3,7 @@ import '../css/ConstraintsCanvas.css';
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import ConstraintsCanvasContainerSVGWidget from './ConstraintsCanvasContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
+import ConstraintActions from './ConstraintActions';
 import {
   SortableTreeWithoutDndContext as SortableTree,
   removeNodeAtPath, 
@@ -59,18 +60,170 @@ export default class ConstraintsCanvas extends React.Component {
         y: 0
       }, 
       rightClickShapeID: undefined, 
-      showImportanceLevels: false, 
       pageOrder: "unimportant"
     }; 
   }
 
   componentDidMount() {
-    let rootNode = this.initRootNode();
-    this.state.treeData = this.state.treeData.concat(rootNode); 
+    let cachedShapesJSON = localStorage.getItem('shapeHierarchy'); 
+    if(!cachedShapesJSON) {
+      // } else {
+      let rootNode = this.initRootNode();
+      this.state.treeData = this.state.treeData.concat(rootNode); 
 
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }));
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }), this.updateShapeCache);
+    }
+  }
+
+  componentDidUpdate = (prevProps) => {
+    if(prevProps.svgWidgets.length != this.props.svgWidgets.length) {
+      // SVG widgets have been read from cache. Restore hierarchy from cache
+      // Retrieve cached shapes from local storage and repopulate them into the tree
+      let cachedShapesJSON = localStorage.getItem('shapeHierarchy');
+      let cachedShapes = JSON.parse(cachedShapesJSON);
+      this.constructTreeFromCache(cachedShapes);
+    }
+  }
+
+  checkSolutionValidityAndUpdateCache = () => {
+    // Update shapes cache in localStorage
+    this.updateShapeCache(); 
+
+    // Check validity of constraints
+    this.checkSolutionValidity();
+  }
+
+  getActionForWidgetFeedback = (lock, shape) => {
+    return ConstraintActions.getAction(lock, shape);
+  }
+
+  constructTreeFromCache = (canvasRootShape) => {
+    // Restore the cosntraints tree from the cached shapes
+    this.canvasLevelShape = canvasRootShape; 
+    this.constraintsShapesMap[canvasRootShape.name] = canvasRootShape; 
+
+    if(this.canvasLevelShape.children) {
+      this.pageLevelShape = this.canvasLevelShape.children[0]; 
+      this.constraintsShapesMap[this.pageLevelShape.name] = this.pageLevelShape; 
+
+      // Create page level widget
+      let newTreeData = [];
+      let pageWidget = this.getWidget(this.pageLevelShape, rootNode);
+      let newTreeNode = {
+        title: pageWidget, 
+        subtitle: []
+      }; 
+
+      this.widgetTreeNodeMap[this.pageLevelShape.name] = newTreeNode; 
+
+      // Restore feedback items
+      // Check whether to remove or add a widget feedback item
+      if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
+        for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
+          let lock = this.canvasLevelShape.locks[i];
+          let action = this.getActionForWidgetFeedback(lock, this.canvasLevelShape);
+          if(action){
+            let uniqueId = _.uniqueId();
+            let message = action["do"].getFeedbackMessage(this.canvasLevelShape);
+            let id = this.pageLevelShape.name + "_" + uniqueId; 
+            let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, message);
+            newTreeNode.subtitle.push(widgetFeedback); 
+          } 
+        }     
+      } 
+
+      newTreeData = newTreeData.concat(newTreeNode); 
+
+      if(this.pageLevelShape.children) {
+        let parentKey = 0; 
+        let nodeIndex = parentKey; 
+        for(let i=0; i<this.pageLevelShape.children.length; i++) {
+          nodeIndex = nodeIndex + 1; 
+          let child = this.pageLevelShape.children[i]; 
+          let results = this.constructShapeHierarchy(child, parentKey, nodeIndex, newTreeData);
+          newTreeData = results.treeData; 
+          nodeIndex = results.nodeIndex; 
+        }
+      }
+
+      this.setState(state => ({
+        treeData: newTreeData
+      }));
+    }
+  }
+
+  getSVGSource = (node) => {
+    if(node.item) {
+      return item; 
+    }
+
+    if(node.type == "labelGroup") {
+      return label; 
+    }
+
+    let svgElements = this.props.svgWidgets; 
+    let svgElement = svgElements.filter(element => element.id == node.id); 
+    if(svgElement && svgElement.length) {
+      svgElement = svgElement[0]; 
+      return svgElement.svgData; 
+    }
+
+    return ""; 
+  }
+
+  constructShapeHierarchy = (node, parentKey, nodeIndex, treeData) => {
+    let source =  this.getSVGSource(node);
+    let widget = this.getWidget(node, source); 
+    this.constraintsShapesMap[node.name] = node; 
+
+    let newTreeNode = {
+        title: widget, 
+        subtitle: []
+    }; 
+
+    this.widgetTreeNodeMap[node.name] = newTreeNode; 
+
+    // Restore feedback items
+    if(node.locks && node.locks.length) {
+      for(let i=0; i<node.locks.length; i++) {
+        let lock = node.locks[i];
+        let action = this.getActionForWidgetFeedback(lock, node);
+        if(action){
+          let uniqueId = _.uniqueId();
+          let message = action["do"].getFeedbackMessage(node);
+          let id = node.name + "_" + uniqueId; 
+          let widgetFeedback = this.getWidgetFeedback(id, node, action, message);
+          newTreeNode.subtitle.push(widgetFeedback); 
+        } 
+      }     
+    } 
+
+    let newTreeData = addNodeUnderParent({
+      treeData: treeData, 
+      newNode: newTreeNode, 
+      parentKey: parentKey, 
+      getNodeKey: defaultGetNodeKey, 
+      ignoreCollapsed: false, 
+      expandParent: true
+    }); 
+
+    treeData = newTreeData.treeData; 
+
+
+    let currNodeIndex = nodeIndex;
+    if(node.children && node.children.length) {
+      for(let i=0; i<node.children.length; i++){
+        currNodeIndex = currNodeIndex + 1; 
+        let child = node.children[i]; 
+        let results = this.constructShapeHierarchy(child, nodeIndex, currNodeIndex, treeData); 
+        treeData = results.treeData; 
+        currNodeIndex = results.nodeIndex; 
+      }
+    }
+
+    return { treeData: treeData, nodeIndex: currNodeIndex }; 
   }
 
   initRootNode = () => {
@@ -119,18 +272,25 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[page.name] = newTreeNode; 
-
     return newTreeNode; 
+  }
+
+  updateShapeCache = () => {
+    // Update the entry for the constraintShapesMap in the localStorage cache
+    // so we can repopulate the constraints tree on refresh 
+    let shapeHierarchy = this.getShapeHierarchy();
+    let shapeHierarchyJSON = JSON.stringify(shapeHierarchy); 
+    localStorage.setItem('shapeHierarchy', shapeHierarchyJSON); 
   }
 
   getWidget = (shape, src, options={}) => {
     let shapeId = shape.name;
     let highlighted = options.highlighted ? options.highlighted : false; 
     let isContainer = shape.type == "group" || shape.type == "page" || shape.type == "canvas";
+    let item = options.item ? options.item : false;
+    let typed = options.typed ? options.typed : false;
 
     if(isContainer) {
-      let item = options.item ? options.item : false; 
-      let typed = options.typed ? options.typed : false;
       return (<ConstraintsCanvasContainerSVGWidget 
                 key={shapeId} 
                 shape={shape} 
@@ -138,8 +298,7 @@ export default class ConstraintsCanvas extends React.Component {
                 source={src}
                 highlighted={highlighted}
                 isContainer={true}
-                showImportanceLevels={this.state.showImportanceLevels}
-                checkSolutionValidity={this.checkSolutionValidity} 
+                checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
                 displayRightClickMenu={this.displayRightClickMenu}
                 hideRightClickMenu={this.hideRightClickMenu}
                 createLabelsGroup={this.createLabelsGroup.bind(this)}
@@ -154,8 +313,7 @@ export default class ConstraintsCanvas extends React.Component {
               id={shapeId} 
               source={src}
               highlighted={highlighted}
-              showImportanceLevels={this.state.showImportanceLevels}
-              checkSolutionValidity={this.checkSolutionValidity} 
+              checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
               displayRightClickMenu={this.displayRightClickMenu}
               hideRightClickMenu={this.hideRightClickMenu}
               createLabelsGroup={this.createLabelsGroup.bind(this)}
@@ -187,8 +345,9 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.setState(state => ({
       treeData: newTreeData.treeData, 
-    }), this.checkSolutionValidity);
+    }), this.checkSolutionValidityAndUpdateCache);
   }
+
 
   clearShapesFromCanvas = () => {
     let newTreeData = []; 
@@ -196,11 +355,15 @@ export default class ConstraintsCanvas extends React.Component {
     newTreeData = newTreeData.concat(rootNode); 
     this.setState({
       treeData: newTreeData
-    }); 
+    }, this.updateShapeCache); 
   }
 
   createNewTreeNode = (type, source, options={}) => {
     // Creates a new tree node widget and returns it
+    let id = _.uniqueId();
+
+    let width = Constants.controlWidths(type); 
+    let height = Constants.controlHeights(type);
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
     let widget = this.getWidget(shape, source, options); 
 
@@ -346,6 +509,11 @@ export default class ConstraintsCanvas extends React.Component {
     let node = this.widgetTreeNodeMap[shapeId]; 
     return node.title.props.shape.importance; 
   }
+
+  getCurrentShapeType = (shapeId) => {
+    let node = this.widgetTreeNodeMap[shapeId]; 
+    return node.title.props.shape.type; 
+  }
  
   hideRightClickMenu = () => {
     // Recheck consistency of the solutions after any of the things are set
@@ -379,7 +547,7 @@ export default class ConstraintsCanvas extends React.Component {
 
       this.setState(state => ({
         treeData: this.state.treeData
-      }), this.checkSolutionValidity); 
+      }), this.checkSolutionValidityAndUpdateCache); 
     }
   }
 
@@ -457,7 +625,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.setState(state => ({
       treeData: this.state.treeData
-    }));      
+    }), this.checkSolutionValidityAndUpdateCache);      
   }
 
   getShapeHierarchy = () => {
@@ -549,6 +717,8 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     let importance = (options.importance ? options.importance : "normal");
+    let item = (options.item ? options.item : false); 
+    let typed = (options.typed ? options.typed : false);
 
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
@@ -566,7 +736,9 @@ export default class ConstraintsCanvas extends React.Component {
         "height": height
       }, 
       "x": 0, 
-      "y": 0
+      "y": 0,
+      "item": item, 
+      "typed": typed
     }
 
     if (isContainer) {
@@ -789,7 +961,7 @@ export default class ConstraintsCanvas extends React.Component {
 
         this.setState(state => ({
           treeData: this.state.treeData
-        }), this.checkSolutionValidity); 
+        }), this.checkSolutionValidityAndUpdateCache); 
       }
     }
   }
@@ -954,7 +1126,7 @@ export default class ConstraintsCanvas extends React.Component {
 
         this.setState(state => ({
           treeData: this.state.treeData
-        }), this.checkSolutionValidity); 
+        }), this.checkSolutionValidityAndUpdateCache); 
       }
     }
 
@@ -1055,10 +1227,9 @@ export default class ConstraintsCanvas extends React.Component {
       // Delete the entry in the constraints canvas shape map 
       delete this.constraintsShapesMap[shapeID];
 
-
       this.setState(state => ({
         treeData: this.state.treeData,
-      }), this.checkSolutionValidity); 
+      }), this.checkSolutionValidityAndUpdateCache); 
     }
   }
 
@@ -1085,7 +1256,9 @@ export default class ConstraintsCanvas extends React.Component {
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
     const rightClickMenu = (this.state.rightClickMenuShown ?
-     <ConstraintsCanvasMenu left={rightClickMenuPosition.x} top={rightClickMenuPosition.y} 
+     <ConstraintsCanvasMenu 
+      left={rightClickMenuPosition.x} 
+      top={rightClickMenuPosition.y} 
       menuCallbacks={this.state.rightClickMenuCallbacks}
       shapeID={this.state.rightClickShapeID}
       getSiblingLabelItem={this.getSiblingLabelItem}
@@ -1093,6 +1266,7 @@ export default class ConstraintsCanvas extends React.Component {
       getCurrentShapeOrder={this.getCurrentShapeOrder}
       getCurrentContainerOrder={this.getCurrentContainerOrder}
       getCurrentShapeSiblings={this.getCurrentShapeSiblings}
+      getCurrentShapeType={this.getCurrentShapeType}
       getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
     // const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     // const colorPickerPosition = this.state.colorPickerPosition; 
@@ -1102,7 +1276,7 @@ export default class ConstraintsCanvas extends React.Component {
 	  return (
        <div className="panel panel-primary constraints-container">
           <div className="panel-heading"> 
-            <h3 className="panel-title">Constraints</h3>
+            <h3 className="panel-title">Outline</h3>
           </div>
           <div id="constraints-canvas-container" tabIndex="1" className="constraints-canvas-container panel-body"> 
             <div className="constraints-canvas-page-feedback">
@@ -1118,7 +1292,7 @@ export default class ConstraintsCanvas extends React.Component {
                 canDrop={this.canReparentWidgetNode}
                 onMoveNode={this.onMoveNode}
                 rowHeight={this.calculateRowHeight}
-                isVirtualized={false}
+                // isVirtualized={false}
                 generateNodeProps={this.getNodeProps}
               />
             </div>

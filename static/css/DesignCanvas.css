@@ -41,9 +41,9 @@
 }
 
 .invalidated-body {
-	width: 50px; 
 	display: flex;
 	flex-direction: column;
+	overflow: auto;
 }
 
 .saved-body .canvas-container, .trashed-body .canvas-container {

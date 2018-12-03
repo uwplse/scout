@@ -39,12 +39,15 @@ class Solver(object):
 		self.variables_different = Int('VariablesDifferent')
 
 		# Construct the solver instance we will use for Z3
+		print('create instance')
 		self.solver = z3.Solver()
 		self.override_solver = OverrideSolver(self.solver)
 		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
 
 		# Build the initial set of constraints on the shapes and containers 
+		print('create constraints')
 		self.init_constraints()
+		print('done creating constraints')
 
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
@@ -70,13 +73,16 @@ class Solver(object):
 		canvas = None
 		for shape in self.shapes.values(): 
 			if shape.type == "canvas":  
+				print('canvas')
 				self.cb.init_canvas_constraints(shape)
 				canvas = shape
 			if shape.type == "container": 
+				print('container')
 				self.cb.init_container_constraints(shape, self.shapes)
 
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
+				print('leaf')
 				self.cb.init_shape_bounds(shape, self.canvas_width, self.canvas_height)
 				self.cb.init_shape_baseline(shape)
 				self.cb.init_shape_grid_values(shape, canvas)
@@ -105,16 +111,22 @@ class Solver(object):
 
 		element["children"] = new_children	
 
-	def construct_shape_hierarchy(self, elements, shapes):
+	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal"):
 		shape_hierarchy = []
 		num_siblings = len(elements)
 		for i in range(0, len(elements)): 
 			element = elements[i]
+			
+			# If parent node emphasis is set, cascade that value to the child elements
+			element_emphasis = element["importance"] if "importance" in element else "normal"
+			if parent_emphasis != "normal": 
+				element["importance"] = parent_emphasis
+				element_emphasis = parent_emphasis
 
 			sub_hierarchy = None
 			if "children" in element: 
 				children = element["children"]
-				sub_hierarchy = self.construct_shape_hierarchy(children, shapes)
+				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis)
 
 			shape_object = None
 			if element["type"] == "canvas": 
@@ -234,7 +246,6 @@ class Solver(object):
 				result = self.z3_check(start_time)
 				unsat_core = self.solver.unsat_core()
 				constraints = self.solver.sexpr()
-				print(unsat_core)
 
 				# update the valid state of the solution
 				solution["valid"] = result
@@ -488,6 +499,7 @@ class Solver(object):
 			time_z3_total = time_z3_end - time_z3_start
 			self.time_z3 += time_z3_total
 			unsat_core = self.solver.unsat_core()
+			constraints = self.solver.sexpr()
 			self.print_solution()
 
 			if str(result) == 'sat':
@@ -514,7 +526,7 @@ class Solver(object):
 				# self.print_solution()
 		else:
 			# Selects the next variable to assign
-			var_i, next_var = self.select_next_variable()
+			next_var = self.select_next_variable()
 			state.add_assigned_variable(next_var)
 
 			# Randomize the order in which we iterate through the domain
@@ -630,6 +642,7 @@ class Solver(object):
 				time_z3_start = time.time()
 				result = self.solver.check()
 				unsat_core = self.solver.unsat_core()
+				constraints = self.solver.sexpr()
 				self.z3_calls += 1
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start

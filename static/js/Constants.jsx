@@ -6,6 +6,7 @@ class Constants {
   static controlWidths(controlType) {
     let values = {
       'group': 238, 
+      'labelGroup': 238, 
       'page': 239,
       'labelGroup': 238, 
     }
@@ -20,6 +21,7 @@ class Constants {
   static controlHeights(controlType) {
     let values = {
       'group': 50, 
+      'labelGroup': 50,
       'page': 46.5,
       'labelGroup': 50, 
     }
@@ -33,26 +35,14 @@ class Constants {
 
   static controlLabels(controlType) {
     let values = {
-      'button': 'Button', 
-      'label': 'Label', 
-      'orangeLabel': 'Label',
-      'field': 'Field', 
-      'search': 'Search', 
-      'group': 'Group', 
-      'labelGroup': 'Label', 
-      'smallLabel': 'Label', 
-      'image': 'image'
+      'text': 'label'
     }
     return values[controlType]; 
   }; 
 
   static controlFontSizes(controlType) {
     let values = {
-      'label': 36, 
-      'orangeLabel': 36,
-      'multilineLabel': 14, 
-      'smallLabel': 20, 
-      'smallLabel2': 20 
+      'text': 36
     }
     return values[controlType];
   }

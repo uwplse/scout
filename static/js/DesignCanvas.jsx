@@ -5,6 +5,7 @@ import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
 import group from '../assets/illustrator/groupDesign.svg';
+import item from '../assets/illustrator/item.svg';
 import '../css/DesignCanvas.css'; 
 
 export default class DesignCanvas extends React.Component {
@@ -154,9 +155,13 @@ export default class DesignCanvas extends React.Component {
             contextMenu={this.showConstraintsContextMenu}/>); 
   }
 
-  getSVGSourceByID = (id) => {
+  getSVGSource = (node) => {
+    if(node.item || node.type == "labelGroup") {
+      return groupDesign;
+    }
+
     let svgElements = this.props.svgWidgets; 
-    let svgElement = svgElements.filter(element => element.id == id); 
+    let svgElement = svgElements.filter(element => element.id == node.id); 
     if(svgElement && svgElement.length) {
       svgElement = svgElement[0]; 
       return svgElement.svgData; 
@@ -168,15 +173,22 @@ export default class DesignCanvas extends React.Component {
   createSVGElement = (shape) => {
     // Get the control SVG element from the control type
     let type = shape.type; 
-    let svgSource = this.getSVGSourceByID(shape.id); 
+    let isContainer = type == "group" || type == "labelGroup" || type == "page"; 
+    let svgSource = (isContainer ? group : this.getSVGSource(shape)); 
     if(svgSource != undefined) {
       let padding = 0; 
-      if(type == "group" || type == "labelGroup" || type == "page") {
+      if(isContainer) {
         padding = 5;
       }
 
       let computedHeight = (shape.size.height * this.scalingFactor + (padding * 2));
       let computedWidth = (shape.size.width * this.scalingFactor + (padding * 2)); 
+
+      if(isContainer) {
+        console.log(computedWidth); 
+        console.log(computedHeight);
+      } 
+      
       let computedLeft = ((shape.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.y * this.scalingFactor) - padding);
 
@@ -216,8 +228,8 @@ export default class DesignCanvas extends React.Component {
 
       let b_x = b.x; 
       let b_y = b.y; 
-      let b_width = b.width; 
-      let b_height = b.height; 
+      let b_width = b.size.width; 
+      let b_height = b.size.height; 
 
       // Sort by containment
       if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
@@ -235,12 +247,20 @@ export default class DesignCanvas extends React.Component {
   }
 
   performDesignCanvasMenuAction = (action) => {
+    // For a zoomed design, perform these actions on the linked design instead 
+    // of the zoomed in design ID as that is not maintained in the solutionsMap
+    // in PageContainer
+    let designId = this.id; 
+    if(this.props.zoomed) {
+      designId = this.props.linkedSolutionId; 
+    }
+
     if(action == "save") {
-      this.props.saveDesignCanvas(this.id);
+      this.props.saveDesignCanvas(designId);
       this.state.savedState = 1; 
     }
     else if(action == "trash") {
-      this.props.trashDesignCanvas(this.id);
+      this.props.trashDesignCanvas(designId);
       this.state.savedState = -1; 
     }
     else if(action == "like"){
@@ -249,7 +269,7 @@ export default class DesignCanvas extends React.Component {
     }
     else if(action == "zoom") {
       // Open up the zoomed in design canvas dialog
-      this.props.zoomInOnDesignCanvas(this.id);
+      this.props.zoomInOnDesignCanvas(designId);
     }
 
     this.setState({

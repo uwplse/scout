@@ -16,7 +16,8 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         source={this.props.source}
         isContainer={this.props.isContainer}
         highlighted={this.props.highlighted}
-        showImportanceLevels={this.props.showImportanceLevels}
+        typed={this.props.typed}
+        item={this.props.item}
         checkSolutionValidity={this.props.checkSolutionValidity} 
         displayRightClickMenu={this.props.displayRightClickMenu}
         hideRightClickMenu={this.props.hideRightClickMenu}

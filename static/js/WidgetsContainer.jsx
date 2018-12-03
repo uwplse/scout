@@ -8,7 +8,6 @@ import {
 } from 'react-dnd'; 
 import { NativeTypes } from 'react-dnd-html5-backend'; 
 import WidgetsContainerSVGWidget from "./WidgetsContainerSVGWidget"; 
-import groupSVG from '../assets/illustrator/groupContainer.svg';
 
 const { FILE } = NativeTypes; 
 
@@ -34,7 +33,6 @@ class WidgetsContainer extends React.Component {
 
     this.state = {
       hovered: false, 
-      groupID: _.uniqueId() // Generates an ID for the Group element component 
     }
   }
 
@@ -55,12 +53,16 @@ class WidgetsContainer extends React.Component {
     const hasWidgets = this.props.widgets.length; 
 
     const widgets = this.props.widgets.map((widget) => {
-      return (<WidgetsContainerSVGWidget 
-        className="widget-control" 
-        id={widget.id}
-        svgData={widget.svgData}
-        addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>  
-      ); 
+      if(!widget.item) { // Items cannot be directly added as they are children of typed groups
+        return (<WidgetsContainerSVGWidget 
+          className="widget-control" 
+          id={widget.id}
+          svgData={widget.svgData}
+          type={widget.type}
+          addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>  
+        ); 
+      }
+      return undefined;
     });
 
     return (
@@ -92,14 +94,6 @@ class WidgetsContainer extends React.Component {
                 <div className="box__success">Done!</div>
                 <div className="box__error">Error! <span></span>.</div>
               </form>))}
-            {/*Group container widget*/}
-            {(hasWidgets ? 
-              (<WidgetsContainerSVGWidget 
-                className="widget-control"
-                id={this.state.groupID}
-                svgData={groupSVG}
-                type={"group"}
-                addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>) : undefined)}
           </div>
         </div>
       )

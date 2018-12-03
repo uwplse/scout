@@ -1,3 +1,50 @@
+/* Right click menus */ 
+
+.dropdown {
+	position: absolute;
+}
+
+.dropdown-menu {
+	padding-top: 0;
+	font-size: initial;
+}
+
+.dropdown-menu .caret {
+	margin-left: 10px;
+}
+
+.dropdown-menu .divider {
+	height: auto;
+	overflow: visible; 
+    background-color: #ffffff; 
+    display: flex; 
+    justify-content: center;
+    margin-bottom: 0;
+    margin-top: 20px;
+}
+
+.dropdown-menu .divider.divider-top {
+	margin-top: 0;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+
+.dropdown-submenu {
+	position: relative;
+}
+
+.dropdown-menu > li {
+	border-top: 1px solid lightgray;
+}
+
+
+/* 
+  Constraints canvas 
+ */
 .constraints-canvas-container {
 	/* Needed when we do not have the virtualized grid enabled where it makes its own scrollbar */
 	overflow: auto;
@@ -45,7 +92,7 @@
 }
 
 .widgets-sortable-tree .rst__rowSubtitle {
-	font-size: inherit;
+	font-size: 14px;
 }
 
 .widgets-sortable-tree .rst__lineFullVertical:after {
@@ -80,9 +127,8 @@
 }
 
 .widget-container.highlighted {	
-	border: 1px dashed gray;
+	border: 2px dashed white;
 	padding: 4;
-	background-color: #f2dede;
 }
 
 .widget-control-group .widget-control {
@@ -178,4 +224,32 @@
 .widget-container .badge {
 	font-size: 14px;
 	border-radius: 3px;
+}
+
+/* Widgets tree feedback items */ 
+.widget-feedback-items {
+    list-style-type: none;
+    margin-top: 5px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 2px;
+}
+
+.widget-feedback-items.highlighted {
+   	border: 2px dashed #85144b;
+   	background-color: #ef9a9a;
+}
+
+.widget-feedback-items-list {
+	display: flex; 
+}
+
+.widget-feedback-items-remove {
+    background-color: #f5f5f5;
+    border: none;
+}
+
+.widget-feedback-items-remove.highlighted {
+	background-color: #ef9a9a;
 }

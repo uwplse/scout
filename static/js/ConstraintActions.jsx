@@ -1,5 +1,10 @@
 import Constants from "./Constants"; 
 
+// Feedback items
+// Groups - Order, Size
+// Global - Whitespace, Density 
+
+
 class ConstraintActions {}
 
 ConstraintActions.locked_size_key = 'size'
@@ -24,6 +29,26 @@ ConstraintActions.locked_proximity_key = 'proximity';
 ConstraintActions.locked_margin_key = 'margin';
 ConstraintActions.locked_text_key = 'text';
 ConstraintActions.locksKey = 'locks'; 
+
+ConstraintActions.getAction = function getAction(lock, shape) {
+	if(shape.type == "page" || shape.type == "canvas") {
+		let action = ConstraintActions.canvasConstraints[lock]; 
+		if(action) {
+			return action;
+		}
+	}else if(shape.type == "group") {
+		let action = ConstraintActions.groupConstraints[lock]; 
+		if(action){
+			return action;
+		}
+	}
+	else {
+		let action = ConstraintActions.elementConstraints[lock]; 
+		if(action){
+			return action;
+		}
+	}
+}
 
 ConstraintActions.defaultKeepConstraint = function keepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
   	if(constraintsCanvasShape[ConstraintActions.locksKey] == undefined) {
@@ -124,7 +149,7 @@ ConstraintActions.elementConstraints = {
 			}
 		}
 	}, 
-	"width": {
+	/*"width": {
 		"do": {
 			"key": ConstraintActions.locked_size_key,
 			"updateConstraintsCanvasShape": function keepSize(constraintsCanvasShape, designCanvasShape) {
@@ -193,8 +218,10 @@ ConstraintActions.elementConstraints = {
 				return "Don't keep height at " + shape[ConstraintActions.locked_size_key]["height"] + "px.";
 			}
 		}	
-	}
+	}*/
 }
+
+ 
 
 ConstraintActions.groupConstraints = {
 	"arrangement": 
@@ -298,7 +325,77 @@ ConstraintActions.groupConstraints = {
 					return ConstraintActions.defaultUndoFeedbackMessage(ConstraintActions.locked_distribution_key, distributionValue) + "px.";
 				}
 			}
-		}
+		},
+	"order": 
+		{
+			"do": {
+				"key": "order",
+				"updateConstraintsCanvasShape": function keepOrder(constraintsCanvasShape, designCanvasShape) {
+					/**
+					 TBD  
+					*/
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					
+					return "Keep this order. (TBD)";
+				}
+			}, 
+			"undo": {
+				"key": ConstraintActions.locked_arrangement_key,
+				"updateConstraintsCanvasShape": function undoKeepArrangement(constraintsCanvasShape, designCanvasShape) {
+					/** 
+					 TBD 
+					*/
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Don't keep this order. (TBD)";
+				}
+			}
+		},
+	"width": {
+		"do": {
+			"key": "size",
+			"updateConstraintsCanvasShape": function keepSize(constraintsCanvasShape, designCanvasShape) {
+			    // Update the property on shape according to the selected option
+			    // Use the server key for locking a shape into a specific location
+			    /* TBD */
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Keep width at " + shape["size"]["width"] + "px. (TBD)";
+			}
+		}, 
+		"undo": {
+			"key": "size",
+			"updateConstraintsCanvasShape": function undoKeepSize(constraintsCanvasShape, designCanvasShape) {
+				/* TBD */
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Don't keep width at " + shape["size"]["width"] + "px. (TBD)";
+			}
+		}	
+	}, 
+	"height": {
+		"do": {
+			"key": "size",
+			"updateConstraintsCanvasShape": function keepSize(constraintsCanvasShape, designCanvasShape) {
+			    // Update the property on shape according to the selected option
+			    // Use the server key for locking a shape into a specific location
+			    /* TBD */ 
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Keep height at " + shape["size"]["height"] + "px. (TBD)";
+			}
+		}, 
+		"undo": {
+			"key": "size",
+			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
+				/* TBD */ 
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Don't keep height at " + shape["size"]["height"] + "px. (TBD)";
+			}
+		}	
+	}
 }
 
 ConstraintActions.canvasConstraints = {
@@ -427,12 +524,33 @@ ConstraintActions.canvasConstraints = {
 				}
 			}, 
 			"undo": {
-				"key": ConstraintActions.locked_grid_key,
+				"key": "background_color",
 				"updateConstraintsCanvasShape": function undoKeepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
 					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
 					return "Don't keep the background color.";
+				}
+			}
+		},
+	"density": 
+		{
+			"do": {
+				"key": "density",
+				"updateConstraintsCanvasShape": function keepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+					/* TBD */ 
+				}, 
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Keep the density. (TBD)";
+				}
+			}, 
+			"undo": {
+				"key": "desnity",
+				"updateConstraintsCanvasShape": function undoKeepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+					/* TBD */ 
+				},
+				"getFeedbackMessage": function generateFeedbackMessage(shape) {
+					return "Don't keep the density. (TBD)";
 				}
 			}
 		}
