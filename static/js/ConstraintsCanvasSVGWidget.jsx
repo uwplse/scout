@@ -48,7 +48,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       containerOrder: this.element.containerOrder, 
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
-      showImportance: props.showImportanceLevels,
       showOrder: false,  
       showLabels: this.element.labels ? true : false, 
       labelPosition: {
@@ -69,7 +68,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       order: prevState.order, 
       fontSize: prevState.fontSize, 
       importance: prevState.importance, 
-      showImportance: prevState.showImportance, 
       showLabels: prevState.showLabels, 
       labelPosition: prevState.labelPosition, 
       showOrder: prevState.showOrder,
@@ -314,7 +312,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     // Update the number of stars showing
     this.setState({
       importance: level, 
-      showImportance: true
     }); 
 
     this.hideRightClickMenu();
@@ -403,12 +400,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
             height={this.state.height + "px"} 
             width={this.state.width + "px"} />
             <div 
-              className={"widget-control-info " + ((showImportance || showOrder || this.isContainer) ? "" : "hidden")}>
+              className={"widget-control-info " + ((importanceLabel.length || showOrder || this.isContainer) ? "" : "hidden")}>
               {this.isContainer ? 
                (<span className={"badge " + (ordered ? "badge-success" : "badge-primary")}>{(ordered ? "Order Important" : "Order Unimportant")}
                 </span>) : undefined}
               <span className={"widget-control-order badge badge-success " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
-              <span className={"badge " + (importance == "most" ? "badge-success " : "badge-primary ") + (showImportance ? "" : "hidden")}>
+              <span className={"badge " + (importance == "most" ? "badge-success " : "badge-primary ") + (importanceLabel.length ? "" : "hidden")}>
                 {importanceLabel}
               </span>
             </div>

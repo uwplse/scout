@@ -59,7 +59,6 @@ export default class ConstraintsCanvas extends React.Component {
         y: 0
       }, 
       rightClickShapeID: undefined, 
-      showImportanceLevels: false, 
       pageOrder: "unimportant"
     }; 
   }
@@ -253,8 +252,7 @@ export default class ConstraintsCanvas extends React.Component {
                 source={src}
                 highlighted={highlighted}
                 isContainer={true}
-                showImportanceLevels={this.state.showImportanceLevels}
-                checkSolutionValidity={this.checkSolutionValidity} 
+                checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
                 displayRightClickMenu={this.displayRightClickMenu}
                 hideRightClickMenu={this.hideRightClickMenu}
                 createLabelsGroup={this.createLabelsGroup.bind(this)}
@@ -269,8 +267,7 @@ export default class ConstraintsCanvas extends React.Component {
               id={shapeId} 
               source={src}
               highlighted={highlighted}
-              showImportanceLevels={this.state.showImportanceLevels}
-              checkSolutionValidity={this.checkSolutionValidity} 
+              checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
               displayRightClickMenu={this.displayRightClickMenu}
               hideRightClickMenu={this.hideRightClickMenu}
               createLabelsGroup={this.createLabelsGroup.bind(this)}
