@@ -48,7 +48,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       containerOrder: this.element.containerOrder, 
       fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
-      showOrder: false,  
       showLabels: this.element.labels ? true : false, 
       labelPosition: {
         x: 0, 
@@ -70,7 +69,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       importance: prevState.importance, 
       showLabels: prevState.showLabels, 
       labelPosition: prevState.labelPosition, 
-      showOrder: prevState.showOrder,
       cursorPos: prevState.cursorPos,
       svgSource: nextProps.source, 
       containerOrder: prevState.containerOrder, 
@@ -337,8 +335,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
 
     this.element.order = value; 
     this.setState({
-      order: value, 
-      showOrder: (value != -1 && value != undefined)
+      order: value
     });
 
     this.hideRightClickMenu();
@@ -376,7 +373,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
 
-    const showOrder = this.state.showOrder;  
+    const showOrder = this.state.order != -1 && this.state.order != undefined;  
     const enableOptions = {
       top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
     };
