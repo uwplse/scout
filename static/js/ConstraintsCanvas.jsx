@@ -3,6 +3,7 @@ import '../css/ConstraintsCanvas.css';
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import ConstraintsCanvasContainerSVGWidget from './ConstraintsCanvasContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
+import ConstraintActions from './ConstraintActions';
 import {
   SortableTreeWithoutDndContext as SortableTree,
   removeNodeAtPath, 
@@ -94,6 +95,10 @@ export default class ConstraintsCanvas extends React.Component {
     this.checkSolutionValidity();
   }
 
+  getActionForWidgetFeedback = (lock, shape) => {
+    return ConstraintActions.getAction(lock, shape);
+  }
+
   constructTreeFromCache = (canvasRootShape) => {
     // Restore the cosntraints tree from the cached shapes
     this.canvasLevelShape = canvasRootShape; 
@@ -112,6 +117,22 @@ export default class ConstraintsCanvas extends React.Component {
       }; 
 
       this.widgetTreeNodeMap[this.pageLevelShape.name] = newTreeNode; 
+
+      // Restore feedback items
+      // Check whether to remove or add a widget feedback item
+      if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
+        for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
+          let lock = this.canvasLevelShape.locks[i];
+          let action = this.getActionForWidgetFeedback(lock, this.canvasLevelShape);
+          if(action){
+            let uniqueId = _.uniqueId();
+            let message = action["do"].getFeedbackMessage(this.canvasLevelShape);
+            let id = this.pageLevelShape.name + "_" + uniqueId; 
+            let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, message);
+            newTreeNode.subtitle.push(widgetFeedback); 
+          } 
+        }     
+      } 
 
       newTreeData = newTreeData.concat(newTreeNode); 
 

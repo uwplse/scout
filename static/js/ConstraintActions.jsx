@@ -30,6 +30,26 @@ ConstraintActions.locked_margin_key = 'margin';
 ConstraintActions.locked_text_key = 'text';
 ConstraintActions.locksKey = 'locks'; 
 
+ConstraintActions.getAction = function getAction(lock, shape) {
+	if(shape.type == "page" || shape.type == "canvas") {
+		let action = ConstraintActions.canvasConstraints[lock]; 
+		if(action) {
+			return action;
+		}
+	}else if(shape.type == "group") {
+		let action = ConstraintActions.groupConstraints[lock]; 
+		if(action){
+			return action;
+		}
+	}
+	else {
+		let action = ConstraintActions.elementConstraints[lock]; 
+		if(action){
+			return action;
+		}
+	}
+}
+
 ConstraintActions.defaultKeepConstraint = function keepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
   	if(constraintsCanvasShape[ConstraintActions.locksKey] == undefined) {
 		constraintsCanvasShape[ConstraintActions.locksKey] = []; 
