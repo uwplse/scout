@@ -168,6 +168,7 @@ export default class ConstraintsCanvas extends React.Component {
   constructShapeHierarchy = (node, parentKey, nodeIndex, treeData) => {
     let source =  this.getSVGSourceByID(node.id);
     let widget = this.getWidget(node, source); 
+    this.constraintsShapesMap[node.name] = node; 
 
     let newTreeNode = {
         title: widget, 
@@ -175,6 +176,21 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[node.name] = newTreeNode; 
+
+    // Restore feedback items
+    if(node.locks && node.locks.length) {
+      for(let i=0; i<node.locks.length; i++) {
+        let lock = node.locks[i];
+        let action = this.getActionForWidgetFeedback(lock, node);
+        if(action){
+          let uniqueId = _.uniqueId();
+          let message = action["do"].getFeedbackMessage(node);
+          let id = node.name + "_" + uniqueId; 
+          let widgetFeedback = this.getWidgetFeedback(id, node, action, message);
+          newTreeNode.subtitle.push(widgetFeedback); 
+        } 
+      }     
+    } 
 
     let newTreeData = addNodeUnderParent({
       treeData: treeData, 
@@ -186,6 +202,7 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
 
     treeData = newTreeData.treeData; 
+
 
     let currNodeIndex = nodeIndex;
     if(node.children && node.children.length) {
