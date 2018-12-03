@@ -49,6 +49,26 @@ export default class PageContainer extends React.Component {
   componentDidMount = () => {
     // Initialize the SVGs from local storage if they are cached. 
     this.readSVGsFromLocalStorage(); 
+    this.loadSolutionsFromCache();
+  }
+
+  loadSolutionsFromCache = () => {
+    let solutionsCached = JSON.parse(localStorage.getItem('solutions'));
+    if(solutionsCached) {
+      for(let i=0; i<solutionsCached.length; i++){
+        let solution = solutionsCached[i];
+        this.solutionsMap[solution.id] = solution; 
+      }
+
+      this.setState({
+        solutions: solutionsCached
+      }); 
+    }     
+  }
+
+  updateSolutionsCache = () => {
+    let solutionsJSON = JSON.stringify(this.state.solutions); 
+    localStorage.setItem('solutions', solutionsJSON);
   }
 
   closeRightClickMenus = () => {
@@ -230,7 +250,7 @@ export default class PageContainer extends React.Component {
     // Update the state
     this.setState({
       solutions: this.state.solutions
-    }); 
+    }, this.updateSolutionsCache); 
   }
 
   saveDesignCanvas = (designCanvasID) => {
@@ -244,7 +264,7 @@ export default class PageContainer extends React.Component {
     this.setState({
       solutions: this.state.solutions, 
       zoomedDesignCanvasID: undefined
-    }); 
+    }, this.updateSolutionsCache); 
   }
 
   trashDesignCanvas = (designCanvasID) => {
@@ -258,7 +278,7 @@ export default class PageContainer extends React.Component {
     this.setState({
       solutions: this.state.solutions, 
       zoomedDesignCanvasID: undefined
-    }); 
+    }, this.updateSolutionsCache); 
   }
 
   zoomInOnDesignCanvas = (designCanvasID) => {
@@ -298,7 +318,7 @@ export default class PageContainer extends React.Component {
     // Update the state
     this.setState({
       solutions: this.state.solutions
-    }); 
+    }, this.updateSolutionsCache); 
   }
 
   getShapesJSON = () => {
@@ -336,7 +356,7 @@ export default class PageContainer extends React.Component {
       solutions: solutions.concat(this.state.solutions), 
       errorMessageShown: false, 
       showDesignsAlert: true
-    });
+    }, this.updateSolutionsCache);
   }
 
   getRelativeDesigns = (elements, action) => {
@@ -468,7 +488,7 @@ export default class PageContainer extends React.Component {
 
       this.setState({
         solutions: this.state.solutions
-      }); 
+      }, this.updateSolutionsCache); 
     }
   }
 
