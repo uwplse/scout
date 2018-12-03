@@ -265,22 +265,29 @@ class ConstraintBuilder(object):
 			self.solver.add(And(all_same_variables))
 
 		# The order of the elements within the groups should be uniform
-		for group in subgroups: 
+		for group in subgroups:
 			group_children = group.children
-			for i in range(0, len(group_children)-1): 
+			for i in range(0, len(group_children)-1):
 				child1 = group_children[i]
 				child2 = group_children[i+1]
-				child1_left_or_above = child1.variables.x.z3 + child1.computed_width() < child2.variables.x.z3
-
-
-				for j in range(0, len(child1.correspondingIDs)): 
+				child1_left = child1.variables.x.z3 + child1.computed_width() < child2.variables.x.z3
+				child1_above = child1.variables.y.z3 + child1.computed_height() < child2.variables.y.z3
+				child1_left_or_above = Or(child1_left, child1_above)
+		
+				for j in range(0, len(child1.correspondingIDs)):
 					child1_corrID = child1.correspondingIDs[j]
 					child2_corrID = child2.correspondingIDs[j]
 					child1_corr_shape = shapes[child1_corrID]
 					child2_corr_shape = shapes[child2_corrID]
+		
+					child1_corr_left = child1_corr_shape.variables.x.z3 + child1_corr_shape.computed_width() < child2_corr_shape.variables.x.z3
+					child1_corr_above = child1_corr_shape.variables.y.z3 + child1_corr_shape.computed_height() < child2_corr_shape.variables.y.z3
+					child1_corr_left_or_above = Or(child1_corr_left, child1_corr_above)
 
-					child1_corr_left_or_above = child1_corr_shape.variables.x.z3 + child1_corr_shape.computed_width() < child2_corr_shape.variables.x.z3
-					child2_corr_left_or_above = child2_corr_shape.variables.x.z3 + child2_corr_shape.computed_width() < child1_corr_shape.variables.x.z3
+					child2_corr_left = child2_corr_shape.variables.x.z3 + child2_corr_shape.computed_width() < child1_corr_shape.variables.x.z3
+					child2_corr_above = child2_corr_shape.variables.y.z3 + child2_corr_shape.computed_height() < child1_corr_shape.variables.y.z3
+					child2_corr_left_or_above = Or(child2_corr_left, child2_corr_above)
+
 					order_pair = If(child1_left_or_above, child1_corr_left_or_above, child2_corr_left_or_above)
 					self.solver.add(order_pair, container.shape_id + " " + group.shape_id + " Repeat Group: Enforce order of subgroups")
 

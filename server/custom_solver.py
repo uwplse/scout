@@ -4,6 +4,7 @@ import solver_helpers as sh
 import time
 import random
 import constraint_builder
+import sys 
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
@@ -48,7 +49,7 @@ class Solver(object):
 		print('create constraints')
 		self.init_constraints()
 		print('done creating constraints')
-
+		sys.stdout.flush()
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
 		# 	self.relative_search = True
@@ -287,7 +288,7 @@ class Solver(object):
 		# For debugging how large the search space isd
 		size = self.compute_search_space()
 		print("Total search space size: " + str(size))
-
+		sys.stdout.flush()
 		start_time = time.time()
 
 		# Z3 looping version
@@ -565,8 +566,10 @@ class Solver(object):
 
 	def branch_and_bound_n_solutions(self, time_start): 
 		while self.num_solutions < NUM_SOLUTIONS:
+			print("Number of solutions found: " + str(self.num_solutions))
 			state = sh.Solution()
 			sln = self.branch_and_bound_random(time_start, state)
+			sys.stdout.flush()
 			if sln is not None: 
 				self.solutions.append(sln)
 				self.num_solutions += 1
