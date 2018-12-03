@@ -165,7 +165,7 @@ class CanvasShape(Shape):
 		self.children = []
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-		self.variables.margin = sh.Variable("canvas", "margin", [2,5,10,20,30,40,50], index_domain=False)
+		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50], index_domain=False)
 		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
 		self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], var_type="str",
 													  index_domain=False)

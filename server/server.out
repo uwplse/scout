@@ -6529,3 +6529,57 @@ Amount of time taken: 39.87066984176636
 lowest cost: 19712
 highest cost: 43349
 127.0.0.1 - - [03/Dec/2018 14:10:58] "POST /solve HTTP/1.1" 200 -
+ * Serving Flask app "server.py" (lazy loading)
+ * Environment: production
+   WARNING: Do not use the development server in a production environment.
+   Use a production WSGI server instead.
+ * Debug mode: on
+ * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 912-644-241
+127.0.0.1 - - [03/Dec/2018 14:32:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [03/Dec/2018 14:32:26] "GET /dist/app.js HTTP/1.1" 200 -
+solving!
+create instance
+create constraints
+container
+container
+container
+container
+canvas
+add first constraint
+add second constraint
+container
+container
+leaf
+leaf
+leaf
+leaf
+leaf
+leaf
+leaf
+leaf
+done creating constraints
+Total search space size: 8115632763568128000000
+Number of solutions found: 0
+Number of solutions found: 1
+Number of solutions found: 2
+Number of solutions found: 3
+Number of solutions found: 4
+Number of solutions found: 5
+Number of solutions found: 6
+Number of solutions found: 7
+Number of solutions found: 8
+Number of solutions found: 9
+Total time to 10: 28.42750906944275
+number of solutions found: 10
+number of invalid solutions: 0
+branches pruned: 333
+Z3 time: 27.881223678588867
+Z3 calls: 623
+Encoding time: 0.196213960647583
+Amount of time taken: 28.427529096603394
+lowest cost: 11890
+highest cost: 44170
+127.0.0.1 - - [03/Dec/2018 14:33:06] "POST /solve HTTP/1.1" 200 -
