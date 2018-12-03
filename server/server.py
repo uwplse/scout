@@ -8,6 +8,7 @@ import uuid
 import random
 import copy
 import custom_solver
+import threading
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 DEFAULT_APP_HEIGHT = 667
@@ -46,13 +47,20 @@ def solve():
 			relative_designs_json = form_data["relative_designs"]
 			relative_designs = json.loads(relative_designs_json)
 
-		solutions = get_solution_from_custom_solver(elements, solutions, relative_designs)
+		try: 
+			results = {}
+			t1 = threading.Thread(target=get_solution_from_custom_solver, args=(elements, solutions, relative_designs, results,))
+			t1.start()
+			t1.join()
 
-		# Output dictionary 
-		output = dict() 
-		output["solutions"] = solutions
-
-		return json.dumps(output).encode('utf-8')
+			# Output dictionary 
+			output = dict() 
+			output["solutions"] = results['solutions']
+			return json.dumps(output).encode('utf-8')
+		except Exception as e: 
+			print("Exception in creating solver")
+			print(e)
+			return "'"
 	return ""
 
 @app.route('/check', methods=['POST','GET'])
@@ -69,13 +77,24 @@ def check():
 
 		# Will return the status of whether the current set of constraints is valid
 		# and also update the valid state of each of the previous solutions
-		result = check_solution_exists_and_validate_previous_solutions(elements, solutions)
+		results = {}
+		t1 = threading.Thread(target=check_solution_exists_and_validate_previous_solutions, args=(elements,solutions,results,))
+		# result = check_solution_exists_and_validate_previous_solutions(elements, solutions)
+
+		t1.start()
+		t1.join()
 
 		# Don't return back any results, just the status of whether it could be solved or not
 		output = dict() 
-		output["result"] = result["valid"]
-		output["solutions"] = result["solutions"]
-		return json.dumps(output).encode('utf-8')
+		if 'result' in results: 
+			output["result"] = results['result']["valid"]
+			output["solutions"] = results['result']["solutions"]
+			return json.dumps(output).encode('utf-8')
+		else: 
+			return ""
+		# except: 
+		# 	print("Exception in creating solver.")
+		# 	return ""
 	return ""
 
 # 	# Simulated annealing search 
@@ -97,15 +116,26 @@ def check():
 
 # 	return json.dumps(output).encode('utf-8')
 
-def check_solution_exists_and_validate_previous_solutions(elements, solutions):
-	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
-	result = solver.check()
-	return result
+def check_solution_exists_and_validate_previous_solutions(elements, solutions, results):
+	try: 
+		print("Creating solver instance.")
+		solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
+	except Exception as e: 
+		print(e)
+		print('Exception in creating solver instance.')
 
-def get_solution_from_custom_solver(elements, solutions, relative_designs): 
+	try: 
+		print("Checking constraints.")
+		check_results = solver.check()
+		results['result'] = check_results
+	except Exception as e: 
+		print(e)
+		print('Exception in checking constraints.')
+
+def get_solution_from_custom_solver(elements, solutions, relative_designs, results): 
 	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT, relative_designs=relative_designs)
 	solutions = solver.solve()
-	return solutions
+	results['solutions'] = solutions
 
 def get_solution_from_solver(elements, canvas_width, canvas_height, tags): 
 	layout_solver = solver.LayoutSolver(elements, canvas_width, canvas_height, tags)

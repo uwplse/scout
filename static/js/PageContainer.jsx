@@ -198,9 +198,6 @@ export default class PageContainer extends React.Component {
 
     // Notify the constraintss canvas to add or remove the widget feedback to the tree
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
-
-    // Check the validity of the current constraints and update valid state of solutions
-    this.checkSolutionValidity();
   }
 
   updateConstraintsCanvas = (constraintsCanvasShape, action) => {
@@ -543,7 +540,8 @@ export default class PageContainer extends React.Component {
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
               updateConstraintsCanvas={this.updateConstraintsCanvas} 
-              checkSolutionValidity={this.checkSolutionValidity}/>
+              checkSolutionValidity={this.checkSolutionValidity}
+              svgWidgets={this.state.svgWidgets} />
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Designs

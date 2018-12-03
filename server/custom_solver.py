@@ -39,12 +39,15 @@ class Solver(object):
 		self.variables_different = Int('VariablesDifferent')
 
 		# Construct the solver instance we will use for Z3
+		print('create instance')
 		self.solver = z3.Solver()
 		self.override_solver = OverrideSolver(self.solver)
 		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
 
 		# Build the initial set of constraints on the shapes and containers 
+		print('create constraints')
 		self.init_constraints()
+		print('done creating constraints')
 
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
@@ -70,13 +73,16 @@ class Solver(object):
 		canvas = None
 		for shape in self.shapes.values(): 
 			if shape.type == "canvas":  
+				print('canvas')
 				self.cb.init_canvas_constraints(shape)
 				canvas = shape
 			if shape.type == "container": 
+				print('container')
 				self.cb.init_container_constraints(shape, self.shapes)
 
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
+				print('leaf')
 				self.cb.init_shape_bounds(shape, self.canvas_width, self.canvas_height)
 				self.cb.init_shape_baseline(shape)
 				self.cb.init_shape_grid_values(shape, canvas)
@@ -240,7 +246,6 @@ class Solver(object):
 				result = self.z3_check(start_time)
 				unsat_core = self.solver.unsat_core()
 				constraints = self.solver.sexpr()
-				print(unsat_core)
 
 				# update the valid state of the solution
 				solution["valid"] = result

@@ -65,12 +65,120 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   componentDidMount() {
-    let rootNode = this.initRootNode();
-    this.state.treeData = this.state.treeData.concat(rootNode); 
+    let cachedShapesJSON = localStorage.getItem('shapeHierarchy'); 
+    if(!cachedShapesJSON) {
+      // } else {
+      let rootNode = this.initRootNode();
+      this.state.treeData = this.state.treeData.concat(rootNode); 
 
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }));
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }), this.updateShapeCache);
+    }
+  }
+
+  componentDidUpdate = (prevProps) => {
+    if(prevProps.svgWidgets.length != this.props.svgWidgets.length) {
+      // SVG widgets have been read from cache. Restore hierarchy from cache
+      // Retrieve cached shapes from local storage and repopulate them into the tree
+      let cachedShapesJSON = localStorage.getItem('shapeHierarchy');
+      let cachedShapes = JSON.parse(cachedShapesJSON);
+      this.constructTreeFromCache(cachedShapes);
+    }
+  }
+
+  checkSolutionValidityAndUpdateCache = () => {
+    // Update shapes cache in localStorage
+    this.updateShapeCache(); 
+
+    // Check validity of constraints
+    this.checkSolutionValidity();
+  }
+
+  constructTreeFromCache = (canvasRootShape) => {
+    // Restore the cosntraints tree from the cached shapes
+    this.canvasLevelShape = canvasRootShape; 
+    this.constraintsShapesMap[canvasRootShape.name] = canvasRootShape; 
+
+    if(this.canvasLevelShape.children) {
+      this.pageLevelShape = this.canvasLevelShape.children[0]; 
+      this.constraintsShapesMap[this.pageLevelShape.name] = this.pageLevelShape; 
+
+      // Create page level widget
+      let newTreeData = [];
+      let pageWidget = this.getWidget(this.pageLevelShape, rootNode);
+      let newTreeNode = {
+        title: pageWidget, 
+        subtitle: []
+      }; 
+
+      this.widgetTreeNodeMap[this.pageLevelShape.name] = newTreeNode; 
+
+      newTreeData = newTreeData.concat(newTreeNode); 
+
+      if(this.pageLevelShape.children) {
+        let parentKey = 0; 
+        let nodeIndex = parentKey; 
+        for(let i=0; i<this.pageLevelShape.children.length; i++) {
+          nodeIndex = nodeIndex + 1; 
+          let child = this.pageLevelShape.children[i]; 
+          let results = this.constructShapeHierarchy(child, parentKey, nodeIndex, newTreeData);
+          newTreeData = results.treeData; 
+          nodeIndex = results.nodeIndex; 
+        }
+      }
+
+      this.setState(state => ({
+        treeData: newTreeData
+      }));
+    }
+  }
+
+  getSVGSourceByID = (id) => {
+    let svgElements = this.props.svgWidgets; 
+    let svgElement = svgElements.filter(element => element.id == id); 
+    if(svgElement && svgElement.length) {
+      svgElement = svgElement[0]; 
+      return svgElement.svgData; 
+    }
+
+    return ""; 
+  }
+
+  constructShapeHierarchy = (node, parentKey, nodeIndex, treeData) => {
+    let source =  this.getSVGSourceByID(node.id);
+    let widget = this.getWidget(node, source); 
+
+    let newTreeNode = {
+        title: widget, 
+        subtitle: []
+    }; 
+
+    this.widgetTreeNodeMap[node.name] = newTreeNode; 
+
+    let newTreeData = addNodeUnderParent({
+      treeData: treeData, 
+      newNode: newTreeNode, 
+      parentKey: parentKey, 
+      getNodeKey: defaultGetNodeKey, 
+      ignoreCollapsed: false, 
+      expandParent: true
+    }); 
+
+    treeData = newTreeData.treeData; 
+
+    let currNodeIndex = nodeIndex;
+    if(node.children && node.children.length) {
+      for(let i=0; i<node.children.length; i++){
+        currNodeIndex = currNodeIndex + 1; 
+        let child = node.children[i]; 
+        let results = this.constructShapeHierarchy(child, nodeIndex, currNodeIndex, treeData); 
+        treeData = results.treeData; 
+        currNodeIndex = results.nodeIndex; 
+      }
+    }
+
+    return { treeData: treeData, nodeIndex: currNodeIndex }; 
   }
 
   initRootNode = () => {
@@ -119,8 +227,15 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[page.name] = newTreeNode; 
-
     return newTreeNode; 
+  }
+
+  updateShapeCache = () => {
+    // Update the entry for the constraintShapesMap in the localStorage cache
+    // so we can repopulate the constraints tree on refresh 
+    let shapeHierarchy = this.getShapeHierarchy();
+    let shapeHierarchyJSON = JSON.stringify(shapeHierarchy); 
+    localStorage.setItem('shapeHierarchy', shapeHierarchyJSON); 
   }
 
   getWidget = (shape, src, options={}) => {
@@ -187,8 +302,9 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.setState(state => ({
       treeData: newTreeData.treeData, 
-    }), this.checkSolutionValidity);
+    }), this.checkSolutionValidityAndUpdateCache);
   }
+
 
   clearShapesFromCanvas = () => {
     let newTreeData = []; 
@@ -196,7 +312,7 @@ export default class ConstraintsCanvas extends React.Component {
     newTreeData = newTreeData.concat(rootNode); 
     this.setState({
       treeData: newTreeData
-    }); 
+    }, this.updateShapeCache); 
   }
 
   createNewTreeNode = (type, source, options={}) => {
@@ -388,7 +504,7 @@ export default class ConstraintsCanvas extends React.Component {
 
       this.setState(state => ({
         treeData: this.state.treeData
-      }), this.checkSolutionValidity); 
+      }), this.checkSolutionValidityAndUpdateCache); 
     }
   }
 
@@ -466,7 +582,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.setState(state => ({
       treeData: this.state.treeData
-    }));      
+    }), this.checkSolutionValidityAndUpdateCache);      
   }
 
   getShapeHierarchy = () => {
@@ -798,7 +914,7 @@ export default class ConstraintsCanvas extends React.Component {
 
         this.setState(state => ({
           treeData: this.state.treeData
-        }), this.checkSolutionValidity); 
+        }), this.checkSolutionValidityAndUpdateCache); 
       }
     }
   }
@@ -963,7 +1079,7 @@ export default class ConstraintsCanvas extends React.Component {
 
         this.setState(state => ({
           treeData: this.state.treeData
-        }), this.checkSolutionValidity); 
+        }), this.checkSolutionValidityAndUpdateCache); 
       }
     }
 
@@ -1064,10 +1180,9 @@ export default class ConstraintsCanvas extends React.Component {
       // Delete the entry in the constraints canvas shape map 
       delete this.constraintsShapesMap[shapeID];
 
-
       this.setState(state => ({
         treeData: this.state.treeData,
-      }), this.checkSolutionValidity); 
+      }), this.checkSolutionValidityAndUpdateCache); 
     }
   }
 

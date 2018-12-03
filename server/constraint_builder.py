@@ -83,7 +83,9 @@ class ConstraintBuilder(object):
 		canvas_x = canvas.variables.x.z3
 		canvas_y = canvas.variables.y.z3
 
+		print('add first constraint')
 		self.solver.add(alignment.z3 >= 0, 'canvas_alignment domain lowest')
+		print('add second constraint')
 		self.solver.add(alignment.z3 < len(alignment.domain), 'canvas_alignment domain highest')
 		self.solver.add(justification.z3 >= 0, 'canvas_justification domain lowest')
 		self.solver.add(justification.z3 < len(justification.domain), 'canvas justification domain highest')
@@ -527,9 +529,6 @@ class ConstraintBuilder(object):
 		# not_columns = arrangement != columns_index
 
 		if container.container_order == "important": 
-			print(container.type)
-			print("HERE")
-			print("THE CONTAINER ORDER IS IMPORTANT")
 			vertical_pairs = []
 			horizontal_pairs = []
 			child_shapes = container.children
