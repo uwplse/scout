@@ -386,7 +386,7 @@ export default class PageContainer extends React.Component {
         svgData: groupSVG, 
         type: "group"
       }
-      this.state.svgWidgets.push(group); 
+      this.state.svgWidgets.push(group);
       this.setState({
         svgWidgets: this.state.svgWidgets.concat(svgWidgets)
       });

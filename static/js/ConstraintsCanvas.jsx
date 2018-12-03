@@ -167,6 +167,10 @@ export default class ConstraintsCanvas extends React.Component {
 
   constructShapeHierarchy = (node, parentKey, nodeIndex, treeData) => {
     let source =  this.getSVGSourceByID(node.id);
+    if(node.item) {
+      source = item; 
+    }
+
     let widget = this.getWidget(node, source); 
     this.constraintsShapesMap[node.name] = node; 
 
@@ -279,10 +283,10 @@ export default class ConstraintsCanvas extends React.Component {
     let shapeId = shape.name;
     let highlighted = options.highlighted ? options.highlighted : false; 
     let isContainer = shape.type == "group" || shape.type == "page" || shape.type == "canvas";
+    let item = options.item ? options.item : false;
+    let typed = options.typed ? options.typed : false;
 
     if(isContainer) {
-      let item = options.item ? options.item : false; 
-      let typed = options.typed ? options.typed : false;
       return (<ConstraintsCanvasContainerSVGWidget 
                 key={shapeId} 
                 shape={shape} 
@@ -709,6 +713,8 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     let importance = (options.importance ? options.importance : "normal");
+    let item = (options.item ? options.item : false); 
+    let typed = (options.typed ? options.typed : false);
 
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
@@ -726,7 +732,9 @@ export default class ConstraintsCanvas extends React.Component {
         "height": height
       }, 
       "x": 0, 
-      "y": 0
+      "y": 0,
+      "item": item, 
+      "typed": typed
     }
 
     if (isContainer) {

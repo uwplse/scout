@@ -5,6 +5,7 @@ import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
 import group from '../assets/illustrator/groupDesign.svg';
+import item from '../assets/illustrator/item.svg';
 import '../css/DesignCanvas.css'; 
 
 export default class DesignCanvas extends React.Component {
@@ -169,7 +170,8 @@ export default class DesignCanvas extends React.Component {
     // Get the control SVG element from the control type
     let type = shape.type; 
     let isContainer = type == "group" || type == "labelGroup" || type == "page"; 
-    let svgSource = isContainer ? group : this.getSVGSourceByID(shape.id); 
+    let isItem = shape.item;
+    let svgSource = isItem ? item : (isContainer ? group : this.getSVGSourceByID(shape.id)); 
     if(svgSource != undefined) {
       let padding = 0; 
       if(isContainer) {

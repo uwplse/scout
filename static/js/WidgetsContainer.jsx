@@ -53,13 +53,16 @@ class WidgetsContainer extends React.Component {
     const hasWidgets = this.props.widgets.length; 
 
     const widgets = this.props.widgets.map((widget) => {
-      return (<WidgetsContainerSVGWidget 
-        className="widget-control" 
-        id={widget.id}
-        svgData={widget.svgData}
-        type={widget.type}
-        addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>  
-      ); 
+      if(!widget.item) { // Items cannot be directly added as they are children of typed groups
+        return (<WidgetsContainerSVGWidget 
+          className="widget-control" 
+          id={widget.id}
+          svgData={widget.svgData}
+          type={widget.type}
+          addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>  
+        ); 
+      }
+      return undefined;
     });
 
     return (
