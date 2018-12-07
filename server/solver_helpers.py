@@ -1,4 +1,4 @@
-from z3 import Int, String, StringVal, Real
+from z3 import *
 import copy 
 import uuid 
 import numpy as np

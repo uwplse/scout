@@ -128,7 +128,7 @@ class ContainerShape(Shape):
 		Shape.__init__(self, shape_id, element, "container", num_siblings)
 		self.children = []
 		self.variables.arrangement = sh.Variable(shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
-		self.variables.proximity = sh.Variable(shape_id, "proximity", [5,10,15,20,25,30,35,40], index_domain=False)
+		self.variables.proximity = sh.Variable(shape_id, "proximity", [5,10,15,20,25,30,35,40,45,50,55,60], index_domain=False)
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values
@@ -165,7 +165,7 @@ class CanvasShape(Shape):
 		self.children = []
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50], index_domain=False)
+		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50,60,70,80,90,100], index_domain=False)
 		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
 		self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], var_type="str",
 													  index_domain=False)
