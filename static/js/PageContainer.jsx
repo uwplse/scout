@@ -321,6 +321,14 @@ export default class PageContainer extends React.Component {
     }, this.updateSolutionsCache); 
   }
 
+  clearDesigns = () => {
+    this.setState({
+      solutions: []
+    }, this.updateSolutionsCache); 
+
+    this.solutionsMap = {}; 
+  }
+
   getShapesJSON = () => {
     // Get all of the shapes on the canvas into a collection 
     let shapeObjects = this.constraintsCanvasRef.current.getShapeHierarchy();
@@ -587,6 +595,11 @@ export default class PageContainer extends React.Component {
                     <button type="button" className="btn btn-default design-canvas-button">Export Designs (TBD)</button>
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
+                  </div>
+                  <div 
+                    className="btn-group header-button-group">
+                    <button type="button" className="btn btn-default design-canvas-button" 
+                      onClick={this.clearDesigns}>Clear Designs</button>
                   </div>
                 </h3>
               </div>  

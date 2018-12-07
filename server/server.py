@@ -9,6 +9,7 @@ import random
 import copy
 import custom_solver
 import threading
+import sys
 
 app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
 DEFAULT_APP_HEIGHT = 667
@@ -34,6 +35,7 @@ def hello():
 @app.route('/solve', methods=['POST','GET'])
 def solve(): 
 	print("solving!")
+	sys.stdout.flush()
 	form_data = request.form
 
 	if "elements" in form_data and "solutions" in form_data:
@@ -52,6 +54,7 @@ def solve():
 			t1 = threading.Thread(target=get_solution_from_custom_solver, args=(elements, solutions, relative_designs, results,))
 			t1.start()
 			t1.join()
+			sys.stdout.flush()
 
 			# Output dictionary 
 			output = dict() 
@@ -61,11 +64,13 @@ def solve():
 			print("Exception in creating solver")
 			print(e)
 			return "'"
+	sys.stdout.flush()
 	return ""
 
 @app.route('/check', methods=['POST','GET'])
 def check(): 
 	print("checking!")
+	sys.stdout.flush()
 
 	form_data = request.form
 
@@ -82,7 +87,9 @@ def check():
 		# result = check_solution_exists_and_validate_previous_solutions(elements, solutions)
 
 		t1.start()
+		sys.stdout.flush()
 		t1.join()
+		sys.stdout.flush()
 
 		# Don't return back any results, just the status of whether it could be solved or not
 		output = dict() 
@@ -95,6 +102,7 @@ def check():
 		# except: 
 		# 	print("Exception in creating solver.")
 		# 	return ""
+	sys.stdout.flush()
 	return ""
 
 # 	# Simulated annealing search 
@@ -227,9 +235,9 @@ if __name__ == "__main__":
 	cmd_args = parser.parse_args()
 	app_options = {"port": cmd_args.port}
 
-	if cmd_args.debug_mode:
-		app_options["debug"] = True
-		app_options["use_debugger"] = False
-		app_options["use_reloader"] = False
+	#if cmd_args.debug_mode:
+	app_options["debug"] = True
+	app_options["use_debugger"] = False
+	app_options["use_reloader"] = False
 
 	app.run(**app_options)
