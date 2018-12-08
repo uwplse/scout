@@ -13,3 +13,4 @@ jsonpickle==0.9.6
 markupsafe==1.0           # via jinja2
 numpy==1.14.3
 werkzeug==0.14.1          # via flask
+z3
