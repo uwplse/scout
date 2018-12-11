@@ -11,6 +11,11 @@
 	align-items: center;
 }
 
+.widget-control-svg {
+  margin-top: 30px;
+  cursor: pointer;
+}
+
 /* 
 	Drag and drop area in the widgets panel
 */
@@ -82,3 +87,4 @@
 .box.hovered {
 	background-color: darkgray; 
 }
+

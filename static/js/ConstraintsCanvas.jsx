@@ -751,7 +751,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   calculateRowHeight = ({treeIndex, node, path}) => {
-    let padding = 0; 
+    let padding = 10; 
     let actualRowHeight = node.title.props.shape.size.height + (padding * 2);
     let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
