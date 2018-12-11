@@ -26,12 +26,13 @@ class LabelMenuItem extends React.Component {
   }
 
   render () {
+    let self = this; 
     let label = "Make label for \"" + this.shapeLabel + "\"."; 
     return (<li>
                <a 
                 tabIndex="-1" 
                 href="#" 
-                onClick={this.onClick(this.shapeID)}>
+                onClick={function (evt) { self.onClick(evt, self.shapeID); }}>
                 {label}
                </a>
             </li>); 
@@ -68,14 +69,17 @@ class OrderMenuItem extends React.Component {
   }
 
   render () {
-    let position = Converter.toWordsOrdinal(this.index+1) 
+    let self = this; 
+    // let position = Converter.toWordsOrdinal(this.index+1) 
+    let orderPosition = this.index == 0 ? "first" : "last"; 
+
     let label = (this.currentOrder == -1 || this.currentOrder == undefined) ? 
-                  "Keep " + position + " in order." : "Don't keep " + position + " in order.";
+                  "Keep " + orderPosition + "." : "Don't keep " + orderPosition + ".";
     let newOrder = (this.currentOrder == -1 || this.currentOrder == undefined ? this.index : -1); 
 
     return (<li>
               <a tabIndex="-1" href="#" 
-                onClick={this.onClick(newOrder)}>
+                onClick={function (evt) { self.onClick(evt, newOrder); }}>
                 {label}
               </a>
             </li>); 
@@ -90,10 +94,11 @@ class ContainerOrderMenuItem extends React.Component {
   }
 
   render () {
+    let self = this; 
     let newOrder = this.currentOrderValue == "important" ? "unimportant" : "important"; 
-    let label = "Order " + (this.currentOrderValue == "important" ? "Unimportant" : "Important"); 
+    let label = "The order is " + (this.currentOrderValue == "important" ? "unimportant." : "important."); 
     return (<li>
-              <a onClick={this.onClick(newOrder)} tabIndex="-1" href="#">
+              <a onClick={function (evt) { self.onClick(evt, newOrder); }} tabIndex="-1" href="#">
                 {label}
               </a>
             </li>);   
@@ -105,12 +110,13 @@ class ImportanceMenuItem extends React.Component {
     super(props); 
     this.onClick = props.onClick; 
     this.importanceLevel = props.importanceLevel; 
-    this.label = (this.importanceLevel == "most" ? "More Emphasis" : (this.importanceLevel == "least" ? "Less Emphasis" : "Normal Emphasis")); 
+    this.label = (this.importanceLevel == "most" ? "Add more emphasis." : (this.importanceLevel == "least" ? "Add less emphasis." : "Add normal emphasis.")); 
   }
 
   render () {
+    let self = this; 
     return <li> 
-              <a onClick={this.onClick(this.importanceLevel)} tabIndex="-1" href="#">
+              <a onClick={function(evt) { self.onClick(evt, self.importanceLevel); }} tabIndex="-1" href="#">
                 {this.label}
               </a>
           </li>; 
@@ -136,6 +142,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
     this.getCurrentShapeOrder = props.getCurrentShapeOrder; 
     this.getCurrentShapeImportance = props.getCurrentShapeImportance; 
     this.getCurrentContainerOrder = props.getCurrentContainerOrder; 
+    this.getCurrentShapeType = props.getCurrentShapeType; 
     this.fontSizes = [12, 16, 18, 20, 22, 28, 30, 32, 36, 40, 48]; 
 
     this.state = {
@@ -209,10 +216,11 @@ export default class ConstraintsCanvasMenu extends React.Component {
 
     // Decide whether to show the order menu item based on the index of the shape in the 
     // parent container.
+    let shapeType = this.getCurrentShapeType(this.shapeID); 
     let shapeIndex = this.getCurrentShapeIndex(this.shapeID); 
     let siblings = this.getCurrentShapeSiblings(this.shapeID);
     let currOrder = this.getCurrentShapeOrder(this.shapeID);  
-    let showOrderMenuItem = (!siblings.prev || !siblings.next);  
+    let showOrderMenuItem = (!siblings.prev || !siblings.next) && shapeType != "page";  
 
     if(showOrderMenuItem) {
       orderMenuItems.push(<OrderMenuItem key={this.shapeID} currentOrder={currOrder} index={shapeIndex} onClick={this.setOrder} />); 
@@ -326,10 +334,11 @@ export default class ConstraintsCanvasMenu extends React.Component {
         data-toggle="dropdown" 
         style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}}>
         <ul className="dropdown-menu" style={{display: "block"}}>
-          <li className="dropdown-submenu">
-            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set Emphasis<span className="caret"></span></a>
+          {/*<li className="dropdown-submenu">
+            <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set the emphasis to ...<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
-          </li> 
+          </li>*/}
+        {importanceMenuItems}
         {labelShown ? labelItems : undefined}
         {orderShown ? orderMenuItems : undefined}
         {containerOrderShown ? containerOrderMenuItems : undefined}

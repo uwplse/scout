@@ -1,12 +1,15 @@
-from z3 import Int, String, StringVal
+from z3 import *
 import copy 
 import uuid 
 import numpy as np
 import math
+import shapes as shape_objects
+from fractions import Fraction
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
-MAGNIFICATION_VALUES = [0,1,2,3,4,5,6,7,8,9,10]
+MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
 def get_row_column_values(num_siblings):
 	values = []
@@ -32,25 +35,49 @@ def parse_unsat_core(unsat_core):
 		conflict_string = str(conflict)
 		if len(conflict_string) >= 5 and conflict_string.find("lock_", 0, 5) > -1:
 			parts = conflict_string.split("_")
-			lock_id, shape_id, variable, value = parts
-			conflict = dict()
-			conflict["shape_id"] = shape_id
-			conflict["variable"] = variable
-			conflict["value"] = value
-			conflicts.append(conflict)
+			if len(parts) >= 4: 
+				lock_id = parts[0]
+				shape_id = parts[1]
+				variable = parts[2]
+				value = parts[3]
+
+				if len(parts) > 4: 
+					value = parts[4]
+					variable = parts[2] + "_" + parts[3]				
+
+				conflict = dict()
+				conflict["shape_id"] = shape_id
+				conflict["variable"] = variable
+				conflict["value"] = value
+				conflicts.append(conflict)
 	return conflicts
 
 class Variable(object): 
-	def __init__(self, shape_id, name, domain=[], varType="int"): 
+	def __init__(self, shape_id, name, domain=[], index_domain=True, var_type="int", ):
 		self.shape_id = shape_id
 		self.name = name
 		self.assigned = None
 		self.domain = domain
-		self.type = varType
+		self.type = var_type
+
+		# If this is true, the domain values produced by the solver `
+		# map directly to the indexes of the variables in the list
+		# If it is false, the domain values the solver produces
+		# will be the actual numerical or string values from the domain
+		self.index_domain = index_domain
 
 		# Z3 Variable for testing (??)
 		if self.type == "str": 
 			self.z3 = String(shape_id + "_" + name)
+
+			if len(self.domain): 
+				str_domain = []
+				for dom_value in self.domain: 
+					dom_value_str = StringVal(dom_value)
+					str_domain.append(dom_value_str)
+				self.domain = str_domain
+		elif self.type == "real": 
+			self.z3 = Real(shape_id + "_" + name)
 		else: 
 			self.z3 = Int(shape_id + "_" + name)
 
@@ -67,6 +94,9 @@ class Variable(object):
 
 		elif self.name == "width" or self.name == "height":
 			return element["size"][self.name]
+
+		if 'magnification' not in element and self.name == 'magnification':
+			print('stop')
 
 		return element[self.name]
 
@@ -105,10 +135,58 @@ class Solution(object):
 		total = total_lr # + total_tb
 		return int(total)
 
+	def compute_importance_cost(self, importance_change, importance_max): 
+		# Cost is equal to the difference between the total amount of 
+		# change of the sizes and the maximum amount of change in the sizes
+		# The closer the change is to the maximum amount, this should decrease
+		# the cost
+		return importance_max - importance_change
+
+	def compute_weighted_cost(self, importance_cost, symmetry_cost, distance_cost):
+		return importance_cost + symmetry_cost + distance_cost
+
+	def compute_distance_from_center(self, shape_x, shape_y, shape_width, shape_height): 
+		center_x = CANVAS_WIDTH/2
+		center_y = CANVAS_HEIGHT/2 
+
+		shape_center_x = shape_x + (shape_width/2)
+		shape_center_y = shape_y + (shape_height/2)
+
+		# Euclidian distance from the center
+		x_dist = int(abs(shape_center_x - center_x))
+		y_dist = int(abs(shape_center_y - center_y))
+
+		distance = math.sqrt(x_dist^2 + y_dist^2)
+		return distance
+
+	def compute_inverse_distance_from_center(self, shape_x, shape_y, shape_width, shape_height): 
+		center_x = CANVAS_WIDTH/2
+		center_y = CANVAS_HEIGHT/2 
+
+		shape_center_x = shape_x + (shape_width/2)
+		shape_center_y = shape_y + (shape_height/2)
+
+		# Euclidian distance from the center
+		x_dist = int(abs(shape_center_x - center_x))
+		y_dist = int(abs(shape_center_y - center_y))
+
+		# Subtract again from the center distance so we get distance from edge
+		x_dist = int(abs(x_dist - center_x))
+		y_dist = int(abs(y_dist - center_y))
+
+		distance = math.sqrt(x_dist^2 + y_dist^2)
+		return distance
+
 	def convert_to_json(self, shapes, model):
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
 		new_elements = dict()
+
+		# Cost variables
+		importance_change = 0
+		importance_max = 0
+		distance_cost = 0
+
 		for shape in shapes.values():  
 			f_x = model[shape.variables.x.z3]
 			f_y = model[shape.variables.y.z3]
@@ -129,7 +207,6 @@ class Solution(object):
 
 				height = shape.height()
 				width = shape.width()
-
 				if shape.type == "container": 
 					height = model[shape.height()].as_string()
 					width = model[shape.width()].as_string()
@@ -138,31 +215,6 @@ class Solution(object):
 					element["size"]["width"] = width
 					element["size"]["height"] = height
 
-				if shape.importance_set: 
-					if shape.importance == "most": 
-						magnification = model[shape.variables.magnification.z3].as_string()
-						magnification = int(magnification)
-
-						magnification_factor = 1/magnification if magnification > 0 else 0
-						height = height + (magnification_factor * height)
-						width = width + (magnification_factor * width)
-						height = int(round(height,0))
-						width = int(round(width,0))
-						element["size"]["height"] = height
-						element["size"]["width"] = height
-					elif shape.importance == "least": 
-						minification = model[shape.variables.minification.z3].as_string()
-						minification = int(minification)
-
-						minification_factor = 1/minification if minification > 0 else 0
-						height = height - (minification_factor * height)
-						width = width - (minification_factor * width)
-						height = int(round(height,0))
-						width = int(round(width, 0))
-						element["size"]["height"] = height
-						element["size"]["width"] = width
-
-				if shape.type == "container": 
 					# Also include the container properties in the element object for each container shape 
 					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
 					# so we don't have to edit this place every time we add a property
@@ -179,26 +231,85 @@ class Solution(object):
 					justification = model[shape.variables.justification.z3].as_string()
 					margin = model[shape.variables.margin.z3].as_string()
 					grid = model[shape.variables.grid.z3].as_string()
+					background_color = model[shape.variables.background_color.z3].as_string()
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
 					element["grid"] = int(grid)
-				elif shape.type == "leaf":
-					if shape.importance == "most":
+					element["background_color"] = background_color.replace("\"", "")
+
+				if shape.type == "leaf": 
+					# Only consider emphassis for leaf node elements
+					if shape.importance == "most": 
 						magnification = model[shape.variables.magnification.z3].as_string()
-						element["magnification"] = int(magnification)
-					elif shape.importance == "least":
+						magnification = Fraction(magnification)
+						magnification = float(magnification)
+						element["magnification"] =  magnification
+
+						# magnification_factor = 1/magnification if magnification > 0 else 0
+						height = height * magnification
+						width = width * magnification
+						height = int(round(height,0))
+						width = int(round(width,0))
+						element["size"]["height"] = height
+						element["size"]["width"] = height
+
+						# Cost will be the distance from the maximum size
+						importance_change += (height - shape.orig_height)
+						importance_change += (width - shape.orig_width)
+						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_height)
+						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_width)
+
+						# Compute the distance of the shape from the center of the canvas
+						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
+					elif shape.importance == "least": 
 						minification = model[shape.variables.minification.z3].as_string()
-						element["minification"] = int(minification)
+						minification = Fraction(minification)
+						minification = float(minification)
+						print(minification)
+						element["minification"] = minification
+
+						# minification_factor = 1/minification if minification > 0 else 0
+						height = height * minification
+						width = width * minification
+						height = int(round(height,0))
+						width = int(round(width, 0))
+						element["size"]["height"] = height
+						element["size"]["width"] = width
+
+						# Used for computing importance cost
+						importance_change += (shape.orig_height - height)
+						importance_change += (shape.orig_width - width)
+						importance_max += (shape.orig_height - shape_objects.minimum_sizes[shape.shape_type])
+						importance_max += (shape.orig_width - shape_objects.minimum_sizes[shape.shape_type])
+
+						distance_cost += self.compute_inverse_distance_from_center(adj_x, adj_y, width, height)
 					else: 
 						element["minification"] = 0
 						element["magnification"] = 0
 
-				if shape.type == "leaf": 
 					# Only the locations of leaf level shapes to compute the symmetry cost
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
 
-		cost = self.compute_symmetry_cost(cost_matrix)
+				else: 
+					# Only consider emphassis for leaf node elements
+					if shape.importance == "most": 
+						magnification = model[shape.variables.magnification.z3].as_string()
+						magnification = Fraction(magnification)
+						magnification = float(magnification)
+						element["magnification"] =  magnification
+					elif shape.importance == "least": 
+						minification = model[shape.variables.minification.z3].as_string()
+						minification = Fraction(minification)
+						minification = float(minification)
+						element["minification"] = minification
+					else: 
+						element["minification"] = 0
+						element["magnification"] = 0
+
+		symmetry_cost = self.compute_symmetry_cost(cost_matrix)
+		importance_cost = self.compute_importance_cost(importance_change, importance_max)
+		cost = self.compute_weighted_cost(symmetry_cost, importance_cost, distance_cost)
 
 		# print("Total cost: " + str(cost))
 		sln["elements"] = new_elements

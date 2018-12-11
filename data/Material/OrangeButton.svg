@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 74.5 80.5">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #ff5722;
+        stroke: rgba(255,255,255,0.12);
+        stroke-width: 0.5px;
+      }
+
+      .cls-2 {
+        fill: none;
+      }
+
+      .cls-3 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        filter: url(#Button_bg-2);
+      }
+
+      .cls-5 {
+        filter: url(#Button_bg);
+      }
+    </style>
+    <filter id="Button_bg" x="0" y="0" width="74.5" height="74.5" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-opacity="0.122"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Button_bg-2" x="0" y="6" width="74.5" height="74.5" filterUnits="userSpaceOnUse">
+      <feOffset dy="6" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-2"/>
+      <feFlood flood-opacity="0.239"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Button" transform="translate(9.25 9.25)">
+    <g id="Button_bg-3" data-name="Button bg" transform="translate(-180)">
+      <g class="cls-5" transform="matrix(1, 0, 0, 1, 170.75, -9.25)">
+        <circle id="Button_bg-4" data-name="Button bg" class="cls-1" cx="28" cy="28" r="28" transform="translate(9.25 9.25)"/>
+      </g>
+      <g class="cls-4" transform="matrix(1, 0, 0, 1, 170.75, -9.25)">
+        <circle id="Button_bg-5" data-name="Button bg" class="cls-1" cx="28" cy="28" r="28" transform="translate(9.25 9.25)"/>
+      </g>
+    </g>
+    <g id="Add_Icon" data-name="Add Icon" transform="translate(16 16)">
+      <rect id="Bounds" class="cls-2" width="24" height="24"/>
+      <path id="Icon" class="cls-3" d="M11,5v6H5v2h6v6h2V13h6V11H13V5Z"/>
+    </g>
+  </g>
+</svg>

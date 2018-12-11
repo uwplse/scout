@@ -4,47 +4,11 @@ import DesignCanvasMenu from "./DesignCanvasMenu";
 import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
-import field from '../assets/illustrator/field_designs.svg';
-import search from '../assets/illustrator/search.svg';
-import image from '../assets/illustrator/image.svg'
-import image2 from '../assets/illustrator/image2.svg'
-import image3 from '../assets/illustrator/image3.svg'
-import logo from '../assets/illustrator/logo.svg'
-import newsLogo from '../assets/illustrator/newsLogo.svg'
-import placeholder from '../assets/illustrator/placeholder.svg'
-import filledButton from '../assets/illustrator/filledButton.svg';
-import orangeButton from '../assets/illustrator/orangeButton.svg';
-import label from '../assets/illustrator/label.svg';
-import orangeLabel from '../assets/illustrator/orangeLabel.svg';
-import smallLabel from '../assets/illustrator/smallLabel_designs.svg';
-import multilineLabel from '../assets/illustrator/multiline_label_designs.svg';
 import group from '../assets/illustrator/groupDesign.svg';
+import item from '../assets/illustrator/item.svg';
+import '../css/DesignCanvas.css'; 
 
 export default class DesignCanvas extends React.Component {
-  static svgElements(controlType) {
-    let svgElements = {
-      'field': field, 
-      'search': search, 
-      'button': filledButton, 
-      'orangeButton': orangeButton,
-      'label': label, 
-      'orangeLabel': orangeLabel,
-      'multilineLabel': multilineLabel,
-      'smallLabel': smallLabel, 
-      'group': group, 
-      'page': group,
-      'labelGroup': group,
-      'placeholder': placeholder, 
-      'image': image, 
-      'image2': image2,
-      'image3': image3,
-      'logo': logo, 
-      'logo2': newsLogo
-      /* Add others here */
-    }; 
-    return svgElements[controlType]; 
-  };
-
   constructor(props) {
   	super(props);
 
@@ -71,7 +35,8 @@ export default class DesignCanvas extends React.Component {
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
       designShape: undefined, // The root level shape of the DesignCanvas
-      hovered: false
+      hovered: false, 
+      backgroundColor: "#E1E2E1"
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -96,14 +61,15 @@ export default class DesignCanvas extends React.Component {
     return {
       constraintsMenuX: prevState.constraintsMenuX,
       constraintsMenuY: prevState.constraintsMenuY, 
-      constraintsMenuShape: prevState.constraintsMenuShape,  
+      constraintsMenuShape: prevState.constraintsMenuShape,
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState, 
+      backgroundColor: prevState.backgroundColor,
       valid: nextProps.valid, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
       removed: nextProps.removed, 
-      conflicts: nextProps.conflicts
+      conflicts: nextProps.conflicts,
     }    
   }
 
@@ -112,6 +78,10 @@ export default class DesignCanvas extends React.Component {
   }
  
   getScalingFactor = () => {
+    if(this.props.zoomed) {
+      return 1.0; 
+    }
+
     // Return the amount of scaling to use depending on the state of this DesignCanvas
     if(this.state.savedState == 1 || this.state.savedState == -1 || this.state.invalidated) {
       return 0.10; 
@@ -122,9 +92,9 @@ export default class DesignCanvas extends React.Component {
 
   initDesignCanvas = (shape) => {
     // Intialize the background color and root level design shape
-    console.log(shape.grid); 
     this.setState({
       designShape: shape,
+      backgroundColor: shape.background_color
     });
   }
 
@@ -140,11 +110,13 @@ export default class DesignCanvas extends React.Component {
         constraintsMenuShape: undefined
       }); 
 
-      this.setState({
-        constraintsMenuShape: shape, 
-        constraintsMenuX: evt.clientX, 
-        constraintsMenuY: evt.clientY, 
-      });
+      if(this.state.savedState == 0) {
+        this.setState({
+          constraintsMenuShape: shape, 
+          constraintsMenuX: evt.clientX, 
+          constraintsMenuY: evt.clientY, 
+        });
+      }
     }
   }
 
@@ -161,20 +133,19 @@ export default class DesignCanvas extends React.Component {
   hideMenu = () => {
     if(this.state.constraintsMenuShape) {
       this.setState({
-        constraintsMenuShape: undefined
+        constraintsMenuShape: undefined, 
       });  
     }
   }
 
-  getDesignCanvasWidget = (shape, width, height, left, top) => {
+  getDesignCanvasWidget = (shape, svgSource, width, height, left, top) => {
     let shapeId = shape.name;
-    let source = DesignCanvas.svgElements(shape.controlType);
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     return (<DesignCanvasSVGWidget 
             key={shapeId} 
             shape={shape} 
             id={shapeId} 
-            source={source}            
+            source={svgSource}            
             width={width}
             height={height}
             left={left}
@@ -184,22 +155,44 @@ export default class DesignCanvas extends React.Component {
             contextMenu={this.showConstraintsContextMenu}/>); 
   }
 
-  createSVGElement = (designCanvas, shape) => {
+  getSVGSource = (node) => {
+    if(node.item || node.type == "labelGroup") {
+      return groupDesign;
+    }
+
+    let svgElements = this.props.svgWidgets; 
+    let svgElement = svgElements.filter(element => element.id == node.id); 
+    if(svgElement && svgElement.length) {
+      svgElement = svgElement[0]; 
+      return svgElement.svgData; 
+    }
+
+    return ""; 
+  }
+
+  createSVGElement = (shape) => {
     // Get the control SVG element from the control type
-    let controlType = shape.controlType;
-    let svg = DesignCanvas.svgElements(controlType); 
-    if(svg != undefined) {
+    let type = shape.type; 
+    let isContainer = type == "group" || type == "labelGroup" || type == "page"; 
+    let svgSource = (isContainer ? group : this.getSVGSource(shape)); 
+    if(svgSource != undefined) {
       let padding = 0; 
-      if(controlType == "group" || controlType == "labelGroup" || controlType == "page") {
+      if(isContainer) {
         padding = 5;
       }
 
       let computedHeight = (shape.size.height * this.scalingFactor + (padding * 2));
       let computedWidth = (shape.size.width * this.scalingFactor + (padding * 2)); 
+
+      if(isContainer) {
+        console.log(computedWidth); 
+        console.log(computedHeight);
+      } 
+      
       let computedLeft = ((shape.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.y * this.scalingFactor) - padding);
 
-      let designCanvasWidget = this.getDesignCanvasWidget(shape, computedWidth, computedHeight, computedLeft, computedTop);
+      let designCanvasWidget = this.getDesignCanvasWidget(shape, svgSource, computedWidth, computedHeight, computedLeft, computedTop);
       this.state.childSVGs.push(designCanvasWidget);
       this.setState({
         childSVGs: this.state.childSVGs
@@ -208,40 +201,75 @@ export default class DesignCanvas extends React.Component {
   }
 
   drawDesign = () => {
-    // When the component mounts, draw the shapes onto the canvas
-    let designId = "design-canvas-" + this.id;
-    let designCanvas = document.getElementById(designId);  
-
     // Initialize the canvas and page elements first 
     // so they are at the top of the dom hierarchy
     let canvas = this.elements["canvas"]; 
     this.initDesignCanvas(canvas); 
 
     let page = this.elements["page"]; 
-    this.createSVGElement(designCanvas, page); 
+    this.createSVGElement(page); 
 
+    let elementsList = []; 
     for(let elementID in this.elements) {
       if(this.elements.hasOwnProperty(elementID)) {
         let element = this.elements[elementID];
         if(element.type != "canvas" && element.type != "page") {
-          this.createSVGElement(designCanvas, element);
+          elementsList.push(element); 
         }
       }
+    }
+
+    // Make sure the elements are sorted by containment 
+    elementsList.sort(function(a, b) {
+      let a_x = a.x; 
+      let a_y = a.y; 
+      let a_width = a.size.width;
+      let a_height = a.size.height; 
+
+      let b_x = b.x; 
+      let b_y = b.y; 
+      let b_width = b.size.width; 
+      let b_height = b.size.height; 
+
+      // Sort by containment
+      if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
+        // Sort b first if b contains a so it appears higher in the DOM hierarchy
+        return 1; 
+      }
+
+      return -1; 
+    }); 
+
+    for(let i=0; i<elementsList.length; i++) {
+      let element = elementsList[i]; 
+      this.createSVGElement(element); 
     }
   }
 
   performDesignCanvasMenuAction = (action) => {
+    // For a zoomed design, perform these actions on the linked design instead 
+    // of the zoomed in design ID as that is not maintained in the solutionsMap
+    // in PageContainer
+    let designId = this.id; 
+    if(this.props.zoomed) {
+      designId = this.props.linkedSolutionId; 
+    }
+
     if(action == "save") {
-      this.props.saveDesignCanvas(this.id);
+      this.props.saveDesignCanvas(designId);
       this.state.savedState = 1; 
     }
     else if(action == "trash") {
-      this.props.trashDesignCanvas(this.id);
+      this.props.trashDesignCanvas(designId);
       this.state.savedState = -1; 
     }
     else if(action == "like"){
       // Do something here 
       this.props.getRelativeDesigns(this.originalElements, "like"); 
+    }
+    else if(action == "zoom") {
+      // Open up the zoomed in design canvas dialog
+      this.props.zoomInOnDesignCanvas(designId);
     }
 
     this.setState({
@@ -267,7 +295,8 @@ export default class DesignCanvas extends React.Component {
     }
 
     // Trigger constraint highlighting if the solution is not current valid
-    if(!this.state.valid) {
+    // Do not trigger constraint highlighting if the solution is in the zoom container
+    if(!this.state.valid && !this.props.zoomed) {
       if(this.state.conflicts) {
         for(var i=0; i<this.state.conflicts.length; i++) {
           var conflict = this.state.conflicts[i];
@@ -282,8 +311,6 @@ export default class DesignCanvas extends React.Component {
           this.highlightAddedWidget(addedID, true); 
         }
       }
-
-      // TODO: Removed? 
     }
 
     var designCanvas = document.getElementById("design-canvas-" + this.id); 
@@ -292,9 +319,10 @@ export default class DesignCanvas extends React.Component {
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
       designMenu: <DesignMenu 
-                    left={componentBoundingBox.x} 
-                    top={componentBoundingBox.y} 
-                    menuAction={this.performDesignCanvasMenuAction} />, 
+                    // left={componentBoundingBox.x} 
+                    // top={componentBoundingBox.y} 
+                    showZoom={!this.props.zoomed}
+                    menuAction={this.performDesignCanvasMenuAction} />,
       hovered: true
     
     });
@@ -343,11 +371,6 @@ export default class DesignCanvas extends React.Component {
    	let constraintsMenuX = this.state.constraintsMenuX; 
     let constraintsMenuShape = this.state.constraintsMenuShape; 
 
-    if(constraintsMenuShape != undefined) {
-      console.log("design canvas");
-      console.log(constraintsMenuShape.type); 
-    }
-
     // The current design menu object for saving and trashing the designs 
     let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
@@ -358,11 +381,15 @@ export default class DesignCanvas extends React.Component {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     let childSVGs = this.state.childSVGs; 
 
-    return  (
+    return  (      
       <div onMouseEnter={this.showMenuAndHighlightConstraints} 
            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
-           id={"canvas-box-" + this.id} style={{height: (this.canvasHeight * scalingFactor) + "px", width: (this.canvasWidth * scalingFactor) + "px"}}> 
+           id={"canvas-box-" + this.id} 
+           style={{
+            height: (this.canvasHeight * scalingFactor) + "px", 
+            width: (this.canvasWidth * scalingFactor) + "px", 
+            backgroundColor: this.state.backgroundColor}}> 
   			<div className={(constraintsMenuShape ? "" : "hidden")}>
         {constraintsMenuShape ? 
           (<DesignCanvasMenu 
@@ -385,8 +412,6 @@ export default class DesignCanvas extends React.Component {
 	    </div>); 
   }
 }
-
-
 
 
 

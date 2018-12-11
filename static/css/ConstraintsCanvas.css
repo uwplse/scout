@@ -1,0 +1,255 @@
+/* Right click menus */ 
+
+.dropdown {
+	position: absolute;
+}
+
+.dropdown-menu {
+	padding-top: 0;
+	font-size: initial;
+}
+
+.dropdown-menu .caret {
+	margin-left: 10px;
+}
+
+.dropdown-menu .divider {
+	height: auto;
+	overflow: visible; 
+    background-color: #ffffff; 
+    display: flex; 
+    justify-content: center;
+    margin-bottom: 0;
+    margin-top: 20px;
+}
+
+.dropdown-menu .divider.divider-top {
+	margin-top: 0;
+}
+
+.dropdown-submenu .dropdown-menu {
+    top: 0;
+    left: 100%;
+    margin-top: -1px;
+}
+
+.dropdown-submenu {
+	position: relative;
+}
+
+.dropdown-menu > li {
+	border-top: 1px solid lightgray;
+}
+
+
+/* 
+  Constraints canvas 
+ */
+.constraints-canvas-container {
+	/* Needed when we do not have the virtualized grid enabled where it makes its own scrollbar */
+	overflow: auto;
+    height: calc(100% - 120px);
+    background-color: #414656;
+}
+
+.constraints-container {
+	width: 475px;
+	min-width: 475px;
+}
+
+
+/* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
+.widgets-sortable-tree .rst__rowContents {
+	border: none;
+	box-shadow: none;
+	min-width: initial;
+	background-color: initial;
+}
+
+.widgets-sortable-tree .rst__row {
+	align-items: center;
+}
+
+.widgets-sortable-tree .rst__rowWrapper {
+	padding: 0px;
+}
+
+.widgets-sortable-tree .rst__moveHandle {
+	height: 44px;
+}
+
+.widgets-sortable-tree .rst__rowTitleWithSubtitle {
+    height: inherit; 
+}
+
+.widgets-sortable-tree .widgets-sortable-tree-remove {
+	background-color: initial;
+	color: #ffffff;
+}
+
+.widgets-sortable-tree .rst__rowTitle {
+	font-weight: normal;
+}
+
+.widgets-sortable-tree .rst__rowSubtitle {
+	font-size: 14px;
+}
+
+.widgets-sortable-tree .rst__lineFullVertical:after {
+	height: 100%;
+}
+
+.widgets-sortable-tree .rst__rowLabel {
+	padding-right: 5px;
+}
+
+.widgets-sortable-tree .rst__lineChildren:after {
+	height: calc(50%); 
+	background-color: #ffffff;
+}
+
+.widgets-sortable-tree-remove {
+	border: none;
+}
+
+.widgets-sortable-tree .rst__lineBlock:after,
+.widgets-sortable-tree .rst__lineBlock:before {
+	background-color: #ffffff;
+}
+
+
+/**
+	Other styles 
+**/
+.widget-container > .widget-control-importance {
+	margin-top: 5px;
+	display: flex;
+}
+
+.widget-container.highlighted {	
+	border: 2px dashed white;
+	padding: 4;
+}
+
+.widget-control-group .widget-control {
+	margin-right: 10px;
+}
+
+.widget-control-button .widget-editable-text, 
+.widget-control-orangeButton .widget-editable-text {
+	transform: translate(120px, 22px);
+}
+
+.widget-control-field .widget-editable-text {
+	transform: translate(9.7px, 24px);
+}
+
+.widget-control-label > .widget-control-svg {
+	width: 5em;
+}
+
+.widget-control-svg {
+	margin-top: 20px;
+	cursor: pointer;
+}
+
+.widget-control-row {
+	display: flex; 
+	align-items: flex-start;
+	flex-direction: column;
+}
+
+.widget-control-info {
+    display: flex;
+    margin-top: 0.5em;
+}
+
+.widget-control-info span {
+	margin-left: 0px;
+	margin-right: 0.5em;
+}
+
+.widget-control-info-left, 
+.widget-control-info-right {
+	display: flex; 
+	flex-direction: column; 
+	justify-content: center;
+}
+
+.widget-control-info-right {
+	margin-left: 10px;
+}
+
+.widget-control-labels {
+	zoom: 40%; 
+	position: absolute;
+/*	z-index: 1000; 
+*/
+}
+
+.widget-control-typing {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em; 
+}
+
+.widget-control-typing span {
+	margin-left: 0.5em;
+	cursor: pointer;
+	color: blue;
+}
+
+.widget-control-typing span:hover {
+	text-decoration: underline;
+}
+
+.widget-stepper {
+	height: 25px; 
+}
+
+.widget-label {
+	height: 30px;
+}
+
+.widget-container > .widget-container-svg {
+	margin-right: 5px;
+	margin-left: 5px;
+}
+
+.containers-panel {
+	display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.widget-container .badge {
+	font-size: 14px;
+	border-radius: 3px;
+}
+
+/* Widgets tree feedback items */ 
+.widget-feedback-items {
+    list-style-type: none;
+    margin-top: 5px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    padding: 5px;
+    border-radius: 2px;
+}
+
+.widget-feedback-items.highlighted {
+   	border: 2px dashed #85144b;
+   	background-color: #ef9a9a;
+}
+
+.widget-feedback-items-list {
+	display: flex; 
+}
+
+.widget-feedback-items-remove {
+    background-color: #f5f5f5;
+    border: none;
+}
+
+.widget-feedback-items-remove.highlighted {
+	background-color: #ef9a9a;
+}

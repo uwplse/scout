@@ -1,5 +1,6 @@
 // App.jsx
 import React from "react";
+import '../css/DesignMenu.css';
 
 class DesignMenuItem extends React.Component {
   constructor(props) {
@@ -31,9 +32,15 @@ export default class DesignMenu extends React.Component {
   	let menuItems = []; 
     let save = (<span className="glyphicon glyphicon-star" aria-hidden="true"></span>); 
     let trash = (<span className="glyphicon glyphicon-trash" aria-hidden="true"></span>);
+    let zoom = (<span className="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>); 
 
     menuItems.push(<DesignMenuItem key="save" onClick={this.menuAction} action="save" label={save} />); 
     menuItems.push(<DesignMenuItem key="trash" onClick={this.menuAction} action="trash" label={trash} />); 
+
+    if(this.props.showZoom) {
+      menuItems.push(<DesignMenuItem key="zoom" onClick={this.menuAction} action="zoom" label={zoom} />); 
+    }
+
   	return menuItems; 
   }
 

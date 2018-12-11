@@ -21,12 +21,12 @@ class ConstraintBuilder(object):
 				self.solver.add(Not(And(all_values)), "prevent previous solution " + solution["id"] + " values")
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
-		# Saved solutions should not appear again in the results
+		# Get the constraints for checking the validity of the previous solution
 		all_values = self.get_solution_constraints_from_elements(shapes, elements)
 
-		# All of the variables that were set for this solution should be maintained (And constraint)
-		if len(all_values): 
-			self.solver.add(And(all_values), "prevent solution " + solutionID + " values")
+		# All of the variables that were set for this solution should be maintained
+		for value in all_values:
+			self.solver.add(value, "fix solution " + solutionID + " values " + str(value))
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements):
 		all_values = []
@@ -53,13 +53,14 @@ class ConstraintBuilder(object):
 			variables = shape.variables.toDict()
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
-				all_values.append(variable.z3 == variable.get_value_from_element(element))
+				if variable.name != "baseline": 
+					all_values.append(variable.z3 == variable.get_value_from_element(element))
 
 		return all_values	
 
 	def init_shape_baseline(self, shape): 
 		if shape.has_baseline:
-			self.solver.add(shape.variables.baseline.z3 == shape.variables.y.z3 + shape.orig_baseline)
+			self.solver.add(shape.variables.baseline.z3 == shape.variables.y.z3 + shape.orig_baseline, "baseline " + shape.shape_id)
 
 	def init_shape_bounds(self, shape, canvas_width, canvas_height):
 		self.solver.add(shape.variables.x.z3 >= 0, shape.shape_id + " x must be greater than zero.")
@@ -78,10 +79,13 @@ class ConstraintBuilder(object):
 		alignment = canvas.variables.alignment
 		justification = canvas.variables.justification
 		margin = canvas.variables.margin
+		background_color = canvas.variables.background_color
 		canvas_x = canvas.variables.x.z3
 		canvas_y = canvas.variables.y.z3
 
+		print('add first constraint')
 		self.solver.add(alignment.z3 >= 0, 'canvas_alignment domain lowest')
+		print('add second constraint')
 		self.solver.add(alignment.z3 < len(alignment.domain), 'canvas_alignment domain highest')
 		self.solver.add(justification.z3 >= 0, 'canvas_justification domain lowest')
 		self.solver.add(justification.z3 < len(justification.domain), 'canvas justification domain highest')
@@ -90,6 +94,11 @@ class ConstraintBuilder(object):
 		for margin_value in margin.domain:
 			or_values.append(margin.z3 == margin_value)
 		self.solver.add(Or(or_values), "canvas margin domain in range")
+
+		bg_values = []
+		for background_value in background_color.domain:
+			bg_values.append(background_color.z3 == background_value)
+		self.solver.add(Or(bg_values), "canvas background_color domain in range")
 
 		page_shape = canvas.children[0]
 		# page shape should stay within the bounds of the canvas container
@@ -166,15 +175,20 @@ class ConstraintBuilder(object):
 				# Shapes cannot exceed the bounds of their parent containers
 				self.solver.add(shape1_x >= container_x, "child shape " + shape1.shape_id + " inside parent container (greater than left)")
 				self.solver.add(shape1_y >= container_y, "child shape " + shape1.shape_id + " inside parent container (greater than top)")
-				self.solver.add((shape1_x + shape1_width) <= (container_x + container.computed_width()), "child shape " + shape1.shape_id + " inside parent container (less than width)")
+
+				restrict_width = (shape1_x + shape1_width) <= (container_x + container.computed_width())
+				self.solver.add(restrict_width, "child shape " + shape1.shape_id + " inside parent container (less than width)")
 				self.solver.add(bottom_axis <= (container_y + container.computed_height()), "child shape " + shape1.shape_id + " inside parent container (less than height)")
 
 				# Create importance level constraints
-				self.init_importance(shape1)
+				if shape1.type == "leaf": 
+					self.init_importance(shape1, container)
 
 			# If this is a hierarchical container, use the distribution variable. 
 			# If this is a bottom level group, using the proximity value 
-			spacing = container.variables.distribution.z3 if has_group and not container.typed else container.variables.proximity.z3
+			use_distribution = (has_group and not container.typed) or container.container_type == "page"
+			spacing = container.variables.distribution.z3 if use_distribution else container.variables.proximity.z3
+			
 			self.arrange_container(container, spacing)
 			self.align_container(container, spacing)
 			self.non_overlapping(container, spacing)
@@ -183,35 +197,37 @@ class ConstraintBuilder(object):
 				# If this is a typed container, enforce all variables on child containers to be the same
 				self.init_repeat_group(container, shapes)
 
-	def init_importance_domains(self, shape): 
-		if shape.importance == "most": 
-			magnification = []
-			for domain_value in shape.variables.magnification.domain: 
-				magnification.append(shape.variables.magnification.z3 == domain_value)
-			# magnification.append(shape.variables.magnification.z3 == 0)
-
-			self.solver.add(Or(magnification), "Shape " + shape.shape_id + " magnification values fall within domain.")
-		elif shape.importance == "least": 
-			minification = []
-			for domain_value in shape.variables.minification.domain: 
-				minification.append(shape.variables.minification.z3 == domain_value)
-			# minification.append(shape.variables.minification.z3 == 0)
-
-			self.solver.add(Or(minification), "Shape " + shape.shape_id + " minification values fall within domain.")
-
-	def init_importance(self, shape): 
-		# For shapes that have importance levels, they can increase or decrease but only to the minimum or maximum size. 
+	def init_importance(self, shape, container): 
 		if shape.importance == "most":
 			# Enforce the max size
 			self.solver.add(shape.computed_width() <= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be less than the maximum size.")
-			self.solver.add(shape.computed_height()<= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be less than the maximum size.")
-		elif shape.importance == "least":
-			# Enforce the minimum size
-			self.solver.add(shape.computed_width() >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " width must be greater than the minimum size.")
-			self.solver.add(shape.computed_height() >= shapes.minimum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be greater than the minimum size.")
+			self.solver.add(shape.computed_height() <= shapes.maximum_sizes[shape.shape_type], "Shape " + shape.shape_id + " height must be less than the maximum size.")
+			
+			magnification = []
+			for domain_value in shape.variables.magnification.domain: 
+				magnification.append(shape.variables.magnification.z3 == domain_value)
 
-		if shape.importance_set: 
-			self.init_importance_domains(shape)
+			self.solver.add(Or(magnification), "Shape " + shape.shape_id + " magnification values fall within domain.")
+
+		if shape.importance == "least":
+			# Enforce the minimum size
+			set_min_width = shape.computed_width() >= shapes.minimum_sizes[shape.shape_type]
+			self.solver.add(set_min_width, "Shape " + shape.shape_id + " width must be greater than the minimum size.")
+			
+			set_min_height = shape.computed_height() >= shapes.minimum_sizes[shape.shape_type]
+			self.solver.add(set_min_height, "Shape " + shape.shape_id + " height must be greater than the minimum size.")
+
+			minification = []
+			for domain_value in shape.variables.minification.domain: 
+				minification.append(shape.variables.minification.z3 == domain_value)
+
+			self.solver.add(Or(minification), "Shape " + shape.shape_id + " minification values fall within domain.")
+
+		if container.importance == "most": 
+			self.solver.add(container.variables.magnification.z3 == shape.variables.magnification.z3, "Shape " + shape.shape_id + " has magnification same as parent")
+
+		if container.importance == "least": 
+			self.solver.add(container.variables.minification.z3 == shape.variables.minification.z3, "Shape " + shape.shape_id + " has minification same as parent")
 
 	def init_repeat_group(self, container, shapes): 
 		subgroups = container.children
@@ -223,11 +239,7 @@ class ConstraintBuilder(object):
 			if i < len(subgroups) - 1: 
 				group1 = subgroups[i]
 				group2 = subgroups[i+1]
-				group1_width = group1.computed_width()
-				group1_height = group1.computed_height()
-				group2_width = group2.computed_width()
-				group2_height = group2.computed_height()
-
+				
 				group1_variables = group1.variables.toDict()
 				group2_variables = group2.variables.toDict()
 
@@ -247,36 +259,37 @@ class ConstraintBuilder(object):
 						else: 
 							all_same_values.append([groups_same])
 
-				# Keep the height and width of containers the same 
-				all_same_widths.append(group1_width == group2_width)
-				all_same_heights.append(group1_height == group2_height)
-
 		for all_same_variables in all_same_values: 
 			# For each collection of child variable values for a variable
 			# Enforce all values of that collection to be thes ame 
 			self.solver.add(And(all_same_variables))
 
-		self.solver.add(And(all_same_heights))
-		self.solver.add(And(all_same_widths))
-
-		# Enforce that the corresponding shapes for each shape in the group items has same relational location
-		# This should hopefully ensure that the order of the elements is uniform
-		for group in subgroups: 
+		# The order of the elements within the groups should be uniform
+		for group in subgroups:
 			group_children = group.children
-			for i in range(0, len(group_children)-1): 
+			for i in range(0, len(group_children)-1):
 				child1 = group_children[i]
 				child2 = group_children[i+1]
-				x_distance = child1.variables.x.z3 - child2.variables.x.z3
-				y_distance = child1.variables.y.z3 - child2.variables.y.z3
-				for j in range(0, len(child1.correspondingIDs)): 
+				child1_left = child1.variables.x.z3 + child1.computed_width() < child2.variables.x.z3
+				child1_above = child1.variables.y.z3 + child1.computed_height() < child2.variables.y.z3
+				child1_left_or_above = Or(child1_left, child1_above)
+		
+				for j in range(0, len(child1.correspondingIDs)):
 					child1_corrID = child1.correspondingIDs[j]
 					child2_corrID = child2.correspondingIDs[j]
 					child1_corr_shape = shapes[child1_corrID]
 					child2_corr_shape = shapes[child2_corrID]
-					x_distance2 = child1_corr_shape.variables.x.z3 - child2_corr_shape.variables.x.z3
-					y_distance2 = child1_corr_shape.variables.y.z3 - child2_corr_shape.variables.y.z3
-					self.solver.add(x_distance == x_distance2)
-					self.solver.add(y_distance == y_distance2)
+		
+					child1_corr_left = child1_corr_shape.variables.x.z3 + child1_corr_shape.computed_width() < child2_corr_shape.variables.x.z3
+					child1_corr_above = child1_corr_shape.variables.y.z3 + child1_corr_shape.computed_height() < child2_corr_shape.variables.y.z3
+					child1_corr_left_or_above = Or(child1_corr_left, child1_corr_above)
+
+					child2_corr_left = child2_corr_shape.variables.x.z3 + child2_corr_shape.computed_width() < child1_corr_shape.variables.x.z3
+					child2_corr_above = child2_corr_shape.variables.y.z3 + child2_corr_shape.computed_height() < child1_corr_shape.variables.y.z3
+					child2_corr_left_or_above = Or(child2_corr_left, child2_corr_above)
+
+					order_pair = If(child1_left_or_above, child1_corr_left_or_above, child2_corr_left_or_above)
+					self.solver.add(order_pair, container.shape_id + " " + group.shape_id + " Repeat Group: Enforce order of subgroups")
 
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
@@ -519,6 +532,9 @@ class ConstraintBuilder(object):
 		columns_index = container.variables.arrangement.domain.index("columns")
 		is_columns = arrangement == columns_index
 
+		# not_rows = arrangement != rows_index
+		# not_columns = arrangement != columns_index
+
 		if container.container_order == "important": 
 			vertical_pairs = []
 			horizontal_pairs = []
@@ -584,15 +600,22 @@ class ConstraintBuilder(object):
 		self.solver.add(If(is_vertical, m_w_constraint, True), container.shape_id + " max width vertical")
 		self.solver.add(If(is_horizontal, m_h_constraint, True), container.shape_id + " max height horizontal")
 
-		groups = self.split_children_into_groups(container)
-		self.solver.add(If(is_rows, self.align_rows_or_columns(container, spacing, groups, "row", "y", "height", "x", "width"), True), container.shape_id + " align rows")
-		self.solver.add(If(is_columns, self.align_rows_or_columns(container, spacing, groups, "column", "x", "width", "y", "height"), True), container.shape_id + " align columns")
-		self.solver.add(If(is_rows, self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), True), container.shape_id + " align rows left")
-		self.solver.add(If(is_columns, self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), True), container.shape_id + " align columns left ")
-		self.solver.add(If(is_rows, self.set_container_size_main_axis(container, spacing, groups, "height"), True), container.shape_id + " max row height")
-		self.solver.add(If(is_columns, self.set_container_size_main_axis(container, spacing, groups, "width"), True), container.shape_id + " max row width")
-		self.solver.add(If(is_rows, self.set_container_size_cross_axis(container, spacing, groups, "width"), True), container.shape_id + " max container height from rows")
-		self.solver.add(If(is_columns, self.set_container_size_cross_axis(container, spacing, groups, "height"), True), container.shape_id + " max container width from columns")
+		# only initialize the row and column constraints if there are more than 2 children 
+		if len(container.children) > 2:
+			groups = self.split_children_into_groups(container)
+			self.solver.add(If(is_rows, self.align_rows_or_columns(container, spacing, groups, "row", "y", "height", "x", "width"), True), container.shape_id + " align rows")
+			self.solver.add(If(is_columns, self.align_rows_or_columns(container, spacing, groups, "column", "x", "width", "y", "height"), True), container.shape_id + " align columns")
+			self.solver.add(If(is_rows, self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), True), container.shape_id + " align rows left")
+			self.solver.add(If(is_columns, self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), True), container.shape_id + " align columns left ")
+			self.solver.add(If(is_rows, self.set_container_size_main_axis(container, spacing, groups, "height"), True), container.shape_id + " max row height")
+			self.solver.add(If(is_columns, self.set_container_size_main_axis(container, spacing, groups, "width"), True), container.shape_id + " max row width")
+			self.solver.add(If(is_rows, self.set_container_size_cross_axis(container, spacing, groups, "width"), True), container.shape_id + " max container height from rows")
+			self.solver.add(If(is_columns, self.set_container_size_cross_axis(container, spacing, groups, "height"), True), container.shape_id + " max container width from columns")
+		else:
+			# Prevent columnns and rows variables
+			self.solver.add(arrangement != rows_index)
+			self.solver.add(arrangement != columns_index)
+
 		# self.solver.add(If(is_rows, self.consecutive_rows_or_columns(container, "row"), True), container.shape_id + " consecutive rows")
 		# self.solver.add(If(is_columns, self.consecutive_rows_or_columns(container, "column"),True), container.shape_id + " consecutive columns")
 		# self.solver.add(If(is_rows, self.aligned_within_rows_or_columns(container, "row", "y", "height"), True), container.shape_id + " aligned rows")
