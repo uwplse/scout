@@ -2,3 +2,4 @@ jsonpickle
 flask
 dotmap
 numpy
+z3
