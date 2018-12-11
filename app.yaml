@@ -1,2 +1,0 @@
-entrypoint: python server/server.py
-runtime: python37
