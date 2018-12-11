@@ -27569,3 +27569,39 @@ Amount of time taken: 1.679473876953125
 lowest cost: 564
 highest cost: 39762
 127.0.0.1 - - [07/Dec/2018 15:53:29] "POST /solve HTTP/1.1" 200 -
+127.0.0.1 - - [09/Dec/2018 19:30:26] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [09/Dec/2018 19:30:26] "GET /dist/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [09/Dec/2018 20:29:03] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [09/Dec/2018 20:29:03] "GET /dist/app.js HTTP/1.1" 200 -
+127.0.0.1 - - [09/Dec/2018 20:29:05] "GET /favicon.ico HTTP/1.1" 404 -
+solving!
+create instance
+create constraints
+container
+canvas
+add first constraint
+add second constraint
+leaf
+done creating constraints
+Total search space size: 855360
+Number of solutions found: 0
+Number of solutions found: 1
+Number of solutions found: 2
+Number of solutions found: 3
+Number of solutions found: 4
+Number of solutions found: 5
+Number of solutions found: 6
+Number of solutions found: 7
+Number of solutions found: 8
+Number of solutions found: 9
+Total time to 10: 0.7503018379211426
+number of solutions found: 10
+number of invalid solutions: 0
+branches pruned: 7
+Z3 time: 0.620765209197998
+Z3 calls: 97
+Encoding time: 0.029184579849243164
+Amount of time taken: 0.750316858291626
+lowest cost: 282
+highest cost: 19881
+127.0.0.1 - - [09/Dec/2018 20:29:32] "POST /solve HTTP/1.1" 200 -

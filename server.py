@@ -10,8 +10,9 @@ import copy
 import custom_solver
 import threading
 import sys
+import os
 
-app = Flask(__name__, static_folder="../static/dist", template_folder="../static")
+app = Flask(__name__, static_folder="static/dist", template_folder="static")
 DEFAULT_APP_HEIGHT = 667
 DEFAULT_APP_WIDTH = 375
 
@@ -224,20 +225,20 @@ def read_image_data(image_path):
 	return "data:image/png;base64, " + img_b64_string
 
 if __name__ == "__main__":
-	import argparse
+	# import argparse
 
-	parser = argparse.ArgumentParser(description='Development Server Help')
-	parser.add_argument("-d", "--debug", action="store_true", dest="debug_mode",
-						help="run in debug mode (for use with PyCharm)", default=False)
-	parser.add_argument("-p", "--port", dest="port",
-						help="port of server (default:%(default)s)", type=int, default=5000)
+	# parser = argparse.ArgumentParser(description='Development Server Help')
+	# parser.add_argument("-d", "--debug", action="store_true", dest="debug_mode",
+	# 					help="run in debug mode (for use with PyCharm)", default=False)
+	# parser.add_argument("-p", "--port", dest="port",
+	# 					help="port of server (default:%(default)s)", type=int, default=5000)
 
-	cmd_args = parser.parse_args()
-	app_options = {"port": cmd_args.port}
+	# cmd_args = parser.parse_args()
+	# app_options = {"port": cmd_args.port}
 
-	#if cmd_args.debug_mode:
-	app_options["debug"] = True
-	app_options["use_debugger"] = False
-	app_options["use_reloader"] = False
-
-	app.run(**app_options)
+	# #if cmd_args.debug_mode:
+	# app_options["debug"] = True
+	# app_options["use_debugger"] = False
+	# app_options["use_reloader"] = False
+	port = int(os.environ.get("PORT", 5000))
+	app.run(host='0.0.0.0', port=port)

@@ -8,7 +8,7 @@ import sys
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 10
+NUM_SOLUTIONS = 5
 NUM_DIFFERENT = 5
 
 class OverrideSolver(object):
