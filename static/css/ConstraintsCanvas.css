@@ -148,11 +148,6 @@
 	width: 5em;
 }
 
-.widget-control-svg {
-	margin-top: 20px;
-	cursor: pointer;
-}
-
 .widget-control-row {
 	display: flex; 
 	align-items: flex-start;

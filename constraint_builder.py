@@ -163,7 +163,10 @@ class ConstraintBuilder(object):
 
 					# Enforce that the child container proximity value (closeness) should always be smaller than the distribution value 
 					# Of the parent container so that they are more likely to appear as a cohesive element
-					self.solver.add(shape1.variables.proximity.z3 < container.variables.distribution.z3, shape1.shape_id + " proximity within group should be less than parent container " + container.shape_id + " distribution")
+					self.solver.add(shape1.variables.proximity.z3 < container.variables.distribution.z3, 
+						shape1.shape_id + " proximity within group should be less than parent container " + container.shape_id + " distribution")
+					self.solver.add(shape1.variables.proximity.z3 < container.variables.proximity.z3, 
+						shape1.shape_id + " proximity within group should be less than parent container " + container.shape_id + " proximity")
 
 				shape1_x = shape1.variables.x.z3
 				shape1_y = shape1.variables.y.z3

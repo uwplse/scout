@@ -17,12 +17,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     // ID for querying element from the DOM
     this.elementId = "widget-container-" + this.id; 
 
-    this.initialFontSize = 0; 
-    if(this.type == "text") {
-      this.initialFontSize = Constants.controlFontSizes(this.type);
-      this.element.fontSize = this.initialFontSize;  
-    }
-
     // Callback to notify the parent container to re-check the solution validity
     this.checkSolutionValidity =  props.checkSolutionValidity; 
     this.displayRightClickMenu = props.displayRightClickMenu; 
@@ -46,7 +40,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       width: this.element.size.width,
       order: this.element.order,  
       containerOrder: this.element.containerOrder, 
-      fontSize: (this.element.fontSize ? this.element.fontSize : this.initialFontSize),
       importance: this.element.importance, 
       showLabels: this.element.labels ? true : false, 
       labelPosition: {
@@ -65,7 +58,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       height: prevState.height,  
       width: prevState.width, 
       order: prevState.order, 
-      fontSize: prevState.fontSize, 
       importance: prevState.importance, 
       showLabels: prevState.showLabels, 
       labelPosition: prevState.labelPosition, 
@@ -244,7 +236,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
 
     if(this.type == "text") {
       this.displayRightClickMenu(evt, this.id, {
-        setFontSize: this.setFontSize, 
         setLabel: this.setLabel, 
         setImportanceLevel: this.setImportanceLevel, 
         setOrder: this.setOrder
@@ -275,31 +266,31 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }; 
   }
 
-  setFontSize = (value) => {
-    return (evt) => {
-      evt.stopPropagation(); 
+  // setFontSize = (value) => {
+  //   return (evt) => {
+  //     evt.stopPropagation(); 
 
-      // Update the element object size
-      let svgElement  = document.getElementById(this.elementId); 
+  //     // Update the element object size
+  //     let svgElement  = document.getElementById(this.elementId); 
 
-      let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
+  //     let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
 
-      // Unset these so that we can calculate a new size after the font size is changed
-      svgElementInline[0].style.width = ""; 
-      svgElementInline[0].style.height = ""; 
+  //     // Unset these so that we can calculate a new size after the font size is changed
+  //     svgElementInline[0].style.width = ""; 
+  //     svgElementInline[0].style.height = ""; 
 
-      // Needed for computing the final height and width. This will be removed when the element re-renders. 
-      svgElementInline[0].setAttribute("font-size", value); 
+  //     // Needed for computing the final height and width. This will be removed when the element re-renders. 
+  //     svgElementInline[0].setAttribute("font-size", value); 
 
-      // Set on the element object
-      this.setElementFontSize(value);
+  //     // Set on the element object
+  //     this.setElementFontSize(value);
 
-      let editableText = svgElement.querySelectorAll(".widget-editable-text");
-      this.adjustElementSize(editableText[0]);
+  //     let editableText = svgElement.querySelectorAll(".widget-editable-text");
+  //     this.adjustElementSize(editableText[0]);
 
-      this.checkSolutionValidity();
-    }
-  }
+  //     this.checkSolutionValidity();
+  //   }
+  // }
 
   setImportanceLevel(evt, level) {
     evt.stopPropagation(); 
@@ -379,7 +370,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     };
 
     const isEditable = this.state.hasText;
-    const fontSize = (this.type == "text" ? { fontSize: this.state.fontSize } : {}); 
+    // const fontSize = (this.type == "text" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <div  
         onContextMenu={this.showContextMenu} 
@@ -391,7 +382,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         <div className="widget-control-row"> 
           <SVGInline 
             //contentEditable={isEditable} 
-            style={fontSize} 
             className={"widget-control-" + this.type} 
             svg={source} 
             height={this.state.height + "px"} 
