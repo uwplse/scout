@@ -573,35 +573,24 @@ export default class PageContainer extends React.Component {
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Designs
-                  <div className="btn-group header-button-group">
-                    <button 
-                      type="button" 
-                      className="btn btn-default design-canvas-button" 
-                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More Designs</button>
-                    <button className="btn btn-default design-canvas-button">{designCanvases.length}</button>
-                  </div>
-                  <div className="btn-group header-button-group">
-                    <button 
-                      type="button" 
-                      className="btn btn-default design-canvas-button" 
-                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More not like these (TBD).</button>
-                    <button 
-                      type="button" 
-                      className="btn btn-default design-canvas-button" 
-                      onClick={this.checkSolutionValidity.bind(this, {getDesigns: true})}>More like these (TBD).</button>
-                  </div>
-                  <div 
-                    className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button">Export Designs (TBD)</button>
-                    <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearInvalidDesignCanvases}>Clear Invalid</button>
-                  </div>
-                  <div 
-                    className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearDesigns}>Clear Designs</button>
-                  </div>
+                  <button className="badge badge-light design-canvas-button">{designCanvases.length}</button>
                 </h3>
+                <div>
+                  <div 
+                    className="btn-group header-button-group">
+                    <button type="button" className="btn btn-default design-canvas-button" 
+                      onClick={this.clearInvalidDesignCanvases}>Move Invalid Designs to Panel</button>
+                  </div>
+                  <div 
+                    className="btn-group header-button-group">
+                    <button type="button" className="btn btn-default design-canvas-button" 
+                      onClick={this.clearDesigns}>Clear Designs Area</button>
+                  </div>
+                  <div 
+                    className="btn-group header-button-group">
+                    <button type="button" className="btn btn-default design-canvas-button">Export Saved Designs (TBD)</button>
+                  </div>
+                </div>
               </div>  
               <div className="design-canvas-container">
                 <div className="left-container">
