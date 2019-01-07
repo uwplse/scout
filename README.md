@@ -9,6 +9,13 @@ After installing XCode, install the XCode developer tools using the command:
 	
 	xcode-select --install
 
+### Repo Setup
+Clone the repository from GitHub. 
+
+   git clone https://github.com/uwplse/scout.git
+   cd scout
+
+
 ### Python Setup 
 Make sure you have Python 3 installed (3.5). 
 
@@ -49,6 +56,7 @@ Install NodeJS and npm if you do not already have them.
 
 	https://www.npmjs.com/get-npm
 
+
 Install the custom package for react-sortable-tree. 
 
 	git clone https://github.com/mandamarie0587/react-sortable-tree.git
@@ -59,12 +67,14 @@ Install the custom package for react-sortable-tree.
 
 Install the npm packages for building the web application. 
 
+	cd scout 
 	cd static
 	npm install 
 	npm run watch # This will build the web page, and recompile whenever it detects you made a change in the files so you do not need to run this command every time you make a change.  
 
 If you want to just build the web application: 
 	
+	cd static 
 	npm run build
 
 ### Running the web server

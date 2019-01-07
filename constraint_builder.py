@@ -1,6 +1,7 @@
 from z3 import *
 import shapes
 import math
+import time
 
 def abs(x):
 	return If(x>=0,x,-x)
@@ -195,13 +196,27 @@ class ConstraintBuilder(object):
 			use_distribution = (has_group and not container.typed) or container.container_type == "page"
 			spacing = container.variables.distribution.z3 if use_distribution else container.variables.proximity.z3
 			
+			time_start = time.time()
 			self.arrange_container(container, spacing)
+			time_end = time.time()
+			print("Time to arrange container: " + str(time_end-time_start))
+
+			time_start = time.time()
 			self.align_container(container, spacing)
+			time_end = time.time()
+			print("Time to align container: " + str(time_end-time_start))
+
+			time_start = time.time()
 			self.non_overlapping(container, spacing)
+			time_end = time.time()
+			print("Time to non-overlap container: " + str(time_end-time_start))
 
 			if container.typed: 
+				time_start = time.time()
 				# If this is a typed container, enforce all variables on child containers to be the same
 				self.init_repeat_group(container, shapes)
+				time_end = time.time()
+				print("Time to init repeat group: " + str(time_end-time_start))
 
 	def init_importance(self, shape, container): 
 		if shape.importance == "most":
@@ -654,23 +669,36 @@ class ConstraintBuilder(object):
 		# Alignment
 		# Differs based on if the arrangment of the container is horizontal or vertical 
 		child_shapes = container.children
+		container_width = container.computed_width()
+		container_height = container.computed_height()
 		for child in child_shapes:
+			time_start = time.time()
 			child_x = child.variables.x.z3
 			child_y = child.variables.y.z3
 
-			bottom_axis = child.variables.baseline.z3 if child.has_baseline else child_y + child.computed_height()
+			child_width = child.computed_width()
+			child_height = child.computed_height()
+
+			bottom_axis = child.variables.baseline.z3 if child.has_baseline else child_y + child_height
 
 			left_aligned = child_x == container_x.z3
-			right_aligned = (child_x + child.computed_width()) == (container_x.z3 + container.computed_width())
-			h_center_aligned = (child_x + (child.computed_width()/2)) == (container_x.z3 + (container.computed_width()/2))
+			right_aligned = (child_x + child_width) == (container_x.z3 + container_width)
+			h_center_aligned = (child_x + (child_width/2)) == (container_x.z3 + (container_width/2))
 			top_aligned = child_y == container_y.z3
-			bottom_aligned = (bottom_axis) == (container_y.z3 + container.computed_height())
-			v_center_aligned = (child_y + (child.computed_height()/2)) == (container_y.z3 + (container.computed_height()/2))
+			bottom_aligned = (bottom_axis) == (container_y.z3 + container_height)
+			v_center_aligned = (child_y + (child_height/2)) == (container_y.z3 + (container_height/2))
 			horizontal = If(is_left, top_aligned, If(is_center, v_center_aligned, bottom_aligned))
 			vertical = If(is_left, left_aligned, If(is_center, h_center_aligned, right_aligned))
+			time_end = time.time()
+			print("Time to create child alignment constraints: " + str(time_end-time_start))
+			
 			# self.solver.assert_and_track(If(is_vertical, vertical, horizontal), "alignment_constraint_" + container.shape_id + "_" + child.shape_id)
+			time_start = time.time()
 			self.solver.add(If(is_vertical, vertical, True), container.shape_id + " " + child.shape_id + " vertical alignment")
 			self.solver.add(If(is_horizontal, horizontal, True), container.shape_id + " " + child.shape_id + " horizontal alignment")
+			time_end = time.time()
+
+			print("Time to add child alignment constraints to the solver: " + str(time_end-time_start))
 
 
 

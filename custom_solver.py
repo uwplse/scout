@@ -9,20 +9,36 @@ z3.open_log("z3.out")
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 5
+NUM_SOLUTIONS = 1
 NUM_DIFFERENT = 5
 
 class OverrideSolver(object):
 	def __init__(self, solver):
 		self.solver = solver
-		self.debug = True
+		self.debug = False
 		self.ctx = solver.ctx
+		self.num_constraints = 0
+		self.total_time = 0
+		self.quickest = 0
+		self.slowest = 0
+		self.quickest_name = ""
+		self.slowest_name = ""
 
 	def add(self, constraint, name=""): 
+		time_start = time.time()
 		if len(name) and self.debug: 
 			self.solver.assert_and_track(constraint, name)
 		else: 
 			self.solver.add(constraint)
+		time_end = time.time()
+		time_diff = (time_end-time_start)
+		self.total_time += time_diff
+		if time_diff > self.slowest: 
+			self.slowest = time_diff
+			self.slowest_name = name
+		elif time_diff < self.quickest: 
+			self.quickest = time_diff
+			self.quickest_name = name
 
 class Solver(object): 
 	def __init__(self, solver_ctx, elements, solutions, canvas_width, canvas_height, relative_designs=None):
@@ -50,9 +66,18 @@ class Solver(object):
 
 		# Build the initial set of constraints on the shapes and containers 
 		print('create constraints')
+		time_start = time.time()
 		self.init_constraints()
+		time_end = time.time()
+		print("Time to create constraints (init_constraints): " + str(time_end-time_start))
 		print('done creating constraints')
 		sys.stdout.flush()
+
+		print("Total time to create the constraints: " + str(self.override_solver.total_time))
+		print("slowest constraint was: " + str(self.override_solver.slowest))
+		print("slowest constraint name: " + self.override_solver.slowest_name)
+		print("quickest constraint was: " + str(self.override_solver.quickest))
+		print("quickest constraint name: " + str(self.override_solver.quickest_name))
 
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
@@ -285,11 +310,18 @@ class Solver(object):
 
 	def solve(self):
 		# Initialize the set of fixed constraints on shapes and containers
+		start_time = time.time()
 		for shape in self.shapes.values(): 
 			self.cb.init_locks(shape)
+		end_time = time.time()
+		print("Time taken to encode locks: " + str(end_time-start_time))
 			
 		# Initialize the constraints preventing previous solutions from re-occuring
+		start_time = time.time()
 		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+		end_time = time.time()
+		print("Time taken to encode previous solutions: " + str(end_time-start_time))
+
 
 		self.unassigned = copy.copy(self.variables)
 
@@ -653,8 +685,6 @@ class Solver(object):
 
 				# GGet a solution
 				time_z3_start = time.time()
-				print("CHECK SOLVE")
-				print(self.solver.ctx)
 				result = self.solver.check()
 				# unsat_core = self.solver.unsat_core()
 				# constraints = self.solver.sexpr()
