@@ -52,13 +52,14 @@ def parse_unsat_core(unsat_core):
 				conflicts.append(conflict)
 	return conflicts
 
-class Variable(object): 
-	def __init__(self, shape_id, name, domain=[], index_domain=True, var_type="int", ):
+class Variable(object):
+	def __init__(self, solver_ctx, shape_id, name, domain=[], index_domain=True, var_type="int", ):
 		self.shape_id = shape_id
 		self.name = name
 		self.assigned = None
 		self.domain = domain
 		self.type = var_type
+		self.ctx = solver_ctx
 
 		# If this is true, the domain values produced by the solver `
 		# map directly to the indexes of the variables in the list
@@ -68,18 +69,18 @@ class Variable(object):
 
 		# Z3 Variable for testing (??)
 		if self.type == "str": 
-			self.z3 = String(shape_id + "_" + name)
+			self.z3 = String(shape_id + "_" + name, ctx=self.ctx)
 
 			if len(self.domain): 
 				str_domain = []
 				for dom_value in self.domain: 
-					dom_value_str = StringVal(dom_value)
+					dom_value_str = StringVal(dom_value, ctx=self.ctx)
 					str_domain.append(dom_value_str)
 				self.domain = str_domain
 		elif self.type == "real": 
-			self.z3 = Real(shape_id + "_" + name)
+			self.z3 = Real(shape_id + "_" + name, ctx=self.ctx)
 		else: 
-			self.z3 = Int(shape_id + "_" + name)
+			self.z3 = Int(shape_id + "_" + name, ctx=self.ctx)
 
 	def domain(self, domain): 
 		self.domain = domain
@@ -90,13 +91,10 @@ class Variable(object):
 	def get_value_from_element(self, element):
 		# Return a Z3 expression or value to use in Z3 expressions from the element
 		if self.type == "str": 
-			return StringVal(element[self.name])
+			return StringVal(element[self.name], ctx=self.ctx)
 
 		elif self.name == "width" or self.name == "height":
-			return element["size"][self.name]
-
-		if 'magnification' not in element and self.name == 'magnification':
-			print('stop')
+			return IntVal(element["size"][self.name], ctx=self.ctx)
 
 		return element[self.name]
 
@@ -205,8 +203,6 @@ class Solution(object):
 				element["x"] = adj_x
 				element["y"] = adj_y
 
-				height = shape.height()
-				width = shape.width()
 				if shape.type == "container": 
 					height = model[shape.height()].as_string()
 					width = model[shape.width()].as_string()
@@ -239,6 +235,11 @@ class Solution(object):
 					element["background_color"] = background_color.replace("\"", "")
 
 				if shape.type == "leaf": 
+					height = shape.height().as_string()
+					width = shape.width().as_string()
+					height = int(height)
+					width = int(width)
+					
 					# Only consider emphassis for leaf node elements
 					if shape.importance == "most": 
 						magnification = model[shape.variables.magnification.z3].as_string()
@@ -266,7 +267,6 @@ class Solution(object):
 						minification = model[shape.variables.minification.z3].as_string()
 						minification = Fraction(minification)
 						minification = float(minification)
-						print(minification)
 						element["minification"] = minification
 
 						# minification_factor = 1/minification if minification > 0 else 0

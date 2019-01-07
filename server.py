@@ -1,4 +1,5 @@
 # server.py
+from z3 import * 
 from flask import Flask, render_template, request
 import json
 import base64
@@ -11,10 +12,35 @@ import custom_solver
 import threading
 import sys
 import os
+import threading
+import queue
+import faulthandler
+faulthandler.enable()
 
-app = Flask(__name__, static_folder="static/dist", template_folder="static")
 DEFAULT_APP_HEIGHT = 667
 DEFAULT_APP_WIDTH = 375
+NUM_SOLVE_THREADS = 10
+NUM_CHECK_THREADS = 10
+
+class FlaskApp(Flask): 
+	def __init__(self, *args, **kwargs): 
+		super(FlaskApp, self).__init__(*args, **kwargs)
+		self.solve_queue = queue.Queue()
+		self.check_queue = queue.Queue()
+
+		for i in range(NUM_SOLVE_THREADS):
+			z3ctx = z3.Context() 
+			self.solve_queue.put(z3ctx)
+
+		for i in range(NUM_CHECK_THREADS): 
+			z3ctx = z3.Context()
+			self.check_queue.put(z3ctx)
+
+		print("size of queues initialized: ")
+		print(self.solve_queue.qsize())
+		print(self.check_queue.qsize())
+			
+app = FlaskApp(__name__, static_folder="static/dist", template_folder="static")
 
 @app.route("/")
 def index():
@@ -31,7 +57,6 @@ def importer():
 @app.route("/hello")
 def hello():
 	return "Hello World!"
-
 
 @app.route('/solve', methods=['POST','GET'])
 def solve(): 
@@ -57,9 +82,12 @@ def solve():
 			t1.join()
 			sys.stdout.flush()
 
+			# get_solution_from_custom_solver(elements, solutions, relative_designs, results)
+
 			# Output dictionary 
-			output = dict() 
-			output["solutions"] = results['solutions']
+			output = dict()
+			if "solutions" in results:
+				output["solutions"] = results['solutions']
 			return json.dumps(output).encode('utf-8')
 		except Exception as e: 
 			print("Exception in creating solver")
@@ -85,7 +113,7 @@ def check():
 		# and also update the valid state of each of the previous solutions
 		results = {}
 		t1 = threading.Thread(target=check_solution_exists_and_validate_previous_solutions, args=(elements,solutions,results,))
-		# result = check_solution_exists_and_validate_previous_solutions(elements, solutions)
+		# check_solution_exists_and_validate_previous_solutions(elements, solutions, results)
 
 		t1.start()
 		sys.stdout.flush()
@@ -126,9 +154,14 @@ def check():
 # 	return json.dumps(output).encode('utf-8')
 
 def check_solution_exists_and_validate_previous_solutions(elements, solutions, results):
+	# Wait until a context becomes available before proceeding
+	solver_ctx = app.check_queue.get(block=True)
+	print(solver_ctx)
 	try: 
 		print("Creating solver instance.")
-		solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
+		# solver_ctx = z3
+		# print(app.solver_ctx)
+		solver = custom_solver.Solver(solver_ctx, elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT)
 	except Exception as e: 
 		print(e)
 		print('Exception in creating solver instance.')
@@ -141,9 +174,16 @@ def check_solution_exists_and_validate_previous_solutions(elements, solutions, r
 		print(e)
 		print('Exception in checking constraints.')
 
+	app.check_queue.put(solver_ctx)
+
 def get_solution_from_custom_solver(elements, solutions, relative_designs, results): 
-	solver = custom_solver.Solver(elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT, relative_designs=relative_designs)
+	# print(app.solver_ctx)
+	solver_ctx = app.solve_queue.get(block=True)
+	print(solver_ctx)
+
+	solver = custom_solver.Solver(solver_ctx, elements, solutions, DEFAULT_APP_WIDTH, DEFAULT_APP_HEIGHT, relative_designs=relative_designs)
 	solutions = solver.solve()
+	app.solve_queue.put(solver_ctx)
 	results['solutions'] = solutions
 
 def get_solution_from_solver(elements, canvas_width, canvas_height, tags): 

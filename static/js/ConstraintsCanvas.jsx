@@ -751,7 +751,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   calculateRowHeight = ({treeIndex, node, path}) => {
-    let padding = 10; 
+    let padding = 5; 
     let actualRowHeight = node.title.props.shape.size.height + (padding * 2);
     let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
@@ -1276,7 +1276,14 @@ export default class ConstraintsCanvas extends React.Component {
 	  return (
        <div className="panel panel-primary constraints-container">
           <div className="panel-heading"> 
-            <h3 className="panel-title">Outline</h3>
+            <h3 className="panel-title">Outline
+            </h3>
+            <div className="btn-group header-button-group">
+              <button 
+                type="button" 
+                className="btn btn-default design-canvas-button" 
+                onClick={this.props.checkSolutionValidity.bind(this, {getDesigns: true})}>Generate Designs</button>
+            </div>
           </div>
           <div id="constraints-canvas-container" tabIndex="1" className="constraints-canvas-container panel-body"> 
             <div className="constraints-canvas-page-feedback">

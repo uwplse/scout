@@ -60,6 +60,13 @@ h1, h2, h3 {
 	background-color: #2780E3;
 }
 
+.panel-heading {
+	display: flex; 
+	align-items: center;
+	justify-content: space-between;
+	min-height: 62.5px; 
+}
+
 .panel-primary .badge {
 	font-size: 12px;
 	border-radius: 3px;

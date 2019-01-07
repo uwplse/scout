@@ -5,25 +5,47 @@ import time
 import random
 import constraint_builder
 import sys 
+z3.open_log("z3.out")
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 5
+NUM_SOLUTIONS = 1
 NUM_DIFFERENT = 5
 
 class OverrideSolver(object):
 	def __init__(self, solver):
 		self.solver = solver
-		self.debug = True
+		self.debug = False
+		self.ctx = solver.ctx
+		self.num_constraints = 0
+		self.total_time = 0
+		self.quickest = 0
+		self.slowest = 0
+		self.quickest_name = ""
+		self.slowest_name = ""
 
 	def add(self, constraint, name=""): 
+		time_start = time.time()
 		if len(name) and self.debug: 
 			self.solver.assert_and_track(constraint, name)
 		else: 
 			self.solver.add(constraint)
+		time_end = time.time()
+		time_diff = (time_end-time_start)
+		self.total_time += time_diff
+		if time_diff > self.slowest: 
+			self.slowest = time_diff
+			self.slowest_name = name
+		elif time_diff < self.quickest: 
+			self.quickest = time_diff
+			self.quickest_name = name
 
 class Solver(object): 
-	def __init__(self, elements, solutions, canvas_width, canvas_height, relative_designs=None): 
+	def __init__(self, solver_ctx, elements, solutions, canvas_width, canvas_height, relative_designs=None):
+		# Construct the solver instance we will use for Z3
+		print('create instance')
+		self.solver_ctx = solver_ctx
+		self.solver = z3.Solver(ctx=self.solver_ctx)
 		self.solutions = [] # Initialize the variables somewhere
 		self.unassigned = []
 		self.elements = elements
@@ -39,17 +61,24 @@ class Solver(object):
 		self.previous_solution = IntVector('PrevSolution', len(self.variables))
 		self.variables_different = Int('VariablesDifferent')
 
-		# Construct the solver instance we will use for Z3
-		print('create instance')
-		self.solver = z3.Solver()
 		self.override_solver = OverrideSolver(self.solver)
 		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
 
 		# Build the initial set of constraints on the shapes and containers 
 		print('create constraints')
+		time_start = time.time()
 		self.init_constraints()
+		time_end = time.time()
+		print("Time to create constraints (init_constraints): " + str(time_end-time_start))
 		print('done creating constraints')
 		sys.stdout.flush()
+
+		print("Total time to create the constraints: " + str(self.override_solver.total_time))
+		print("slowest constraint was: " + str(self.override_solver.slowest))
+		print("slowest constraint name: " + self.override_solver.slowest_name)
+		print("quickest constraint was: " + str(self.override_solver.quickest))
+		print("quickest constraint name: " + str(self.override_solver.quickest_name))
+
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
 		# 	self.relative_search = True
@@ -131,16 +160,20 @@ class Solver(object):
 
 			shape_object = None
 			if element["type"] == "canvas": 
-				shape_object = shape_classes.CanvasShape(element["name"], element, num_siblings)
+				shape_object = shape_classes.CanvasShape(self.solver_ctx, 
+					element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "page":	
-				shape_object = shape_classes.ContainerShape(element["name"], element, num_siblings)
+				shape_object = shape_classes.ContainerShape(self.solver_ctx, 
+					element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			elif element["type"] == "group" or element["type"] == "labelGroup":
-				shape_object = shape_classes.ContainerShape(element["name"], element, num_siblings)
+				shape_object = shape_classes.ContainerShape(self.solver_ctx, 
+					element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 			else:
-				shape_object = shape_classes.LeafShape(element["name"], element, num_siblings)
+				shape_object = shape_classes.LeafShape(self.solver_ctx,
+					element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
 
 			if sub_hierarchy is not None: 
@@ -277,11 +310,18 @@ class Solver(object):
 
 	def solve(self):
 		# Initialize the set of fixed constraints on shapes and containers
+		start_time = time.time()
 		for shape in self.shapes.values(): 
 			self.cb.init_locks(shape)
+		end_time = time.time()
+		print("Time taken to encode locks: " + str(end_time-start_time))
 			
 		# Initialize the constraints preventing previous solutions from re-occuring
+		start_time = time.time()
 		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+		end_time = time.time()
+		print("Time taken to encode previous solutions: " + str(end_time-start_time))
+
 
 		self.unassigned = copy.copy(self.variables)
 
@@ -367,7 +407,7 @@ class Solver(object):
 			variable_value = int(variable_value)
 			all_values.append(variable.z3 == variable_value)
 
-		self.override_solver.add(Not(And(all_values)), "prevent previous solution " + solution_id + " from appearing again.")
+		self.override_solver.add(Not(And(all_values, self.solver.ctx)), "prevent previous solution " + solution_id + " from appearing again.")
 
 	def encode_constraints_for_model(self, model, solution_id): 
 		# Pop the previous 
@@ -428,6 +468,8 @@ class Solver(object):
 
 
 	def z3_check(self, time_start): 
+		print("CHECK")
+		print(self.solver.ctx)
 		time_z3_start = time.time()
 		result = self.solver.check()
 		time_z3_end = time.time()
@@ -597,7 +639,7 @@ class Solver(object):
 			time_z3_start = time.time()
 			result = self.solver.check()
 			# constraints = self.solver.sexpr()
-			unsat_core = self.solver.unsat_core()
+			# unsat_core = self.solver.unsat_core()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -644,11 +686,12 @@ class Solver(object):
 				# GGet a solution
 				time_z3_start = time.time()
 				result = self.solver.check()
-				unsat_core = self.solver.unsat_core()
-				constraints = self.solver.sexpr()
+				# unsat_core = self.solver.unsat_core()
+				# constraints = self.solver.sexpr()
 				self.z3_calls += 1
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start
+				# print("Z3 call: " + str(time_z3_total))
 				self.time_z3 += time_z3_total
 
 				# Only branch if the result so far is satisfiable
