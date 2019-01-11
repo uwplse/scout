@@ -12,8 +12,8 @@ After installing XCode, install the XCode developer tools using the command:
 ### Repo Setup
 Clone the repository from GitHub. 
 
-   git clone https://github.com/uwplse/scout.git
-   cd scout
+	git clone https://github.com/uwplse/scout.git
+	cd scout
 
 
 ### Python Setup 
@@ -43,8 +43,12 @@ Activate the virtual environment
 	import custom_solver
 
 *** Make sure you have the Python virtual environment created above still activated. 
+	Clone into the directory with scout, you you will have: 
+		GitHub/
+			scout
+			z3
 
-	git clone https://github.com/Z3Prover/z3
+	git clone https://github.com/Z3Prover/z3 
 	cd z3
 	python scripts/mk_make.py --python # Compile with Python bindings
 	cd build
@@ -58,7 +62,12 @@ Install NodeJS and npm if you do not already have them.
 
 
 Install the custom package for react-sortable-tree. 
-
+	Clone into the directory with scout, you you will have: 
+		GitHub/
+			scout
+			z3
+			react-sortable-tree
+			
 	git clone https://github.com/mandamarie0587/react-sortable-tree.git
 	cd react-sortable-tree
 	npm install
