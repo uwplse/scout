@@ -4,41 +4,36 @@ import solver_helpers as sh
 import time
 import random
 import constraint_builder
+import smtlib_builder as smt
 import sys 
 z3.open_log("z3.out")
 
 GRID_CONSTANT = 5
 GLOBAL_PROXIMITY = 5
-NUM_SOLUTIONS = 1
+NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 
 class OverrideSolver(object):
 	def __init__(self, solver):
 		self.solver = solver
-		self.debug = False
+		self.debug = True
 		self.ctx = solver.ctx
 		self.num_constraints = 0
-		self.total_time = 0
-		self.quickest = 0
-		self.slowest = 0
-		self.quickest_name = ""
-		self.slowest_name = ""
+
+	def add_constraints(self, constraints):
+		self.solver.from_string(constraints)
+
+	def model(self):
+		return self.solver.model()
+
+	def assertions(self):
+		return self.solver.assertions()
 
 	def add(self, constraint, name=""): 
-		time_start = time.time()
 		if len(name) and self.debug: 
 			self.solver.assert_and_track(constraint, name)
 		else: 
 			self.solver.add(constraint)
-		time_end = time.time()
-		time_diff = (time_end-time_start)
-		self.total_time += time_diff
-		if time_diff > self.slowest: 
-			self.slowest = time_diff
-			self.slowest_name = name
-		elif time_diff < self.quickest: 
-			self.quickest = time_diff
-			self.quickest_name = name
 
 class Solver(object): 
 	def __init__(self, solver_ctx, elements, solutions, canvas_width, canvas_height, relative_designs=None):
@@ -67,17 +62,19 @@ class Solver(object):
 		# Build the initial set of constraints on the shapes and containers 
 		print('create constraints')
 		time_start = time.time()
-		self.init_constraints()
+		constraints = "(set-info :source | Python ftw |)\n"
+		constraints += self.declare_variables()
+		constraints += self.init_constraints()
 		time_end = time.time()
 		print("Time to create constraints (init_constraints): " + str(time_end-time_start))
-		print('done creating constraints')
-		sys.stdout.flush()
 
-		print("Total time to create the constraints: " + str(self.override_solver.total_time))
-		print("slowest constraint was: " + str(self.override_solver.slowest))
-		print("slowest constraint name: " + self.override_solver.slowest_name)
-		print("quickest constraint was: " + str(self.override_solver.quickest))
-		print("quickest constraint name: " + str(self.override_solver.quickest_name))
+
+		time_start = time.time()
+		self.cb.add_constraints(constraints)		
+		time_end = time.time()
+		print("Time to parse constraints: "  + str(time_end-time_start))
+
+		sys.stdout.flush()
 
 		# Initialize any relative design constraints, if given 
 		# if "relative_design" in relative_designs: 
@@ -98,24 +95,34 @@ class Solver(object):
 		self.branches_pruned = 0
 		self.z3_calls = 0
 
+	def declare_variables(self): 
+		declarations = ""
+		for shape in self.shapes.values(): 
+			for key, val in shape.variables.items():
+				declarations += smt.declare(val.id, val.type)
+		return declarations
+
 	def init_constraints(self):
 		# Initialize the set of constraints on shapes and containers
 		canvas = None
+		constraints = ""
 		for shape in self.shapes.values(): 
-			if shape.type == "canvas":  
-				print('canvas')
-				self.cb.init_canvas_constraints(shape)
+			if shape.type == "canvas":
+				time_start = time.time()
+				constraints += self.cb.init_canvas_constraints(shape)
+				time_end = time.time()
+				print('Time to create canvas constraints: ' + str(time_end-time_start))
 				canvas = shape
 			if shape.type == "container": 
-				print('container')
-				self.cb.init_container_constraints(shape, self.shapes)
+				constraints += self.cb.init_container_constraints(shape, self.shapes)
 
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
 				print('leaf')
-				self.cb.init_shape_bounds(shape, self.canvas_width, self.canvas_height)
-				self.cb.init_shape_baseline(shape)
-				self.cb.init_shape_grid_values(shape, canvas)
+				constraints += self.cb.init_shape_bounds(shape, self.canvas_width, self.canvas_height)
+				constraints += self.cb.init_shape_baseline(shape)
+				# self.cb.init_shape_grid_values(shape, canvas)
+		return constraints 
 
 	def build_shape_hierarchy(self): 
 		shapes = dict()
@@ -279,7 +286,6 @@ class Solver(object):
 				start_time = time.time()
 				result = self.z3_check(start_time)
 				unsat_core = self.solver.unsat_core()
-				constraints = self.solver.sexpr()
 
 				# update the valid state of the solution
 				solution["valid"] = result
@@ -376,19 +382,30 @@ class Solver(object):
 
 	def encode_assigned_variable(self, variable):
 		time_encoding_start = time.time()
+
+		constraints = smt.declare(variable.id, variable.type)
 		if variable.index_domain:
-			self.override_solver.add(variable.z3 == variable.assigned, "Variable " + variable.shape_id + " "
-									 + variable.name + " assigned to " + str(variable.assigned))
+			constraints += smt.assert_expr(smt.eq(variable.id, str(variable.assigned)),
+				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
+			# self.override_solver.add(variable == variable.assigned, "Variable " + variable.shape_id + " "
+			# 						 + variable.name + " assigned to " + str(variable.assigned))
+			self.override_solver.add_constraints(constraints)
 		else:
 			dom_value = variable.domain[variable.assigned]
-			self.override_solver.add(variable.z3 == dom_value, "Variable " + variable.shape_id + " " + variable.name
-									 + " assigned to " + str(dom_value))
+			if variable.type == "String": 
+				dom_value = "\"" + dom_value + "\""
+
+			constraints += smt.assert_expr(smt.eq(variable.id, str(dom_value)),
+				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
+			# self.override_solver.add(variable == dom_value, "Variable " + variable.shape_id + " " + variable.name
+			# 						 + " assigned to " + str(dom_value))
+			self.override_solver.add_constraints(constraints)
 
 		time_encoding_end = time.time()
 		self.time_encoding += (time_encoding_end - time_encoding_start)
 
 	# Computes the number of variables that are different than the previous solution
-	def num_variables_different(self): 
+	def num_variables_different(self):
 		vars_diff = 0
 		for var_i in range(0, len(self.variables)): 
 			variable = self.variables[var_i]
@@ -400,18 +417,26 @@ class Solver(object):
 		# It may be possible for multiple solutions to have the same outputs (exact x,y coordinates for all shapes)
 		# So to restrict this, we encode the X,Y positions in the clauses to prevent these solutions
 		all_values = []
+		variables = sh.parse_variables_from_model(model)
+		
+		decl_constraints = "" # Because from_string requires declaring vars again even if already defined :(
 		for v_i in range(0, len(self.output_variables)): 
 			variable = self.output_variables[v_i]
-			variable_value = model[variable.z3]
+			model_var = variables[variable.id]
+			variable_value = model[model_var]
 			variable_value = variable_value.as_string() 
 			variable_value = int(variable_value)
-			all_values.append(variable.z3 == variable_value)
+			all_values.append(smt.eq(variable.id, str(variable_value)))
+			decl_constraints += smt.declare(variable.id, variable.type)
 
-		self.override_solver.add(Not(And(all_values, self.solver.ctx)), "prevent previous solution " + solution_id + " from appearing again.")
+		constraints = smt.assert_expr(smt.not_expr(smt.and_expr(all_values)), 
+			"prevent_prev_solution_" + solution_id + "_from_appearing_again")
+		constraints = decl_constraints + constraints
+		self.override_solver.add_constraints(constraints)
 
 	def encode_constraints_for_model(self, model, solution_id): 
 		# Pop the previous 
-		if self.num_solutions > 1: 
+		if self.num_solutions > 1:
 			# Remove the previous stack context
 			# Pop the stack context before adding the set of constraints to prevent the 
 			# Previous solution model from appearing again
@@ -656,7 +681,7 @@ class Solver(object):
 				# Keep the solution & convert to json
 				# self.print_solution()
 
-				sln = state.convert_to_json(self.shapes, model)
+				sln = state.convert_to_json(self.shapes, model, self.solver_ctx)
 				self.restore_state()
 
 				# Encode the previous solution outputs into the model so we don't produce it again in the next iteration
@@ -687,7 +712,7 @@ class Solver(object):
 				time_z3_start = time.time()
 				result = self.solver.check()
 				# unsat_core = self.solver.unsat_core()
-				# constraints = self.solver.sexpr()
+
 				self.z3_calls += 1
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start

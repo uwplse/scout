@@ -52,35 +52,29 @@ def parse_unsat_core(unsat_core):
 				conflicts.append(conflict)
 	return conflicts
 
+def parse_variables_from_model(model):
+	variables = dict()
+	num_vars = len(model)
+	decls = model.decls()
+	for i in range(num_vars):
+		var = decls[i]
+		variables[var.name()] = var()
+	return variables
+
 class Variable(object):
-	def __init__(self, solver_ctx, shape_id, name, domain=[], index_domain=True, var_type="int", ):
+	def __init__(self, shape_id, name, domain=[], index_domain=True, var_type="Int"):
 		self.shape_id = shape_id
 		self.name = name
+		self.id = name + "_" + shape_id
 		self.assigned = None
 		self.domain = domain
 		self.type = var_type
-		self.ctx = solver_ctx
 
 		# If this is true, the domain values produced by the solver `
 		# map directly to the indexes of the variables in the list
 		# If it is false, the domain values the solver produces
 		# will be the actual numerical or string values from the domain
 		self.index_domain = index_domain
-
-		# Z3 Variable for testing (??)
-		if self.type == "str": 
-			self.z3 = String(shape_id + "_" + name, ctx=self.ctx)
-
-			if len(self.domain): 
-				str_domain = []
-				for dom_value in self.domain: 
-					dom_value_str = StringVal(dom_value, ctx=self.ctx)
-					str_domain.append(dom_value_str)
-				self.domain = str_domain
-		elif self.type == "real": 
-			self.z3 = Real(shape_id + "_" + name, ctx=self.ctx)
-		else: 
-			self.z3 = Int(shape_id + "_" + name, ctx=self.ctx)
 
 	def domain(self, domain): 
 		self.domain = domain
@@ -90,16 +84,10 @@ class Variable(object):
 
 	def get_value_from_element(self, element):
 		# Return a Z3 expression or value to use in Z3 expressions from the element
-		if self.type == "str": 
-			return StringVal(element[self.name], ctx=self.ctx)
-
-		elif self.name == "width" or self.name == "height":
-			return IntVal(element["size"][self.name], ctx=self.ctx)
-
 		return element[self.name]
 
 class Solution(object): 
-	def __init__(self): 
+	def __init__(self):
 		self.variables = []
 		self.id = uuid.uuid4().hex
 
@@ -175,7 +163,7 @@ class Solution(object):
 		distance = math.sqrt(x_dist^2 + y_dist^2)
 		return distance
 
-	def convert_to_json(self, shapes, model):
+	def convert_to_json(self, shapes, model, context):
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
 		new_elements = dict()
@@ -185,9 +173,10 @@ class Solution(object):
 		importance_max = 0
 		distance_cost = 0
 
-		for shape in shapes.values():  
-			f_x = model[shape.variables.x.z3]
-			f_y = model[shape.variables.y.z3]
+		variables = parse_variables_from_model(model)
+		for shape in shapes.values():
+			f_x = model[variables[shape.variables.x.id]]
+			f_y = model[variables[shape.variables.y.id]]
 			adj_x = f_x.as_string()
 			adj_y = f_y.as_string()
 			adj_x = int(adj_x)
@@ -204,8 +193,8 @@ class Solution(object):
 				element["y"] = adj_y
 
 				if shape.type == "container": 
-					height = model[shape.height()].as_string()
-					width = model[shape.width()].as_string()
+					height = model[variables[shape.height()]].as_string()
+					width = model[variables[shape.width()]].as_string()
 					height = int(height)
 					width = int(width)
 					element["size"]["width"] = width
@@ -214,20 +203,20 @@ class Solution(object):
 					# Also include the container properties in the element object for each container shape 
 					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
 					# so we don't have to edit this place every time we add a property
-					arrangement = model[shape.variables.arrangement.z3].as_string()
-					alignment = model[shape.variables.alignment.z3].as_string()
-					proximity = model[shape.variables.proximity.z3].as_string()
-					distribution = model[shape.variables.distribution.z3].as_string()
+					arrangement = model[variables[shape.variables.arrangement.id]].as_string()
+					alignment = model[variables[shape.variables.alignment.id]].as_string()
+					proximity = model[variables[shape.variables.proximity.id]].as_string()
+					distribution = model[variables[shape.variables.distribution.id]].as_string()
 					element["arrangement"] = int(arrangement)
 					element["alignment"] = int(alignment)
 					element["proximity"] = int(proximity)
 					element["distribution"] = int(distribution)
 				elif shape.type == "canvas": 
-					alignment = model[shape.variables.alignment.z3].as_string()
-					justification = model[shape.variables.justification.z3].as_string()
-					margin = model[shape.variables.margin.z3].as_string()
-					grid = model[shape.variables.grid.z3].as_string()
-					background_color = model[shape.variables.background_color.z3].as_string()
+					alignment = model[variables[shape.variables.alignment.id]].as_string()
+					justification = model[variables[shape.variables.justification.id]].as_string()
+					margin = model[variables[shape.variables.margin.id]].as_string()
+					grid = model[variables[shape.variables.grid.id]].as_string()
+					background_color = model[variables[shape.variables.background_color.id]].as_string()
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
@@ -235,14 +224,14 @@ class Solution(object):
 					element["background_color"] = background_color.replace("\"", "")
 
 				if shape.type == "leaf": 
-					height = shape.height().as_string()
-					width = shape.width().as_string()
-					height = int(height)
-					width = int(width)
-					
+					height = shape.height()
+					width = shape.width()
+					# height = int(height)
+					# width = int(width)
+					#
 					# Only consider emphassis for leaf node elements
 					if shape.importance == "most": 
-						magnification = model[shape.variables.magnification.z3].as_string()
+						magnification = model[variables[shape.variables.magnification.id]].as_string()
 						magnification = Fraction(magnification)
 						magnification = float(magnification)
 						element["magnification"] =  magnification
@@ -264,7 +253,7 @@ class Solution(object):
 						# Compute the distance of the shape from the center of the canvas
 						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
 					elif shape.importance == "least": 
-						minification = model[shape.variables.minification.z3].as_string()
+						minification = model[variables[shape.variables.minification]].as_string()
 						minification = Fraction(minification)
 						minification = float(minification)
 						element["minification"] = minification
@@ -294,12 +283,12 @@ class Solution(object):
 				else: 
 					# Only consider emphassis for leaf node elements
 					if shape.importance == "most": 
-						magnification = model[shape.variables.magnification.z3].as_string()
+						magnification = model[variables[shape.variables.magnification]].as_string()
 						magnification = Fraction(magnification)
 						magnification = float(magnification)
 						element["magnification"] =  magnification
 					elif shape.importance == "least": 
-						minification = model[shape.variables.minification.z3].as_string()
+						minification = model[variables[shape.variables.minification]].as_string()
 						minification = Fraction(minification)
 						minification = float(minification)
 						element["minification"] = minification

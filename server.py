@@ -134,25 +134,6 @@ def check():
 	sys.stdout.flush()
 	return ""
 
-# 	# Simulated annealing search 
-# 	# solutions = get_solution_annealing(elements, canvas_width, canvas_height)
-# 	# solutions = get_solution_from_solver(elements, canvas_width, canvas_height, tags)
-# 	solutions = get_solution_from_custom_solver(elements, groups, canvas_width, canvas_height, tags)
-
-# 	# Output dictionary 
-# 	output = dict() 
-# 	output["size"] = dict() 
-# 	output["size"]["width"] = canvas_width
-# 	output["size"]["height"] = canvas_height
-# 	output["background"] = background
-# 	output["elements"] = solutions
-
-# 	# Write the results for debugging
-# 	# with open('../results/results.json', 'w') as outfile:
-# 	# 	json.dump(output, outfile)
-
-# 	return json.dumps(output).encode('utf-8')
-
 def check_solution_exists_and_validate_previous_solutions(elements, solutions, results):
 	# Wait until a context becomes available before proceeding
 	solver_ctx = app.check_queue.get(block=True)

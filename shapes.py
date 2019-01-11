@@ -25,13 +25,13 @@ class Shape(object):
 		self.typed = False
 		self.has_baseline = False
 		self.variables = DotMap() 
-		self.variables.x = sh.Variable(solver_ctx, shape_id, "x")
-		self.variables.y = sh.Variable(solver_ctx, shape_id, "y")
+		self.variables.x = sh.Variable(shape_id, "x")
+		self.variables.y = sh.Variable(shape_id, "y")
 		self.type = shape_type 
 		self.ctx = solver_ctx
 
 		if self.shape_type in label_types:
-			self.variables.label = sh.Variable(self.ctx, shape_id, "label", var_type="str")
+			self.variables.label = sh.Variable(shape_id, "label", var_type="String")
 
 		self.locks = None
 		self.order = -1
@@ -49,15 +49,12 @@ class Shape(object):
 				
 				# values for locked variables
 				for lock in self.locks:
-					if lock == "label": 
-						self.variable_values[lock] = StringVal(element[lock], ctx=self.ctx)
-					else:  
-						self.variable_values[lock] = element[lock]
+					self.variable_values[lock] = element[lock]
 
 			if "baseline" in element: 
 				self.has_baseline = True
 				self.orig_baseline = element["baseline"]
-				self.variables.baseline = sh.Variable(self.ctx, shape_id, "baseline")
+				self.variables.baseline = sh.Variable(shape_id, "baseline")
 
 			if "importance" in element: 
 				self.importance = element["importance"]
@@ -72,13 +69,13 @@ class Shape(object):
 				if self.importance == "most":
 					# Make height and width into variables so that the solver can change them
 					magnification_values = sh.MAGNIFICATION_VALUES
-					self.variables.magnification = sh.Variable(self.ctx, shape_id, "magnification", 
-						magnification_values, index_domain=False, var_type="real")
+					self.variables.magnification = sh.Variable(shape_id, "magnification", 
+						magnification_values, index_domain=False, var_type="Real")
 
 				if self.importance == "least": 
 					minification_values = sh.MINIFICATION_VALUES
-					self.variables.minification = sh.Variable(self.ctx, shape_id, "minification", 
-						minification_values, index_domain=False, var_type="real")
+					self.variables.minification = sh.Variable(shape_id, "minification", 
+						minification_values, index_domain=False, var_type="Real")
 
 			if "typed" in element: 
 				self.typed = element["typed"]
@@ -89,13 +86,13 @@ class Shape(object):
 
 	def width(self): 
 		if self.type == "container": 
-			return self.flex_width
-		return IntVal(self.orig_width, ctx=self.ctx)
+			return self.variables.width.id
+		return self.orig_width
 
 	def height(self): 
 		if self.type == "container": 
-			return self.flex_height
-		return IntVal(self.orig_height, ctx=self.ctx)
+			return self.variables.height.id
+		return self.orig_height
 
 	def computed_width(self): 
 		# Emphasis should be propagated to leaf level nodes
@@ -104,9 +101,9 @@ class Shape(object):
 
 		# TAkes the current scaling value into account
 		if self.importance == "most": 
-			return self.width() * self.variables.magnification.z3
+			return self.width() * self.variables.magnification.name
 		elif self.importance == "least": 
-			return self.width() * self.variables.minification.z3
+			return self.width() * self.variables.minification.name
 		return self.width()
 
 	def computed_height(self):
@@ -115,9 +112,9 @@ class Shape(object):
 			return self.height()
 
 		if self.importance == "most": 
-			return self.height() * self.variables.magnification.z3
+			return self.height() * self.variables.magnification.name
 		elif self.importance == "least": 
-			return self.height() * self.variables.minification.z3
+			return self.height() * self.variables.minification.name
 		return self.height()
 
 class LeafShape(Shape): 
@@ -128,14 +125,19 @@ class ContainerShape(Shape):
 	def __init__(self, solver_ctx, shape_id, element, num_siblings):
 		Shape.__init__(self, solver_ctx, shape_id, element, "container", num_siblings)
 		self.children = []
-		self.variables.arrangement = sh.Variable(self.ctx, shape_id, "arrangement", ["horizontal", "vertical", "rows", "columns"])
-		self.variables.proximity = sh.Variable(self.ctx, shape_id, "proximity", [5,10,15,20,25,30,35,40,45,50,55,60], index_domain=False)
-		self.variables.alignment = sh.Variable(self.ctx, shape_id, "alignment", ["left", "center", "right"])
+		self.variables.arrangement = sh.Variable(shape_id, "arrangement", 
+			["horizontal", "vertical", "rows", "columns"])
+		self.variables.proximity = sh.Variable(shape_id, "proximity", 
+			[5,10,15,20,25,30,35,40,45,50,55,60], index_domain=False)
+		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
 
 		# TODO: Have some reasoning why we are picking this range of values
-		self.variables.distribution = sh.Variable(self.ctx, shape_id, "distribution",
+		self.variables.distribution = sh.Variable(shape_id, "distribution",
 												  [20,40,60,80,100,120,140,160,180,200,220,240,
 												   260,280,300,320,340,360,380,400], index_domain=False)
+
+		self.variables.width = sh.Variable(shape_id, "width")
+		self.variables.height = sh.Variable(shape_id, "height")
 
 		self.container_order = "unimportant"
 		self.container_type = "group"
@@ -143,10 +145,6 @@ class ContainerShape(Shape):
 			if "containerOrder" in element: 
 				self.container_order = element["containerOrder"]
 			self.container_type = element["type"]
-
-		# Width and Height for container is determined by their contents so allow these values to change
-		self.flex_width = Int(shape_id + "_width", ctx=self.ctx)
-		self.flex_height = Int(shape_id + "_height", ctx=self.ctx)
 
 	def add_child(self, child): 
 		self.children.append(child)
@@ -164,17 +162,17 @@ class CanvasShape(Shape):
 	def __init__(self, solver_ctx, shape_id, element, num_siblings):
 		Shape.__init__(self, solver_ctx, shape_id, element, "canvas", num_siblings)
 		self.children = []
-		self.variables.alignment = sh.Variable(solver_ctx, "canvas", "alignment", ["left", "center", "right"])
-		self.variables.justification = sh.Variable(solver_ctx, "canvas", "justification", ["top", "center", "bottom"])
-		self.variables.margin = sh.Variable(solver_ctx, "canvas", "margin", [5,10,20,30,40,50,60,70,80,90,100], index_domain=False)
-		self.variables.grid = sh.Variable(solver_ctx, "canvas", "grid", [5,8,12,16,20], index_domain=False)
-		self.variables.background_color = sh.Variable(solver_ctx, "canvas", "background_color", element["colors"], var_type="str",
-													  index_domain=False)
+		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
+		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
+		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50,60,70,80,90,100], 
+			index_domain=False)
+		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
+		self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], 
+			var_type="String", index_domain=False)
 
 		self.x = 0
 		self.y = 0
 
-		# self.container_order = "unimportant"
 		if element is not None: 
 			if "containerOrder" in element: 
 				self.container_order = element["containerOrder"]
@@ -184,11 +182,7 @@ class CanvasShape(Shape):
 
 		if self.locks is not None: 
 			for lock in self.locks:
-				if lock == "background_color":
-					self.variable_values[lock] = StringVal(element[lock], ctx=solver_ctx)
-				else:
-					# Keep track of the actual value of the locked property on the container instance so we can set the constraint later
-					self.variable_values[lock] = element[lock]
+				self.variable_values[lock] = element[lock]
 
 	def add_child(self, child): 
 		self.children.append(child)
