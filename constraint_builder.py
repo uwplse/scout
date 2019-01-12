@@ -18,23 +18,42 @@ class ConstraintBuilder(object):
 
 	def init_previous_solution_constraints(self, previous_solutions, shapes): 
 		# Saved solutions should not appear again in the results
+		constraints = ""
+		decl_constraints = ""
+		declared = False
 		for solution in previous_solutions: 
 			elements = solution["elements"]
 			if (not "added" in solution and not "removed" in solution) or (not len(solution["added"]) and not len(solution["removed"])):
-				all_values = self.get_previous_solution_constraints_from_elements(shapes, elements)
-
-				# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
-				self.solver.add(Not(And(all_values, self.solver.ctx)), "prevent previous solution " + solution["id"] + " values")
+				if not declared: 
+					decl_constraints = self.get_solution_variable_declarations(shapes, elements)
+					constraints += decl_constraints
+					declared = True
+				constraints += self.get_previous_solution_constraints_from_elements(shapes, elements, solution["id"])
+		self.add_constraints(constraints)
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
 		# Get the constraints for checking the validity of the previous solution
-		all_values = self.get_solution_constraints_from_elements(shapes, elements)
+		constraints = self.get_solution_constraints_from_elements(shapes, elements)
 
 		# All of the variables that were set for this solution should be maintained
-		for value in all_values:
-			self.solver.add(value, "fix solution " + solutionID + " values " + str(value))
+		self.add_constraints(constraints)
 
-	def get_previous_solution_constraints_from_elements(self, shapes, elements):
+	def get_solution_variable_declarations(self, shapes, elements): 
+		decl_constraints = "" # Because Z3 requires declaring these again to use from_string to parse but
+							  # They are not actually re-declared
+		for elementID in elements:
+			element = elements[elementID]
+
+			# Get the shape corresponding to the element name
+			shape = shapes[elementID]
+			variables = shape.variables.toDict()
+			if shape.type == "leaf":
+				for variable_key in variables.keys(): 
+					variable = variables[variable_key]
+					decl_constraints += cb.declare(variable.id, variable.type)
+		return decl_constraints
+
+	def get_previous_solution_constraints_from_elements(self, shapes, elements, solutionID):
 		all_values = []
 		for elementID in elements:
 			element = elements[elementID]
@@ -45,11 +64,21 @@ class ConstraintBuilder(object):
 			if shape.type == "leaf":
 				for variable_key in variables.keys(): 
 					variable = variables[variable_key]
-					all_values.append(variable.z3 == variable.get_value_from_element(element))
-		return all_values
+					variable_value = variable.get_value_from_element(element)
+					if variable.type == "String":
+						variable_value = "\"" + variable_value + "\""
+					all_values.append(cb.eq(variable.id, 
+						str(variable_value)))
+
+		# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
+		constraints = cb.assert_expr(cb.not_expr(cb.and_expr(all_values)), 
+			"prevent_previous_solution_" + solutionID + "_values")
+		return constraints
 
 	def get_solution_constraints_from_elements(self, shapes, elements): 
 		all_values = []
+		decl_constraints = "" # Because Z3 requires declaring these again to use from_string to parse but
+							  # They are not actually re-declared
 		for elementID in elements:
 			element = elements[elementID]
 
@@ -59,10 +88,16 @@ class ConstraintBuilder(object):
 			variables = shape.variables.toDict()
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
+				decl_constraints += cb.declare(variable.id, variable.type)
 				if variable.name != "baseline": 
-					all_values.append(variable.z3 == variable.get_value_from_element(element))
+					all_values.append(cb.eq(variable.id, 
+						str(variable.get_value_from_element(element))))
 
-		return all_values	
+		# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
+		constraints = cb.assert_expr(cb.not_expr(cb.and_expr(all_values)), 
+			"fix_solution_" + solution["id"] + "_values")
+		constraints = decl_constraints + constraints
+		return constraints	
 
 	def init_shape_baseline(self, shape): 
 		constraints = ""
