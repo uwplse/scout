@@ -41,6 +41,7 @@ class Solver(object):
 		print('create instance')
 		self.solver_ctx = solver_ctx
 		self.solver = z3.Solver(ctx=self.solver_ctx)
+		self.solver.set(unsat_core=True)
 		self.solutions = [] # Initialize the variables somewhere
 		self.unassigned = []
 		self.elements = elements
@@ -239,10 +240,12 @@ class Solver(object):
 	# Doesn't return any solutions back 
 	def check(self):
 		results = dict()
+		constraints = "'"
 
 		# Encode the fixed constraints 
 		for shape in self.shapes.values(): 
-			self.cb.init_locks(shape)
+			constraints += self.cb.init_locks(shape)
+		self.override_solver.add_constraints(constraints)
 
 		time_start = time.time()
 		valid = self.z3_check(time_start)
@@ -317,8 +320,10 @@ class Solver(object):
 	def solve(self):
 		# Initialize the set of fixed constraints on shapes and containers
 		start_time = time.time()
+		constraints = ""
 		for shape in self.shapes.values(): 
-			self.cb.init_locks(shape)
+			constraints += self.cb.init_locks(shape)
+		self.override_solver.add_constraints(constraints)
 		end_time = time.time()
 		print("Time taken to encode locks: " + str(end_time-start_time))
 			
@@ -664,7 +669,8 @@ class Solver(object):
 			time_z3_start = time.time()
 			result = self.solver.check()
 			# constraints = self.solver.sexpr()
-			# unsat_core = self.solver.unsat_core()
+			unsat_core = self.solver.unsat_core()
+			print(unsat_core)
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -711,7 +717,7 @@ class Solver(object):
 				# GGet a solution
 				time_z3_start = time.time()
 				result = self.solver.check()
-				# unsat_core = self.solver.unsat_core()
+				unsat_core = self.solver.unsat_core()
 
 				self.z3_calls += 1
 				time_z3_end = time.time()
