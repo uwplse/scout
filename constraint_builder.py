@@ -4,6 +4,9 @@ import math
 import time
 import smtlib_builder as cb
 
+CANVAS_HEIGHT = 667
+CANVAS_WIDTH = 375
+
 def abs(x):
 	return If(x>=0,x,-x)
 
@@ -106,14 +109,14 @@ class ConstraintBuilder(object):
 				add(shape.variables.y.id, shape.orig_baseline), "baseine_" + shape.shape_id)
 		return constraints
 
-	def init_shape_bounds(self, shape, canvas_width, canvas_height):
+	def init_shape_bounds(self, shape):
 		constraints = ""
 		constraints += cb.assert_expr(cb.gte(shape.variables.x.id, "0"), "shape_" + shape.shape_id + "_x_gt_zero")
 		constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.x.id, str(shape.computed_width())), 
-			str(canvas_width)), "shape_" + shape.shape_id + "_right_lt_width")
+			str(CANVAS_WIDTH)), "shape_" + shape.shape_id + "_right_lt_width")
 		constraints += cb.assert_expr(cb.gte(shape.variables.y.id, "0"), "shape_" + shape.shape_id + "_y_gt_zero")
 		constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.y.id, str(shape.computed_height())), 
-			str(canvas_height)), "shape_" + shape.shape_id + "_bottom_lt_height")
+			str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
 		return constraints
 
 	def init_shape_grid_values(self, shape, canvas): 

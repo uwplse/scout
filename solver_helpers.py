@@ -5,6 +5,7 @@ import numpy as np
 import math
 import shapes as shape_objects
 from fractions import Fraction
+import time
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
@@ -55,6 +56,7 @@ def parse_unsat_core(unsat_core):
 def parse_variables_from_model(model):
 	variables = dict()
 	num_vars = len(model)
+
 	decls = model.decls()
 	for i in range(num_vars):
 		var = decls[i]

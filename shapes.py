@@ -2,7 +2,6 @@ from z3 import *
 import solver_helpers as sh
 from dotmap import DotMap
 
-# Types of shapes that have labels
 label_types = ["text"]
 minimum_sizes = {
 	"text": 44, 

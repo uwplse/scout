@@ -47,9 +47,9 @@ def not_expr(term):
 
 def assert_expr(term, name = ""): 
 	# Creates an implication for the label
-	expr = "(declare-fun " + name + " () Bool)\n" 
-	expr += "(assert (= " + name + " true))\n"
-	expr += "(assert (=> " + name + "\n" + term + "))\n"
+	# expr = "(declare-fun " + name + " () Bool)\n" 
+	# expr += "(assert (= " + name + " true))\n"
+	expr = "(assert (! " + term + "))\n"
 	return expr
 
 def declare(var_name, var_type): 

@@ -36,7 +36,7 @@ class OverrideSolver(object):
 			self.solver.add(constraint)
 
 class Solver(object): 
-	def __init__(self, solver_ctx, elements, solutions, canvas_width, canvas_height, relative_designs=None):
+	def __init__(self, solver_ctx, elements, solutions, relative_designs=None):
 		# Construct the solver instance we will use for Z3
 		print('create instance')
 		self.solver_ctx = solver_ctx
@@ -46,8 +46,6 @@ class Solver(object):
 		self.unassigned = []
 		self.elements = elements
 		self.previous_solutions = solutions
-		self.canvas_width = canvas_width
-		self.canvas_height = canvas_height
 		self.relative_search = False
 		self.shapes, self.root = self.build_shape_hierarchy()
 		self.root = self.root[0]
@@ -120,7 +118,7 @@ class Solver(object):
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
 				print('leaf')
-				constraints += self.cb.init_shape_bounds(shape, self.canvas_width, self.canvas_height)
+				constraints += self.cb.init_shape_bounds(shape)
 				constraints += self.cb.init_shape_baseline(shape)
 				# self.cb.init_shape_grid_values(shape, canvas)
 		return constraints 
@@ -342,14 +340,11 @@ class Solver(object):
 		sys.stdout.flush()
 		start_time = time.time()
 
-		# Z3 looping version
-		# self.z3_solve(start_time, size)
-
-		# Branch and bound regular 
-		# self.branch_and_bound(start_time)
-
 		# Branch and bound get one solution at a time
+		time_start = time.time()
 		self.branch_and_bound_n_solutions(start_time)
+		time_end = time.time()
+		print('Total time in branch and bound: ' + str(time_end-time_start))
 
 		end_time = time.time()
 		print("number of solutions found: " + str(len(self.solutions)))
@@ -637,8 +632,14 @@ class Solver(object):
 		return 
 
 	def branch_and_bound_n_solutions(self, time_start): 
+
 		while self.num_solutions < NUM_SOLUTIONS:
 			print("Number of solutions found: " + str(self.num_solutions))
+			# Subprocess for each 
+			# Create z3 solver in each 
+			# Pass in the elemenst, solutions
+			# Construct constraints in there including solver class 
+
 			state = sh.Solution()
 			sln = self.branch_and_bound_random(time_start, state)
 			sys.stdout.flush()
@@ -669,8 +670,6 @@ class Solver(object):
 			time_z3_start = time.time()
 			result = self.solver.check()
 			# constraints = self.solver.sexpr()
-			unsat_core = self.solver.unsat_core()
-			print(unsat_core)
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -686,8 +685,10 @@ class Solver(object):
 
 				# Keep the solution & convert to json
 				# self.print_solution()
-
+				time_start = time.time()
 				sln = state.convert_to_json(self.shapes, model, self.solver_ctx)
+				time_end = time.time()
+				print("Time in converting solution to json: " + str(time_end-time_start))
 				self.restore_state()
 
 				# Encode the previous solution outputs into the model so we don't produce it again in the next iteration
@@ -717,7 +718,6 @@ class Solver(object):
 				# GGet a solution
 				time_z3_start = time.time()
 				result = self.solver.check()
-				unsat_core = self.solver.unsat_core()
 
 				self.z3_calls += 1
 				time_z3_end = time.time()
