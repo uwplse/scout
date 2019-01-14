@@ -236,8 +236,8 @@ export default class ConstraintsCanvas extends React.Component {
       "x": 0, 
       "y": 0,
       "width": this.canvasWidth, 
-      "height": this.canvasHeight,
-      "background_color": "#E1E2E1"
+      "height": this.canvasHeight
+      // "background_color": "#E1E2E1"
     }
 
     this.canvasLevelShape = canvas;
@@ -471,15 +471,13 @@ export default class ConstraintsCanvas extends React.Component {
     let siblingItems = {}; 
     if(siblings.next) {
       siblingItems.next = {
-        id: siblings.next.title.props.id, 
-        label: siblings.next.title.props.shape.label
+        id: siblings.next.title.props.id 
       }; 
     }
 
     if(siblings.prev) {
       siblingItems.prev = {
-        id: siblings.prev.title.props.id, 
-        label: siblings.prev.title.props.shape.label
+        id: siblings.prev.title.props.id
       }; 
     }
 
@@ -718,11 +716,9 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
-    let label = Constants.controlLabels(type); 
     let shape = {
       "name": _.uniqueId(),
       "id": id, 
-      "label": label, 
       "type": type,
       "importance": importance, 
       "containerOrder": containerOrder, 

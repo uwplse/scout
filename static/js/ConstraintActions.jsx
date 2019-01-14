@@ -512,32 +512,32 @@ ConstraintActions.canvasConstraints = {
 				}
 			}
 		}, 
-	"background_color": 
-		{
-			"do": {
-				"key": "background_color",
-				"updateConstraintsCanvasShape": function keepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
-					ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
-				}, 
-				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Keep the background color.";
-				}
-			}, 
-			"undo": {
-				"key": "background_color",
-				"updateConstraintsCanvasShape": function undoKeepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
-					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
-				},
-				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					return "Don't keep the background color.";
-				}
-			}
-		},
+	// "background_color": 
+	// 	{
+	// 		"do": {
+	// 			"key": "background_color",
+	// 			"updateConstraintsCanvasShape": function keepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+	// 				ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
+	// 			}, 
+	// 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+	// 				return "Keep the background color.";
+	// 			}
+	// 		}, 
+	// 		"undo": {
+	// 			"key": "background_color",
+	// 			"updateConstraintsCanvasShape": function undoKeepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+	// 				ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, "background_color");
+	// 			},
+	// 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+	// 				return "Don't keep the background color.";
+	// 			}
+	// 		}
+	// 	},
 	"density": 
 		{
 			"do": {
 				"key": "density",
-				"updateConstraintsCanvasShape": function keepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+				"updateConstraintsCanvasShape": function keepDensity(constraintsCanvasShape, designCanvasShape) {
 					/* TBD */ 
 				}, 
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
@@ -546,7 +546,7 @@ ConstraintActions.canvasConstraints = {
 			}, 
 			"undo": {
 				"key": "desnity",
-				"updateConstraintsCanvasShape": function undoKeepBackgroundColor(constraintsCanvasShape, designCanvasShape) {
+				"updateConstraintsCanvasShape": function undoKeepDenity(constraintsCanvasShape, designCanvasShape) {
 					/* TBD */ 
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {

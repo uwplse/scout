@@ -1,6 +1,6 @@
 .design-canvas {
 	position: relative;
-	border: 1px solid #ccc;
+	border: 1px solid #2780E3;
 	cursor: pointer;
 }
 
@@ -14,7 +14,7 @@
 
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
-	outline: 1px dashed #ffffff;
+	outline: 1px dashed #000000;
 }
 
 .design-canvas.hovered .SVGInline-svg {

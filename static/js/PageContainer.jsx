@@ -335,7 +335,7 @@ export default class PageContainer extends React.Component {
 
     // set the allowed colors here based on the palette
     // Later need a way to automatically generate these from the uploaded designs
-    shapeObjects.colors = this.getBackgroundColors(); 
+    // shapeObjects.colors = this.getBackgroundColors(); 
 
     return JSON.stringify(shapeObjects); 
   }

@@ -143,58 +143,6 @@ h1, h2, h3 {
 	display: inline-block;
 }
 
-/** 
-	Designs canvas 
-**/
-
-
-.designs-container {
-	margin-bottom: 0;
-	margin-top: 10px;
-	margin-left: 10px;
-}
-
-.design-canvas-container {
-	display: flex; 
-    flex-direction: row; 
-    flex-grow: 1;
-    background-color: #414656;
-}
-
-.design-canvas-container .current-designs-container {
-	border: none;
-    background-color: #414656;
-}
-
-.invalid-container {
-	margin-bottom: 0; 
-}
-
-.designs-container.current-designs-container {
-	flex: 1;
-}
-
-.designs-container.saved-designs-container, 
-.designs-container.trashed-designs-container {
-	margin: 5px;
-}
-
-.designs-canvas-container-alert {
-	margin: 0.5em;
-	font-size: 12px;
-}
-
-.designs-canvas-container-alert.alert-dismissable .close {
-	top: 0;
-	right: 0;
-}
-
-.constraint-error-message {
-	display: inline-block;
-	margin-left: 10px;
-	margin-top: 10px;
-}
-
 /**  
 	Resizable box 
 **/

@@ -35,8 +35,7 @@ export default class DesignCanvas extends React.Component {
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
       designShape: undefined, // The root level shape of the DesignCanvas
-      hovered: false, 
-      backgroundColor: "#E1E2E1"
+      hovered: false
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -63,8 +62,7 @@ export default class DesignCanvas extends React.Component {
       constraintsMenuY: prevState.constraintsMenuY, 
       constraintsMenuShape: prevState.constraintsMenuShape,
       designMenu: prevState.designMenu, 
-      savedState: prevState.savedState, 
-      backgroundColor: prevState.backgroundColor,
+      savedState: prevState.savedState,
       valid: nextProps.valid, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
@@ -93,8 +91,8 @@ export default class DesignCanvas extends React.Component {
   initDesignCanvas = (shape) => {
     // Intialize the background color and root level design shape
     this.setState({
-      designShape: shape,
-      backgroundColor: shape.background_color
+      designShape: shape
+      // backgroundColor: shape.background_color
     });
   }
 
@@ -389,7 +387,7 @@ export default class DesignCanvas extends React.Component {
            style={{
             height: (this.canvasHeight * scalingFactor) + "px", 
             width: (this.canvasWidth * scalingFactor) + "px", 
-            backgroundColor: this.state.backgroundColor}}> 
+            backgroundColor: "#ffffff"}}> 
   			<div className={(constraintsMenuShape ? "" : "hidden")}>
         {constraintsMenuShape ? 
           (<DesignCanvasMenu 

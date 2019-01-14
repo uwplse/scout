@@ -33,13 +33,6 @@ class Constants {
     return 0; 
   }
 
-  static controlLabels(controlType) {
-    let values = {
-      'text': 'label'
-    }
-    return values[controlType]; 
-  }; 
-
   static controlFontSizes(controlType) {
     let values = {
       'text': 36

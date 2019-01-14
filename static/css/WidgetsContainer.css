@@ -1,8 +1,8 @@
 .widgets-container {
 	margin-bottom: 0; 
-	width: 280px;
-	background-color: #414656;
-}
+	width: 325px;
+/*	background-color: #414656;
+*/}
 
 .widgets-panel {
 	overflow: auto;

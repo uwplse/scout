@@ -39,62 +39,6 @@ export default class DesignCanvasSVGWidget extends React.Component {
     }
   }
 
-  componentDidMount() {
-    // Set the initial value for the text label
-    // this.setTextLabel();  
-    // this.rescaleTextLabel();
-    // this.rescaleLabelWidth();
-  }
-
-  componentDidUpdate() {
-    // this.setTextLabel();  
-    // this.rescaleTextLabel();
-  }
-
-  // rescaleLabelWidth = () => {
-  //   let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
-  //   let svgElement = document.getElementById(id); 
-  //   let editableText = svgElement.querySelectorAll(".widget-editable-text");
-
-  //   if(editableText.length) {    
-  //     if(this.type == "label") {
-  //       let textArea = editableText[0].getBoundingClientRect(); 
-  //       let newWidth = Math.round(textArea.width,0);
-  //       this.setState({
-  //         width: newWidth
-  //       }); 
-  //     }
-  //   }
-  // }
-
-  // setTextLabel = () => {
-  //   let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
-  //   let svgElement = document.getElementById(id); 
-  //   if(svgElement) {
-  //     let editableText = svgElement.querySelectorAll(".widget-editable-text");
-  //     if(editableText.length) {
-  //       editableText[0].innerHTML = this.element.label;  
-  //     }
-  //   }
-  // }
-
-  // rescaleTextLabel = () => {
-  //   let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
-  //   let svgElement = document.getElementById(id); 
-  //   if(svgElement) {
-  //     let editableText = svgElement.querySelectorAll(".widget-editable-text");
-  //     if(editableText.length) {
-  //       let adjust = 5; 
-  //       let scaledFont = 100 * this.state.scaling; 
-  //       editableText[0].style.fontSize = (scaledFont-adjust) + "%"; 
-
-  //       if(this.type == "button") {
-  //         editableText[0].style.transform = "translate(" + Math.round(this.state.width/2,0) + "px," + Math.round(this.state.height/2,0) + "px)"; 
-  //       }
-  //     }
-  //   }
-  // }
-
   setElementSize = (width, height) => {
     // When height and width are updated by font size changes, update the element object. 
     this.element.height = height; 

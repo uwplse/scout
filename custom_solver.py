@@ -205,7 +205,7 @@ class Solver(object):
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.justification)
 				last.append(shape.variables.margin)
-				last.append(shape.variables.background_color)
+				# last.append(shape.variables.background_color)
 
 			if shape.importance == "most": 
 				last.append(shape.variables.magnification)

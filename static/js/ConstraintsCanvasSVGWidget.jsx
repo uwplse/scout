@@ -70,7 +70,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   
   componentDidMount() {
     // Set the initial value for the text label
-    this.initTextLabel(); 
     this.setState({
       hasText: true, 
       labelPosition: this.computeLabelPosition()
@@ -85,32 +84,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }
 
     return false;
-  }
-
-  initTextLabel = () => {
-    let rootElement = document.getElementById(this.elementId); 
-    let svgElement = rootElement.getElementsByTagName('svg');
-    if(svgElement[0]) {
-      let textValue = svgElement[0].textContent; 
-      if(textValue && textValue.length) {
-        this.element.label = textValue; 
-      }
-    }
-  }
-
-  updateTextLabel = (evt) => {
-    console.log("udpate text label")
-    // Get the actual value out of the text area and update
-    // it on the object and lock the value
-    // trigger the constraints checking
-    // this.lockTextLabel();
-
-    // Set the cursor positon back to 0 
-    this.setState({
-      cursorPos: 0
-    });
-
-    this.checkSolutionValidity();
   }
 
   adjustElementSize = (element, includeHeight=false) => {

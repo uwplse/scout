@@ -128,7 +128,7 @@ class ConstraintBuilder(object):
 		alignment = canvas.variables.alignment
 		justification = canvas.variables.justification
 		margin = canvas.variables.margin
-		background_color = canvas.variables.background_color
+		# background_color = canvas.variables.background_color
 		canvas_x = canvas.variables.x
 		canvas_y = canvas.variables.y
 		constraints = ""
@@ -145,10 +145,10 @@ class ConstraintBuilder(object):
 			or_values.append(cb.eq(margin.id, str(margin_value)))
 		constraints += cb.assert_expr(cb.or_expr(or_values), "canvas_margin_domain_in_range")
 
-		bg_values = []
-		for background_value in background_color.domain:
-			bg_values.append(cb.eq(background_color.name, background_value))
-		constraints += cb.assert_expr(cb.or_expr(or_values), "canvas_background_color_domain_in_range")
+		# bg_values = []
+		# for background_value in background_color.domain:
+		# 	bg_values.append(cb.eq(background_color.name, background_value))
+		# constraints += cb.assert_expr(cb.or_expr(or_values), "canvas_background_color_domain_in_range")
 		page_shape = canvas.children[0]
 
 		# page shape should stay within the bounds of the canvas container

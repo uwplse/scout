@@ -1,10 +1,12 @@
 from z3 import * 
 import time
+import sys
+import json
 
-def create_constraints(solver, ctx): 
+def create_constraints(solver, ctx, elements): 
 	index = 0 
-	values = range(0, 2000)
-
+	values = range(0, 20)
+	print(elements["children"])
 	expressions = 10 
 	while index < expressions: 
 		x = Int('x' + str(index), ctx=ctx)
@@ -26,14 +28,15 @@ def create_constraints(solver, ctx):
 		index += 1
 
 if __name__ == "__main__":
-
 	num = 0 
+	json_elements = sys.argv[1]
+	elements = json.loads(json_elements)
 	while num < 10: 
 		context = z3.Context()
 		print(context.ref())
 
 		solver = z3.Solver(ctx=context)
-		create_constraints(solver, context)
+		create_constraints(solver, context, elements)
 		result = solver.check()
 		print("Result: " + str(result))
 		num += 1

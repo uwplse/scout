@@ -28,10 +28,6 @@ class Shape(object):
 		self.variables.y = sh.Variable(shape_id, "y")
 		self.type = shape_type 
 		self.ctx = solver_ctx
-
-		if self.shape_type in label_types:
-			self.variables.label = sh.Variable(shape_id, "label", var_type="String")
-
 		self.locks = None
 		self.order = -1
 		self.importance = "normal"
@@ -166,8 +162,8 @@ class CanvasShape(Shape):
 		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50,60,70,80,90,100], 
 			index_domain=False)
 		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
-		self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], 
-			var_type="String", index_domain=False)
+		# self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], 
+		# 	var_type="String", index_domain=False)
 
 		self.x = 0
 		self.y = 0

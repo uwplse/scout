@@ -221,12 +221,12 @@ class Solution(object):
 					justification = model[variables[shape.variables.justification.id]].as_string()
 					margin = model[variables[shape.variables.margin.id]].as_string()
 					grid = model[variables[shape.variables.grid.id]].as_string()
-					background_color = model[variables[shape.variables.background_color.id]].as_string()
+					# background_color = model[variables[shape.variables.background_color.id]].as_string()
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
 					element["grid"] = int(grid)
-					element["background_color"] = background_color.replace("\"", "")
+					# element["background_color"] = background_color.replace("\"", "")
 
 				if shape.type == "leaf": 
 					height = shape.height()

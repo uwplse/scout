@@ -4,6 +4,8 @@ import subprocess
 
 expressions = 1
 
+test_elements = "{\"name\":\"canvas\",\"type\":\"canvas\",\"controlType\":\"canvas\",\"children\":[{\"name\":\"page\",\"type\":\"page\",\"controlType\":\"page\",\"x\":110,\"y\":0,\"width\":239,\"height\":46.5,\"containerOrder\":\"important\",\"importance\":\"normal\",\"children\":[{\"name\":\"10\",\"id\":\"3\",\"label\":\"Profile Pic\",\"type\":\"element\",\"importance\":\"normal\",\"order\":-1,\"width\":142,\"height\":142,\"x\":122,\"y\":99,\"item\":false,\"typed\":false},{\"name\":\"143\",\"id\":\"5\",\"label\":\"IonutBONDOC\",\"type\":\"text\",\"importance\":\"normal\",\"order\":-1,\"width\":154,\"height\":86,\"x\":0,\"y\":0,\"item\":false,\"typed\":false},{\"name\":\"261\",\"id\":\"1\",\"label\":\"groupContainerGroup\",\"type\":\"group\",\"importance\":\"normal\",\"containerOrder\":\"unimportant\",\"order\":-1,\"width\":239,\"height\":47,\"x\":0,\"y\":0,\"item\":false,\"typed\":false,\"children\":[{\"name\":\"262\",\"id\":\"3\",\"label\":\"Profile Pic\",\"type\":\"element\",\"importance\":\"normal\",\"order\":-1,\"width\":142,\"height\":142,\"x\":0,\"y\":0,\"item\":false,\"typed\":false},{\"name\":\"263\",\"id\":\"3\",\"label\":\"Profile Pic\",\"type\":\"element\",\"importance\":\"normal\",\"order\":-1,\"width\":142,\"height\":142,\"x\":0,\"y\":0,\"item\":false,\"typed\":false}]}],\"label\":\"canvasCanvas\"}],\"x\":0,\"y\":0,\"width\":375,\"height\":667,\"colors\":[\"#FF4081\",\"#000000\",\"#304FFE\"]}"
+
 def test_z3_from_api(solver): 
 	index = 0 
 	values = [1,2,3,4,5,6,7,8,9,10]
@@ -44,7 +46,7 @@ if __name__ == "__main__":
 	num = 10
 	index = 0 
 	while index < num:
-		ret = subprocess.Popen(["python", "z3_solver.py"])   
+		ret = subprocess.Popen(["python", "z3_solver.py", test_elements])   
 		print(ret)
 		index += 1
 

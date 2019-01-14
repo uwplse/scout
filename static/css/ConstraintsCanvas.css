@@ -49,12 +49,12 @@
 	/* Needed when we do not have the virtualized grid enabled where it makes its own scrollbar */
 	overflow: auto;
     height: calc(100% - 120px);
-    background-color: #414656;
-}
+/*    background-color: #414656;
+*/}
 
 .constraints-container {
-	width: 475px;
-	min-width: 475px;
+	width: 550px;
+	min-width: 550px;
 }
 
 
