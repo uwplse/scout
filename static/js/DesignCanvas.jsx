@@ -181,8 +181,8 @@ export default class DesignCanvas extends React.Component {
         padding = 5;
       }
 
-      let computedHeight = (shape.size.height * this.scalingFactor + (padding * 2));
-      let computedWidth = (shape.size.width * this.scalingFactor + (padding * 2)); 
+      let computedHeight = (shape.height * this.scalingFactor + (padding * 2));
+      let computedWidth = (shape.width * this.scalingFactor + (padding * 2)); 
 
       if(isContainer) {
         console.log(computedWidth); 
@@ -223,13 +223,13 @@ export default class DesignCanvas extends React.Component {
     elementsList.sort(function(a, b) {
       let a_x = a.x; 
       let a_y = a.y; 
-      let a_width = a.size.width;
-      let a_height = a.size.height; 
+      let a_width = a.width;
+      let a_height = a.height; 
 
       let b_x = b.x; 
       let b_y = b.y; 
-      let b_width = b.size.width; 
-      let b_height = b.size.height; 
+      let b_width = b.width; 
+      let b_height = b.height; 
 
       // Sort by containment
       if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {

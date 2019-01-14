@@ -36,8 +36,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.timer = null;  
 
     this.state = {
-      height: this.element.size.height,
-      width: this.element.size.width,
+      height: this.element.height,
+      width: this.element.width,
       order: this.element.order,  
       containerOrder: this.element.containerOrder, 
       importance: this.element.importance, 
@@ -77,23 +77,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }); 
   }
 
-  componentDidUpdate() {
-    // if(this.state.hasText) {
-    //   console.log("compoennt update");
-    //   this.setTextLabel(false);      
-    // }
-  }
-
-  // lockTextLabel = () => {
-  //   if(this.element[ConstraintActions.locksKey] == undefined) {
-  //     this.element[ConstraintActions.locksKey] = []; 
-  //   } 
-
-  //   if(this.element[ConstraintActions.locksKey].indexOf("label") == -1) {
-  //     this.element[ConstraintActions.locksKey].push("label"); 
-  //   }
-  // }
-
   getHasText = () => {
     let rootElement = document.getElementById(this.elementId); 
     let editableText = rootElement.getElementsByTagName('text');
@@ -114,41 +97,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       }
     }
   }
-
-  // handleTextChange = (evt) => {
-  //   // Handle the text change on a timeout so it saves after the user finishes typing
-  //   clearTimeout(this.timer); 
-  //   this.timer = setTimeout(this.updateAndResizeText, WAIT_INTERVAL);  
-  // }
-
-  // updateAndResizeText = (evt) => {
-  //   console.log("resize text area");
-  //   // Update the height and widht of the parent container so the height recalculates
-  //   if(this.state.hasText) {
-  //     let cursor = window.getSelection(); 
-  //     let cursorPos = cursor.baseOffset; 
-  //     this.setState({
-  //       cursorPos: cursorPos
-  //     });
-
-  //     let editableText = document.getElementById(this.elementId).querySelectorAll(".widget-editable-text");
-
-  //     let textValue = editableText[0].innerHTML; 
-  //     this.element.label = textValue;
-
-  //     if(this.type == "label") {
-  //       let textBounding = this.adjustElementSize(editableText[0]);
-
-  //       // Measure and set the baseline value
-  //       let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
-  //       if(textSizeMeasure[0]){
-  //         let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
-  //         let baseline = textBounding.y - textSizeBounding.y
-  //         this.element.baseline = baseline; 
-  //       }
-  //     }
-  //   }    
-  // }
 
   updateTextLabel = (evt) => {
     console.log("udpate text label")
@@ -176,10 +124,10 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     let height = this.state.height; 
     if(includeHeight) {
       height = heightRounded; 
-      this.element.size.height = heightRounded; 
+      this.element.height = heightRounded; 
     }
 
-    this.element.size.width = widthRounded; 
+    this.element.width = widthRounded; 
     this.setState({
       width: widthRounded, 
       height: height
@@ -188,43 +136,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     return boundingRect; 
   }
 
-  // setTextLabel = (initSize) => {
-  //   let svgElement = document.getElementById(this.elementId); 
-  //   let editableText = svgElement.querySelectorAll(".widget-editable-text");
-  //   if(editableText[0]) {
-  //     console.log("set text");
-  //     editableText[0].innerHTML = this.element.label; 
-
-  //     let range = document.createRange(); 
-  //     var sel = window.getSelection(); 
-  //     var textNode = editableText[0].childNodes[0]; 
-  //     if(textNode && this.state.cursorPos != 0) {
-  //       range.setStart(textNode, this.state.cursorPos);
-  //       range.collapse(true);
-  //       sel.removeAllRanges(); 
-  //       sel.addRange(range);
-  //     }
-
-  //     // Measure and set the baseline value
-  //     let textSizeMeasure = document.getElementById(this.elementId).querySelectorAll(".widget-size-measure"); 
-  //     if(textSizeMeasure[0]){
-  //       let textBounding = editableText[0].getBoundingClientRect();
-  //       let textSizeBounding = textSizeMeasure[0].getBoundingClientRect(); 
-  //       let baseline = textBounding.y - textSizeBounding.y
-  //       this.element.baseline = baseline; 
-  //     }  
-  //   }
-
-  //   if(initSize) {
-  //     if(this.state.width == 0 || this.state.height == 0) {
-  //       // give the component an initial size based on the calculated size of the text box
-  //       let sizeContainer = svgElement.querySelectorAll(".widget-size-container"); 
-  //       if(sizeContainer[0]) {
-  //         this.adjustElementSize(sizeContainer[0]);
-  //       }
-  //     }
-  //   }
-  // }
 
   setElementTyping = (typed) => {
     this.element.typed = typed; 
@@ -265,32 +176,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       y: svgBox.height + 25
     }; 
   }
-
-  // setFontSize = (value) => {
-  //   return (evt) => {
-  //     evt.stopPropagation(); 
-
-  //     // Update the element object size
-  //     let svgElement  = document.getElementById(this.elementId); 
-
-  //     let svgElementInline = svgElement.querySelectorAll(".SVGInline-svg"); 
-
-  //     // Unset these so that we can calculate a new size after the font size is changed
-  //     svgElementInline[0].style.width = ""; 
-  //     svgElementInline[0].style.height = ""; 
-
-  //     // Needed for computing the final height and width. This will be removed when the element re-renders. 
-  //     svgElementInline[0].setAttribute("font-size", value); 
-
-  //     // Set on the element object
-  //     this.setElementFontSize(value);
-
-  //     let editableText = svgElement.querySelectorAll(".widget-editable-text");
-  //     this.adjustElementSize(editableText[0]);
-
-  //     this.checkSolutionValidity();
-  //   }
-  // }
 
   setImportanceLevel(evt, level) {
     evt.stopPropagation(); 

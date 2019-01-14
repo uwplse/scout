@@ -343,28 +343,30 @@ export default class PageContainer extends React.Component {
   parseSolutions = (requestData) => {
     let resultsParsed = JSON.parse(requestData); 
     let solutions = resultsParsed.solutions;
-    let designCanvasList = this.state.mainDesignCanvases; 
-    for(let i=0; i<solutions.length; i++) {
-      let solution = solutions[i];  
-      this.solutionsMap[solution.id] = solution; 
+    if(solutions) {
+      let designCanvasList = this.state.mainDesignCanvases; 
+      for(let i=0; i<solutions.length; i++) {
+        let solution = solutions[i];  
+        this.solutionsMap[solution.id] = solution; 
+      }
+
+      let designsFound = solutions.length;
+
+      // Go through previous solutions and see which ones need to be invalidated
+      for(let i=0; i<this.state.solutions.length; i++) {
+        let designSolution = this.state.solutions[i]; 
+        
+        // Invalidate the solution which means it should be moved into the right side panel 
+        designSolution.invalidated = !designSolution.valid; 
+      }
+
+      this.setState({
+        designsFound: designsFound,
+        solutions: solutions.concat(this.state.solutions), 
+        errorMessageShown: false, 
+        showDesignsAlert: true
+      }, this.updateSolutionsCache);      
     }
-
-    let designsFound = solutions.length;
-
-    // Go through previous solutions and see which ones need to be invalidated
-    for(let i=0; i<this.state.solutions.length; i++) {
-      let designSolution = this.state.solutions[i]; 
-      
-      // Invalidate the solution which means it should be moved into the right side panel 
-      designSolution.invalidated = !designSolution.valid; 
-    }
-
-    this.setState({
-      designsFound: designsFound,
-      solutions: solutions.concat(this.state.solutions), 
-      errorMessageShown: false, 
-      showDesignsAlert: true
-    }, this.updateSolutionsCache);
   }
 
   getRelativeDesigns = (elements, action) => {

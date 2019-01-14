@@ -17,27 +17,27 @@ class FontSizeMenuItem extends React.Component {
   }
 }
 
-class LabelMenuItem extends React.Component {
-  constructor(props) {
-    super(props); 
-    this.shapeID = props.shapeID; 
-    this.shapeLabel = props.shapeLabel; 
-    this.onClick = props.onClick; 
-  }
+// class LabelMenuItem extends React.Component {
+//   constructor(props) {
+//     super(props); 
+//     this.shapeID = props.shapeID; 
+//     this.shapeLabel = props.shapeLabel; 
+//     this.onClick = props.onClick; 
+//   }
 
-  render () {
-    let self = this; 
-    let label = "Make label for \"" + this.shapeLabel + "\"."; 
-    return (<li>
-               <a 
-                tabIndex="-1" 
-                href="#" 
-                onClick={function (evt) { self.onClick(evt, self.shapeID); }}>
-                {label}
-               </a>
-            </li>); 
-  }
-}
+//   render () {
+//     let self = this; 
+//     let label = "Make label for \"" + this.shapeLabel + "\"."; 
+//     return (<li>
+//                <a 
+//                 tabIndex="-1" 
+//                 href="#" 
+//                 onClick={function (evt) { self.onClick(evt, self.shapeID); }}>
+//                 {label}
+//                </a>
+//             </li>); 
+//   }
+// }
 
 // class RelativeMenuItem extends React.Component {
 //   constructor(props) {
@@ -200,16 +200,16 @@ export default class ConstraintsCanvasMenu extends React.Component {
     return menuItems; 
   }
 
-  getLabelItems = () => {
-    // Label items should return the text of the sibling element and the shape ID
-    let labelItems = this.getSiblingLabelItem(this.shapeID); 
-    let menuItems = []; 
-    for(var i=0; i<labelItems.length; i++) {
-      let label = labelItems[i]; 
-      menuItems.push(<LabelMenuItem key={i} shapeID={label.id} shapeLabel={label.label} onClick={this.setLabel} />); 
-    }
-    return menuItems; 
-  }
+  // getLabelItems = () => {
+  //   // Label items should return the text of the sibling element and the shape ID
+  //   let labelItems = this.getSiblingLabelItem(this.shapeID); 
+  //   let menuItems = []; 
+  //   for(var i=0; i<labelItems.length; i++) {
+  //     let label = labelItems[i]; 
+  //     menuItems.push(<LabelMenuItem key={i} shapeID={label.id} shapeLabel={label.label} onClick={this.setLabel} />); 
+  //   }
+  //   return menuItems; 
+  // }
 
   getOrderMenuItems = () => {
     let orderMenuItems = []; 
@@ -296,10 +296,10 @@ export default class ConstraintsCanvasMenu extends React.Component {
       fontSizeSelectorItems = this.getFontSizeMenuItems();
     }
 
-    let labelItems = []; 
-    if(this.setLabel) {
-      labelItems = this.getLabelItems();
-    }
+    // let labelItems = []; 
+    // if(this.setLabel) {
+    //   labelItems = this.getLabelItems();
+    // }
 
     const fontSizeShown = this.setFontSize != undefined; 
     const labelShown = this.setLabel != undefined; 
@@ -339,7 +339,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li>*/}
         {importanceMenuItems}
-        {labelShown ? labelItems : undefined}
+        {/*labelShown ? labelItems : undefined*/}
         {orderShown ? orderMenuItems : undefined}
         {containerOrderShown ? containerOrderMenuItems : undefined}
         </ul>

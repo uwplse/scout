@@ -234,11 +234,9 @@ export default class ConstraintsCanvas extends React.Component {
       "controlType": "canvas",
       "children": [],
       "x": 0, 
-      "y": 0, 
-      "size": {
-        width: this.canvasWidth, 
-        height: this.canvasHeight
-      }, 
+      "y": 0,
+      "width": this.canvasWidth, 
+      "height": this.canvasHeight,
       "background_color": "#E1E2E1"
     }
 
@@ -252,10 +250,8 @@ export default class ConstraintsCanvas extends React.Component {
       "controlType": "page",
       "x": 0, 
       "y": 0, 
-      "size": {
-        width: Constants.controlWidths('page'),
-        height: Constants.controlHeights('page')
-      }, 
+      "width": Constants.controlWidths('page'),
+      "height": Constants.controlHeights('page'), 
       "containerOrder": "important",
       "importance": "normal",
       "children": []
@@ -731,10 +727,8 @@ export default class ConstraintsCanvas extends React.Component {
       "importance": importance, 
       "containerOrder": containerOrder, 
       "order": order, 
-      "size": {
-        "width": width, 
-        "height": height
-      }, 
+      "width": width, 
+      "height": height,
       "x": 0, 
       "y": 0,
       "item": item, 
@@ -752,7 +746,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   calculateRowHeight = ({treeIndex, node, path}) => {
     let padding = 5; 
-    let actualRowHeight = node.title.props.shape.size.height + (padding * 2);
+    let actualRowHeight = node.title.props.shape.height + (padding * 2);
     let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
     let infoHeight = 23 

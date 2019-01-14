@@ -238,7 +238,7 @@ class Solver(object):
 	# Doesn't return any solutions back 
 	def check(self):
 		results = dict()
-		constraints = "'"
+		constraints = ""
 
 		# Encode the fixed constraints 
 		for shape in self.shapes.values(): 
@@ -494,7 +494,6 @@ class Solver(object):
 
 	def z3_check(self, time_start): 
 		print("CHECK")
-		print(self.solver.ctx)
 		time_z3_start = time.time()
 		result = self.solver.check()
 		time_z3_end = time.time()
@@ -666,6 +665,7 @@ class Solver(object):
 			self.solver.pop()
 
 	def branch_and_bound_random(self, time_start, state):
+		print("solving for designs")
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
 			result = self.solver.check()

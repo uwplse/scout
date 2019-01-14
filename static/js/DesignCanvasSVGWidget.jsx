@@ -97,8 +97,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
 
   setElementSize = (width, height) => {
     // When height and width are updated by font size changes, update the element object. 
-    this.element.size.height = height; 
-    this.element.size.width = width; 
+    this.element.height = height; 
+    this.element.width = width; 
   }
 
   setHovered = (evt) => {

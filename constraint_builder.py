@@ -36,7 +36,7 @@ class ConstraintBuilder(object):
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
 		# Get the constraints for checking the validity of the previous solution
-		constraints = self.get_solution_constraints_from_elements(shapes, elements)
+		constraints = self.get_solution_constraints_from_elements(shapes, elements, solutionID)
 
 		# All of the variables that were set for this solution should be maintained
 		self.add_constraints(constraints)
@@ -68,8 +68,6 @@ class ConstraintBuilder(object):
 				for variable_key in variables.keys(): 
 					variable = variables[variable_key]
 					variable_value = variable.get_value_from_element(element)
-					if variable.type == "String":
-						variable_value = "\"" + variable_value + "\""
 					all_values.append(cb.eq(variable.id, 
 						str(variable_value)))
 
@@ -78,7 +76,7 @@ class ConstraintBuilder(object):
 			"prevent_previous_solution_" + solutionID + "_values")
 		return constraints
 
-	def get_solution_constraints_from_elements(self, shapes, elements): 
+	def get_solution_constraints_from_elements(self, shapes, elements, solutionID):
 		all_values = []
 		decl_constraints = "" # Because Z3 requires declaring these again to use from_string to parse but
 							  # They are not actually re-declared
@@ -92,13 +90,12 @@ class ConstraintBuilder(object):
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
 				decl_constraints += cb.declare(variable.id, variable.type)
-				if variable.name != "baseline": 
+				if variable.name != "baseline":
 					all_values.append(cb.eq(variable.id, 
 						str(variable.get_value_from_element(element))))
 
-		# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
-		constraints = cb.assert_expr(cb.not_expr(cb.and_expr(all_values)), 
-			"fix_solution_" + solution["id"] + "_values")
+		constraints = cb.assert_expr(cb.and_expr(all_values),
+			"fix_solution_" + solutionID + "_values")
 		constraints = decl_constraints + constraints
 		return constraints	
 
@@ -270,7 +267,8 @@ class ConstraintBuilder(object):
 			if container.typed: 
 				# If this is a typed container, enforce all variables on child containers to be the same
 				constraints += self.init_repeat_group(container, shapes)
-			return constraints
+
+		return constraints
 
 
 	def init_importance(self, shape, container): 
@@ -393,14 +391,18 @@ class ConstraintBuilder(object):
 			for lock in shape.locks:
 				# Structure message for these constraints to have a specific format so they can be used to identify conflicts in the generated solutions
 				constraints += cb.declare(shape.variables[lock].id, shape.variables[lock].type)
-				constraints += cb.assert_expr(cb.eq(shape.variables[lock].id, shpae.variable_values[lock]), 
+				value = str(shape.variable_values[lock])
+				if shape.variables[lock].type == "String": 
+					value = "\"" + shape.variable_values[lock] + "\""
+
+				constraints += cb.assert_expr(cb.eq(shape.variables[lock].id, value),
 					"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock])) 
 		return constraints
 
 	def non_overlapping(self, container, spacing): 
 		constraints = ""
 		child_shapes = container.children 
-		for i in range(0, len(child_shapes)): 
+		for i in range(0, len(child_shapes)):
 			for j in range(0, len(child_shapes)): 
 				if i != j: 
 					shape1 = child_shapes[i]

@@ -354,45 +354,45 @@ ConstraintActions.groupConstraints = {
 		},
 	"width": {
 		"do": {
-			"key": "size",
+			"key": "width",
 			"updateConstraintsCanvasShape": function keepSize(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
 			    // Use the server key for locking a shape into a specific location
 			    /* TBD */
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Keep width at " + shape["size"]["width"] + "px. (TBD)";
+				return "Keep width at " + shape["width"] + "px. (TBD)";
 			}
 		}, 
 		"undo": {
-			"key": "size",
+			"key": "width",
 			"updateConstraintsCanvasShape": function undoKeepSize(constraintsCanvasShape, designCanvasShape) {
 				/* TBD */
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Don't keep width at " + shape["size"]["width"] + "px. (TBD)";
+				return "Don't keep width at " + shape["width"] + "px. (TBD)";
 			}
 		}	
 	}, 
 	"height": {
 		"do": {
-			"key": "size",
+			"key": "height",
 			"updateConstraintsCanvasShape": function keepSize(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
 			    // Use the server key for locking a shape into a specific location
 			    /* TBD */ 
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Keep height at " + shape["size"]["height"] + "px. (TBD)";
+				return "Keep height at " + shape["height"] + "px. (TBD)";
 			}
 		}, 
 		"undo": {
-			"key": "size",
+			"key": "height",
 			"updateConstraintsCanvasShape": function undoKeepPosition(constraintsCanvasShape, designCanvasShape) {
 				/* TBD */ 
 			}, 
 			"getFeedbackMessage": function generateFeedbackMessage(shape) {
-				return "Don't keep height at " + shape["size"]["height"] + "px. (TBD)";
+				return "Don't keep height at " + shape["height"] + "px. (TBD)";
 			}
 		}	
 	}

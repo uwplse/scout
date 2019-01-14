@@ -86,7 +86,10 @@ class Variable(object):
 
 	def get_value_from_element(self, element):
 		# Return a Z3 expression or value to use in Z3 expressions from the element
-		return element[self.name]
+		value = element[self.name]
+		if self.type == "String":
+			return "\"" + value + "\""
+		return value
 
 class Solution(object): 
 	def __init__(self):
@@ -199,8 +202,8 @@ class Solution(object):
 					width = model[variables[shape.width()]].as_string()
 					height = int(height)
 					width = int(width)
-					element["size"]["width"] = width
-					element["size"]["height"] = height
+					element["width"] = width
+					element["height"] = height
 
 					# Also include the container properties in the element object for each container shape 
 					# TODO: At some point when we have more properties than these we should make a collection and iterate instead
@@ -243,8 +246,8 @@ class Solution(object):
 						width = width * magnification
 						height = int(round(height,0))
 						width = int(round(width,0))
-						element["size"]["height"] = height
-						element["size"]["width"] = height
+						element["height"] = height
+						element["width"] = height
 
 						# Cost will be the distance from the maximum size
 						importance_change += (height - shape.orig_height)
@@ -265,8 +268,8 @@ class Solution(object):
 						width = width * minification
 						height = int(round(height,0))
 						width = int(round(width, 0))
-						element["size"]["height"] = height
-						element["size"]["width"] = width
+						element["height"] = height
+						element["width"] = width
 
 						# Used for computing importance cost
 						importance_change += (shape.orig_height - height)

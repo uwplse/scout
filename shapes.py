@@ -61,9 +61,9 @@ class Shape(object):
 			if "order" in element:
 				self.order = element["order"]
 
-			if "size" in element:
-				self.orig_width = element["size"]["width"]
-				self.orig_height = element["size"]["height"]
+			if "height" in element and "width" in element:
+				self.orig_width = element["width"]
+				self.orig_height = element["height"]
 
 				if self.importance == "most":
 					# Make height and width into variables so that the solver can change them

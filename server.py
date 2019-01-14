@@ -103,6 +103,7 @@ def check_solution_exists_and_validate_previous_solutions(elements, solutions):
 		print("Creating solver instance.")
 		solver_ctx = z3.Context()
 		solver = custom_solver.Solver(solver_ctx, elements, solutions)
+		
 
 		print("Checking constraints.")
 		check_results = solver.check()
@@ -112,9 +113,12 @@ def check_solution_exists_and_validate_previous_solutions(elements, solutions):
 		print('Exception in creating solver instance.')
 
 def get_solution_from_custom_solver(elements, solutions, relative_designs): 
+	print("Creating solver instance.")
 	solver_ctx = z3.Context()
 	solver = custom_solver.Solver(solver_ctx, elements, solutions, 
 		relative_designs=relative_designs)
+
+	print("Solving for designs.")
 	solutions = solver.solve()
 	return solutions
 
