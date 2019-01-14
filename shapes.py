@@ -1,6 +1,7 @@
 from z3 import * 
 import solver_helpers as sh
 from dotmap import DotMap
+import smtlib_builder as smt
 
 label_types = ["text"]
 minimum_sizes = {
@@ -96,9 +97,9 @@ class Shape(object):
 
 		# TAkes the current scaling value into account
 		if self.importance == "most": 
-			return self.width() * self.variables.magnification.name
+			return smt.mult(str(self.width()), self.variables.magnification.id)
 		elif self.importance == "least": 
-			return self.width() * self.variables.minification.name
+			return smt.mult(str(self.width()), self.variables.minification.id)
 		return self.width()
 
 	def computed_height(self):
@@ -107,9 +108,9 @@ class Shape(object):
 			return self.height()
 
 		if self.importance == "most": 
-			return self.height() * self.variables.magnification.name
+			return smt.mult(str(self.height()), self.variables.magnification.id)
 		elif self.importance == "least": 
-			return self.height() * self.variables.minification.name
+			return smt.mult(str(self.height()), self.variables.minification.id)
 		return self.height()
 
 class LeafShape(Shape): 
@@ -159,7 +160,7 @@ class CanvasShape(Shape):
 		self.children = []
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50,60,70,80,90,100], 
+		self.variables.margin = sh.Variable("candvas", "margin", [5,10,20,30,40,50,60,70,80,90,100],
 			index_domain=False)
 		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
 		# self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], 

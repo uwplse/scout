@@ -103,7 +103,7 @@ class ConstraintBuilder(object):
 		constraints = ""
 		if shape.has_baseline:
 			constraints += cb.eq(shape.variables.baseline.id, 
-				add(shape.variables.y.id, shape.orig_baseline), "baseine_" + shape.shape_id)
+				cb.add(shape.variables.y.id, shape.orig_baseline), "baseine_" + shape.shape_id)
 		return constraints
 
 	def init_shape_bounds(self, shape):

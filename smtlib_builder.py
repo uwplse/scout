@@ -28,6 +28,9 @@ def ite(cond, x, y):
 def div(x, y): 
 	return "(div " + x + " " + y + ")"
 
+def mult(x, y):
+	return "(* " + x + " " + y + ")"
+
 def or_expr(terms): 
 	expr = "(or"
 	for term in terms: 
