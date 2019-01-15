@@ -71,7 +71,9 @@ class Solver(object):
 			
 		# Initialize the constraints preventing previous solutions from re-occuring
 		start_time = time.time()
-		self.cb.init_previous_solution_constraints(self.previous_solutions, self.shapes)
+		# Prevent the previous solutions that have the same set of elements
+		solutions_to_prevent = self.get_previous_solutions_to_prevent()
+		self.cb.init_previous_solution_constraints(solutions_to_prevent, self.shapes)
 		end_time = time.time()
 		logging.debug("Time taken to encode previous solutions: " + str(end_time-start_time))
 
@@ -106,6 +108,15 @@ class Solver(object):
 		# 		# Set up constraints to get designs more like the relative design
 		# 		# This means any returned solution should only have 1 variable different than the relative design
 
+	def get_previous_solutions_to_prevent(self): 
+		# Get the set of previous solutions that have the same set of shapes as the current outline
+		solutions_to_prevent = []
+		for solution in self.previous_solutions: 
+			elements = []
+			shapes_added, shapes_removed = self.check_added_or_removed_shapes(elements)
+			if not len(shapes_added) and not len(shapes_removed): 
+				solutions_to_prevent.append()
+		return solutions_to_prevent
 
 	def init_constraints(self):
 		# Initialize the set of constraints on shapes and containers
@@ -362,11 +373,9 @@ class Solver(object):
 		else: 
 			return False
 
-	def check_validity(self, solution):
-		# Look for any shapes that have been removed or added in this solution
-		shapes_removed = []
+	def check_added_or_removed_shapes(self, elements): 
 		shapes_added = []
-		elements = solution["elements"]
+		shapes_removed = []
 
 		# Look for shapes that were added or removed and in that case, we dont' need to check validity 
 		for elementID in elements:
@@ -378,6 +387,12 @@ class Solver(object):
 			if shapeID not in elements and (shape.type != "container" or len(shape.children)):
 				shapes_added.append(shapeID)
 
+		return shapes_added, shapes_removed
+
+	def check_validity(self, solution):
+		# Look for any shapes that have been removed or added in this solution
+		elements = solution["elements"]
+		shapes_added, shapes_removed = self.check_added_or_removed_shapes(elements)
 		if len(shapes_added) or len(shapes_removed):
 			# If any shapes were added or removed from the canvas since this solution was retrieved
 			# Mark the solution as invalid

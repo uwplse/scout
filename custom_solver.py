@@ -103,10 +103,16 @@ class CustomSolver(object):
 		# Update solutions with their validity
 		for solution in prev_solutions: 
 			sln_id = solution['id']
-			solution['valid'] = results[sln_id]['valid']
-			if 'conflicts' in results[sln_id]:
-				solution['conflicts'] = results[sln_id]['conflicts']
+			results_sln = results[sln_id]
+			solution['valid'] = results_sln['valid']
+			if 'conflicts' in results_sln:
+				solution['conflicts'] = results_sln['conflicts']
 
+			if 'added' in results_sln: 
+				solution['added'] = results_sln['added']
+
+			if 'removed' in results_sln: 
+				solution['removed'] = results_sln['removed']
 		self.solutions = prev_solutions
 
 	def branch_and_bound_n_solutions(self):

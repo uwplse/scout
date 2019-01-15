@@ -379,6 +379,10 @@ export default class DesignCanvas extends React.Component {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     let childSVGs = this.state.childSVGs; 
 
+    // Show invalid designs indicators? 
+    // Don't show it for the saved designs that are in the saved area. 
+    let showInvalidIndicatorLines = (!this.state.valid) && (!saved)
+
     return  (      
       <div onMouseEnter={this.showMenuAndHighlightConstraints} 
            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
@@ -401,7 +405,7 @@ export default class DesignCanvas extends React.Component {
           {designMenu}
         </div>
         <div id={"design-canvas-" + this.id} 
-            className={"design-canvas " + (!this.state.valid ? "canvas-container-invalid " : " ") 
+            className={"design-canvas " + (showInvalidIndicatorLines? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered" : "")}
             onContextMenu={this.showConstraintsContextMenu(this.state.designShape)}
             style={{height: "100%", width: "100%"}}>

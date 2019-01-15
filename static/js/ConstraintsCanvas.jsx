@@ -541,7 +541,7 @@ export default class ConstraintsCanvas extends React.Component {
 
       this.setState(state => ({
         treeData: this.state.treeData
-      }), this.checkSolutionValidityAndUpdateCache); 
+      })); 
     }
   }
 

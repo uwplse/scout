@@ -16,6 +16,9 @@ maximum_sizes = {
 	"group": 335
 }
 
+MAGNIFICATION_VALUES = [1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+
 # Shape classes for constructing the element hierarchy 
 class Shape(object):
 	def __init__(self, solver_ctx, shape_id, element, shape_type, num_siblings): 
@@ -64,14 +67,12 @@ class Shape(object):
 
 				if self.importance == "most":
 					# Make height and width into variables so that the solver can change them
-					magnification_values = sh.MAGNIFICATION_VALUES
 					self.variables.magnification = sh.Variable(shape_id, "magnification", 
-						magnification_values, index_domain=False, var_type="Real")
+						MAGNIFICATION_VALUES, index_domain=False, var_type="Real")
 
 				if self.importance == "least": 
-					minification_values = sh.MINIFICATION_VALUES
 					self.variables.minification = sh.Variable(shape_id, "minification", 
-						minification_values, index_domain=False, var_type="Real")
+						MINIFICATION_VALUES, index_domain=False, var_type="Real")
 
 			if "typed" in element: 
 				self.typed = element["typed"]
