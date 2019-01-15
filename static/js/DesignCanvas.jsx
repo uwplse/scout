@@ -77,7 +77,7 @@ export default class DesignCanvas extends React.Component {
  
   getScalingFactor = () => {
     if(this.props.zoomed) {
-      return 1.0; 
+      return 1.5; 
     }
 
     // Return the amount of scaling to use depending on the state of this DesignCanvas

@@ -71,19 +71,18 @@ def check():
 	if "elements" in form_data:
 		elements_json = form_data["elements"]
 		solutions_json = form_data["solutions"]
-		elements = json.loads(elements_json)
-		solutions = json.loads(solutions_json)
 
 		# Will return the status of whether the current set of constraints is valid
 		# and also update the valid state of each of the previous solutions
-		results = check_solution_exists_and_validate_previous_solutions(elements,solutions)
+		results = check_solution_exists_and_validate_previous_solutions(elements_json,
+																		solutions_json)
 
 		sys.stdout.flush()
 
 		# Don't return back any results, just the status of whether it could be solved or not
 		output = dict() 
-		output["result"] = results["valid"]
-		output["solutions"] = results["solutions"]
+		# output["result"] = results["valid"]
+		output["solutions"] = results
 		return json.dumps(output).encode('utf-8')
 	sys.stdout.flush()
 	return ""
@@ -92,10 +91,8 @@ def check_solution_exists_and_validate_previous_solutions(elements, solutions):
 	# Wait until a context becomes available before proceeding
 	try: 
 		print("Creating solver instance.")
-		solver_ctx = z3.Context()
-		solver = custom_solver.CustomSolver(solver_ctx, elements, solutions)
+		solver = custom_solver.CustomSolver(elements, solutions)
 		
-
 		print("Checking constraints.")
 		check_results = solver.check()
 		return check_results

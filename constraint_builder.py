@@ -20,7 +20,7 @@ class ConstraintBuilder(object):
 	def load_constraints(self): 
 		# Parse the constraints into a set of assertions
 		const = self.decl_constraints + self.constraints
-		self.solver.load_constraints(const)
+		self.solver.load_constraints(const)		
 
 	def declare_variables(self, shapes): 
 		for shape in shapes.values(): 
@@ -33,26 +33,22 @@ class ConstraintBuilder(object):
 		for solution in previous_solutions: 
 			elements = solution["elements"]
 			if (not "added" in solution and not "removed" in solution) or (not len(solution["added"]) and not len(solution["removed"])):
-				# if not declared:
-				# 	self.get_solution_variable_declarations(shapes, elements)
-				# 	declared = True
 				self.get_previous_solution_constraints_from_elements(shapes, elements, solution["id"])
 
-	def init_solution_constraints(self, shapes, elements, solutionID):
-		# Encode constraints on the solution values to fix them for checking the validity
-		self.constraints += self.get_solution_constraints_from_elements(shapes, elements, solutionID)
 
 	def get_solution_variable_declarations(self, shapes, elements): 
+		declarations = ""
 		for elementID in elements:
 			element = elements[elementID]
 
 			# Get the shape corresponding to the element name
 			shape = shapes[elementID]
 			variables = shape.variables.toDict()
-			if shape.type == "leaf":
-				for variable_key in variables.keys(): 
-					variable = variables[variable_key]
-					self.decl_constraints += cb.declare(variable.id, variable.type)
+			for variable_key in variables.keys(): 
+				variable = variables[variable_key]
+				declarations += cb.declare(variable.id, variable.type)
+
+		return declarations
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements, solutionID):
 		all_values = []
@@ -73,7 +69,7 @@ class ConstraintBuilder(object):
 		self.constraints += cb.assert_expr(cb.not_expr(cb.and_expr(all_values)), 
 			"prevent_previous_solution_" + solutionID + "_values")
 
-	def get_solution_constraints_from_elements(self, shapes, elements, solutionID):
+	def init_solution_constraints(self, shapes, elements, solutionID):
 		all_values = []
 		for elementID in elements:
 			element = elements[elementID]
@@ -89,8 +85,10 @@ class ConstraintBuilder(object):
 					all_values.append(cb.eq(variable.id, 
 						str(variable.get_value_from_element(element))))
 
-		self.constraints += cb.assert_expr(cb.and_expr(all_values),
-			"fix_solution_" + solutionID + "_values")
+		# Return the constraints so they can be loaded in after the intial initialization of the base constraints
+		declarations = self.get_solution_variable_declarations(shapes, elements)
+		constraints = cb.assert_expr(cb.and_expr(all_values), "fix_solution_" + solutionID + "_values")
+		return declarations + constraints
 
 	def init_shape_baseline(self, shape): 
 		if shape.has_baseline:
@@ -367,8 +365,6 @@ class ConstraintBuilder(object):
 		# Add constraints for all of the locked properties
 		if shape.locks is not None: 
 			for lock in shape.locks:
-				# Structure message for these constraints to have a specific format so they can be used to identify conflicts in the generated solutions
-				self.constraints += cb.declare(shape.variables[lock].id, shape.variables[lock].type)
 				value = str(shape.variable_values[lock])
 				if shape.variables[lock].type == "String": 
 					value = "\"" + shape.variable_values[lock] + "\""

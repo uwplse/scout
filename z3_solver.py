@@ -33,7 +33,7 @@ class OverrideSolver(object):
 			self.solver.add(constraint)
 
 class Solver(object): 
-	def __init__(self, solver_ctx, elements, solutions, relative_designs=None):
+	def __init__(self, solver_ctx, elements, solutions=[], relative_designs=None):
 		# Construct the solver instance we will use for Z3
 		self.solver_ctx = solver_ctx
 		self.solver = z3.Solver(ctx=self.solver_ctx)
@@ -354,6 +354,71 @@ class Solver(object):
 			# Then unassign the value
 			self.restore_variable(next_var, var_i)
 		return 
+
+	def z3_check(self): 
+		result = self.solver.check()
+		if str(result) == 'sat': 
+			return True
+		else: 
+			return False
+
+	def check_validity(self, solution):
+		# Look for any shapes that have been removed or added in this solution
+		shapes_removed = []
+		shapes_added = []
+		elements = solution["elements"]
+
+		# Look for shapes that were added or removed and in that case, we dont' need to check validity 
+		for elementID in elements:
+			if elementID not in self.shapes:
+				shapes_removed.append(elementID)
+
+		for shapeID in self.shapes:
+			shape = self.shapes[shapeID]
+			if shapeID not in elements and (shape.type != "container" or len(shape.children)):
+				shapes_added.append(shapeID)
+
+		if len(shapes_added) or len(shapes_removed):
+			# If any shapes were added or removed from the canvas since this solution was retrieved
+			# Mark the solution as invalid
+			solution["valid"] = False
+
+			# Send back the added and removed shapes to be used for highlighting inconsistencies in the constriants tree
+			solution["added"] = shapes_added
+			solution["removed"] = shapes_removed
+
+			print("Shapes were added or removed. not resolving. ")
+		else:
+			# For this solution, fix the values of the variables to the solution values
+			# Otherwise, check the solution for validity again
+			# This encodes the values that should be fixed for this solution
+			constraints  = self.cb.init_solution_constraints(self.shapes, elements, solution["id"])
+			self.override_solver.load_constraints(constraints)
+
+			result = self.z3_check()
+			unsat_core = self.solver.unsat_core()
+
+			# update the valid state of the solution
+			solution["valid"] = result
+
+			if result:
+				# Remove an previous conflicts if the solution is solveable again. 
+				if "conflicts" in solution: 
+					del solution["conflicts"]
+
+				print("Solution could be found.")
+			else:
+				# Get the unsat core for each solution
+				unsat_core = self.solver.unsat_core()
+
+				# Parse the output message to send identifiers to highlight the conflicting constraints
+				conflicts = sh.parse_unsat_core(unsat_core)
+				solution["conflicts"] = conflicts
+				
+				print("Solution could not be found.")
+
+		return solution
+
 
 	def print_solution(self):
 		print("------------Solution------------")

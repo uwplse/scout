@@ -169,13 +169,6 @@ export default class PageContainer extends React.Component {
 
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
-          let valid = requestParsed.result; 
-          if(!valid) {
-            this.setState({
-              errorMessageShown: true
-            }); 
-          }
-
           this.updateSolutionValidity(requestParsed.solutions);
         });         
       }
@@ -363,7 +356,6 @@ export default class PageContainer extends React.Component {
       this.setState({
         designsFound: designsFound,
         solutions: solutions.concat(this.state.solutions), 
-        errorMessageShown: false, 
         showDesignsAlert: true
       }, this.updateSolutionsCache);      
     }
@@ -505,7 +497,6 @@ export default class PageContainer extends React.Component {
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
-    const errorMessageShown = this.state.errorMessageShown; 
     const designsAlertShown = this.state.showDesignsAlert; 
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
