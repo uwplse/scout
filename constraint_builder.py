@@ -237,7 +237,7 @@ class ConstraintBuilder(object):
 
 				# Create importance level constraints
 				if shape1.type == "leaf": 
-					self.init_importance(shape1, container)
+					self.init_size(shape1, container)
 
 			# # If this is a hierarchical container, use the distribution variable. 
 			# # If this is a bottom level group, using the proximity value 
@@ -252,42 +252,65 @@ class ConstraintBuilder(object):
 				# If this is a typed container, enforce all variables on child containers to be the same
 				self.init_repeat_group(container, shapes)
 
-	def init_importance(self, shape, container): 
-		if shape.importance == "most":
-			# Enforce the max size
-			self.constraints += cb.assert_expr(cb.lte(str(shape.computed_width()), str(shapes.maximum_sizes[shape.shape_type])), 
-				"shape_" + shape.shape_id + "_width_lt_maximum_width")
-			self.constraints += cb.assert_expr(cb.lte(str(shape.computed_height()), str(shapes.maximum_sizes[shape.shape_type])), 
-				"shape_" + shape.shape_id + "_height_lt_maximum_height")	
+	def init_size(self, shape, container): 
+		size_factors = shape.variables.size_factor.domain
+		size_combos = []
+		for i in range(0, len(size_factors)):
+			height = cb.eq(shape.variables.height.id, str(shape.variables.height.domain[i]))
+			width = cb.eq(shape.variables.width.id, str(shape.variables.width.domain[i]))
+			factor = cb.eq(shape.variables.size_factor.id, str(size_factors[i]))
+			size_combos.append(cb.and_expr([height, width, factor]))
 
-			magnification = []
-			for domain_value in shape.variables.magnification.domain: 
-				magnification.append(cb.eq(shape.variables.magnification.id, str(domain_value)))
+		self.constraints += cb.assert_expr(cb.or_expr(size_combos), 
+			"shape_" + shape.shape_id + "_size_domains")
 
-			self.constraints += cb.assert_expr(cb.or_expr(magnification), 
-				"shape_" + shape.shape_id + "_magnification_wt_domain.")
 
-		if shape.importance == "least":
-			# Enforce the max size
-			self.constraints += cb.assert_expr(cb.gte(str(shape.computed_width()), str(shapes.minimum_sizes[shape.shape_type])), 
-				"shape_" + shape.shape_id + "_width_lte_minimum_width")
-			self.constraints += cb.assert_expr(cb.gte(str(shape.computed_height()), str(shapes.minimum_sizes[shape.shape_type])), 
-				"shape_" + shape.shape_id + "_height_lte_minimum_height")	
+		# Ensure same as parent container ? 
 
-			minification = []
-			for domain_value in shape.variables.minification.domain: 
-				minification.append(cb.eq(shape.variables.minification.id, str(domain_value)))
+		# if shape.importance == "normal": 
+		# 	height = []
+		# 	for domain_value in shape.variables.height.domain: 
+		# 		height.append(cb.eq(shape.variables.height.id, str(domain_value)))
 
-			self.constraints += cb.assert_expr(cb.or_expr(minification), 
-				"shape_" + shape.shape_id + "_minification_wt_domain.")
+		# 	self.constraints += cb.assert_expr(cb.or_expr(sizechange), 
+		# 		"shape_" + shape.shape_id + "_sizechange_wt_domain.")
 
-		if container.importance == "most": 
-			self.constraints += cb.assert_expr(cb.eq(container.variables.magnification.id, shape.variables.magnification.id), 
-				"shape_" + shape.shape_id + "_magnification_eq_parent")
+		# if shape.importance == "most" or shape.importance == "normal": 
+		# 	# Enforce the max size
+		# 	self.constraints += cb.assert_expr(cb.lte(str(shape.computed_width()), str(shapes.maximum_sizes[shape.shape_type])), 
+		# 		"shape_" + shape.shape_id + "_width_lt_maximum_width")
+		# 	self.constraints += cb.assert_expr(cb.lte(str(shape.computed_height()), str(shapes.maximum_sizes[shape.shape_type])), 
+		# 		"shape_" + shape.shape_id + "_height_lt_maximum_height")	
 
-		if container.importance == "least": 
-			self.constraints += cb.assert_expr(cb.eq(container.variables.minification.id, shape.variables.minification.id), 
-				"shape_" + shape.shape_id + "_minification_eq_parent")
+		# 	if shape.importance == "most":
+		# 		magnification = []
+		# 		for domain_value in shape.variables.magnification.domain: 
+		# 			magnification.append(cb.eq(shape.variables.magnification.id, str(domain_value)))
+
+		# 		self.constraints += cb.assert_expr(cb.or_expr(magnification), 
+		# 			"shape_" + shape.shape_id + "_magnification_wt_domain.")
+
+		# 		self.constraints += cb.assert_expr(cb.eq(container.variables.magnification.id, shape.variables.magnification.id), 
+		# 			"shape_" + shape.shape_id + "_magnification_eq_parent")
+
+
+		# if shape.importance == "least" or shape.importance == "normal": 
+		# 	# Enforce the max size
+		# 	self.constraints += cb.assert_expr(cb.gte(str(shape.computed_width()), str(shapes.minimum_sizes[shape.shape_type])), 
+		# 		"shape_" + shape.shape_id + "_width_lte_minimum_width")
+		# 	self.constraints += cb.assert_expr(cb.gte(str(shape.computed_height()), str(shapes.minimum_sizes[shape.shape_type])), 
+		# 		"shape_" + shape.shape_id + "_height_lte_minimum_height")	
+
+		# 	if shape.importance == "least":
+		# 		minification = []
+		# 		for domain_value in shape.variables.minification.domain: 
+		# 			minification.append(cb.eq(shape.variables.minification.id, str(domain_value)))
+
+		# 		self.constraints += cb.assert_expr(cb.or_expr(minification), 
+		# 			"shape_" + shape.shape_id + "_minification_wt_domain.")
+				
+		# 		self.constraints += cb.assert_expr(cb.eq(container.variables.minification.id, shape.variables.minification.id), 
+		# 			"shape_" + shape.shape_id + "_minification_eq_parent")
 
 	def init_repeat_group(self, container, shapes): 
 		subgroups = container.children

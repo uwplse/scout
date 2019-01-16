@@ -48,7 +48,6 @@ class Solver(object):
 
 		self.variables = self.init_variables()
 		self.output_variables = self.init_output_variables()
-		self.previous_solution = IntVector('PrevSolution', len(self.variables))
 		self.variables_different = Int('VariablesDifferent')
 
 		self.override_solver = OverrideSolver(self.solver)
@@ -199,11 +198,9 @@ class Solver(object):
 				last.append(shape.variables.justification)
 				last.append(shape.variables.margin)
 				# last.append(shape.variables.background_color)
-
-			if shape.importance == "most": 
-				last.append(shape.variables.magnification)
-			elif shape.importance == "least": 
-				last.append(shape.variables.minification)
+			
+			if shape.type == "leaf": 
+				last.append(shape.variables.size_factor)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
@@ -347,7 +344,6 @@ class Solver(object):
 
 				time_z3_end = time.time()
 				time_z3_total = time_z3_end - time_z3_start
-				# print("Z3 call: " + str(time_z3_total))
 				self.time_z3 += time_z3_total
 
 				# Only branch if the result so far is satisfiable

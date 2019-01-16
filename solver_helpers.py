@@ -196,8 +196,8 @@ class Solution(object):
 				element["y"] = adj_y
 
 				if shape.type == "container": 
-					height = model[variables[shape.height()]].as_string()
-					width = model[variables[shape.width()]].as_string()
+					height = model[variables[shape.computed_height()]].as_string()
+					width = model[variables[shape.computed_width()]].as_string()
 					height = int(height)
 					width = int(width)
 					element["width"] = width
@@ -227,58 +227,34 @@ class Solution(object):
 					# element["background_color"] = background_color.replace("\"", "")
 
 				if shape.type == "leaf": 
-					height = shape.height()
-					width = shape.width()
-					# height = int(height)
-					# width = int(width)
-					#
+					height = model[variables[shape.computed_height()]].as_string()
+					width = model[variables[shape.computed_width()]].as_string()
+					size_factor = model[variables[shape.variables.size_factor.id]].as_string()
+					height = int(height)
+					width = int(width)
+					size_factor = int(size_factor)
+					element["width"] = width
+					element["height"] = height
+					element["size_factor"] = size_factor
+
 					# Only consider emphassis for leaf node elements
 					if shape.importance == "most": 
-						magnification = model[variables[shape.variables.magnification.id]].as_string()
-						magnification = Fraction(magnification)
-						magnification = float(magnification)
-						element["magnification"] =  magnification
-
-						# magnification_factor = 1/magnification if magnification > 0 else 0
-						height = height * magnification
-						width = width * magnification
-						height = int(round(height,0))
-						width = int(round(width,0))
-						element["height"] = height
-						element["width"] = height
-
 						# Cost will be the distance from the maximum size
 						importance_change += (height - shape.orig_height)
 						importance_change += (width - shape.orig_width)
-						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_height)
-						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_width)
+						importance_max += (shape_objects.MAX_SIZE - shape.orig_height)
+						importance_max += (shape_objects.MAX_SIZE - shape.orig_width)
 
 						# Compute the distance of the shape from the center of the canvas
 						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
 					elif shape.importance == "least": 
-						minification = model[variables[shape.variables.minification]].as_string()
-						minification = Fraction(minification)
-						minification = float(minification)
-						element["minification"] = minification
-
-						# minification_factor = 1/minification if minification > 0 else 0
-						height = height * minification
-						width = width * minification
-						height = int(round(height,0))
-						width = int(round(width, 0))
-						element["height"] = height
-						element["width"] = width
-
 						# Used for computing importance cost
 						importance_change += (shape.orig_height - height)
 						importance_change += (shape.orig_width - width)
-						importance_max += (shape.orig_height - shape_objects.minimum_sizes[shape.shape_type])
-						importance_max += (shape.orig_width - shape_objects.minimum_sizes[shape.shape_type])
+						importance_max += (shape.orig_height - shape_objects.MIN_SIZE)
+						importance_max += (shape.orig_width - shape_objects.MIN_SIZE)
 
 						distance_cost += self.compute_inverse_distance_from_center(adj_x, adj_y, width, height)
-					else: 
-						element["minification"] = 0
-						element["magnification"] = 0
 
 					# Only the locations of leaf level shapes to compute the symmetry cost
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
