@@ -247,7 +247,10 @@ class ConstraintBuilder(object):
 			self.arrange_container(container, spacing)
 			self.align_container(container, spacing)
 			self.non_overlapping(container, spacing)
-			self.same_size_change(container)
+
+			# TODO: Remove later when we get rid of the page container
+			if container.shape_type != "page":
+				self.same_size_change(container)
 
 			if container.typed: 
 				# If this is a typed container, enforce all variables on child containers to be the same
@@ -264,54 +267,6 @@ class ConstraintBuilder(object):
 
 		self.constraints += cb.assert_expr(cb.or_expr(size_combos), 
 			"shape_" + shape.shape_id + "_size_domains")
-
-
-		# Ensure same as parent container ? 
-
-		# if shape.importance == "normal": 
-		# 	height = []
-		# 	for domain_value in shape.variables.height.domain: 
-		# 		height.append(cb.eq(shape.variables.height.id, str(domain_value)))
-
-		# 	self.constraints += cb.assert_expr(cb.or_expr(sizechange), 
-		# 		"shape_" + shape.shape_id + "_sizechange_wt_domain.")
-
-		# if shape.importance == "most" or shape.importance == "normal": 
-		# 	# Enforce the max size
-		# 	self.constraints += cb.assert_expr(cb.lte(str(shape.computed_width()), str(shapes.maximum_sizes[shape.shape_type])), 
-		# 		"shape_" + shape.shape_id + "_width_lt_maximum_width")
-		# 	self.constraints += cb.assert_expr(cb.lte(str(shape.computed_height()), str(shapes.maximum_sizes[shape.shape_type])), 
-		# 		"shape_" + shape.shape_id + "_height_lt_maximum_height")	
-
-		# 	if shape.importance == "most":
-		# 		magnification = []
-		# 		for domain_value in shape.variables.magnification.domain: 
-		# 			magnification.append(cb.eq(shape.variables.magnification.id, str(domain_value)))
-
-		# 		self.constraints += cb.assert_expr(cb.or_expr(magnification), 
-		# 			"shape_" + shape.shape_id + "_magnification_wt_domain.")
-
-		# 		self.constraints += cb.assert_expr(cb.eq(container.variables.magnification.id, shape.variables.magnification.id), 
-		# 			"shape_" + shape.shape_id + "_magnification_eq_parent")
-
-
-		# if shape.importance == "least" or shape.importance == "normal": 
-		# 	# Enforce the max size
-		# 	self.constraints += cb.assert_expr(cb.gte(str(shape.computed_width()), str(shapes.minimum_sizes[shape.shape_type])), 
-		# 		"shape_" + shape.shape_id + "_width_lte_minimum_width")
-		# 	self.constraints += cb.assert_expr(cb.gte(str(shape.computed_height()), str(shapes.minimum_sizes[shape.shape_type])), 
-		# 		"shape_" + shape.shape_id + "_height_lte_minimum_height")	
-
-		# 	if shape.importance == "least":
-		# 		minification = []
-		# 		for domain_value in shape.variables.minification.domain: 
-		# 			minification.append(cb.eq(shape.variables.minification.id, str(domain_value)))
-
-		# 		self.constraints += cb.assert_expr(cb.or_expr(minification), 
-		# 			"shape_" + shape.shape_id + "_minification_wt_domain.")
-				
-		# 		self.constraints += cb.assert_expr(cb.eq(container.variables.minification.id, shape.variables.minification.id), 
-		# 			"shape_" + shape.shape_id + "_minification_eq_parent")
 
 	def init_repeat_group(self, container, shapes): 
 		subgroups = container.children
@@ -627,8 +582,17 @@ class ConstraintBuilder(object):
 			row_or_column = rows_or_columns[i]
 			if len(row_or_column):
 				spacing = proximity if i < num_rows_or_columns - 1 else 0
-				m_height_or_width = self.get_max_width_constraint(1,0,row_or_column) if width_or_height == "width" else self.get_max_height_constraint(1,0,row_or_column)
-				size += cb.add(m_height_or_width, str(spacing))
+				m_height_or_width = None
+				if width_or_height == "width": 
+					m_height_or_width = self.get_max_width_constraint(1,0,row_or_column)
+				else: 
+					m_height_or_width = self.get_max_height_constraint(1,0,row_or_column)
+				
+				if len(size): 
+					size = cb.add(size, cb.add(m_height_or_width, str(spacing)))
+				else: 
+					size = cb.add(m_height_or_width, str(spacing))
+
 		container_size = str(container.computed_width()) if width_or_height == "width" else str(container.computed_height())
 		return cb.eq(container_size, size)
 
@@ -763,23 +727,25 @@ class ConstraintBuilder(object):
 			self.constraints += cb.assert_expr(cb.ite(is_columns, 
 				self.align_rows_or_columns(container, spacing, groups, "column", "x", "width", "y", "height"), "true"), 
 				"container_" + container.shape_id + "_align_columns")
-			self.constraints += cb.assert_expr(cb.ite(is_rows, 
-				self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), "true"), 
+			self.constraints += cb.assert_expr(cb.ite(is_rows,
+				self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), "true"),
 				"container_" + container.shape_id + "_align_rows_left")
-			self.constraints += cb.assert_expr(cb.ite(is_columns, 
-				self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), "true"), 
+			self.constraints += cb.assert_expr(cb.ite(is_columns,
+				self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), "true"),
 				"container_" + container.shape_id + "_align_columns_left")
-			self.constraints += cb.assert_expr(cb.ite(is_rows, 
-				self.set_container_size_main_axis(container, spacing, groups, "height"), "true"), 
+
+			self.constraints += cb.assert_expr(cb.ite(is_rows,
+				self.set_container_size_main_axis(container, spacing, groups, "height"), "true"),
 				"container_" + container.shape_id + "_max_row_height")
-			self.constraints += cb.assert_expr(cb.ite(is_columns, 
-				self.set_container_size_main_axis(container, spacing, groups, "width"), "true"), 
+			self.constraints += cb.assert_expr(cb.ite(is_columns,
+				self.set_container_size_main_axis(container, spacing, groups, "width"), "true"),
 				"container_" + container.shape_id + "_max_row_width")
-			self.constraints += cb.assert_expr(cb.ite(is_rows, 
-				self.set_container_size_cross_axis(container, spacing, groups, "width"), "true"), 
+
+			self.constraints += cb.assert_expr(cb.ite(is_rows,
+				self.set_container_size_cross_axis(container, spacing, groups, "width"), "true"),
 				"container_" + container.shape_id + "_max_container_height_from_rows")
-			self.constraints += cb.assert_expr(cb.ite(is_columns, 
-				self.set_container_size_cross_axis(container, spacing, groups, "height"), "true"), 
+			self.constraints += cb.assert_expr(cb.ite(is_columns,
+				self.set_container_size_cross_axis(container, spacing, groups, "height"), "true"),
 				"container_" + container.shape_id + "_max_container_width_from_columns")
 		else:
 			# Prevent columnns and rows variables if there are 2 children or less
