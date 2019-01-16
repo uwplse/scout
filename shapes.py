@@ -6,27 +6,35 @@ import smtlib_builder as smt
 label_types = ["text"]
 
 MAX_SIZE = 350
-MIN_SIZE = 50 
-MAGNIFICATION_VALUES = [1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
-MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]
+MIN_SIZE = 50
+MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
+MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
 def compute_size_domain(importance, width, height): 
 	domain = []
-	if importance == "normal" or importance == "most": 
-		for i in range(0, len(MAGNIFICATION_VALUES)):
-			max_value = MAGNIFICATION_VALUES[i] 
-			computed_width = int(round(width*max_value,0))
-			computed_height = int(round(height*max_value,0))
-			if computed_width <= MAX_SIZE and computed_height <= MAX_SIZE: 
-				domain.append([computed_width, computed_height, i])
+	factor_id = 0
 
-	if importance == "normal" or importance == "least": 
-		for i in range(0, len(MINIFICATION_VALUES)):
+	for i in range(0, len(MINIFICATION_VALUES)):
+		if importance != "most": 
 			min_value = MINIFICATION_VALUES[i] 
 			computed_width = int(round(width*min_value,0))
 			computed_height = int(round(height*min_value,0))
 			if computed_height >= MIN_SIZE and computed_width >= MIN_SIZE: 
-				domain.append([computed_width, computed_height, i])
+				domain.append([computed_width, computed_height, factor_id])
+		factor_id += 1
+
+	domain.append([width, height, factor_id])
+	factor_id += 1
+
+	for i in range(0, len(MAGNIFICATION_VALUES)):
+		if importance != "least": 
+			max_value = MAGNIFICATION_VALUES[i] 
+			computed_width = int(round(width*max_value,0))
+			computed_height = int(round(height*max_value,0))
+			if computed_width <= MAX_SIZE and computed_height <= MAX_SIZE: 
+				domain.append([computed_width, computed_height, factor_id])
+		factor_id += 1 
+
 	return domain
 
 # Shape classes for constructing the element hierarchy 
@@ -46,8 +54,10 @@ class Shape(object):
 		self.order = -1
 		self.importance = "normal"
 		self.correspondingIDs = []
-
 		self.variable_values = dict()
+		
+		self.orig_width = element["width"]
+		self.orig_height = element["height"]
 
 		if element is not None:
 			self.x = element["x"]
@@ -71,10 +81,7 @@ class Shape(object):
 			if "order" in element:
 				self.order = element["order"]
 
-			if "height" in element and "width" in element:
-				self.orig_width = element["width"]
-				self.orig_height = element["height"]
-
+			if element and shape_type == "leaf": 
 				size_domain = compute_size_domain(self.importance, self.orig_width, self.orig_height)
 				self.variables.height = sh.Variable(shape_id, "height", 
 					[x[1] for x in size_domain], index_domain=False, var_type="Int")
@@ -89,40 +96,14 @@ class Shape(object):
 			if "correspondingIDs" in element: 
 				self.correspondingIDs = element["correspondingIDs"]
 
-
-	def width(self): 
-		if self.type == "container": 
-			return self.variables.width.id
-		return self.orig_width
-
-	def height(self): 
-		if self.type == "container": 
-			return self.variables.height.id
-		return self.orig_height
-
 	def computed_width(self): 
-		# Emphasis should be propagated to leaf level nodes
-		# if self.type == "container": 
-		# 	return self.width()
-
-		# # TAkes the current scaling value into account
-		# if self.importance == "most": 
-		# 	return smt.mult(str(self.width()), self.variables.magnification.id)
-		# elif self.importance == "least": 
-		# 	return smt.mult(str(self.width()), self.variables.minification.id)
-		# return smt.mult(str(self.width()), self.variables.sizechange.id)
+		if self.type == "canvas": 
+			return self.orig_width
 		return self.variables.width.id
 
 	def computed_height(self):
-		# Emphasis should be propagated to leaf level nodes
-		# if self.type == "container": 
-		# 	return self.height()
-
-		# if self.importance == "most": 
-		# 	return smt.mult(str(self.height()), self.variables.magnification.id)
-		# elif self.importance == "least": 
-		# 	return smt.mult(str(self.height()), self.variables.minification.id)
-		# return smt.mult(str(self.height()), self.variables.sizechange.id)
+		if self.type == "canvas": 
+			return self.orig_height
 		return self.variables.height.id
 
 class LeafShape(Shape): 

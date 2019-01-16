@@ -247,6 +247,7 @@ class ConstraintBuilder(object):
 			self.arrange_container(container, spacing)
 			self.align_container(container, spacing)
 			self.non_overlapping(container, spacing)
+			self.same_size_change(container)
 
 			if container.typed: 
 				# If this is a typed container, enforce all variables on child containers to be the same
@@ -418,6 +419,23 @@ class ConstraintBuilder(object):
 					bottom = cb.lte(cb.add(cb.add(shape2_y, shape2_height), spacing), shape1_y)
 					self.constraints += cb.assert_expr(cb.or_expr([left,right,top,bottom]), 
 						"non_overlapping_shapes_" + shape1.shape_id + "_" + shape2.shape_id)
+
+
+	def same_size_change(self, container):
+		size_equals = [] 
+		child_shapes = container.children 
+		for i in range(0, len(child_shapes)):
+			for j in range(0, len(child_shapes)): 
+				if i != j: 
+					shape1 = child_shapes[i]
+					shape2 = child_shapes[j]
+					if shape1.type == "leaf" and shape2.type == "leaf":
+						size_eq = cb.eq(shape1.variables.size_factor.id, shape2.variables.size_factor.id)
+						size_equals.append(size_eq)
+
+		if len(size_equals):
+			self.constraints += cb.assert_expr(cb.and_expr(size_equals),
+				"container_" + container.shape_id + "_size_factor_children_equal")
 
 	def get_row_width(self, row, spacing):
 		width = ""

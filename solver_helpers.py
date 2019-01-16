@@ -226,7 +226,7 @@ class Solution(object):
 					element["grid"] = int(grid)
 					# element["background_color"] = background_color.replace("\"", "")
 
-				if shape.type == "leaf": 
+				elif shape.type == "leaf": 
 					height = model[variables[shape.computed_height()]].as_string()
 					width = model[variables[shape.computed_width()]].as_string()
 					size_factor = model[variables[shape.variables.size_factor.id]].as_string()
@@ -258,22 +258,6 @@ class Solution(object):
 
 					# Only the locations of leaf level shapes to compute the symmetry cost
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
-
-				else: 
-					# Only consider emphassis for leaf node elements
-					if shape.importance == "most": 
-						magnification = model[variables[shape.variables.magnification]].as_string()
-						magnification = Fraction(magnification)
-						magnification = float(magnification)
-						element["magnification"] =  magnification
-					elif shape.importance == "least": 
-						minification = model[variables[shape.variables.minification]].as_string()
-						minification = Fraction(minification)
-						minification = float(minification)
-						element["minification"] = minification
-					else: 
-						element["minification"] = 0
-						element["magnification"] = 0
 
 		symmetry_cost = self.compute_symmetry_cost(cost_matrix)
 		importance_cost = self.compute_importance_cost(importance_change, importance_max)
