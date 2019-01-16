@@ -306,6 +306,21 @@ class ConstraintBuilder(object):
 			self.constraints += cb.assert_expr(cb.and_expr(all_same_variables), 
 				"repeat_group_variables_all_same_" + str(i))
 
+
+		# the size increase/decrease of corresponding elements should the same. 
+		for group in subgroups: 
+			group_children = group.children 
+			for i in range(0, len(group_children)): 
+				child = group_children[i]
+
+				for j in range(0, len(child.correspondingIDs)): 
+					child_corrID = child.correspondingIDs[j]
+					child_corr_shape = shapes[child_corrID]
+
+					self.constraints += cb.assert_expr(cb.eq(child.variables.size_factor.id,
+															 child_corr_shape.variables.size_factor.id),
+						"repeat_group_child_" + child.shape_id + "_and_child_" + child_corr_shape.shape_id + "_size_factor_equal")
+
 		# The order of the elements within the groups should be uniform
 		for group in subgroups:
 			group_children = group.children
