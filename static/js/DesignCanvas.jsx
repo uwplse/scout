@@ -317,8 +317,8 @@ export default class DesignCanvas extends React.Component {
     // The menuTrigger is the JSON of the shape that triggered the open
     this.setState({
       designMenu: <DesignMenu 
-                    // left={componentBoundingBox.x} 
-                    // top={componentBoundingBox.y} 
+                    left={componentBoundingBox.x} 
+                    top={componentBoundingBox.y} 
                     showZoom={!this.props.zoomed}
                     menuAction={this.performDesignCanvasMenuAction} />,
       hovered: true

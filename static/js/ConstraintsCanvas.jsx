@@ -246,8 +246,8 @@ export default class ConstraintsCanvas extends React.Component {
     // Create an object to represent the page level object (A container for shapes at the root level)
     let page = {
       "name": "page",
-      "type": "page",
-      "controlType": "page",
+      "type": "group",
+      "controlType": "group",
       "x": 0, 
       "y": 0, 
       "width": Constants.controlWidths('page'),

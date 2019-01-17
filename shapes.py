@@ -9,6 +9,10 @@ MAX_SIZE = 350
 MIN_SIZE = 50
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
+LAYOUT_COLUMNS = [2,3,4,6,12]
+GUTTERS = [10,10,10,10,10] # TODO can introduce a variable value for these at some point
+COLUMN_WIDTHS = [146,94,68,53,42,16]
+COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 
 def compute_size_domain(importance, width, height): 
 	domain = []
@@ -39,7 +43,7 @@ def compute_size_domain(importance, width, height):
 
 # Shape classes for constructing the element hierarchy 
 class Shape(object):
-	def __init__(self, solver_ctx, shape_id, element, shape_type, num_siblings): 
+	def __init__(self, solver_ctx, shape_id, element, shape_type, num_siblings, at_root=False): 
 		self.shape_id = shape_id
 		self.shape_type = element["type"]
 		self.element = element
@@ -55,46 +59,53 @@ class Shape(object):
 		self.importance = "normal"
 		self.correspondingIDs = []
 		self.variable_values = dict()
+		self.has_columns = False
 		
 		self.orig_width = element["width"]
 		self.orig_height = element["height"]
 
-		if element is not None:
-			self.x = element["x"]
-			self.y = element["y"]
+		self.x = element["x"]
+		self.y = element["y"]
 
-			if "locks" in element:
-				self.locks = element["locks"]
-				
-				# values for locked variables
-				for lock in self.locks:
-					self.variable_values[lock] = element[lock]
+		if "locks" in element:
+			self.locks = element["locks"]
+			
+			# values for locked variables
+			for lock in self.locks:
+				self.variable_values[lock] = element[lock]
 
-			if "baseline" in element: 
-				self.has_baseline = True
-				self.orig_baseline = element["baseline"]
-				self.variables.baseline = sh.Variable(shape_id, "baseline")
+		if "baseline" in element: 
+			self.has_baseline = True
+			self.orig_baseline = element["baseline"]
+			self.variables.baseline = sh.Variable(shape_id, "baseline")
 
-			if "importance" in element: 
-				self.importance = element["importance"]
+		if "importance" in element: 
+			self.importance = element["importance"]
 
-			if "order" in element:
-				self.order = element["order"]
+		if "order" in element:
+			self.order = element["order"]
 
-			if element and shape_type == "leaf": 
-				size_domain = compute_size_domain(self.importance, self.orig_width, self.orig_height)
-				self.variables.height = sh.Variable(shape_id, "height", 
-					[x[1] for x in size_domain], index_domain=False, var_type="Int")
-				self.variables.width = sh.Variable(shape_id, "width", 
-					[x[0] for x in size_domain], index_domain=False, var_type="Int")
-				self.variables.size_factor = sh.Variable(shape_id, "size_factor",
-					[x[2] for x in size_domain], index_domain=False, var_type="Int")
+		if "typed" in element: 
+			self.typed = element["typed"]
 
-			if "typed" in element: 
-				self.typed = element["typed"]
+		if "correspondingIDs" in element: 
+			self.correspondingIDs = element["correspondingIDs"]
 
-			if "correspondingIDs" in element: 
-				self.correspondingIDs = element["correspondingIDs"]
+		if self.type == "leaf": 
+			size_domain = compute_size_domain(self.importance, self.orig_width, self.orig_height)
+			self.variables.height = sh.Variable(shape_id, "height", 
+				[x[1] for x in size_domain], index_domain=False)
+			self.variables.width = sh.Variable(shape_id, "width", 
+				[x[0] for x in size_domain], index_domain=False)
+			self.variables.size_factor = sh.Variable(shape_id, "size_factor",
+				[x[2] for x in size_domain], index_domain=False)
+
+
+		if at_root:
+			# Add the column variable if the element is at the root of the canvas. 
+			# The canvas will use this variable to place it in its correct column 
+			self.has_columns = True
+			self.variables.column = sh.Variable(shape_id, "column", COLUMNS, index_domain=False)
 
 	def computed_width(self): 
 		if self.type == "canvas": 
@@ -107,12 +118,12 @@ class Shape(object):
 		return self.variables.height.id
 
 class LeafShape(Shape): 
-	def __init__(self, solver_ctx, shape_id, element, num_siblings):
-		Shape.__init__(self, solver_ctx, shape_id, element, "leaf", num_siblings)
+	def __init__(self, solver_ctx, shape_id, element, num_siblings, at_root=False):
+		Shape.__init__(self, solver_ctx, shape_id, element, "leaf", num_siblings, at_root)
 
 class ContainerShape(Shape): 
-	def __init__(self, solver_ctx, shape_id, element, num_siblings):
-		Shape.__init__(self, solver_ctx, shape_id, element, "container", num_siblings)
+	def __init__(self, solver_ctx, shape_id, element, num_siblings, at_root=False):
+		Shape.__init__(self, solver_ctx, shape_id, element, "container", num_siblings, at_root)
 		self.children = []
 		self.variables.arrangement = sh.Variable(shape_id, "arrangement", 
 			["horizontal", "vertical", "rows", "columns"])
@@ -149,15 +160,17 @@ class ContainerShape(Shape):
 
 class CanvasShape(Shape):
 	def __init__(self, solver_ctx, shape_id, element, num_siblings):
-		Shape.__init__(self, solver_ctx, shape_id, element, "canvas", num_siblings)
+		Shape.__init__(self, solver_ctx, shape_id, element, "canvas", num_siblings, at_root=False)
 		self.children = []
 		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
 		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
 		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50,60,70,80,90,100],
 			index_domain=False)
 		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
-		# self.variables.background_color = sh.Variable("canvas", "background_color", element["colors"], 
-		# 	var_type="String", index_domain=False)
+		self.variables.columns = sh.Variable("canvas", "columns", LAYOUT_COLUMNS, index_domain=False)
+		self.variables.gutter_width = sh.Variable("canvas", "gutter_width", GUTTERS, index_domain=False) # TODO: What should the domain be? 
+		self.variables.column_width = sh.Variable("canvas", "column_width", COLUMN_WIDTHS, index_domain=False)
+
 
 		self.x = 0
 		self.y = 0

@@ -103,6 +103,9 @@ class ConstraintBuilder(object):
 		self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.y.id, str(shape.computed_height())), 
 			str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
 
+
+
+
 	def init_shape_grid_values(self, shape, canvas): 
 		grid = canvas.variables.grid.z3
 		shape_x = shape.variables.x.z3
@@ -131,10 +134,6 @@ class ConstraintBuilder(object):
 			or_values.append(cb.eq(margin.id, str(margin_value)))
 		self.constraints += cb.assert_expr(cb.or_expr(or_values), "canvas_margin_domain_in_range")
 
-		# bg_values = []
-		# for background_value in background_color.domain:
-		# 	bg_values.append(cb.eq(background_color.name, background_value))
-		# constraints += cb.assert_expr(cb.or_expr(or_values), "canvas_background_color_domain_in_range")
 		page_shape = canvas.children[0]
 
 		# page shape should stay within the bounds of the canvas container
@@ -157,8 +156,52 @@ class ConstraintBuilder(object):
 		self.constraints += cb.assert_expr(cb.eq(canvas_y.id, str(canvas.y)), 'canvas_orig_y')
 
 		self.justify_canvas(canvas)
-		self.align_canvas(canvas)
+		# self.align_canvas(canvas)
+		self.align_canvas_layout_grid(canvas)
 		self.init_grid_constraints(canvas)
+		self.init_layout_grid(canvas)
+		self.init_layout_grid_columns(canvas)
+
+	def init_layout_grid_columns(self, canvas): 
+		layout_columns = canvas.variables.columns
+
+		# Enforce children constraints
+		child_shapes = canvas.children
+		if len(child_shapes): 
+			for child_index in range(0, len(child_shapes)): 
+				child = child_shapes[child_index]
+				child_column = child.variables.column
+
+				# Column domain
+				column_values = []
+				for col_value in child_column.domain: 
+					col_eq = cb.eq(child_column.id, str(col_value))
+					column_values.append(col_eq)
+				self.constraints += cb.assert_expr(cb.or_expr(column_values),
+					"shape_" + child.shape_id + "_layout_column_value")
+
+				# Less than canvas column value
+				column_lt_parent = cb.lt(child_column.id, layout_columns.id)
+				self.constraints += cb.assert_expr(column_lt_parent, "child_" + child.shape_id + "_column_lt_layout_columns")
+
+	def init_layout_grid(self, canvas): 
+		columns = canvas.variables.columns
+		gutter_width = canvas.variables.gutter_width
+		column_width = canvas.variables.column_width
+
+		grid_values = []
+		num_values = len(columns.domain)
+		for i in range(0, num_values): 
+			col_value = columns.domain[i]
+			gutter_value = gutter_width.domain[i]
+			column_width_value = column_width.domain[i]
+
+			and_all = cb.and_expr([cb.eq(columns.id, str(col_value)), cb.eq(gutter_width.id, str(gutter_value)),
+				cb.eq(column_width.id, str(column_width_value))])
+			grid_values.append(and_all)
+
+		self.constraints += cb.assert_expr(cb.or_expr(grid_values),
+			"canvas_columns_in_domain")
 
 	def init_grid_constraints(self, canvas): 
 		grid = canvas.variables.grid
@@ -535,6 +578,27 @@ class ConstraintBuilder(object):
 			cb.add(canvas_x.id, cb.sub(str(canvas.computed_width()), margin.id)))
 		self.constraints += cb.assert_expr(cb.ite(is_left, left_aligned, 
 			cb.ite(is_center, center_aligned, right_aligned)), 'canvas_alignment')
+
+	def align_canvas_layout_grid(self, canvas):
+		layout_columns = canvas.variables.columns
+		gutter_width = canvas.variables.gutter_width
+		column_width = canvas.variables.column_width
+		margin = canvas.variables.margin
+		canvas_x = canvas.variables.x
+		canvas_width = canvas.computed_width()
+
+		# Enforce children constraints
+		child_shapes = canvas.children
+		if len(child_shapes): 
+			for child_index in range(0, len(child_shapes)): 
+				child = child_shapes[child_index]
+				child_column = child.variables.column.id
+				columns_mult = cb.sub(child_column, "1")
+				columns_spacing = cb.mult(column_width.id, columns_mult)
+				gutter_spacing = cb.mult(gutter_width.id, columns_mult)
+				child_x_position = cb.add(columns_spacing, cb.add(gutter_spacing, margin.id))
+				self.constraints += cb.assert_expr(cb.eq(child.variables.x.id, child_x_position),
+												   "child_" + child.shape_id + "_x_position_column")
 
 	def align_rows_or_columns(self, container, proximity, rows, column_or_row,
 							  aligned_axis, aligned_axis_size, layout_axis, layout_axis_size):

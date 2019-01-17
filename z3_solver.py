@@ -139,12 +139,13 @@ class Solver(object):
 		root = self.construct_shape_hierarchy([self.elements], shapes)
 		return shapes,root
 
-	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal"):
+	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal", at_root=False):
 		shape_hierarchy = []
 		num_siblings = len(elements)
 		for i in range(0, len(elements)): 
 			element = elements[i]
-			
+			element_type = element["type"]
+
 			# If parent node emphasis is set, cascade that value to the child elements
 			element_emphasis = element["importance"] if "importance" in element else "normal"
 			if parent_emphasis != "normal": 
@@ -152,26 +153,24 @@ class Solver(object):
 				element_emphasis = parent_emphasis
 
 			sub_hierarchy = None
+
+			is_at_root = True if element_type == "canvas" else False
 			if "children" in element: 
 				children = element["children"]
-				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis)
+				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis, is_at_root)
 
 			shape_object = None
-			if element["type"] == "canvas": 
+			if element_type == "canvas": 
 				shape_object = shape_classes.CanvasShape(self.solver_ctx, 
 					element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
-			elif element["type"] == "page":	
+			elif element_type == "group" or element_type == "labelGroup":
 				shape_object = shape_classes.ContainerShape(self.solver_ctx, 
-					element["name"], element, num_siblings)
-				shapes[shape_object.shape_id] = shape_object
-			elif element["type"] == "group" or element["type"] == "labelGroup":
-				shape_object = shape_classes.ContainerShape(self.solver_ctx, 
-					element["name"], element, num_siblings)
+					element["name"], element, num_siblings, at_root=at_root)
 				shapes[shape_object.shape_id] = shape_object
 			else:
 				shape_object = shape_classes.LeafShape(self.solver_ctx,
-					element["name"], element, num_siblings)
+					element["name"], element, num_siblings, at_root=at_root)
 				shapes[shape_object.shape_id] = shape_object
 
 			if sub_hierarchy is not None: 
@@ -197,6 +196,7 @@ class Solver(object):
 				last.append(shape.variables.alignment)
 				last.append(shape.variables.justification)
 				last.append(shape.variables.margin)
+				last.append(shape.variables.columns)
 				# last.append(shape.variables.background_color)
 			
 			if shape.type == "leaf": 

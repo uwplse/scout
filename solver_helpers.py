@@ -214,18 +214,26 @@ class Solution(object):
 					element["alignment"] = int(alignment)
 					element["proximity"] = int(proximity)
 					element["distribution"] = int(distribution)
+
+					if shape.has_columns:
+						column = model[variables[shape.variables.column.id]].as_string()
+						element["column"] = int(column)
+
 				elif shape.type == "canvas": 
 					alignment = model[variables[shape.variables.alignment.id]].as_string()
 					justification = model[variables[shape.variables.justification.id]].as_string()
 					margin = model[variables[shape.variables.margin.id]].as_string()
 					grid = model[variables[shape.variables.grid.id]].as_string()
-					# background_color = model[variables[shape.variables.background_color.id]].as_string()
+					gutter_width = model[variables[shape.variables.gutter_width.id]].as_string()
+					column_width = model[variables[shape.variables.column_width.id]].as_string()
+					columns = model[variables[shape.variables.columns.id]].as_string()
 					element["alignment"] = int(alignment)
 					element["justification"] = int(justification)
 					element["margin"] = int(margin)
 					element["grid"] = int(grid)
-					# element["background_color"] = background_color.replace("\"", "")
-
+					element["columns"] = int(columns)
+					element["column_width"] = int(column_width)
+					element["gutter_width"] = int(gutter_width)
 				elif shape.type == "leaf": 
 					height = model[variables[shape.computed_height()]].as_string()
 					width = model[variables[shape.computed_width()]].as_string()
@@ -236,6 +244,10 @@ class Solution(object):
 					element["width"] = width
 					element["height"] = height
 					element["size_factor"] = size_factor
+
+					if shape.has_columns:
+						column = model[variables[shape.variables.column.id]].as_string()
+						element["column"] = int(column)
 
 					# Only consider emphassis for leaf node elements
 					if shape.importance == "most": 
