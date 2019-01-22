@@ -125,7 +125,7 @@ export default class ConstraintsCanvas extends React.Component {
           if(action){
             let uniqueId = _.uniqueId();
             let message = action["do"].getFeedbackMessage(this.canvasLevelShape);
-            let id = this.pageLevelShape.name + "_" + uniqueId; 
+            let id = this.canvasLevelShape.name + "_" + uniqueId; 
             let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, message);
             newTreeNode.subtitle.push(widgetFeedback); 
           } 
@@ -1089,10 +1089,6 @@ export default class ConstraintsCanvas extends React.Component {
           let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
           nextParentNode.subtitle.unshift(widgetTypingElement);
         }   
-
-        this.setState(state => ({
-          treeData: this.state.treeData
-        }), this.checkSolutionValidityAndUpdateCache); 
       }
     }
 
@@ -1124,6 +1120,10 @@ export default class ConstraintsCanvas extends React.Component {
         this.removeTypedGroup(typedGroupNode.node);
       }
     }
+
+    this.setState(state => ({
+      treeData: this.state.treeData
+    }), this.checkSolutionValidityAndUpdateCache); 
   }
 
   removeWidgetTypingAlert = (node) => {
