@@ -30,44 +30,44 @@ def compute_y_domain():
 def compute_size_domain(importance, width, height): 
 	domain = []
 	factor_id = 0
+	aspect_ratio = width/height
 
 	for i in range(0, len(MINIFICATION_VALUES)):
 		if importance != "most": 
 			min_value = MINIFICATION_VALUES[i] 
-			computed_width = int(round(width*min_value,0))
 			computed_height = int(round(height*min_value,0))
-
-			# Round the size to the closest multiple of the grid constant 
-			width_diff = computed_width % GRID_CONSTANT 
-			computed_width -= width_diff
 
 			height_diff = computed_height % GRID_CONSTANT 
 			computed_height -= height_diff
 
+			# Compute width as a function of height
+			computed_width = computed_height * aspect_ratio
+			computed_width = int(round(computed_width,0))
+
 			if computed_height >= MIN_HEIGHT and computed_width >= MIN_WIDTH: 
 				domain.append([computed_width, computed_height, factor_id])
+
 		factor_id += 1
 
-
-	width_diff = width % GRID_CONSTANT
 	height_diff = height % GRID_CONSTANT
-	squared_width = width - width_diff
 	squared_height = height - height_diff 
+	squared_width = squared_height * aspect_ratio
+	squared_width = int(round(squared_width,0))
 	domain.append([squared_width, squared_height, factor_id])
+	
 	factor_id += 1
 
 	for i in range(0, len(MAGNIFICATION_VALUES)):
 		if importance != "least": 
 			max_value = MAGNIFICATION_VALUES[i] 
-			computed_width = int(round(width*max_value,0))
 			computed_height = int(round(height*max_value,0))
-
-			# Round the size to the closest multiple of the grid constant 
-			width_diff = computed_width % GRID_CONSTANT 
-			computed_width -= width_diff
 
 			height_diff = computed_height % GRID_CONSTANT 
 			computed_height -= height_diff
+
+			# Compute width as a function of height
+			computed_width = computed_height * aspect_ratio
+			computed_width = int(round(computed_width,0))
 
 			if computed_width <= MAX_WIDTH and computed_height <= MAX_HEIGHT: 
 				domain.append([computed_width, computed_height, factor_id])

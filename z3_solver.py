@@ -63,16 +63,17 @@ class Solver(object):
 
 		# Intialize the locked constraints (Keep/Prevent values)
 		start_time = time.time()
-		# for shape in self.shapes.values(): 
-		# 	self.cb.init_locks(shape)
+		for shape in self.shapes.values(): 
+			self.cb.init_locks(shape)
 		end_time = time.time()
 		logging.debug("Time taken to encode locks: " + str(end_time-start_time))
 			
 		# Initialize the constraints preventing previous solutions from re-occuring
 		start_time = time.time()
+
 		# Prevent the previous solutions that have the same set of elements
-		# solutions_to_prevent = self.get_previous_solutions_to_prevent()
-		# self.cb.init_previous_solution_constraints(solutions_to_prevent, self.shapes)
+		solutions_to_prevent = self.get_previous_solutions_to_prevent()
+		self.cb.init_previous_solution_constraints(solutions_to_prevent, self.shapes)
 		end_time = time.time()
 		logging.debug("Time taken to encode previous solutions: " + str(end_time-start_time))
 
