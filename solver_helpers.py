@@ -216,6 +216,7 @@ class Solution(object):
 					if shape.has_columns:
 						column = model[variables[shape.variables.column.id]].as_string()
 						element["column"] = int(column)
+						element["canvas_child"] = True
 
 				elif shape.type == "canvas": 
 					margin = model[variables[shape.variables.margin.id]].as_string()

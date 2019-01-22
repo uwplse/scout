@@ -15,7 +15,7 @@ GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 LAYOUT_COLUMNS = [2,3,4,6,12]
-GUTTERS = [10,10,10,10,10] # TODO can introduce a variable value for these at some point
+GUTTERS = [10] # TODO can introduce a variable value for these at some point
 COLUMN_WIDTHS = [146,94,68,53,42,16]
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
@@ -26,6 +26,19 @@ def compute_y_domain():
 	y_values = range(0, CANVAS_HEIGHT)
 	y_values = [y for y in y_values if y > 0 and (y % GRID_CONSTANT) == 0]
 	return y_values
+
+def compute_layout_grid_domains(): 
+	# We precompute these values all ahead of time to avoid
+	# needing to use multiplication or division in the solver as 
+	# the performance generally tends to be slow for these operators
+	domain = []
+	for margin_value in MARGINS: 
+		for column_value in COLUMNS: 
+			for gutter_value in GUTTERS: 
+				column_width = (CANVAS_WIDTH - (2*margin_value) - (2*gutter_value))/column_value
+				domain.append([margin_value, column_value, gutter_value, column_width])
+
+	return domain
 
 def compute_size_domain(importance, width, height): 
 	domain = []
@@ -54,7 +67,7 @@ def compute_size_domain(importance, width, height):
 	squared_width = squared_height * aspect_ratio
 	squared_width = int(round(squared_width,0))
 	domain.append([squared_width, squared_height, factor_id])
-	
+
 	factor_id += 1
 
 	for i in range(0, len(MAGNIFICATION_VALUES)):
@@ -197,12 +210,18 @@ class CanvasShape(Shape):
 	def __init__(self, solver_ctx, shape_id, element, num_siblings):
 		Shape.__init__(self, solver_ctx, shape_id, element, "canvas", num_siblings, at_root=False)
 		self.children = []
-		self.variables.margin = sh.Variable("canvas", "margin", MARGINS,
-			index_domain=False)
+
 		self.variables.baseline_grid = sh.Variable("canvas", "baseline_grid", BASELINE_GRIDS, index_domain=False)
-		self.variables.columns = sh.Variable("canvas", "columns", LAYOUT_COLUMNS, index_domain=False)
-		self.variables.gutter_width = sh.Variable("canvas", "gutter_width", GUTTERS, index_domain=False) # TODO: What should the domain be? 
-		self.variables.column_width = sh.Variable("canvas", "column_width", COLUMN_WIDTHS, index_domain=False)
+
+		layout_grid_domains = compute_layout_grid_domains()
+		marg_domain = [x[0] for x in layout_grid_domains]
+		cols_domain = [x[1] for x in layout_grid_domains]
+		gutter_domain = [x[2] for x in layout_grid_domains]
+		col_width_domain = [x[3] for x in layout_grid_domains]
+		self.variables.margin = sh.Variable("canvas", "margin", marg_domain, index_domain=False)
+		self.variables.columns = sh.Variable("canvas", "columns", cols_domain, index_domain=False)
+		self.variables.gutter_width = sh.Variable("canvas", "gutter_width", gutter_domain, index_domain=False) # TODO: What should the domain be? 
+		self.variables.column_width = sh.Variable("canvas", "column_width", col_width_domain, index_domain=False)
 		self.min_spacing = str(GRID_CONSTANT)
 		self.is_container = True
 

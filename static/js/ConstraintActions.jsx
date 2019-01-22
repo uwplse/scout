@@ -210,7 +210,40 @@ ConstraintActions.elementConstraints = {
 	}
 }
 
- 
+// These actions will only appear for direct children of the canvas container
+ConstraintActions.canvasChildConstraints = {
+	"column": {
+		"do": {
+			"key": "column",
+			"updateConstraintsCanvasShape": function keepHeight(constraintsCanvasShape, designCanvasShape) {
+			    // Update the property on shape according to the selected option
+			    // Use the server key for locking a shape into a specific location
+			    if(constraintsCanvasShape[ConstraintActions.locksKey] == undefined) {
+			    	constraintsCanvasShape[ConstraintActions.locksKey] = []; 
+			    } 
+
+			    constraintsCanvasShape[ConstraintActions.locksKey].push("column"); 
+			    constraintsCanvasShape["column"] = designCanvasShape["column"]; 
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Keep column at " + shape["column"] + ".";
+			}
+		}, 
+		"undo": {
+			"key": "column",
+			"updateConstraintsCanvasShape": function undoKeepHeight(constraintsCanvasShape, designCanvasShape) {
+				let indsex = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("column"); 
+				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
+				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
+					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
+				}; 
+			}, 
+			"getFeedbackMessage": function generateFeedbackMessage(shape) {
+				return "Don't keep column at " + shape["column"] + ".";
+			}
+		}	
+	}
+}
 
 ConstraintActions.groupConstraints = {
 	"arrangement": 

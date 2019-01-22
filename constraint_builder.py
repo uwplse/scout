@@ -104,14 +104,9 @@ class ConstraintBuilder(object):
 	# 		str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
 
 	def init_canvas_constraints(self, canvas): 
-		margin = canvas.variables.margin
 		canvas_x = canvas.variables.x
 		canvas_y = canvas.variables.y
-
-		or_values = []
-		for margin_value in margin.domain:
-			or_values.append(cb.eq(margin.id, str(margin_value)))
-		self.constraints += cb.assert_expr(cb.or_expr(or_values), "canvas_margin_domain_in_range")
+		margin = canvas.variables.margin
 
 		# Fix the canvas X,Y to their original valuess
 		self.constraints += cb.assert_expr(cb.eq(canvas_x.id, str(canvas.x)), 'canvas_orig_x')
@@ -178,6 +173,7 @@ class ConstraintBuilder(object):
 		columns = canvas.variables.columns
 		gutter_width = canvas.variables.gutter_width
 		column_width = canvas.variables.column_width
+		margin = canvas.variables.margin
 
 		grid_values = []
 		num_values = len(columns.domain)
@@ -185,13 +181,14 @@ class ConstraintBuilder(object):
 			col_value = columns.domain[i]
 			gutter_value = gutter_width.domain[i]
 			column_width_value = column_width.domain[i]
+			marg_value = margin.domain[i]
 
 			and_all = cb.and_expr([cb.eq(columns.id, str(col_value)), cb.eq(gutter_width.id, str(gutter_value)),
-				cb.eq(column_width.id, str(column_width_value))])
+				cb.eq(column_width.id, str(column_width_value)), cb.eq(margin.id, str(marg_value))])
 			grid_values.append(and_all)
 
 		self.constraints += cb.assert_expr(cb.or_expr(grid_values),
-			"canvas_columns_in_domain")
+			"canvas_layout_grid_variables_in_domain")
 
 	def init_baseline_grid(self, canvas): 
 		grid = canvas.variables.baseline_grid
