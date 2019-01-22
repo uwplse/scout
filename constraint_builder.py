@@ -169,6 +169,11 @@ class ConstraintBuilder(object):
 				self.constraints += cb.assert_expr(cb.eq(cb.mod(vertical_pos.id, canvas_baseline_grid.id), "0"), 
 					"canvas_child_" + child.shape_id + "_y_position_mult_baseline_grid") 
 
+				# Enforce that the child height is a multiple of the baseline grid variable
+				child_height = child.variables.height
+				self.constraints += cb.assert_expr(cb.eq(cb.mod(child_height.id, canvas_baseline_grid.id), "0"), 
+					"canvas_child_" + child.shape_id + "_height_mult_baseline_grid")
+
 	def init_layout_grid(self, canvas): 
 		columns = canvas.variables.columns
 		gutter_width = canvas.variables.gutter_width
