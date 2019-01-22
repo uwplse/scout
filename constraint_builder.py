@@ -826,14 +826,14 @@ class ConstraintBuilder(object):
 
 			if child.order == last_child_index: 
 				# The bottom of the shape is the bottom of the container
-				is_bottom = cb.eq(cb.add(child_y, str(child.computed_height())), cb.add(container_y,  str(container.computed_height())))
-				is_right = cb.eq(cb.add(child_x, str(child.computed_width())), cb.add(container_x, str(container.computed_width())))
+				is_bottom = cb.eq(cb.add(child_y, str(child.computed_height())), cb.add(container_y.id,  str(container.computed_height())))
+				is_right = cb.eq(cb.add(child_x, str(child.computed_width())), cb.add(container_x.id, str(container.computed_width())))
 				self.constraints += cb.assert_expr(cb.ite(is_vertical, is_bottom, "true"), "container_" + container.shape_id + "_vertical_order_last_child")
 				self.constraints += cb.assert_expr(cb.ite(is_horizontal, is_right, "true"), "container_" + container.shape_id + "_horizontal_order_last_child")
 
 			if child.order == 0:
-				is_top = cb.eq(child_y, container_y)
-				is_left = cb.eq(child_x, container_x)
+				is_top = cb.eq(child_y, container_y.id)
+				is_left = cb.eq(child_x, container_x.id)
 				self.constraints += cb.assert_expr(cb.ite(is_vertical, is_top, "true"), child.shape_id + "_" + container.shape_id + "_first_order_top")
 				self.constraints += cb.assert_expr(cb.ite(is_horizontal, is_left, "true"), child.shape_id + "_" + container.shape_id + "_first_order_left")
 

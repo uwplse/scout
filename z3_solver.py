@@ -1,4 +1,4 @@
-from z3 import * 
+from z3 import *
 import time
 import sys
 import json
@@ -189,19 +189,20 @@ class Solver(object):
 			if shape.type == "container": 
 				first.append(shape.variables.arrangement)
 				last.append(shape.variables.alignment)
-				last.append(shape.variables.padding)
-			
+				last.append(shape.variables.padding)			
 			elif shape.type == "canvas":
 				last.append(shape.variables.margin)
 				last.append(shape.variables.columns)
 				last.append(shape.variables.baseline_grid)
-				# last.append(shape.variables.background_color)
-			
-			if shape.type == "leaf": 
+			elif shape.type == "leaf": 
 				if shape.at_root: 
 					last.append(shape.variables.column)
 					last.append(shape.variables.y)
 				last.append(shape.variables.size_factor)
+
+			if shape.at_root: 
+				last.append(shape.variables.y)
+				last.append(shape.variables.column)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
