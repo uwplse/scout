@@ -208,29 +208,23 @@ class Solution(object):
 					# so we don't have to edit this place every time we add a property
 					arrangement = model[variables[shape.variables.arrangement.id]].as_string()
 					alignment = model[variables[shape.variables.alignment.id]].as_string()
-					proximity = model[variables[shape.variables.proximity.id]].as_string()
-					distribution = model[variables[shape.variables.distribution.id]].as_string()
+					padding = model[variables[shape.variables.padding.id]].as_string()
 					element["arrangement"] = int(arrangement)
 					element["alignment"] = int(alignment)
-					element["proximity"] = int(proximity)
-					element["distribution"] = int(distribution)
+					element["padding"] = int(padding)
 
 					if shape.has_columns:
 						column = model[variables[shape.variables.column.id]].as_string()
 						element["column"] = int(column)
 
 				elif shape.type == "canvas": 
-					alignment = model[variables[shape.variables.alignment.id]].as_string()
-					justification = model[variables[shape.variables.justification.id]].as_string()
 					margin = model[variables[shape.variables.margin.id]].as_string()
-					grid = model[variables[shape.variables.grid.id]].as_string()
+					baseline_grid = model[variables[shape.variables.baseline_grid.id]].as_string()
 					gutter_width = model[variables[shape.variables.gutter_width.id]].as_string()
 					column_width = model[variables[shape.variables.column_width.id]].as_string()
 					columns = model[variables[shape.variables.columns.id]].as_string()
-					element["alignment"] = int(alignment)
-					element["justification"] = int(justification)
 					element["margin"] = int(margin)
-					element["grid"] = int(grid)
+					element["baseline_grid"] = int(baseline_grid)
 					element["columns"] = int(columns)
 					element["column_width"] = int(column_width)
 					element["gutter_width"] = int(gutter_width)

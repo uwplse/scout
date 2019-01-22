@@ -15,7 +15,6 @@ import {
   addNodeUnderParent } 
 from 'react-sortable-tree';
 import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
-import Constants from './Constants';
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
 import label from '../assets/illustrator/labelContainer.svg';
@@ -49,6 +48,8 @@ export default class ConstraintsCanvas extends React.Component {
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
     this.minimumGroupSize = 2; 
+    this.rootNodeHeight = 46.5; 
+    this.rootNodeWidth = 239;
 
     this.state = { 
       treeData: [], 
@@ -104,20 +105,17 @@ export default class ConstraintsCanvas extends React.Component {
     this.canvasLevelShape = canvasRootShape; 
     this.constraintsShapesMap[canvasRootShape.name] = canvasRootShape; 
 
+    // Create the widget at the root node of the tree for the canvas
+    let newTreeData = [];
+    let canvasWidget = this.getWidget(this.canvasLevelShape, rootNode);
+    let newTreeNode = {
+      title: canvasWidget, 
+      subtitle: []
+    }; 
+
+    this.widgetTreeNodeMap[this.canvasLevelShape.name] = newTreeNode; 
+
     if(this.canvasLevelShape.children) {
-      this.pageLevelShape = this.canvasLevelShape.children[0]; 
-      this.constraintsShapesMap[this.pageLevelShape.name] = this.pageLevelShape; 
-
-      // Create page level widget
-      let newTreeData = [];
-      let pageWidget = this.getWidget(this.pageLevelShape, rootNode);
-      let newTreeNode = {
-        title: pageWidget, 
-        subtitle: []
-      }; 
-
-      this.widgetTreeNodeMap[this.pageLevelShape.name] = newTreeNode; 
-
       // Restore feedback items
       // Check whether to remove or add a widget feedback item
       if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
@@ -136,12 +134,12 @@ export default class ConstraintsCanvas extends React.Component {
 
       newTreeData = newTreeData.concat(newTreeNode); 
 
-      if(this.pageLevelShape.children) {
+      if(this.canvasLevelShape.children) {
         let parentKey = 0; 
         let nodeIndex = parentKey; 
-        for(let i=0; i<this.pageLevelShape.children.length; i++) {
+        for(let i=0; i<this.canvasLevelShape.children.length; i++) {
           nodeIndex = nodeIndex + 1; 
-          let child = this.pageLevelShape.children[i]; 
+          let child = this.canvasLevelShape.children[i]; 
           let results = this.constructShapeHierarchy(child, parentKey, nodeIndex, newTreeData);
           newTreeData = results.treeData; 
           nodeIndex = results.nodeIndex; 
@@ -235,39 +233,21 @@ export default class ConstraintsCanvas extends React.Component {
       "children": [],
       "x": 0, 
       "y": 0,
-      "width": this.canvasWidth, 
-      "height": this.canvasHeight
+      "width": this.rootNodeWidth, 
+      "height": this.rootNodeHeight
       // "background_color": "#E1E2E1"
     }
 
     this.canvasLevelShape = canvas;
     this.constraintsShapesMap[canvas.name] = canvas; 
- 
-    // Create an object to represent the page level object (A container for shapes at the root level)
-    let page = {
-      "name": "page",
-      "type": "group",
-      "controlType": "group",
-      "x": 0, 
-      "y": 0, 
-      "width": Constants.controlWidths('page'),
-      "height": Constants.controlHeights('page'), 
-      "containerOrder": "important",
-      "importance": "normal",
-      "children": []
-    }
 
-    this.constraintsShapesMap[page.name] = page; 
-    this.pageLevelShape = page; 
-    canvas.children.push(page); 
 
-    let widget = this.getWidget(page, rootNode); 
+    let widget = this.getWidget(canvas, rootNode); 
     let newTreeNode = {
         title: widget, 
         subtitle: []
     }; 
 
-    this.widgetTreeNodeMap[page.name] = newTreeNode; 
     return newTreeNode; 
   }
 
@@ -282,7 +262,7 @@ export default class ConstraintsCanvas extends React.Component {
   getWidget = (shape, src, options={}) => {
     let shapeId = shape.name;
     let highlighted = options.highlighted ? options.highlighted : false; 
-    let isContainer = shape.type == "group" || shape.type == "page" || shape.type == "canvas";
+    let isContainer = shape.type == "group" || shape.type == "canvas";
     let item = options.item ? options.item : false;
     let typed = options.typed ? options.typed : false;
 
@@ -358,8 +338,8 @@ export default class ConstraintsCanvas extends React.Component {
     // Creates a new tree node widget and returns it
     let id = _.uniqueId();
 
-    let width = Constants.controlWidths(type); 
-    let height = Constants.controlHeights(type);
+    let width = 0;
+    let height = 0; 
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
     let widget = this.getWidget(shape, source, options); 
 
@@ -586,12 +566,6 @@ export default class ConstraintsCanvas extends React.Component {
     // Find the corresponding tree node
     let shapeId = shape.name; 
     let uniqueId = _.uniqueId();
-      
-    // Update the canvas shape feedbacks on the same shape as the page level shape. 
-    if(shapeId == "canvas") {
-      shapeId = "page"; 
-    }
-
     let treeNode = this.widgetTreeNodeMap[shapeId]; 
 
     // First, see whether there is already a feedback item for this action
@@ -626,29 +600,27 @@ export default class ConstraintsCanvas extends React.Component {
     let treeNodes = this.state.treeData; 
 
     // Convert this into a hierarchical structure
-    let shapes = [];
-    for(let i=0; i<treeNodes.length; i++){
-      let treeNode = treeNodes[i]; 
-      if(treeNode.children){
-        this.getShapeChildren(treeNode); 
+    if(treeNodes.length) {
+      let rootNode = treeNodes[0]; 
+      if(rootNode.children){
+        this.getShapeChildren(rootNode); 
       }
 
-      let shape = treeNode.title.props.shape; 
-      if(treeNode.title.props.typed) {
+      let rootNodeShape = rootNode.title.props.shape; 
+      if(rootNode.title.props.typed) {
         // If the tree node is a typed group
         // Update the correspondingID list to
         // link the child elemeents with their corresponding shapes
-        this.getRepeatGroupMatchingChildren(treeNode); 
+        this.getRepeatGroupMatchingChildren(rootNode); 
         shape.typed = true; 
       }
 
-      // Add it to the page level shape
-      shapes.push(shape); 
+      return rootNodeShape; 
     }
 
-    this.canvasLevelShape.children = shapes;
-    return this.canvasLevelShape;
+    return undefined; 
   }
+
 
   getShapeChildren = (node) => {
     let shape = node.title.props.shape; 

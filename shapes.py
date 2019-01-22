@@ -5,14 +5,27 @@ import smtlib_builder as smt
 
 label_types = ["text"]
 
-MAX_SIZE = 350
-MIN_SIZE = 50
+CANVAS_HEIGHT = 667
+CANVAS_WIDTH = 375
+MAX_WIDTH = 367 # Largest while subtracting the smallest amount of padding
+MAX_HEIGHT = 659 # Largest while subtracting the smallest amount of padding
+MIN_WIDTH = 48 # sort of arbitrary now, but could 
+MIN_HEIGHT = 48
+GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 LAYOUT_COLUMNS = [2,3,4,6,12]
 GUTTERS = [10,10,10,10,10] # TODO can introduce a variable value for these at some point
 COLUMN_WIDTHS = [146,94,68,53,42,16]
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
+BASELINE_GRIDS = [4,8,16]
+MARGINS = [8,12,16,20,24,28,32,36,40]
+PADDINGS = [4,8,12,16,20,24,28,32,36,40]
+
+def compute_y_domain(): 
+	y_values = range(0, CANVAS_HEIGHT)
+	y_values = [y for y in y_values if y > 0 and (y % GRID_CONSTANT) == 0]
+	return y_values
 
 def compute_size_domain(importance, width, height): 
 	domain = []
@@ -23,11 +36,24 @@ def compute_size_domain(importance, width, height):
 			min_value = MINIFICATION_VALUES[i] 
 			computed_width = int(round(width*min_value,0))
 			computed_height = int(round(height*min_value,0))
-			if computed_height >= MIN_SIZE and computed_width >= MIN_SIZE: 
+
+			# Round the size to the closest multiple of the grid constant 
+			width_diff = computed_width % GRID_CONSTANT 
+			computed_width -= width_diff
+
+			height_diff = computed_height % GRID_CONSTANT 
+			computed_height -= height_diff
+
+			if computed_height >= MIN_HEIGHT and computed_width >= MIN_WIDTH: 
 				domain.append([computed_width, computed_height, factor_id])
 		factor_id += 1
 
-	domain.append([width, height, factor_id])
+
+	width_diff = width % GRID_CONSTANT
+	height_diff = height % GRID_CONSTANT
+	squared_width = width - width_diff
+	squared_height = height - height_diff 
+	domain.append([squared_width, squared_height, factor_id])
 	factor_id += 1
 
 	for i in range(0, len(MAGNIFICATION_VALUES)):
@@ -35,7 +61,15 @@ def compute_size_domain(importance, width, height):
 			max_value = MAGNIFICATION_VALUES[i] 
 			computed_width = int(round(width*max_value,0))
 			computed_height = int(round(height*max_value,0))
-			if computed_width <= MAX_SIZE and computed_height <= MAX_SIZE: 
+
+			# Round the size to the closest multiple of the grid constant 
+			width_diff = computed_width % GRID_CONSTANT 
+			computed_width -= width_diff
+
+			height_diff = computed_height % GRID_CONSTANT 
+			computed_height -= height_diff
+
+			if computed_width <= MAX_WIDTH and computed_height <= MAX_HEIGHT: 
 				domain.append([computed_width, computed_height, factor_id])
 		factor_id += 1 
 
@@ -60,6 +94,8 @@ class Shape(object):
 		self.correspondingIDs = []
 		self.variable_values = dict()
 		self.has_columns = False
+		self.is_container = False
+		self.at_root = at_root
 		
 		self.orig_width = element["width"]
 		self.orig_height = element["height"]
@@ -100,12 +136,16 @@ class Shape(object):
 			self.variables.size_factor = sh.Variable(shape_id, "size_factor",
 				[x[2] for x in size_domain], index_domain=False)
 
-
 		if at_root:
 			# Add the column variable if the element is at the root of the canvas. 
 			# The canvas will use this variable to place it in its correct column 
 			self.has_columns = True
 			self.variables.column = sh.Variable(shape_id, "column", COLUMNS, index_domain=False)
+
+			# The y position should have a computed domain so they can be part of the variable search 
+			# Elements at the root level of the canvas will be aligned by the baseline grid and columns
+			y_domain = compute_y_domain()
+			self.variables.y = sh.Variable(shape_id, "y", y_domain, index_domain=False)
 
 	def computed_width(self): 
 		if self.type == "canvas": 
@@ -127,20 +167,15 @@ class ContainerShape(Shape):
 		self.children = []
 		self.variables.arrangement = sh.Variable(shape_id, "arrangement", 
 			["horizontal", "vertical", "rows", "columns"])
-		self.variables.proximity = sh.Variable(shape_id, "proximity", 
-			[5,10,15,20,25,30,35,40,45,50,55,60], index_domain=False)
+		self.variables.padding = sh.Variable(shape_id, "padding", 
+			PADDINGS, index_domain=False)
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
-
-		# TODO: Have some reasoning why we are picking this range of values
-		self.variables.distribution = sh.Variable(shape_id, "distribution",
-												  [20,40,60,80,100,120,140,160,180,200,220,240,
-												   260,280,300,320,340,360,380,400], index_domain=False)
-
 		self.variables.width = sh.Variable(shape_id, "width")
 		self.variables.height = sh.Variable(shape_id, "height")
 
 		self.container_order = "unimportant"
 		self.container_type = "group"
+		self.is_container = True
 		if element is not None: 
 			if "containerOrder" in element: 
 				self.container_order = element["containerOrder"]
@@ -162,18 +197,19 @@ class CanvasShape(Shape):
 	def __init__(self, solver_ctx, shape_id, element, num_siblings):
 		Shape.__init__(self, solver_ctx, shape_id, element, "canvas", num_siblings, at_root=False)
 		self.children = []
-		self.variables.alignment = sh.Variable("canvas", "alignment", ["left", "center", "right"])
-		self.variables.justification = sh.Variable("canvas", "justification", ["top", "center", "bottom"])
-		self.variables.margin = sh.Variable("canvas", "margin", [5,10,20,30,40,50,60,70,80,90,100],
+		self.variables.margin = sh.Variable("canvas", "margin", MARGINS,
 			index_domain=False)
-		self.variables.grid = sh.Variable("canvas", "grid", [5,8,12,16,20], index_domain=False)
+		self.variables.baseline_grid = sh.Variable("canvas", "baseline_grid", BASELINE_GRIDS, index_domain=False)
 		self.variables.columns = sh.Variable("canvas", "columns", LAYOUT_COLUMNS, index_domain=False)
 		self.variables.gutter_width = sh.Variable("canvas", "gutter_width", GUTTERS, index_domain=False) # TODO: What should the domain be? 
 		self.variables.column_width = sh.Variable("canvas", "column_width", COLUMN_WIDTHS, index_domain=False)
-
+		self.min_spacing = str(GRID_CONSTANT)
+		self.is_container = True
 
 		self.x = 0
 		self.y = 0
+		self.orig_width = CANVAS_WIDTH
+		self.orig_height = CANVAS_HEIGHT
 
 		if element is not None: 
 			if "containerOrder" in element: 

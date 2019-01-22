@@ -1,7 +1,6 @@
 // App.jsx
 import React from "react";
 import DesignCanvasMenu from "./DesignCanvasMenu"; 
-import Constants from "./Constants";
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
 import group from '../assets/illustrator/groupDesign.svg';
@@ -34,7 +33,7 @@ export default class DesignCanvas extends React.Component {
       conflicts: props.conflicts, // The conflicting constraints current if there are any
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
-      designShape: undefined, // The root level shape of the DesignCanvas
+      canvasShape: undefined, // The root level shape of the DesignCanvas
       hovered: false
   	}; 
 
@@ -86,14 +85,6 @@ export default class DesignCanvas extends React.Component {
     } 
     
     return 0.5;
-  }
-
-  initDesignCanvas = (shape) => {
-    // Intialize the background color and root level design shape
-    this.setState({
-      designShape: shape
-      // backgroundColor: shape.background_color
-    });
   }
 
   showConstraintsContextMenu = (shape) => {
@@ -171,7 +162,7 @@ export default class DesignCanvas extends React.Component {
   createSVGElement = (shape) => {
     // Get the control SVG element from the control type
     let type = shape.type; 
-    let isContainer = type == "group" || type == "labelGroup" || type == "page"; 
+    let isContainer = type == "group" || type == "labelGroup"; 
     let svgSource = (isContainer ? group : this.getSVGSource(shape)); 
     if(svgSource != undefined) {
       let padding = 0; 
@@ -181,12 +172,6 @@ export default class DesignCanvas extends React.Component {
 
       let computedHeight = (shape.height * this.scalingFactor + (padding * 2));
       let computedWidth = (shape.width * this.scalingFactor + (padding * 2)); 
-
-      if(isContainer) {
-        console.log(computedWidth); 
-        console.log(computedHeight);
-      } 
-      
       let computedLeft = ((shape.x * this.scalingFactor) - padding); 
       let computedTop = ((shape.y * this.scalingFactor) - padding);
 
@@ -202,16 +187,16 @@ export default class DesignCanvas extends React.Component {
     // Initialize the canvas and page elements first 
     // so they are at the top of the dom hierarchy
     let canvas = this.elements["canvas"]; 
-    this.initDesignCanvas(canvas); 
-
-    let page = this.elements["page"]; 
-    this.createSVGElement(page); 
+    this.createSVGElement(canvas); 
+    this.setState({
+      canvasShape: canvas
+    });
 
     let elementsList = []; 
     for(let elementID in this.elements) {
       if(this.elements.hasOwnProperty(elementID)) {
         let element = this.elements[elementID];
-        if(element.type != "canvas" && element.type != "page") {
+        if(element.type != "canvas") {
           elementsList.push(element); 
         }
       }
@@ -407,7 +392,7 @@ export default class DesignCanvas extends React.Component {
         <div id={"design-canvas-" + this.id} 
             className={"design-canvas " + (showInvalidIndicatorLines? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered" : "")}
-            onContextMenu={this.showConstraintsContextMenu(this.state.designShape)}
+            onContextMenu={this.showConstraintsContextMenu(this.state.canvasShape)}
             style={{height: "100%", width: "100%"}}>
           {childSVGs}
         </div>

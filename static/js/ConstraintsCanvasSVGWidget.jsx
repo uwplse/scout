@@ -3,7 +3,6 @@ import React from "react";
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
 import Converter from "number-to-words";
-import Constants from "./Constants";
 
 const WAIT_INTERVAL = 200; 
 
@@ -125,7 +124,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         setOrder: this.setOrder
       }); 
     }
-    else if(this.type == "group" || this.type == "page"){
+    else if(this.type == "group" || this.type == "canvas"){
       this.displayRightClickMenu(evt, this.id, {
         setImportanceLevel: this.setImportanceLevel, 
         setOrder: this.setOrder,

@@ -71,7 +71,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     
     // this.setTextLabel();
     // this.rescaleTextLabel();
-    let isContainer = (this.type == "group" || this.type == "labelGroup" || this.type == "canvas" || this.type == "page"); 
+    let isContainer = (this.type == "group" || this.type == "labelGroup" || this.type == "canvas"); 
     return (
       <div 
         id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} 

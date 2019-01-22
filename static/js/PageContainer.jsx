@@ -5,7 +5,6 @@ import '../css/Canvas.css';
 import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
 import WidgetsContainer from "./WidgetsContainer"; 
-import Constants from './Constants'; 
 import DesignCanvas from './DesignCanvas';
 import SmallDesignCanvas from './SmallDesignCanvas';
 import DesignCanvasContainer from './DesignCanvasContainer'; 

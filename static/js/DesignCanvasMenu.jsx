@@ -133,7 +133,7 @@ export default class DesignCanvasMenu extends React.Component {
   render () {
     console.log("render");
     console.log(this.state.menuTrigger.name);
-    const isContainer = this.state.menuTrigger.type == "group" || this.state.menuTrigger.type == "labelGroup" || this.state.menuTrigger.type == "page"; 
+    const isContainer = this.state.menuTrigger.type == "group" || this.state.menuTrigger.type == "labelGroup" || this.state.menuTrigger.type == "canvas"; 
     const menuLeft = this.state.left; 
     const menuTop = this.state.top;
     const relational = this.getRelationalMenuItems();

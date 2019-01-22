@@ -63,16 +63,16 @@ class Solver(object):
 
 		# Intialize the locked constraints (Keep/Prevent values)
 		start_time = time.time()
-		for shape in self.shapes.values(): 
-			self.cb.init_locks(shape)
+		# for shape in self.shapes.values(): 
+		# 	self.cb.init_locks(shape)
 		end_time = time.time()
 		logging.debug("Time taken to encode locks: " + str(end_time-start_time))
 			
 		# Initialize the constraints preventing previous solutions from re-occuring
 		start_time = time.time()
 		# Prevent the previous solutions that have the same set of elements
-		solutions_to_prevent = self.get_previous_solutions_to_prevent()
-		self.cb.init_previous_solution_constraints(solutions_to_prevent, self.shapes)
+		# solutions_to_prevent = self.get_previous_solutions_to_prevent()
+		# self.cb.init_previous_solution_constraints(solutions_to_prevent, self.shapes)
 		end_time = time.time()
 		logging.debug("Time taken to encode previous solutions: " + str(end_time-start_time))
 
@@ -130,9 +130,8 @@ class Solver(object):
 
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
-				self.cb.init_shape_bounds(shape)
+				# self.cb.init_shape_bounds(shape)
 				self.cb.init_shape_baseline(shape)
-				# self.cb.init_shape_grid_values(shape, canvas)
 
 	def build_shape_hierarchy(self): 
 		shapes = dict()
@@ -189,17 +188,18 @@ class Solver(object):
 			if shape.type == "container": 
 				first.append(shape.variables.arrangement)
 				last.append(shape.variables.alignment)
-				last.append(shape.variables.proximity)
-				last.append(shape.variables.distribution)
+				last.append(shape.variables.padding)
 			
 			elif shape.type == "canvas":
-				last.append(shape.variables.alignment)
-				last.append(shape.variables.justification)
 				last.append(shape.variables.margin)
 				last.append(shape.variables.columns)
+				last.append(shape.variables.baseline_grid)
 				# last.append(shape.variables.background_color)
 			
 			if shape.type == "leaf": 
+				if shape.at_root: 
+					last.append(shape.variables.column)
+					last.append(shape.variables.y)
 				last.append(shape.variables.size_factor)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first

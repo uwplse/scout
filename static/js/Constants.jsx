@@ -5,7 +5,10 @@ class Constants {
 
   static controlWidths(controlType) {
     let values = {
+      'group': 238, 
+      'labelGroup': 238, 
       'page': 239,
+      'labelGroup': 238, 
     }
 
     if(controlType in values) {
@@ -17,7 +20,10 @@ class Constants {
 
   static controlHeights(controlType) {
     let values = {
+      'group': 50, 
+      'labelGroup': 50,
       'page': 46.5,
+      'labelGroup': 50, 
     }
 
     if(controlType in values) {

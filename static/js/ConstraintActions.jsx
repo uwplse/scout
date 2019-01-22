@@ -1,10 +1,7 @@
-import Constants from "./Constants"; 
 
 // Feedback items
 // Groups - Order, Size
 // Global - Whitespace, Density 
-
-
 class ConstraintActions {}
 
 ConstraintActions.locked_size_key = 'size'
@@ -31,7 +28,7 @@ ConstraintActions.locked_text_key = 'text';
 ConstraintActions.locksKey = 'locks'; 
 
 ConstraintActions.getAction = function getAction(lock, shape) {
-	if(shape.type == "page" || shape.type == "canvas") {
+	if(shape.type == "canvas") {
 		let action = ConstraintActions.canvasConstraints[lock]; 
 		if(action) {
 			return action;
@@ -149,7 +146,7 @@ ConstraintActions.elementConstraints = {
 			}
 		}
 	}, 
-	/*"width": {
+	"width": {
 		"do": {
 			"key": ConstraintActions.locked_size_key,
 			"updateConstraintsCanvasShape": function keepSize(constraintsCanvasShape, designCanvasShape) {
@@ -218,7 +215,7 @@ ConstraintActions.elementConstraints = {
 				return "Don't keep height at " + shape[ConstraintActions.locked_size_key]["height"] + "px.";
 			}
 		}	
-	}*/
+	}
 }
 
  

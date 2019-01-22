@@ -7,8 +7,6 @@ import z3_solver
 import logging
 import solver_helpers as sh
 
-GRID_CONSTANT = 5
-GLOBAL_PROXIMITY = 5
 NUM_SOLUTIONS = 10
 NUM_DIFFERENT = 5
 SOLVER_WAIT = 0.2
