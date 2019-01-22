@@ -145,11 +145,11 @@ export default class ConstraintsCanvas extends React.Component {
           nodeIndex = results.nodeIndex; 
         }
       }
-
-      this.setState(state => ({
-        treeData: newTreeData
-      }));
     }
+
+    this.setState(state => ({
+      treeData: newTreeData
+    }));
   }
 
   getSVGSource = (node) => {
@@ -241,10 +241,10 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     this.canvasLevelShape = canvas;
-    this.constraintsShapesMap[canvas.name] = canvas; 
+    this.constraintsShapesMap[canvas.name] = this.canvasLevelShape; 
 
 
-    let widget = this.getWidget(canvas, rootNode); 
+    let widget = this.getWidget(this.canvasLevelShape, rootNode); 
     let newTreeNode = {
         title: widget, 
         subtitle: []
