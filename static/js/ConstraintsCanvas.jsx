@@ -230,12 +230,14 @@ export default class ConstraintsCanvas extends React.Component {
       "name": "canvas",
       "type": "canvas", 
       "controlType": "canvas",
+      "containerOrder": "unimportant",
       "children": [],
       "x": 0, 
       "y": 0,
       "width": this.rootNodeWidth, 
-      "height": this.rootNodeHeight
-      // "background_color": "#E1E2E1"
+      "height": this.rootNodeHeight, 
+      "orig_width": this.rootNodeWidth, 
+      "orig_height": this.rootNodeHeight
     }
 
     this.canvasLevelShape = canvas;
@@ -697,6 +699,8 @@ export default class ConstraintsCanvas extends React.Component {
       "order": order, 
       "width": width, 
       "height": height,
+      "orig_width": width, 
+      "orig_height": height,
       "x": 0, 
       "y": 0,
       "item": item, 

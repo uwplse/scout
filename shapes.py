@@ -110,9 +110,8 @@ class Shape(object):
 		self.is_container = False
 		self.at_root = at_root
 		
-		self.orig_width = element["width"]
-		self.orig_height = element["height"]
-
+		self.orig_width = element["orig_width"]
+		self.orig_height = element["orig_height"]
 		self.x = element["x"]
 		self.y = element["y"]
 
