@@ -35,7 +35,7 @@ def compute_layout_grid_domains():
 	for margin_value in MARGINS: 
 		for column_value in COLUMNS: 
 			for gutter_value in GUTTERS: 
-				column_width = (CANVAS_WIDTH - (2*margin_value) - (2*gutter_value))/column_value
+				column_width = (CANVAS_WIDTH - (2*margin_value) - ((column_value-1)*gutter_value))/column_value
 				domain.append([margin_value, column_value, gutter_value, column_width])
 
 	return domain
