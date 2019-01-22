@@ -200,17 +200,6 @@ export default class ConstraintsCanvasMenu extends React.Component {
     return menuItems; 
   }
 
-  // getLabelItems = () => {
-  //   // Label items should return the text of the sibling element and the shape ID
-  //   let labelItems = this.getSiblingLabelItem(this.shapeID); 
-  //   let menuItems = []; 
-  //   for(var i=0; i<labelItems.length; i++) {
-  //     let label = labelItems[i]; 
-  //     menuItems.push(<LabelMenuItem key={i} shapeID={label.id} shapeLabel={label.label} onClick={this.setLabel} />); 
-  //   }
-  //   return menuItems; 
-  // }
-
   getOrderMenuItems = () => {
     let orderMenuItems = []; 
 
@@ -306,6 +295,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
 
     // Importance will be enabled for all controls
     let importanceMenuItems = this.getImportanceMenuItems();
+    const importanceShown = this.setImportanceLevel != undefined && importanceMenuItems.length; 
 
     let containerOrderMenuItems = this.getContainerOrderMenuItems();
     const containerOrderShown = this.setContainerOrder != undefined && containerOrderMenuItems.length; 
@@ -338,7 +328,7 @@ export default class ConstraintsCanvasMenu extends React.Component {
             <a tabIndex="-1" href="#" onClick={this.openImportanceMenu}>Set the emphasis to ...<span className="caret"></span></a>
             { importanceMenuShown ? <ul style={{display: "block" }} className="dropdown-menu">{importanceMenuItems}</ul> : undefined } 
           </li>*/}
-        {importanceMenuItems}
+        {importanceShown ? importanceMenuItems : undefined}
         {/*labelShown ? labelItems : undefined*/}
         {orderShown ? orderMenuItems : undefined}
         {containerOrderShown ? containerOrderMenuItems : undefined}

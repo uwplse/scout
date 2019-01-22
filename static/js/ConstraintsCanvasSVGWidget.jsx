@@ -124,12 +124,17 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         setOrder: this.setOrder
       }); 
     }
-    else if(this.type == "group" || this.type == "canvas"){
+    else if(this.type == "group"){
       this.displayRightClickMenu(evt, this.id, {
         setImportanceLevel: this.setImportanceLevel, 
         setOrder: this.setOrder,
         setContainerOrder: this.setContainerOrder
       });     
+    }
+    else if(this.type == "canvas") {
+      this.displayRightClickMenu(evt, this.id, {
+        setContainerOrder: this.setContainerOrder
+      }); 
     }
     else {
       this.displayRightClickMenu(evt, this.id, {
@@ -222,9 +227,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const highlighted = this.state.highlighted; 
 
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
-    const enableOptions = {
-      top:false, right: true, bottom:false, left: false, topRight:false, bottomRight: false, bottomLeft:false, topLeft:false
-    };
 
     const isEditable = this.state.hasText;
     // const fontSize = (this.type == "text" ? { fontSize: this.state.fontSize } : {}); 
