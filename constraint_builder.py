@@ -401,26 +401,59 @@ class ConstraintBuilder(object):
 					self.constraints += cb.assert_expr(cb.or_expr([left,right,top,bottom]), 
 						"non_overlapping_shapes_" + shape1.shape_id + "_" + shape2.shape_id)
 
+
+	def bottom_edge_above(self, shape1_y, shape1_height, shape2_y, shape2_height): 
+		bedge1 = cb.add(shape1_y, shape1_height) 
+		bedge2 = cb.add(shape2_y, shape2_height)
+		return cb.lt(bedge1, bedge2)
+
 	def canvas_order(self, canvas): 
 		child_shapes = canvas.children 
-		for i in range(0, len(child_shapes)-1):
+		num_shapes = len(child_shapes)
+		for i in range(0, num_shapes-1):
 			shape1 = child_shapes[i]
 			shape2 = child_shapes[i+1]
-			shape1_x = shape1.variables.x.id
 			shape1_y = shape1.variables.y.id
-			shape2_x = shape2.variables.x.id
 			shape2_y = shape2.variables.y.id
-			shape1_width = str(shape1.computed_width())
 			shape1_height = str(shape1.computed_height())
-
+			shape2_height = str(shape2.computed_height())
+			
 			# Enforce that the element are kept in the specified order on the canvas 
-			# If the order is important, shape2 should be to the right or below shape1
+			# If the order is important, shape2 should have its bottom edge lower than shape1
 			if canvas.container_order == "important": 
-				to_bottom = cb.gte(shape2_y, cb.add(shape1_y, shape1_height))
-				to_right = cb.gte(shape2_x, cb.add(shape1_x, shape1_width))
-				y_below = cb.gte(shape2_y, shape1_y)
-				self.constraints += cb.assert_expr(cb.or_expr([to_bottom, cb.and_expr([to_right, y_below])]), 
+				bedge_lower = self.bottom_edge_above(shape1_y, shape1_height, shape2_y, shape2_height)
+				self.constraints += cb.assert_expr(bedge_lower, 
 					"canvas_order_important_" + shape2.shape_id + "_right_or_bottom_to_" + shape1.shape_id)
+
+
+		for i in range(0, num_shapes):
+			last_in_order = []
+			first_in_order = []
+			for j in range(0, num_shapes):
+				if j != i: 
+					shape1 = child_shapes[i]
+					shape2 = child_shapes[j]
+					shape1_y = shape1.variables.y.id
+					shape2_y = shape2.variables.y.id
+					shape1_height = str(shape1.computed_height())
+					shape2_height = str(shape2.computed_height())
+
+					if i == 0 and shape1.order == 0: 
+						# Enforce that all j shapes have a bottom edge lower
+						bedge_above = self.bottom_edge_above(shape1_y, shape1_height, shape2_y, shape2_height)
+						first_in_order.append(bedge_above)
+					if i == (num_shapes - 1) and shape1.order == (num_shapes-1): 
+						# Enforce that all j shapes have a higher bottom edge
+						bedge_below = self.bottom_edge_above(shape2_y, shape2_height, shape1_y, shape1_height)
+						last_in_order.append(bedge_below)
+
+			if len(first_in_order): 
+				self.constraints += cb.assert_expr(cb.and_expr(first_in_order), 
+					"canvas_order_first_" + shape1.shape_id + "_is_first")
+
+			if len(last_in_order): 
+				self.constraints += cb.assert_expr(cb.and_expr(last_in_order), 
+					"canvas_order_last_" + shape1.shape_id + "_is_last")
 
 	def canvas_padding(self, canvas): 
 		# Enforce padding between elements that is greater than the padding inside the groups 

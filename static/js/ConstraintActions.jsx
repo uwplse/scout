@@ -215,7 +215,7 @@ ConstraintActions.canvasChildConstraints = {
 	"column": {
 		"do": {
 			"key": "column",
-			"updateConstraintsCanvasShape": function keepHeight(constraintsCanvasShape, designCanvasShape) {
+			"updateConstraintsCanvasShape": function keepColumn(constraintsCanvasShape, designCanvasShape) {
 			    // Update the property on shape according to the selected option
 			    // Use the server key for locking a shape into a specific location
 			    if(constraintsCanvasShape[ConstraintActions.locksKey] == undefined) {
@@ -231,8 +231,8 @@ ConstraintActions.canvasChildConstraints = {
 		}, 
 		"undo": {
 			"key": "column",
-			"updateConstraintsCanvasShape": function undoKeepHeight(constraintsCanvasShape, designCanvasShape) {
-				let indsex = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("column"); 
+			"updateConstraintsCanvasShape": function undoKeepColumn(constraintsCanvasShape, designCanvasShape) {
+				let index = constraintsCanvasShape[ConstraintActions.locksKey].indexOf("column"); 
 				constraintsCanvasShape[ConstraintActions.locksKey].splice(index,1); 
 				if(!constraintsCanvasShape[ConstraintActions.locksKey].length) {
 					delete constraintsCanvasShape[ConstraintActions.locksKey]; 
@@ -445,13 +445,13 @@ ConstraintActions.canvasConstraints = {
 				}
 			}, 
 			"undo": {
-				"key": "column_width",
+				"key": "columns",
 				"updateConstraintsCanvasShape": function undoKeepColumns(constraintsCanvasShape, designCanvasShape) {
-					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, "column_width");
+					ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, "column");
 				},
 				"getFeedbackMessage": function generateFeedbackMessage(shape) {
-					let columnsValue = shape["column_width"]; 
-					return ConstraintActions.defaultUndoFeedbackMessage("column_width", columnsValue) + "px.";
+					let columnsValue = shape["columns"]; 
+					return ConstraintActions.defaultUndoFeedbackMessage("column", columnsValue) + "px.";
 				}
 			}
 		}
