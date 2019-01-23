@@ -5,7 +5,6 @@ import '../css/Canvas.css';
 import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
 import WidgetsContainer from "./WidgetsContainer"; 
-import Constants from './Constants'; 
 import DesignCanvas from './DesignCanvas';
 import SmallDesignCanvas from './SmallDesignCanvas';
 import DesignCanvasContainer from './DesignCanvasContainer'; 
@@ -106,6 +105,7 @@ export default class PageContainer extends React.Component {
               elements={solution.elements}
               savedState={solution.saved}
               valid={solution.valid}
+              new={solution.new}
               conflicts={solution.conflicts}
               added={solution.added}
               removed={solution.removed}
@@ -169,13 +169,6 @@ export default class PageContainer extends React.Component {
 
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
-          let valid = requestParsed.result; 
-          if(!valid) {
-            this.setState({
-              errorMessageShown: true
-            }); 
-          }
-
           this.updateSolutionValidity(requestParsed.solutions);
         });         
       }
@@ -211,21 +204,21 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
-  updateConstraintsCanvasFromDesignCanvas = (designCanvasShape, action, actionType) => {
+  updateConstraintsCanvasFromDesignCanvas = (designCanvasShape, action, actionType, property) => {
     // Retrieve the shape object in the constraints tree and apply teh updates
     let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
-    action[actionType].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
+    action[actionType].updateConstraintsCanvasShape(property, constraintsCanvasShape, designCanvasShape);
 
     // Notify the constraintss canvas to add or remove the widget feedback to the tree
-    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
+    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType, property);
   }
 
-  updateConstraintsCanvas = (constraintsCanvasShape, action) => {
+  updateConstraintsCanvas = (constraintsCanvasShape, action, property) => {
     return () => {
-      action["undo"].updateConstraintsCanvasShape(constraintsCanvasShape, undefined);
+      action["undo"].updateConstraintsCanvasShape(property, constraintsCanvasShape, undefined);
 
       // Notify the constraintss canvasa
-      this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo");
+      this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo", property);
 
       // Check for the validity of current state of constriants, and update valid state of solutions
       this.checkSolutionValidity();       
@@ -332,11 +325,6 @@ export default class PageContainer extends React.Component {
   getShapesJSON = () => {
     // Get all of the shapes on the canvas into a collection 
     let shapeObjects = this.constraintsCanvasRef.current.getShapeHierarchy();
-
-    // set the allowed colors here based on the palette
-    // Later need a way to automatically generate these from the uploaded designs
-    // shapeObjects.colors = this.getBackgroundColors(); 
-
     return JSON.stringify(shapeObjects); 
   }
 
@@ -346,7 +334,8 @@ export default class PageContainer extends React.Component {
     if(solutions) {
       let designCanvasList = this.state.mainDesignCanvases; 
       for(let i=0; i<solutions.length; i++) {
-        let solution = solutions[i];  
+        let solution = solutions[i]; 
+        solution.new = true; 
         this.solutionsMap[solution.id] = solution; 
       }
 
@@ -357,13 +346,15 @@ export default class PageContainer extends React.Component {
         let designSolution = this.state.solutions[i]; 
         
         // Invalidate the solution which means it should be moved into the right side panel 
-        designSolution.invalidated = !designSolution.valid; 
+        designSolution.invalidated = !designSolution.valid;
+
+        // Mark old solutions as not new
+        designSolution.new = false;
       }
 
       this.setState({
         designsFound: designsFound,
         solutions: solutions.concat(this.state.solutions), 
-        errorMessageShown: false, 
         showDesignsAlert: true
       }, this.updateSolutionsCache);      
     }
@@ -392,19 +383,6 @@ export default class PageContainer extends React.Component {
     this.setState({
       showDesignsAlert: false
     }); 
-  }
-
-  getBackgroundColors = () => {
-    // let hollywoodColors = ['#C5CAE9', '#FFFFFF', '#3F51B5', '#212121', '#757575', '#BDBDBD', '#CFD8DC', '#dfe4ea', '#ced6e0', '#f1f2f6']
-    let harvestColors = ['#FF4081', '#000000', '#304FFE', ]
-
-    // Replace with the above when we can load these in
-    // if(this.state.currentPallette == "hollywood") {
-    //   return hollywoodColors; 
-    // }
-    // else {
-    return harvestColors; 
-    //}
   }
 
   readSVGsFromLocalStorage = () => {
@@ -505,7 +483,6 @@ export default class PageContainer extends React.Component {
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
-    const errorMessageShown = this.state.errorMessageShown; 
     const designsAlertShown = this.state.showDesignsAlert; 
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
@@ -606,12 +583,6 @@ export default class PageContainer extends React.Component {
                     </div>
                   </div>) : null }
                   { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
-                      {(designsAlertShown ? (<div className="designs-canvas-container-alert alert alert-success alert-dismissable" role="alert">
-                        <button type="button" className="close" data-dismiss="alert" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                        Scout has generated 10 new designs that meet your constraints. 
-                      </div>) : undefined)}
                       <DesignCanvasContainer 
                         onDrop={this.moveDesignCanvas}
                         designCanvases={designCanvases} 

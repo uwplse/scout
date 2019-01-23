@@ -10,6 +10,7 @@ export default class WidgetFeedback extends React.Component {
     this.parentShape = props.parentShape; 
     this.action = props.action; 
     this.type = props.type; 
+    this.property = props.property; 
     
     this.state = {
       highlighted: props.highlighted
@@ -34,7 +35,7 @@ export default class WidgetFeedback extends React.Component {
               </span>
               <button 
                 className={"widget-feedback-items-remove " + (highlighted ? "highlighted" : "")} 
-                onClick={this.updateConstraintsCanvas(this.parentShape, this.action)}>
+                onClick={this.updateConstraintsCanvas(this.parentShape, this.action, this.property)}>
                 <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
               </button>
             </li>

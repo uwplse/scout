@@ -1,6 +1,6 @@
 .design-canvas {
 	position: relative;
-	border: 1px solid #2780E3;
+	border: 1px solid #c4c4c4;
 	cursor: pointer;
 }
 
@@ -23,7 +23,7 @@
 
 .design-body > .canvas-container {
 	display: inline-block;
-	margin: 5px;
+	margin: 25px;
 }
 
 .canvas-container .canvas-container-invalid {

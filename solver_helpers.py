@@ -9,8 +9,6 @@ import time
 
 CANVAS_WIDTH = 375
 CANVAS_HEIGHT = 667
-MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
-MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 
 def get_row_column_values(num_siblings):
 	values = []
@@ -198,8 +196,8 @@ class Solution(object):
 				element["y"] = adj_y
 
 				if shape.type == "container": 
-					height = model[variables[shape.height()]].as_string()
-					width = model[variables[shape.width()]].as_string()
+					height = model[variables[shape.computed_height()]].as_string()
+					width = model[variables[shape.computed_width()]].as_string()
 					height = int(height)
 					width = int(width)
 					element["width"] = width
@@ -210,96 +208,64 @@ class Solution(object):
 					# so we don't have to edit this place every time we add a property
 					arrangement = model[variables[shape.variables.arrangement.id]].as_string()
 					alignment = model[variables[shape.variables.alignment.id]].as_string()
-					proximity = model[variables[shape.variables.proximity.id]].as_string()
-					distribution = model[variables[shape.variables.distribution.id]].as_string()
+					padding = model[variables[shape.variables.padding.id]].as_string()
 					element["arrangement"] = int(arrangement)
 					element["alignment"] = int(alignment)
-					element["proximity"] = int(proximity)
-					element["distribution"] = int(distribution)
-				elif shape.type == "canvas": 
-					alignment = model[variables[shape.variables.alignment.id]].as_string()
-					justification = model[variables[shape.variables.justification.id]].as_string()
-					margin = model[variables[shape.variables.margin.id]].as_string()
-					grid = model[variables[shape.variables.grid.id]].as_string()
-					# background_color = model[variables[shape.variables.background_color.id]].as_string()
-					element["alignment"] = int(alignment)
-					element["justification"] = int(justification)
-					element["margin"] = int(margin)
-					element["grid"] = int(grid)
-					# element["background_color"] = background_color.replace("\"", "")
+					element["padding"] = int(padding)
 
-				if shape.type == "leaf": 
-					height = shape.height()
-					width = shape.width()
-					# height = int(height)
-					# width = int(width)
-					#
+					if shape.has_columns:
+						column = model[variables[shape.variables.column.id]].as_string()
+						element["column"] = int(column)
+						element["canvas_child"] = True
+
+				elif shape.type == "canvas": 
+					margin = model[variables[shape.variables.margin.id]].as_string()
+					baseline_grid = model[variables[shape.variables.baseline_grid.id]].as_string()
+					gutter_width = model[variables[shape.variables.gutter_width.id]].as_string()
+					column_width = model[variables[shape.variables.column_width.id]].as_string()
+					columns = model[variables[shape.variables.columns.id]].as_string()
+					element["margin"] = int(margin)
+					element["baseline_grid"] = int(baseline_grid)
+					element["columns"] = int(columns)
+					element["column_width"] = int(column_width)
+					element["gutter_width"] = int(gutter_width)
+				elif shape.type == "leaf": 
+					height = model[variables[shape.computed_height()]].as_string()
+					width = model[variables[shape.computed_width()]].as_string()
+					size_factor = model[variables[shape.variables.size_factor.id]].as_string()
+					height = int(height)
+					width = int(width)
+					size_factor = int(size_factor)
+					element["width"] = width
+					element["height"] = height
+					element["size_factor"] = size_factor
+
+					if shape.has_columns:
+						column = model[variables[shape.variables.column.id]].as_string()
+						element["column"] = int(column)
+						element["canvas_child"] = True
+
 					# Only consider emphassis for leaf node elements
 					if shape.importance == "most": 
-						magnification = model[variables[shape.variables.magnification.id]].as_string()
-						magnification = Fraction(magnification)
-						magnification = float(magnification)
-						element["magnification"] =  magnification
-
-						# magnification_factor = 1/magnification if magnification > 0 else 0
-						height = height * magnification
-						width = width * magnification
-						height = int(round(height,0))
-						width = int(round(width,0))
-						element["height"] = height
-						element["width"] = height
-
 						# Cost will be the distance from the maximum size
 						importance_change += (height - shape.orig_height)
 						importance_change += (width - shape.orig_width)
-						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_height)
-						importance_max += (shape_objects.maximum_sizes[shape.shape_type] - shape.orig_width)
+						importance_max += (shape_objects.MAX_HEIGHT - shape.orig_height)
+						importance_max += (shape_objects.MAX_WIDTH - shape.orig_width)
 
 						# Compute the distance of the shape from the center of the canvas
 						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
 					elif shape.importance == "least": 
-						minification = model[variables[shape.variables.minification]].as_string()
-						minification = Fraction(minification)
-						minification = float(minification)
-						element["minification"] = minification
-
-						# minification_factor = 1/minification if minification > 0 else 0
-						height = height * minification
-						width = width * minification
-						height = int(round(height,0))
-						width = int(round(width, 0))
-						element["height"] = height
-						element["width"] = width
-
 						# Used for computing importance cost
 						importance_change += (shape.orig_height - height)
 						importance_change += (shape.orig_width - width)
-						importance_max += (shape.orig_height - shape_objects.minimum_sizes[shape.shape_type])
-						importance_max += (shape.orig_width - shape_objects.minimum_sizes[shape.shape_type])
+						importance_max += (shape.orig_height - shape_objects.MIN_HEIGHT)
+						importance_max += (shape.orig_width - shape_objects.MIN_WIDTH)
 
 						distance_cost += self.compute_inverse_distance_from_center(adj_x, adj_y, width, height)
-					else: 
-						element["minification"] = 0
-						element["magnification"] = 0
 
 					# Only the locations of leaf level shapes to compute the symmetry cost
 					cost_matrix[adj_y:(adj_y+height-1),adj_x:(adj_x+width-1)] = 1
-
-				else: 
-					# Only consider emphassis for leaf node elements
-					if shape.importance == "most": 
-						magnification = model[variables[shape.variables.magnification]].as_string()
-						magnification = Fraction(magnification)
-						magnification = float(magnification)
-						element["magnification"] =  magnification
-					elif shape.importance == "least": 
-						minification = model[variables[shape.variables.minification]].as_string()
-						minification = Fraction(minification)
-						minification = float(minification)
-						element["minification"] = minification
-					else: 
-						element["minification"] = 0
-						element["magnification"] = 0
 
 		symmetry_cost = self.compute_symmetry_cost(cost_matrix)
 		importance_cost = self.compute_importance_cost(importance_change, importance_max)
