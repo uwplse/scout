@@ -19,6 +19,14 @@ body {
 	margin-right: 10px;
 }
 
+.panel-title {
+	font-size: 20px;
+}
+
+.panel-heading .btn {
+	background-color: white;
+}
+
 
 
 /**
@@ -57,7 +65,7 @@ h1, h2, h3 {
 
 .panel-primary > .panel-heading {
 	color: #fff;
-	background-color: #2780E3;
+	background-color: #2C3E50;
 }
 
 .panel-heading {
