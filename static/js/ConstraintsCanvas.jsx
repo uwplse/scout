@@ -96,10 +96,6 @@ export default class ConstraintsCanvas extends React.Component {
     this.checkSolutionValidity();
   }
 
-  getActionForWidgetFeedback = (lock, shape) => {
-    return ConstraintActions.getAction(lock, shape);
-  }
-
   constructTreeFromCache = (canvasRootShape) => {
     // Restore the cosntraints tree from the cached shapes
     this.canvasLevelShape = canvasRootShape; 
@@ -121,12 +117,12 @@ export default class ConstraintsCanvas extends React.Component {
       if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
         for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
           let lock = this.canvasLevelShape.locks[i];
-          let action = this.getActionForWidgetFeedback(lock, this.canvasLevelShape);
+          let action = ConstraintActions.getAction("keep", shape);
           if(action){
             let uniqueId = _.uniqueId();
-            let message = action["do"].getFeedbackMessage(this.canvasLevelShape);
+            let message = action["do"].getFeedbackMessage(lock, this.canvasLevelShape);
             let id = this.canvasLevelShape.name + "_" + uniqueId; 
-            let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, message);
+            let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, lock, message);
             newTreeNode.subtitle.push(widgetFeedback); 
           } 
         }     
@@ -183,16 +179,16 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.widgetTreeNodeMap[node.name] = newTreeNode; 
 
-    // Restore feedback items
+    // Restore feedback items for locks 
     if(node.locks && node.locks.length) {
       for(let i=0; i<node.locks.length; i++) {
         let lock = node.locks[i];
-        let action = this.getActionForWidgetFeedback(lock, node);
+        let action = ConstraintActions.getAction("keep", node);
         if(action){
           let uniqueId = _.uniqueId();
-          let message = action["do"].getFeedbackMessage(node);
+          let message = action["do"].getFeedbackMessage(lock, node);
           let id = node.name + "_" + uniqueId; 
-          let widgetFeedback = this.getWidgetFeedback(id, node, action, message);
+          let widgetFeedback = this.getWidgetFeedback(id, node, action, lock, message);
           newTreeNode.subtitle.push(widgetFeedback); 
         } 
       }     
@@ -355,13 +351,14 @@ export default class ConstraintsCanvas extends React.Component {
     return newTreeNode; 
   }
 
-  getWidgetFeedback = (shapeId, parentShape, action, message, highlighted) => {
+  getWidgetFeedback = (shapeId, parentShape, action, property, message, highlighted) => {
     return (<WidgetFeedback 
               key={shapeId} 
               type="feedback"
               id={shapeId} 
               parentShape={parentShape}
               action={action}
+              property={property}
               message={message} 
               highlighted={highlighted}
               updateConstraintsCanvas={this.updateConstraintsCanvas}/>); 
@@ -561,7 +558,7 @@ export default class ConstraintsCanvas extends React.Component {
     }));      
   }
 
-  updateWidgetFeedbacks = (shape, action, actionType) => {    
+  updateWidgetFeedbacks = (shape, action, actionType, property) => {    
     // The shape was already updated so we just need to re-render the tree to get the new sizes
     // Add WidgetFeedbackItem to correct item in the tree
 
@@ -575,7 +572,8 @@ export default class ConstraintsCanvas extends React.Component {
     let feedbackItems = treeNode.subtitle; 
     let feedbackIndex = -1; 
     for(let i=0; i<feedbackItems.length; i++){
-      if(feedbackItems[i].props.action[actionType].key == action[actionType].key) {
+      ///???
+      if(feedbackItems[i].props.property == property) {
         feedbackIndex = i; 
       }
     }
@@ -587,9 +585,9 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Check whether to remove or add a widget feedback item
     if(actionType == "do") {
-      let message = action[actionType].getFeedbackMessage(shape);
+      let message = action[actionType].getFeedbackMessage(property, shape);
       let id = shapeId + "_" + uniqueId; 
-      let widgetFeedback = this.getWidgetFeedback(id, shape, action, message);
+      let widgetFeedback = this.getWidgetFeedback(id, shape, action, property, message);
       treeNode.subtitle.push(widgetFeedback);       
     } 
 
@@ -718,7 +716,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   calculateRowHeight = ({treeIndex, node, path}) => {
     let padding = 5; 
-    let actualRowHeight = node.title.props.shape.height + (padding * 2);
+    let actualRowHeight = node.title.props.shape.orig_height + (padding * 2);
     let nodeElement = node.title.props.shape; 
     let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
     let infoHeight = 23 

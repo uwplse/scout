@@ -65,6 +65,7 @@ class Solver(object):
 		start_time = time.time()
 		for shape in self.shapes.values(): 
 			self.cb.init_locks(shape)
+			self.cb.init_prevents(shape)
 		end_time = time.time()
 		logging.debug("Time taken to encode locks: " + str(end_time-start_time))
 			

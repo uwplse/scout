@@ -35,8 +35,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.timer = null;  
 
     this.state = {
-      height: this.element.height,
-      width: this.element.width,
+      height: this.element.orig_height,
+      width: this.element.orig_width,
       order: this.element.order,  
       containerOrder: this.element.containerOrder, 
       importance: this.element.importance, 

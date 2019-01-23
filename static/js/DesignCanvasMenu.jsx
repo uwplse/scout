@@ -13,12 +13,12 @@ class DesignCanvasMenuItem extends React.Component {
 
   render () {
   	// The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
-	  let menuText = this.action[this.actionType].getFeedbackMessage(this.menuTrigger);
+	  let menuText = this.action[this.actionType].getFeedbackMessage(this.property, this.menuTrigger);
 	  return (<li>
             <a
               href="#" 
               tabIndex="-1" 
-              onClick={this.props.onClick(this.menuTrigger, this.action, this.actionType)}>
+              onClick={this.props.onClick(this.menuTrigger, this.action, this.actionType, this.property)}>
                 {menuText}
             </a>
           </li>); 
@@ -50,37 +50,47 @@ export default class DesignCanvasMenu extends React.Component {
     };     
   }
 
-  getAction(constraint, constraintsMenu) {
+  getKeepAction(constraint, constraintsMenu) {
       // Find the corresponding shape on the cosntraints canvas for the menu trigger shape
       // Use the state of that shape to determine what shows up
       let constraintsCanvasShape = this.getConstraintsCanvasShape(this.state.menuTrigger.name);
-      if(constraintsCanvasShape[ConstraintActions.locksKey]
-        && constraintsCanvasShape[ConstraintActions.locksKey].indexOf(constraint) >= 0) {
+      if(constraintsCanvasShape["locks"]
+        && constraintsCanvasShape["locks"].indexOf(constraint) >= 0) {
         if(constraintsCanvasShape[constraint] == this.state.menuTrigger[constraint]) {
           // The constraint is active and set to true, show the undo option
-          return { type: "undo", action: constraintsMenu[constraint]};           
+          return { type: "undo", action: constraintsMenu["keep"]};           
         }
         else {
-          return { type: "do", action: constraintsMenu[constraint]};  
+          return { type: "do", action: constraintsMenu["keep"]};  
         }
       } else {
         // Show the do option
-        return { type: "do", action: constraintsMenu[constraint]}; 
+        return { type: "do", action: constraintsMenu["keep"]}; 
+      }    
+  }
+
+  getPreventAction(constraint, constraintsMenu) {
+      // Find the corresponding shape on the cosntraints canvas for the menu trigger shape
+      // Use the state of that shape to determine what shows up
+      let constraintsCanvasShape = this.getConstraintsCanvasShape(this.state.menuTrigger.name);
+      if(constraintsCanvasShape["prevents"]
+        && constraintsCanvasShape["prevents"].indexOf(constraint) >= 0) {
+        if(constraintsCanvasShape[constraint] == this.state.menuTrigger[constraint]) {
+          // The constraint is active and set to true, show the undo option
+          return { type: "undo", action: constraintsMenu["prevent"]};           
+        }
+        else {
+          return { type: "do", action: constraintsMenu["prevent"]};  
+        }
+      } else {
+        // Show the do option
+        return { type: "do", action: constraintsMenu["prevent"]}; 
       }    
   }
 
   getRelationalMenuItems() {
     // These are just hard coded right now, they don't do anything
     let menuItems = []; 
-    // menuItems.push((<li>
-    //     <a href="#" tabIndex="-1">Keep global alignment.</a>
-    //   </li>)); 
-    // menuItems.push((<li>
-    //     <a href="#" tabIndex="-1">Keep alignment relative to container.</a>
-    //   </li>)); 
-    // menuItems.push((<li>
-    //     <a href="#" tabIndex="-1">Keep position relative to container.</a>
-    //   </li>)); 
     menuItems.push((<li>
         <a href="#" tabIndex="-1">Keep global <i>position</i>. (TBD)</a>
       </li>)); 
@@ -141,50 +151,102 @@ export default class DesignCanvasMenu extends React.Component {
       <div className="right-click-menu-container dropdown" style={{left: menuLeft + "px", top: menuTop + "px", display: "block"}} >
         <ul className="dropdown-menu" style={{display: "block"}}>
         {this.state.menuTrigger.type != "canvas" ? 
-          (<li role="separator" className="divider divider-top">Element</li>) : undefined}
+          (<li role="separator" className="divider divider-top">Element (Keep)</li>) : undefined}
         {this.state.menuTrigger.type != "canvas" ? 
-            Object.keys(ConstraintActions.elementConstraints).map((key) => {
-              let action = this.getAction(key, ConstraintActions.elementConstraints);
+            ConstraintActions.elementConstraints.values.map((key) => {
+              let action = this.getKeepAction(key, ConstraintActions.elementConstraints);
               let menuItemKey = this.state.menuTrigger.name + "_" + key; 
               return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action} 
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 
+                        property={key}
                         key={menuItemKey} />);
             }) : undefined}
         {this.state.menuTrigger.canvas_child == true ? 
-          Object.keys(ConstraintActions.canvasChildConstraints).map((key) => {
-            let action = this.getAction(key, ConstraintActions.canvasChildConstraints); 
+          ConstraintActions.canvasChildConstraints.values.map((key) => {
+            let action = this.getKeepAction(key, ConstraintActions.canvasChildConstraints); 
             let menuItemKey = this.state.menuTrigger.name + "_" + key; 
             return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action}
                         actionType={action.type}
                         menuTrigger={this.state.menuTrigger}
+                        property={key}
+                        key={menuItemKey}/>); 
+          }) : undefined}
+        {this.state.menuTrigger.type != "canvas" ? 
+          (<li role="separator" className="divider divider-top">Element (Prevent)</li>) : undefined}
+        {this.state.menuTrigger.type != "canvas" ? 
+            ConstraintActions.elementConstraints.values.map((key) => {
+              let action = this.getPreventAction(key, ConstraintActions.elementConstraints);
+              let menuItemKey = this.state.menuTrigger.name + "_" + key; 
+              return (<DesignCanvasMenuItem onClick={this.props.onClick} 
+                        action={action.action} 
+                        actionType={action.type} 
+                        menuTrigger={this.state.menuTrigger} 
+                        property={key}
+                        key={menuItemKey} />);
+            }) : undefined}
+        {this.state.menuTrigger.canvas_child == true ? 
+          ConstraintActions.canvasChildConstraints.values.map((key) => {
+            let action = this.getPreventAction(key, ConstraintActions.canvasChildConstraints); 
+            let menuItemKey = this.state.menuTrigger.name + "_" + key; 
+            return (<DesignCanvasMenuItem onClick={this.props.onClick} 
+                        action={action.action}
+                        actionType={action.type}
+                        menuTrigger={this.state.menuTrigger}
+                        property={key}
                         key={menuItemKey}/>); 
           }) : undefined}
         {isContainer ? 
-          (<li role="separator" className="divider">Container</li>) : undefined}
+          (<li role="separator" className="divider">Group (Keep)</li>) : undefined}
         {isContainer ? 
-            Object.keys(ConstraintActions.groupConstraints).map((key) => {
-              let action = this.getAction(key, ConstraintActions.groupConstraints);
+            ConstraintActions.groupConstraints.values.map((key) => {
+              let action = this.getKeepAction(key, ConstraintActions.groupConstraints);
               return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action} 
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 
+                        property={key}
                         key={key} />);
             }) : undefined}
-        {this.state.menuTrigger.type != "canvas" ? 
-          (<li role="separator" className="divider">Relational</li>) : undefined}
-        {this.state.menuTrigger.type != "canvas" ? relational : undefined} 
-        {this.state.menuTrigger.type == "canvas" ? 
-          (<li role="separator" className="divider divider-top">Canvas</li>) : undefined}
-        {this.state.menuTrigger.type == "canvas" ? 
-            Object.keys(ConstraintActions.canvasConstraints).map((key) => {
-              let action = this.getAction(key, ConstraintActions.canvasConstraints);
+        {isContainer ? 
+          (<li role="separator" className="divider">Group (Prevent)</li>) : undefined}
+        {isContainer ? 
+            ConstraintActions.groupConstraints.values.map((key) => {
+              let action = this.getPreventAction(key, ConstraintActions.groupConstraints);
               return (<DesignCanvasMenuItem onClick={this.props.onClick} 
                         action={action.action} 
                         actionType={action.type} 
                         menuTrigger={this.state.menuTrigger} 
+                        property={key}
+                        key={key} />);
+            }) : undefined}
+        {/*this.state.menuTrigger.type != "canvas" ? 
+          (<li role="separator" className="divider">Relational</li>) : undefined*/}
+        {/*this.state.menuTrigger.type != "canvas" ? relational : undefined*/} 
+        {this.state.menuTrigger.type == "canvas" ? 
+          (<li role="separator" className="divider divider-top">Canvas (Keep)</li>) : undefined}
+        {this.state.menuTrigger.type == "canvas" ? 
+            ConstraintActions.canvasConstraints.values.map((key) => {
+              let action = this.getKeepAction(key, ConstraintActions.canvasConstraints);
+              return (<DesignCanvasMenuItem onClick={this.props.onClick} 
+                        action={action.action} 
+                        actionType={action.type} 
+                        menuTrigger={this.state.menuTrigger} 
+                        property={key}
+                        key={key} />);
+            }) : undefined}  
+        {this.state.menuTrigger.type == "canvas" ? 
+          (<li role="separator" className="divider divider-top">Canvas (Prevent)</li>) : undefined}
+        {this.state.menuTrigger.type == "canvas" ? 
+            ConstraintActions.canvasConstraints.values.map((key) => {
+              let action = this.getPreventAction(key, ConstraintActions.canvasConstraints);
+              return (<DesignCanvasMenuItem onClick={this.props.onClick} 
+                        action={action.action} 
+                        actionType={action.type} 
+                        menuTrigger={this.state.menuTrigger} 
+                        property={key}
                         key={key} />);
             }) : undefined}  
         </ul>

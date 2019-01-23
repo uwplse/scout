@@ -109,12 +109,12 @@ export default class DesignCanvas extends React.Component {
     }
   }
 
-  performActionAndCloseMenu = (menuTriggerShape, action, actionType) => {
+  performActionAndCloseMenu = (menuTriggerShape, action, actionType, property) => {
     // Do the menu action and close the menu 
     return (evt) => {
       // Shape and option clicked on should be the arguments here
       // The linked shape in the constraints canvass
-      this.updateConstraintsCanvas(menuTriggerShape, action, actionType); 
+      this.updateConstraintsCanvas(menuTriggerShape, action, actionType, property); 
       this.hideMenu();
     }
   }

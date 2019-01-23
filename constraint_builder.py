@@ -377,6 +377,17 @@ class ConstraintBuilder(object):
 				self.constraints += cb.assert_expr(cb.eq(shape.variables[lock].id, value),
 					"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock])) 
 
+	def init_prevents(self, shape): 
+		# Add constraints for all of the locked properties
+		if shape.prevents is not None: 
+			for prevent in shape.prevents:
+				value = str(shape.variable_values[prevent])
+				if shape.variables[prevent].type == "String": 
+					value = "\"" + shape.variable_values[prevent] + "\""
+
+				self.constraints += cb.assert_expr(cb.neq(shape.variables[prevent].id, value),
+					"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.variable_values[prevent])) 
+
 	def non_overlapping(self, container, spacing): 
 		child_shapes = container.children 
 		for i in range(0, len(child_shapes)):
@@ -485,10 +496,10 @@ class ConstraintBuilder(object):
 						spacing = shape2.variables.padding.id
 
 					# Non-overlapping
-					left = cb.lte(cb.add(shape1_x, cb.add(shape1_width, spacing)), shape2_x)
-					right = cb.lte(cb.add(cb.add(shape2_x, shape2_width),  spacing), shape1_x)
-					top = cb.lte(cb.add(cb.add(shape1_y, shape1_height), spacing), shape2_y)
-					bottom = cb.lte(cb.add(cb.add(shape2_y, shape2_height), spacing), shape1_y)
+					left = cb.lt(cb.add(shape1_x, cb.add(shape1_width, spacing)), shape2_x)
+					right = cb.lt(cb.add(cb.add(shape2_x, shape2_width),  spacing), shape1_x)
+					top = cb.lt(cb.add(cb.add(shape1_y, shape1_height), spacing), shape2_y)
+					bottom = cb.lt(cb.add(cb.add(shape2_y, shape2_height), spacing), shape1_y)
 					self.constraints += cb.assert_expr(cb.or_expr([left,right,top,bottom]), 
 						"non_overlapping_shapes_" + shape1.shape_id + "_" + shape2.shape_id)
 
@@ -588,7 +599,7 @@ class ConstraintBuilder(object):
 				self.get_min_width_constraint(child_i+1, thinnest_i, child_shapes), 
 				self.get_max_width_constraint(child_i+1, child_i, child_shapes))
 		else: 
-			child_shape_width = str(child_shapes[widest_i].computed_width())
+			child_shape_width = str(child_shapes[thinnest_i].computed_width())
 			return child_shape_width
 
 	def get_max_height_constraint(self, child_i, tallest_i, child_shapes): 
@@ -616,7 +627,7 @@ class ConstraintBuilder(object):
 				self.get_max_height_constraint(child_i+1, shortest_i, child_shapes), 
 				self.get_max_height_constraint(child_i+1, child_i, child_shapes))
 		else: 
-			child_shape_height = str(child_shapes[tallest_i].computed_height())
+			child_shape_height = str(child_shapes[shortest_i].computed_height())
 			return child_shape_height
 
 	def align_canvas_layout_grid(self, canvas):
@@ -855,12 +866,12 @@ class ConstraintBuilder(object):
 			"container_" + container.shape_id + "_max_height_horizontal")
 
 		# Enforce that the padding used by the container is no taller or wider than the smallest width or height element
-		# min_w_constraint = cb.eq(str(container.computed_width()), (self.get_min_width_constraint(1,0,child_shapes)))
-		# min_h_constraint = cb.eq(str(container.computed_height()), (self.get_min_height_constraint(1,0,child_shapes)))
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr(is_vertical, is_columns), cb.lt(container.padding.id, min_h_constraint), "true"), 
-		# 	"container_" + container.shape_id + "_padding_lt_shortest_child")
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr(is_horizontal, is_rows), cb.lt(container.padding.id, min_w_constraint), "true"),
-		# 	"container_" + container.shape_id + "_padding_lt_thinnest_child")
+		min_w_constraint = self.get_min_width_constraint(1,0,child_shapes)
+		min_h_constraint = self.get_min_height_constraint(1,0,child_shapes)
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"), 
+			"container_" + container.shape_id + "_padding_lt_shortest_child")
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
+			"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
 		# Columns/Rows arrangement constraints
 		# Only apply if there are > 2 children elements

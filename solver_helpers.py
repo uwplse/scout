@@ -250,8 +250,8 @@ class Solution(object):
 						# Cost will be the distance from the maximum size
 						importance_change += (height - shape.orig_height)
 						importance_change += (width - shape.orig_width)
-						importance_max += (shape_objects.MAX_SIZE - shape.orig_height)
-						importance_max += (shape_objects.MAX_SIZE - shape.orig_width)
+						importance_max += (shape_objects.MAX_HEIGHT - shape.orig_height)
+						importance_max += (shape_objects.MAX_WIDTH - shape.orig_width)
 
 						# Compute the distance of the shape from the center of the canvas
 						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
@@ -259,8 +259,8 @@ class Solution(object):
 						# Used for computing importance cost
 						importance_change += (shape.orig_height - height)
 						importance_change += (shape.orig_width - width)
-						importance_max += (shape.orig_height - shape_objects.MIN_SIZE)
-						importance_max += (shape.orig_width - shape_objects.MIN_SIZE)
+						importance_max += (shape.orig_height - shape_objects.MIN_HEIGHT)
+						importance_max += (shape.orig_width - shape_objects.MIN_WIDTH)
 
 						distance_cost += self.compute_inverse_distance_from_center(adj_x, adj_y, width, height)
 

@@ -203,21 +203,21 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
-  updateConstraintsCanvasFromDesignCanvas = (designCanvasShape, action, actionType) => {
+  updateConstraintsCanvasFromDesignCanvas = (designCanvasShape, action, actionType, property) => {
     // Retrieve the shape object in the constraints tree and apply teh updates
     let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
-    action[actionType].updateConstraintsCanvasShape(constraintsCanvasShape, designCanvasShape);
+    action[actionType].updateConstraintsCanvasShape(property, constraintsCanvasShape, designCanvasShape);
 
     // Notify the constraintss canvas to add or remove the widget feedback to the tree
-    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType);
+    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType, property);
   }
 
-  updateConstraintsCanvas = (constraintsCanvasShape, action) => {
+  updateConstraintsCanvas = (constraintsCanvasShape, action, property) => {
     return () => {
-      action["undo"].updateConstraintsCanvasShape(constraintsCanvasShape, undefined);
+      action["undo"].updateConstraintsCanvasShape(property, constraintsCanvasShape, undefined);
 
       // Notify the constraintss canvasa
-      this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo");
+      this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo", property);
 
       // Check for the validity of current state of constriants, and update valid state of solutions
       this.checkSolutionValidity();       

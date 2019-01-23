@@ -102,6 +102,7 @@ class Shape(object):
 		self.type = shape_type 
 		self.ctx = solver_ctx
 		self.locks = None
+		self.prevents = None
 		self.order = -1
 		self.importance = "normal"
 		self.correspondingIDs = []
@@ -121,6 +122,12 @@ class Shape(object):
 			# values for locked variables
 			for lock in self.locks:
 				self.variable_values[lock] = element[lock]
+
+		if "prevents" in element: 
+			self.prevents = element["prevents"]
+
+			for prev in self.prevents: 
+				self.variable_values[prev] = element[prev]
 
 		if "baseline" in element: 
 			self.has_baseline = True
@@ -232,13 +239,6 @@ class CanvasShape(Shape):
 		if element is not None: 
 			if "containerOrder" in element: 
 				self.container_order = element["containerOrder"]
-
-		# values for locked variables
-		self.variable_values = dict()
-
-		if self.locks is not None: 
-			for lock in self.locks:
-				self.variable_values[lock] = element[lock]
 
 	def add_child(self, child): 
 		self.children.append(child)
