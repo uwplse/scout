@@ -29,6 +29,7 @@ export default class DesignCanvas extends React.Component {
       designMenu: undefined, // The design saving options menu with trash and star icons
       savedState: props.savedState, 
       valid: props.valid, 
+      new: props.new, 
       invalidated: props.invalidated, 
       conflicts: props.conflicts, // The conflicting constraints current if there are any
       added: props.added, // The elements that were added since this solution was generated
@@ -63,6 +64,7 @@ export default class DesignCanvas extends React.Component {
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState,
       valid: nextProps.valid, 
+      new: nextProps.new, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
       removed: nextProps.removed, 
@@ -295,20 +297,6 @@ export default class DesignCanvas extends React.Component {
         }
       }
     }
-
-    var designCanvas = document.getElementById("design-canvas-" + this.id); 
-    var componentBoundingBox = designCanvas.getBoundingClientRect();
-    
-    // The menuTrigger is the JSON of the shape that triggered the open
-    this.setState({
-      designMenu: <DesignMenu 
-                    left={componentBoundingBox.x} 
-                    top={componentBoundingBox.y} 
-                    showZoom={!this.props.zoomed}
-                    menuAction={this.performDesignCanvasMenuAction} />,
-      hovered: true
-    
-    });
   }
 
   closeMenuAndRemoveHighlightConstraints = (e) => {
@@ -330,19 +318,6 @@ export default class DesignCanvas extends React.Component {
       }
     }
 
-    // Close the menu if it is open 
-    var designCanvas = document.getElementById("design-canvas-" + this.id); 
-    var componentBoundingBox = designCanvas.getBoundingClientRect();
-    // Make sure the mouse is actually outside the div because mouse out can be triggered by child elements of this container. 
-    if(e.clientX <= componentBoundingBox.x || e.clientX >= (componentBoundingBox.x + componentBoundingBox.width) 
-      || e.clientY <= componentBoundingBox.y || e.clientY >= (componentBoundingBox.y + componentBoundingBox.height)) {
-      if(this.state.designMenu != undefined) {
-        this.setState({
-          designMenu: undefined
-        }); 
-      }      
-    }
-
     this.setState({
       hovered: false
     });
@@ -355,10 +330,10 @@ export default class DesignCanvas extends React.Component {
     let constraintsMenuShape = this.state.constraintsMenuShape; 
 
     // The current design menu object for saving and trashing the designs 
-    let designMenu = this.state.designMenu; 
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
     let valid = this.state.valid; 
+    let menuVisible = !saved && !trashed && valid; 
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.getScalingFactor();      
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
@@ -377,6 +352,11 @@ export default class DesignCanvas extends React.Component {
             height: (this.canvasHeight * scalingFactor) + "px", 
             width: (this.canvasWidth * scalingFactor) + "px", 
             backgroundColor: "#ffffff"}}> 
+        <DesignMenu 
+          showZoom={!this.props.zoomed}
+          visible={menuVisible}
+          menuAction={this.performDesignCanvasMenuAction}
+          new={this.state.new} />
   			<div className={(constraintsMenuShape ? "" : "hidden")}>
         {constraintsMenuShape ? 
           (<DesignCanvasMenu 
@@ -386,12 +366,9 @@ export default class DesignCanvas extends React.Component {
             onClick={this.performActionAndCloseMenu} 
             getConstraintsCanvasShape={this.getConstraintsCanvasShape} />) : undefined}
   			</div>
-        <div>
-          {designMenu}
-        </div>
         <div id={"design-canvas-" + this.id} 
-            className={"design-canvas " + (showInvalidIndicatorLines? "canvas-container-invalid " : " ") 
-            + (this.state.hovered ? "hovered" : "")}
+            className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
+            + (this.state.hovered ? "hovered " : " ")}
             onContextMenu={this.showConstraintsContextMenu(this.state.canvasShape)}
             style={{height: "100%", width: "100%"}}>
           {childSVGs}

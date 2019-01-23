@@ -105,6 +105,7 @@ export default class PageContainer extends React.Component {
               elements={solution.elements}
               savedState={solution.saved}
               valid={solution.valid}
+              new={solution.new}
               conflicts={solution.conflicts}
               added={solution.added}
               removed={solution.removed}
@@ -333,7 +334,8 @@ export default class PageContainer extends React.Component {
     if(solutions) {
       let designCanvasList = this.state.mainDesignCanvases; 
       for(let i=0; i<solutions.length; i++) {
-        let solution = solutions[i];  
+        let solution = solutions[i]; 
+        solution.new = true; 
         this.solutionsMap[solution.id] = solution; 
       }
 
@@ -344,7 +346,10 @@ export default class PageContainer extends React.Component {
         let designSolution = this.state.solutions[i]; 
         
         // Invalidate the solution which means it should be moved into the right side panel 
-        designSolution.invalidated = !designSolution.valid; 
+        designSolution.invalidated = !designSolution.valid;
+
+        // Mark old solutions as not new
+        designSolution.new = false;
       }
 
       this.setState({
@@ -578,12 +583,6 @@ export default class PageContainer extends React.Component {
                     </div>
                   </div>) : null }
                   { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
-                      {(designsAlertShown ? (<div className="designs-canvas-container-alert alert alert-success alert-dismissable" role="alert">
-                        <button type="button" className="close" data-dismiss="alert" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                        Scout has generated 10 new designs that meet your constraints. 
-                      </div>) : undefined)}
                       <DesignCanvasContainer 
                         onDrop={this.moveDesignCanvas}
                         designCanvases={designCanvases} 
