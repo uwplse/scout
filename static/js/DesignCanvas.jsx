@@ -272,13 +272,6 @@ export default class DesignCanvas extends React.Component {
       return; 
     }
 
-    // Check for the status of menuShown to see if we need to close out another menu before opening this one
-    if(this.state.designMenu != undefined) {
-      this.setState({
-        designMenu: undefined
-      }); 
-    }
-
     // Trigger constraint highlighting if the solution is not current valid
     // Do not trigger constraint highlighting if the solution is in the zoom container
     if(!this.state.valid && !this.props.zoomed) {
@@ -297,6 +290,10 @@ export default class DesignCanvas extends React.Component {
         }
       }
     }
+
+    this.setState({
+      hovered: true
+    });
   }
 
   closeMenuAndRemoveHighlightConstraints = (e) => {
@@ -355,6 +352,7 @@ export default class DesignCanvas extends React.Component {
         <DesignMenu 
           showZoom={!this.props.zoomed}
           visible={menuVisible}
+          hidden={saved || trashed}
           menuAction={this.performDesignCanvasMenuAction}
           new={this.state.new} />
   			<div className={(constraintsMenuShape ? "" : "hidden")}>
