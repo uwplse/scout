@@ -428,7 +428,7 @@ export default class PageContainer extends React.Component {
     let svgWidgets = localStorage.getItem('svgWidgets'); 
     if(svgWidgets) {
       let svgWidgetsParsed = JSON.parse(svgWidgets); 
-      if(svgWidgets && svgWidgets.length){
+      if(svgWidgetsParsed && svgWidgetsParsed.length){
         let groupID = _.uniqueId(); 
         let group = {
           id: groupID, 
@@ -437,7 +437,7 @@ export default class PageContainer extends React.Component {
         }
         this.state.svgWidgets.push(group);
         this.setState({
-          svgWidgets: this.state.svgWidgets.concat(svgWidgets)
+          svgWidgets: this.state.svgWidgets.concat(svgWidgetsParsed)
         });
       }
     }
@@ -462,9 +462,9 @@ export default class PageContainer extends React.Component {
       // Look for SVG widgets in local storage and cache them for future refreshes
       let svgWidgets = localStorage.getItem('svgWidgets')
       let svgWidgetsParsed = JSON.parse(svgWidgets); 
-      if(svgWidgets && svgWidgets.length) {
-        svgWidgets.push(svgItem); 
-        localStorage.setItem('svgWidgets', JSON.stringify(svgWidgets)); 
+      if(svgWidgetsParsed && svgWidgetsParsed.length) {
+        svgWidgetsParsed.push(svgItem); 
+        localStorage.setItem('svgWidgets', JSON.stringify(svgWidgetsParsed)); 
       }
       else {
         let items = [svgItem]; 
@@ -676,7 +676,7 @@ export default class PageContainer extends React.Component {
               </div>  
               {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div class="alert alert-success">
+                  <div className="alert alert-success">
                     You currently have no designs under consideration. <br /><br />
                     Click <strong>Generate Designs</strong> in the outline to see more. 
                   </div>
@@ -684,7 +684,7 @@ export default class PageContainer extends React.Component {
               }
               {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div class="alert alert-success">
+                  <div className="alert alert-success">
                     You currently have no saved designs. <br /><br />
                     Click the star icon above a design in the <strong>Under Consideration</strong> panel to save a design. 
                   </div>
@@ -692,7 +692,7 @@ export default class PageContainer extends React.Component {
               }
               {(this.state.activeDesignPanel == "discarded" && discardedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div class="alert alert-success">
+                  <div className="alert alert-success">
                     You currently have no discarded designs. <br /><br />
                     Click the trash icon in the <strong>Under Consideration</strong> panel to discard any designs that you don't like. 
                   </div>

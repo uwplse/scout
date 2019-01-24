@@ -61,7 +61,6 @@ export default class ConstraintsCanvas extends React.Component {
         y: 0
       }, 
       rightClickShapeID: undefined, 
-      pageOrder: "unimportant"
     }; 
   }
 
@@ -226,7 +225,7 @@ export default class ConstraintsCanvas extends React.Component {
       "name": "canvas",
       "type": "canvas", 
       "controlType": "canvas",
-      "containerOrder": "unimportant",
+      "containerOrder": "important",
       "children": [],
       "x": 0, 
       "y": 0,
@@ -1234,7 +1233,6 @@ export default class ConstraintsCanvas extends React.Component {
       getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
     // const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     // const colorPickerPosition = this.state.colorPickerPosition; 
-    const pageOrder = this.state.pageOrder; 
 
     // Process the queue of shapes to add to the canvas
 	  return (
