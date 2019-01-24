@@ -315,7 +315,50 @@ export default class PageContainer extends React.Component {
     }, this.updateSolutionsCache); 
   }
 
-  clearDesigns = () => {
+  clearDesignsUnderConsideration = () => {
+    for(let i=0; i<this.state.solutions.length; i++) {
+      let designSolution = this.state.solutions[i]; 
+      
+      if(designSolution.saved == 0 && (designSolution.valid || !designSolution.invalidated)) {
+        designSolution.saved = -1; 
+      }
+    }
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  clearSavedDesigns = () => {
+    for(let i=0; i<this.state.solutions.length; i++) {
+      let designSolution = this.state.solutions[i]; 
+      
+      if(designSolution.saved == 1) {
+        designSolution.saved = -1; 
+      }
+    }
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  clearDiscardedDesigns = () => {
+    const notDiscardedSolutions = this.state.solutions
+      .filter((solution) => { 
+        return ((!solution.saved == -1) && (!solution.invalidated)); 
+    });  
+
+    // Update the state
+    this.setState({
+      solutions: notDiscardedSolutions
+    }, this.updateSolutionsCache); 
+  }
+
+  clearAllDesigns = () => {
+    // Update the state
     this.setState({
       solutions: []
     }, this.updateSolutionsCache); 
@@ -356,7 +399,8 @@ export default class PageContainer extends React.Component {
       this.setState({
         designsFound: designsFound,
         solutions: solutions.concat(this.state.solutions), 
-        showDesignsAlert: true
+        showDesignsAlert: true, 
+        activeDesignPanel: "designs"
       }, this.updateSolutionsCache);      
     }
   }
@@ -581,19 +625,38 @@ export default class PageContainer extends React.Component {
                   </ul> 
                 </div>
                 <div className="designs-area-actions">
+                  {this.state.activeDesignPanel == "designs" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearInvalidDesignCanvases}>Discard Invalid</button>
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "designs" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearDesignsUnderConsideration}>Discard Under Consideration</button>
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "saved" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearSavedDesigns}>Discard Saved Designs</button>
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "discarded" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearDiscardedDesigns}>Clear Discarded Designs</button>
+                    </div>) : null}
                   <div 
                     className="btn-group header-button-group">
                     <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearInvalidDesignCanvases}>Discard Invalid Designs</button>
+                      onClick={this.clearAllDesigns}>Clear All Designs</button>
                   </div>
                   <div 
                     className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearDesigns}>Clear Designs Area</button>
-                  </div>
-                  <div 
-                    className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button">Export Saved Designs (TBD)</button>
+                    <button type="button" className="btn btn-default design-canvas-button">Export Saved Designs</button>
                   </div>
                 </div>
               </div>  
