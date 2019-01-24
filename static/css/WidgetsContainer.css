@@ -68,8 +68,7 @@
 
 .box.has-advanced-upload .box__dragndrop {
   display: inline;
-  color: #ffffff;
-  font-size: 16px;
+  font-size: 20px;
 }
 
 .box.is-dragover {

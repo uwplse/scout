@@ -425,18 +425,21 @@ export default class PageContainer extends React.Component {
   }
 
   readSVGsFromLocalStorage = () => {
-    let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
-    if(svgWidgets && svgWidgets.length){
-      let groupID = _.uniqueId(); 
-      let group = {
-        id: groupID, 
-        svgData: groupSVG, 
-        type: "group"
+    let svgWidgets = localStorage.getItem('svgWidgets'); 
+    if(svgWidgets) {
+      let svgWidgetsParsed = JSON.parse(svgWidgets); 
+      if(svgWidgets && svgWidgets.length){
+        let groupID = _.uniqueId(); 
+        let group = {
+          id: groupID, 
+          svgData: groupSVG, 
+          type: "group"
+        }
+        this.state.svgWidgets.push(group);
+        this.setState({
+          svgWidgets: this.state.svgWidgets.concat(svgWidgets)
+        });
       }
-      this.state.svgWidgets.push(group);
-      this.setState({
-        svgWidgets: this.state.svgWidgets.concat(svgWidgets)
-      });
     }
   }
 
@@ -457,7 +460,8 @@ export default class PageContainer extends React.Component {
       });  
 
       // Look for SVG widgets in local storage and cache them for future refreshes
-      let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
+      let svgWidgets = localStorage.getItem('svgWidgets')
+      let svgWidgetsParsed = JSON.parse(svgWidgets); 
       if(svgWidgets && svgWidgets.length) {
         svgWidgets.push(svgItem); 
         localStorage.setItem('svgWidgets', JSON.stringify(svgWidgets)); 
@@ -525,6 +529,15 @@ export default class PageContainer extends React.Component {
     }
   }
 
+  clearWidgetsContainer = () => {
+    this.setState({
+      svgWidgets: []
+    }); 
+
+    // Clear local storage cache
+    localStorage.removeItem('svgWidgets'); 
+  }
+
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
@@ -589,6 +602,7 @@ export default class PageContainer extends React.Component {
                 <WidgetsContainer 
                   onDrop={this.handleFileDrop} 
                   widgets={this.state.svgWidgets}
+                  onClick={this.clearWidgetsContainer}
                   addShapeToConstraintsCanvas={this.addShapeToConstraintsCanvas} />
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
