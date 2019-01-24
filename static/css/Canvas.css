@@ -71,7 +71,6 @@ h1, h2, h3 {
 .panel-heading {
 	display: flex; 
 	align-items: center;
-	justify-content: space-between;
 	min-height: 62.5px; 
 }
 

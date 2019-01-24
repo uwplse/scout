@@ -35,8 +35,7 @@ class DesignCanvasContainer extends React.Component {
       connectDropTarget &&
       connectDropTarget(
         <div 
-          className="design-body" 
-          onScroll={this.props.onScroll}>
+          className="design-body">
           {this.props.designCanvases}
         </div>)); 
   }
