@@ -597,22 +597,38 @@ export default class PageContainer extends React.Component {
                   </div>
                 </div>
               </div>  
+              {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
+                (<div className="designs-area-alert-container">
+                  <div class="alert alert-success">
+                    You currently have no designs under consideration. <br /><br />
+                    Click <strong>Generate Designs</strong> in the outline to see more. 
+                  </div>
+                </div>) : null
+              }
+              {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
+                (<div className="designs-area-alert-container">
+                  <div class="alert alert-success">
+                    You currently have no saved designs. <br /><br />
+                    Click the star icon above a design in the <strong>Under Consideration</strong> panel to save a design. 
+                  </div>
+                </div>) : null
+              }
+              {(this.state.activeDesignPanel == "discarded" && discardedCanvases.length == 0) ? 
+                (<div className="designs-area-alert-container">
+                  <div class="alert alert-success">
+                    You currently have no discarded designs. <br /><br />
+                    Click the trash icon in the <strong>Under Consideration</strong> panel to discard any designs that you don't like. 
+                  </div>
+                </div>) : null
+              }
               <div className="design-canvas-container">
-                  {/* savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
-                    <div>
-                      <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
-                      <span>({savedCanvases.length})</span>
-                    </div>
-                    <div className="panel-body saved-body">
-                      {savedCanvases}
-                    </div>
-                  </div>) : null */ }
                   { this.state.activeDesignPanel == "designs" && designCanvases.length ? 
                     (<div className="panel designs-container current-designs-container panel-default">
                       <DesignCanvasContainer 
                         onDrop={this.moveDesignCanvas}
                         designCanvases={designCanvases} />
-                    </div>) : null }
+                    </div>) : null
+                  }
                   { this.state.activeDesignPanel == "saved" && savedCanvases.length ? 
                     (<div className="panel designs-container current-designs-container panel-default">
                       <DesignCanvasContainer 
@@ -625,28 +641,6 @@ export default class PageContainer extends React.Component {
                         onDrop={this.moveDesignCanvas}
                         designCanvases={discardedCanvases} />
                     </div>) : null }
-
-
-                  {/* trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
-                    <div>
-                      <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
-                      <span>({trashedCanvases.length})</span>
-                    </div>
-                    <div className="panel-body trashed-body">
-                      {trashedCanvases}
-                    </div>
-                  </div>) : null */}
-                {/*invalidatedCanvases.length ? (<div className="right-container"> 
-                  <div className="panel invalid-container panel-default"> 
-                    <div>
-                      <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
-                      <span>({invalidatedCanvases.length})</span>
-                    </div>
-                    <div className="panel-body invalidated-body">
-                      {invalidatedCanvases}
-                    </div>
-                  </div>
-                </div>) : null*/}
               </div>
             </div>
           </div>

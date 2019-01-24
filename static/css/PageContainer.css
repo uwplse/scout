@@ -26,6 +26,13 @@
 	justify-content: flex-end;
 }
 
+.designs-area-container .designs-area-alert-container {
+	margin: 2em;
+}
+
+.designs-area-container .designs-area-alert-container .alert {
+}
+
 .zoomed-design-container {
 	position: absolute;
     top: 50%;

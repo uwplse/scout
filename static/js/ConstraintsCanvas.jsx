@@ -117,7 +117,7 @@ export default class ConstraintsCanvas extends React.Component {
       if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
         for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
           let lock = this.canvasLevelShape.locks[i];
-          let action = ConstraintActions.getAction("keep", shape);
+          let action = ConstraintActions.getAction("keep", this.canvasLevelShape);
           if(action){
             let uniqueId = _.uniqueId();
             let message = action["do"].getFeedbackMessage(lock, this.canvasLevelShape);
