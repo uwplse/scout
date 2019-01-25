@@ -57,13 +57,15 @@ class WidgetsContainer extends React.Component {
 
   render() {
     const { connectDropTarget } = this.props
-    const hasWidgets = this.props.widgets.length; 
+    const visibleWidgets = this.props.widgets.filter((widget) => { return (widget.visible); }); 
+    const hasVisibleWidgets = visibleWidgets.length;
 
     const widgets = this.props.widgets.map((widget) => {
-      if(!widget.item) { // Items cannot be directly added as they are children of typed groups
+      if(!widget.item && widget.visible) { // Items cannot be directly added as they are children of typed groups
         return (<WidgetsContainerSVGWidget 
           className="widget-control" 
           id={widget.id}
+          visible={widget.visible}
           svgData={widget.svgData}
           type={widget.type}
           addShapeToConstraintsCanvas={this.props.addShapeToConstraintsCanvas}/>  
@@ -89,7 +91,7 @@ class WidgetsContainer extends React.Component {
             onDragOver={this.onDragOver}
             onDragLeave={this.onDragLeave}
             onDrop={this.onDrop}>         
-           {(hasWidgets ? 
+           {(hasVisibleWidgets ? 
               widgets : 
               (<form 
                 className={"box has-advanced-upload " + (this.state.hovered ? "hovered" : "")} 

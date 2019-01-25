@@ -16,7 +16,7 @@ export default class WidgetsContainerSVGWidget extends React.Component {
     // Set the initial size using the viewBox attribute
     this.initializeSizeAndType();
   }
-
+  
   containsNotText(node) {
     // Parse the SVG to determine if it only contains a text node, then the type is "text"
     // else the type will be "element". Only inferring two types for now as we don't need specialized
@@ -80,6 +80,7 @@ export default class WidgetsContainerSVGWidget extends React.Component {
     return (
         <SVGInline
           id={this.state.selector}
+          style={{display: (this.props.visible ? "" : "none")}}
           className="widget-control-svg"
           height={this.state.height + "px"} width={this.state.width + "px"} 
           svg={ this.props.svgData } 

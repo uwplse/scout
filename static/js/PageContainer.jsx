@@ -361,7 +361,7 @@ export default class PageContainer extends React.Component {
     // Update the state
     this.setState({
       solutions: []
-    }, this.updateSolutionsCache); 
+    }, this.updateSolutionsCache);
 
     this.solutionsMap = {}; 
   }
@@ -405,6 +405,10 @@ export default class PageContainer extends React.Component {
     }
   }
 
+  getSVGWidgetID = () => {
+    return '_' + Math.random().toString(36).substr(2, 9);
+  }
+
   getRelativeDesigns = (elements, action) => {
     // get more designs relative to a specific design
     let jsonShapes = this.getShapesJSON(); 
@@ -429,13 +433,14 @@ export default class PageContainer extends React.Component {
     if(svgWidgets) {
       let svgWidgetsParsed = JSON.parse(svgWidgets); 
       if(svgWidgetsParsed && svgWidgetsParsed.length){
-        let groupID = _.uniqueId(); 
-        let group = {
-          id: groupID, 
-          svgData: groupSVG, 
-          type: "group"
-        }
-        this.state.svgWidgets.push(group);
+        // let groupID = _.uniqueId(); 
+        // let group = {
+        //   id: groupID, 
+        //   svgData: groupSVG, 
+        //   type: "group", 
+        //   visible: true
+        // }
+        // this.state.svgWidgets.push(group);
         this.setState({
           svgWidgets: this.state.svgWidgets.concat(svgWidgetsParsed)
         });
@@ -451,8 +456,9 @@ export default class PageContainer extends React.Component {
       // So that they are rendered at the top of the container
       // While the automatically added elements (group) appears at the bottom
       let svgItem = {
-        id: widgetID, 
-        svgData: fileData
+        id: this.getSVGWidgetID(), 
+        svgData: fileData, 
+        visible: true
       }
 
       this.setState({
@@ -477,12 +483,13 @@ export default class PageContainer extends React.Component {
   populateGroupNodeIntoWidgetContainer = () => {
     // Add the group container into the widgets panel 
     // It will just be automatically added in when the drop happens
-    let groupID = _.uniqueId(); 
+    let groupID = this.getSVGWidgetID(); 
     this.setState({
       svgWidgets: this.state.svgWidgets.concat({
         id: groupID, 
         svgData: groupSVG, 
-        type: "group"
+        type: "group", 
+        visible: true
       }) 
     }); 
   }
@@ -530,12 +537,20 @@ export default class PageContainer extends React.Component {
   }
 
   clearWidgetsContainer = () => {
-    this.setState({
-      svgWidgets: []
-    }); 
+    for(let i=0; i<this.state.svgWidgets.length; i++) {
+      // Mark widgets that we are removing as false
+      // When designs are later cleared, we can completely remove them once the 
+      // Designs using them are no longer there. 
+      this.state.svgWidgets[i].visible = false; 
+    }
 
-    // Clear local storage cache
-    localStorage.removeItem('svgWidgets'); 
+    // Update the local storage cache
+    let widgets = JSON.stringify(this.state.svgWidgets);
+    localStorage.setItem('svgWidgets', widgets); 
+
+    this.setState({
+      svgWidgets: this.state.svgWidgets
+    });
   }
 
   render () {
