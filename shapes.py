@@ -112,8 +112,6 @@ class Shape(object):
 		
 		self.orig_width = element["orig_width"]
 		self.orig_height = element["orig_height"]
-		self.x = element["x"]
-		self.y = element["y"]
 
 		if "locks" in element:
 			self.locks = element["locks"]

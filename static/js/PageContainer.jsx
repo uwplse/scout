@@ -4,6 +4,7 @@ import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
 import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
+import FeedbackContainer from "./FeedbackContainer"; 
 import WidgetsContainer from "./WidgetsContainer"; 
 import DesignCanvas from './DesignCanvas';
 import SmallDesignCanvas from './SmallDesignCanvas';
@@ -34,7 +35,8 @@ export default class PageContainer extends React.Component {
       currentPallette: 'hollywood', 
       droppedFiles: [], 
       svgWidgets: [], 
-      zoomedDesignCanvasID: undefined 
+      zoomedDesignCanvasID: undefined, 
+      activeDesignPanel: "designs" 
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -209,7 +211,7 @@ export default class PageContainer extends React.Component {
     let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
     action[actionType].updateConstraintsCanvasShape(property, constraintsCanvasShape, designCanvasShape);
 
-    // Notify the constraintss canvas to add or remove the widget feedback to the tree
+    // Notify the constraints canvas to add or remove the widget feedback to the tree
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType, property);
   }
 
@@ -314,10 +316,53 @@ export default class PageContainer extends React.Component {
     }, this.updateSolutionsCache); 
   }
 
-  clearDesigns = () => {
+  clearDesignsUnderConsideration = () => {
+    for(let i=0; i<this.state.solutions.length; i++) {
+      let designSolution = this.state.solutions[i]; 
+      
+      if(designSolution.saved == 0 && (designSolution.valid || !designSolution.invalidated)) {
+        designSolution.saved = -1; 
+      }
+    }
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  clearSavedDesigns = () => {
+    for(let i=0; i<this.state.solutions.length; i++) {
+      let designSolution = this.state.solutions[i]; 
+      
+      if(designSolution.saved == 1) {
+        designSolution.saved = -1; 
+      }
+    }
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  clearDiscardedDesigns = () => {
+    const notDiscardedSolutions = this.state.solutions
+      .filter((solution) => { 
+        return ((!solution.saved == -1) && (!solution.invalidated)); 
+    });  
+
+    // Update the state
+    this.setState({
+      solutions: notDiscardedSolutions
+    }, this.updateSolutionsCache); 
+  }
+
+  clearAllDesigns = () => {
+    // Update the state
     this.setState({
       solutions: []
-    }, this.updateSolutionsCache); 
+    }, this.updateSolutionsCache);
 
     this.solutionsMap = {}; 
   }
@@ -355,9 +400,14 @@ export default class PageContainer extends React.Component {
       this.setState({
         designsFound: designsFound,
         solutions: solutions.concat(this.state.solutions), 
-        showDesignsAlert: true
+        showDesignsAlert: true, 
+        activeDesignPanel: "designs"
       }, this.updateSolutionsCache);      
     }
+  }
+
+  getSVGWidgetID = () => {
+    return '_' + Math.random().toString(36).substr(2, 9);
   }
 
   getRelativeDesigns = (elements, action) => {
@@ -379,25 +429,23 @@ export default class PageContainer extends React.Component {
     }, this.parseSolutions, 'text');
   }
 
-  hideDesignsAlert = () => {
-    this.setState({
-      showDesignsAlert: false
-    }); 
-  }
-
   readSVGsFromLocalStorage = () => {
-    let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
-    if(svgWidgets && svgWidgets.length){
-      let groupID = _.uniqueId(); 
-      let group = {
-        id: groupID, 
-        svgData: groupSVG, 
-        type: "group"
+    let svgWidgets = localStorage.getItem('svgWidgets'); 
+    if(svgWidgets) {
+      let svgWidgetsParsed = JSON.parse(svgWidgets); 
+      if(svgWidgetsParsed && svgWidgetsParsed.length){
+        let groupID = _.uniqueId(); 
+        let group = {
+          id: groupID, 
+          svgData: groupSVG, 
+          type: "group", 
+          visible: true
+        }
+        this.state.svgWidgets.push(group);
+        this.setState({
+          svgWidgets: this.state.svgWidgets.concat(svgWidgetsParsed)
+        });
       }
-      this.state.svgWidgets.push(group);
-      this.setState({
-        svgWidgets: this.state.svgWidgets.concat(svgWidgets)
-      });
     }
   }
 
@@ -409,8 +457,9 @@ export default class PageContainer extends React.Component {
       // So that they are rendered at the top of the container
       // While the automatically added elements (group) appears at the bottom
       let svgItem = {
-        id: widgetID, 
-        svgData: fileData
+        id: this.getSVGWidgetID(), 
+        svgData: fileData, 
+        visible: true
       }
 
       this.setState({
@@ -418,10 +467,11 @@ export default class PageContainer extends React.Component {
       });  
 
       // Look for SVG widgets in local storage and cache them for future refreshes
-      let svgWidgets = JSON.parse(localStorage.getItem('svgWidgets')); 
-      if(svgWidgets && svgWidgets.length) {
-        svgWidgets.push(svgItem); 
-        localStorage.setItem('svgWidgets', JSON.stringify(svgWidgets)); 
+      let svgWidgets = localStorage.getItem('svgWidgets')
+      let svgWidgetsParsed = JSON.parse(svgWidgets); 
+      if(svgWidgetsParsed && svgWidgetsParsed.length) {
+        svgWidgetsParsed.push(svgItem); 
+        localStorage.setItem('svgWidgets', JSON.stringify(svgWidgetsParsed)); 
       }
       else {
         let items = [svgItem]; 
@@ -434,12 +484,13 @@ export default class PageContainer extends React.Component {
   populateGroupNodeIntoWidgetContainer = () => {
     // Add the group container into the widgets panel 
     // It will just be automatically added in when the drop happens
-    let groupID = _.uniqueId(); 
+    let groupID = this.getSVGWidgetID(); 
     this.setState({
       svgWidgets: this.state.svgWidgets.concat({
         id: groupID, 
         svgData: groupSVG, 
-        type: "group"
+        type: "group", 
+        visible: true
       }) 
     }); 
   }
@@ -466,6 +517,12 @@ export default class PageContainer extends React.Component {
     }
   }
 
+  toggleActiveDesignPanel = (activePanel) => {
+    this.setState({
+      activeDesignPanel: activePanel
+    }); 
+  }
+
   moveDesignCanvas = (id) => {
     // Move a dragged design canvas into the main designs container 
     // Can be dragged from the saved, invalid, and trashed designs area
@@ -480,14 +537,30 @@ export default class PageContainer extends React.Component {
     }
   }
 
+  clearWidgetsContainer = () => {
+    for(let i=0; i<this.state.svgWidgets.length; i++) {
+      // Mark widgets that we are removing as false
+      // When designs are later cleared, we can completely remove them once the 
+      // Designs using them are no longer there. 
+      this.state.svgWidgets[i].visible = false; 
+    }
+
+    // Update the local storage cache
+    let widgets = JSON.stringify(this.state.svgWidgets);
+    localStorage.setItem('svgWidgets', widgets); 
+
+    this.setState({
+      svgWidgets: this.state.svgWidgets
+    });
+  }
+
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
-    const designsAlertShown = this.state.showDesignsAlert; 
     const designsAlertMessage = designsFound > 0 ? "Here " + (designsFound > 1 ? "are" : "is") + " " + designsFound + " very different " + (designsFound > 1 ? "designs" : "design") + ". " : "No more designs found. "; 
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
               .map((solution) => {
-                  return this.getSmallDesignCanvas(solution, solution.id); 
+                  return this.getDesignCanvas(solution, solution.id); 
                 }); 
 
     const designCanvases = this.state.solutions
@@ -512,7 +585,7 @@ export default class PageContainer extends React.Component {
       .filter((solution) => { return solution.saved == -1; })
       .map((solution) => {
           if(solution.saved == -1) {
-            return self.getSmallDesignCanvas(solution, solution.id); 
+            return self.getDesignCanvas(solution, solution.id); 
           }
         });
 
@@ -522,9 +595,11 @@ export default class PageContainer extends React.Component {
       })
       .map((solution) => {
         if(solution.invalidated == true) {
-          return self.getSmallDesignCanvas(solution, solution.id); 
+          return self.getDesignCanvas(solution, solution.id); 
         }
       }); 
+
+    const discardedCanvases = trashedCanvases.concat(invalidatedCanvases);
 
     // Get the zoomed design canvas, if there is one set
     let zoomedDesignCanvas = this.state.zoomedDesignCanvasID ? this.getZoomedDesignCanvas() : undefined; 
@@ -543,6 +618,7 @@ export default class PageContainer extends React.Component {
                 <WidgetsContainer 
                   onDrop={this.handleFileDrop} 
                   widgets={this.state.svgWidgets}
+                  onClick={this.clearWidgetsContainer}
                   addShapeToConstraintsCanvas={this.addShapeToConstraintsCanvas} />
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
@@ -552,63 +628,112 @@ export default class PageContainer extends React.Component {
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Designs
-                  <button className="badge badge-light design-canvas-button">{designCanvases.length}</button>
                 </h3>
                 <div>
+                  <ul className="nav nav-pills designs-area-nav-pills">
+                    <li className="nav-item">
+                      <a className={"nav-link" + (this.state.activeDesignPanel == "designs" ? " active" : "")} 
+                         href="#"
+                         onClick={this.toggleActiveDesignPanel.bind(this, "designs")}>
+                         <span className="designs-area-number">{designCanvases.length}</span>
+                         Under Consideration</a> 
+                    </li> 
+                    <li className="nav-item"> 
+                      <a className={"nav-link" + (this.state.activeDesignPanel == "saved" ? " active" : "")}  
+                        href="#"
+                        onClick={this.toggleActiveDesignPanel.bind(this, "saved")}>
+                         <span className="designs-area-number">{savedCanvases.length}</span>
+                        Saved</a>
+                    </li> 
+                    <li className="nav-item"> 
+                      <a className={"nav-link" + (this.state.activeDesignPanel == "discarded" ? " active" : "")} 
+                        href="#"
+                        onClick={this.toggleActiveDesignPanel.bind(this, "discarded")}>
+                         <span className="designs-area-number">{discardedCanvases.length}</span>
+                        Discarded</a>
+                    </li>
+                  </ul> 
+                </div>
+                <div className="designs-area-actions">
+                  {this.state.activeDesignPanel == "designs" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearInvalidDesignCanvases}>Discard Invalid</button>
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "designs" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearDesignsUnderConsideration}>Discard Under Consideration</button>
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "saved" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearSavedDesigns}>Discard Saved Designs</button>
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "discarded" ? 
+                    (<div 
+                      className="btn-group header-button-group">
+                      <button type="button" className="btn btn-default design-canvas-button" 
+                        onClick={this.clearDiscardedDesigns}>Clear Discarded Designs</button>
+                    </div>) : null}
                   <div 
                     className="btn-group header-button-group">
                     <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearInvalidDesignCanvases}>Move Invalid Designs to Panel</button>
+                      onClick={this.clearAllDesigns}>Clear All Designs</button>
                   </div>
                   <div 
                     className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearDesigns}>Clear Designs Area</button>
-                  </div>
-                  <div 
-                    className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button">Export Saved Designs (TBD)</button>
+                    <button type="button" className="btn btn-default design-canvas-button">Export Saved Designs</button>
                   </div>
                 </div>
               </div>  
+              {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
+                (<div className="designs-area-alert-container">
+                  <div className="alert alert-success">
+                    You currently have no designs under consideration. <br /><br />
+                    Click <strong>Generate Designs</strong> in the outline to see more. 
+                  </div>
+                </div>) : null
+              }
+              {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
+                (<div className="designs-area-alert-container">
+                  <div className="alert alert-success">
+                    You currently have no saved designs. <br /><br />
+                    Click the star icon above a design in the <strong>Under Consideration</strong> panel to save a design. 
+                  </div>
+                </div>) : null
+              }
+              {(this.state.activeDesignPanel == "discarded" && discardedCanvases.length == 0) ? 
+                (<div className="designs-area-alert-container">
+                  <div className="alert alert-success">
+                    You currently have no discarded designs. <br /><br />
+                    Click the trash icon in the <strong>Under Consideration</strong> panel to discard any designs that you don't like. 
+                  </div>
+                </div>) : null
+              }
               <div className="design-canvas-container">
-                <div className="left-container">
-                  { savedCanvases.length ? (<div className="panel designs-container saved-designs-container panel-default">
-                    <div>
-                      <span className="save-icon glyphicon glyphicon-star" aria-hidden="true"></span>
-                      <span>({savedCanvases.length})</span>
-                    </div>
-                    <div className="panel-body saved-body">
-                      {savedCanvases}
-                    </div>
-                  </div>) : null }
-                  { designCanvases.length ? (<div className="panel designs-container current-designs-container panel-default">
+                  { this.state.activeDesignPanel == "designs" && designCanvases.length ? 
+                    (<div className="panel designs-container current-designs-container panel-default">
                       <DesignCanvasContainer 
                         onDrop={this.moveDesignCanvas}
-                        designCanvases={designCanvases} 
-                        onScroll={this.hideDesignsAlert} />
-                  </div>) : null }
-                  { trashedCanvases.length ? (<div className="panel designs-container trashed-designs-container panel-default">
-                    <div>
-                      <span className="save-icon glyphicon glyphicon-trash" aria-hidden="true"></span>
-                      <span>({trashedCanvases.length})</span>
-                    </div>
-                    <div className="panel-body trashed-body">
-                      {trashedCanvases}
-                    </div>
-                  </div>) : null }
-                </div>
-                {invalidatedCanvases.length ? (<div className="right-container"> 
-                  <div className="panel invalid-container panel-default"> 
-                    <div>
-                      <span className="save-icon glyphicon glyphicon-asterisk" aria-hidden="true"></span>
-                      <span>({invalidatedCanvases.length})</span>
-                    </div>
-                    <div className="panel-body invalidated-body">
-                      {invalidatedCanvases}
-                    </div>
-                  </div>
-                </div>) : null}
+                        designCanvases={designCanvases} />
+                    </div>) : null
+                  }
+                  { this.state.activeDesignPanel == "saved" && savedCanvases.length ? 
+                    (<div className="panel designs-container current-designs-container panel-default">
+                      <DesignCanvasContainer 
+                        onDrop={this.moveDesignCanvas}
+                        designCanvases={savedCanvases} />
+                    </div>) : null }
+                  { this.state.activeDesignPanel == "discarded" && discardedCanvases.length ? 
+                    (<div className="panel designs-container current-designs-container panel-default">
+                      <DesignCanvasContainer 
+                        onDrop={this.moveDesignCanvas}
+                        designCanvases={discardedCanvases} />
+                    </div>) : null }
               </div>
             </div>
           </div>

@@ -83,7 +83,7 @@ export default class DesignCanvas extends React.Component {
 
     // Return the amount of scaling to use depending on the state of this DesignCanvas
     if(this.state.savedState == 1 || this.state.savedState == -1 || this.state.invalidated) {
-      return 0.10; 
+      return 0.5; 
     } 
     
     return 0.5;
@@ -352,7 +352,7 @@ export default class DesignCanvas extends React.Component {
         <DesignMenu 
           showZoom={!this.props.zoomed}
           visible={menuVisible}
-          hidden={saved || trashed}
+          hidden={saved || trashed || invalidated}
           menuAction={this.performDesignCanvasMenuAction}
           new={this.state.new} />
   			<div className={(constraintsMenuShape ? "" : "hidden")}>

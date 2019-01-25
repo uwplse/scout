@@ -1,3 +1,38 @@
+.designs-area-container .designs-area-nav-pills .nav-link.active{
+	background-color: #18BC9C;
+}
+
+.designs-area-container .designs-area-nav-pills .nav-link {
+	color: white;
+	background-color: #2C3E50;
+}
+
+.designs-area-container .designs-area-nav-pills .nav-link:hover {
+	background-color: #18BC9C;
+}
+
+.designs-area-container .designs-area-nav-pills {
+	margin-left: 2em;
+}
+
+.designs-area-container .designs-area-number {
+	padding-right: 10px;
+	font-size: 20;
+}
+
+.designs-area-container .designs-area-actions {
+	display: flex; 
+	flex: 1 1 0px;
+	justify-content: flex-end;
+}
+
+.designs-area-container .designs-area-alert-container {
+	margin: 2em;
+}
+
+.designs-area-container .designs-area-alert-container .alert {
+}
+
 .zoomed-design-container {
 	position: absolute;
     top: 50%;

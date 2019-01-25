@@ -61,7 +61,6 @@ export default class ConstraintsCanvas extends React.Component {
         y: 0
       }, 
       rightClickShapeID: undefined, 
-      pageOrder: "unimportant"
     }; 
   }
 
@@ -117,7 +116,7 @@ export default class ConstraintsCanvas extends React.Component {
       if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
         for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
           let lock = this.canvasLevelShape.locks[i];
-          let action = ConstraintActions.getAction("keep", shape);
+          let action = ConstraintActions.getAction("keep", this.canvasLevelShape);
           if(action){
             let uniqueId = _.uniqueId();
             let message = action["do"].getFeedbackMessage(lock, this.canvasLevelShape);
@@ -226,7 +225,7 @@ export default class ConstraintsCanvas extends React.Component {
       "name": "canvas",
       "type": "canvas", 
       "controlType": "canvas",
-      "containerOrder": "unimportant",
+      "containerOrder": "important",
       "children": [],
       "x": 0, 
       "y": 0,
@@ -1198,20 +1197,20 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   getNodeProps = ({node, path}) => {
-    if(path.length == 1 && path[0] == 0) {
-      return {}; 
-    }
-    else {
-      return {
-        buttons: [
-          <button 
-            className="widgets-sortable-tree-remove"  
-            onClick={this.removeWidgetNode(path)}>
-            <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
-          </button>
-        ]
-      }; 
-    }
+    // if(path.length == 1 && path[0] == 0) {
+    //   return {}; 
+    // }
+    // else {
+    //   return {
+    //     buttons: [
+    //       <button 
+    //         className="widgets-sortable-tree-remove"  
+    //         onClick={this.removeWidgetNode(path)}>
+    //         <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
+    //       </button>
+    //     ]
+    //   }; 
+    // }
   }
 
   render () {
@@ -1234,7 +1233,6 @@ export default class ConstraintsCanvas extends React.Component {
       getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
     // const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
     // const colorPickerPosition = this.state.colorPickerPosition; 
-    const pageOrder = this.state.pageOrder; 
 
     // Process the queue of shapes to add to the canvas
 	  return (
