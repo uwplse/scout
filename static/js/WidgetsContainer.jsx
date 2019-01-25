@@ -61,7 +61,7 @@ class WidgetsContainer extends React.Component {
     const hasVisibleWidgets = visibleWidgets.length;
 
     const widgets = this.props.widgets.map((widget) => {
-      if(!widget.item && widget.visible) { // Items cannot be directly added as they are children of typed groups
+      if(!widget.item && (widget.visible || widget.type == "group")) { // Items cannot be directly added as they are children of typed groups
         return (<WidgetsContainerSVGWidget 
           className="widget-control" 
           id={widget.id}
