@@ -4,6 +4,7 @@ import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
 import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
+import FeedbackContainer from "./FeedbackContainer"; 
 import WidgetsContainer from "./WidgetsContainer"; 
 import DesignCanvas from './DesignCanvas';
 import SmallDesignCanvas from './SmallDesignCanvas';
@@ -210,7 +211,7 @@ export default class PageContainer extends React.Component {
     let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
     action[actionType].updateConstraintsCanvasShape(property, constraintsCanvasShape, designCanvasShape);
 
-    // Notify the constraintss canvas to add or remove the widget feedback to the tree
+    // Notify the constraints canvas to add or remove the widget feedback to the tree
     this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType, property);
   }
 
@@ -433,14 +434,14 @@ export default class PageContainer extends React.Component {
     if(svgWidgets) {
       let svgWidgetsParsed = JSON.parse(svgWidgets); 
       if(svgWidgetsParsed && svgWidgetsParsed.length){
-        // let groupID = _.uniqueId(); 
-        // let group = {
-        //   id: groupID, 
-        //   svgData: groupSVG, 
-        //   type: "group", 
-        //   visible: true
-        // }
-        // this.state.svgWidgets.push(group);
+        let groupID = _.uniqueId(); 
+        let group = {
+          id: groupID, 
+          svgData: groupSVG, 
+          type: "group", 
+          visible: true
+        }
+        this.state.svgWidgets.push(group);
         this.setState({
           svgWidgets: this.state.svgWidgets.concat(svgWidgetsParsed)
         });

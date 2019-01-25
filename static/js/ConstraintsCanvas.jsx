@@ -1197,20 +1197,20 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   getNodeProps = ({node, path}) => {
-    if(path.length == 1 && path[0] == 0) {
-      return {}; 
-    }
-    else {
-      return {
-        buttons: [
-          <button 
-            className="widgets-sortable-tree-remove"  
-            onClick={this.removeWidgetNode(path)}>
-            <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
-          </button>
-        ]
-      }; 
-    }
+    // if(path.length == 1 && path[0] == 0) {
+    //   return {}; 
+    // }
+    // else {
+    //   return {
+    //     buttons: [
+    //       <button 
+    //         className="widgets-sortable-tree-remove"  
+    //         onClick={this.removeWidgetNode(path)}>
+    //         <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
+    //       </button>
+    //     ]
+    //   }; 
+    // }
   }
 
   render () {

@@ -129,7 +129,10 @@ h1, h2, h3 {
 	flex-direction: column;
 }
 
-.widgets-panel-container, .constraints-container, .designs-area-container {
+.widgets-panel-container, 
+.constraints-container, 
+.designs-area-container, 
+.feedback-container {
 	margin-top: 10px;
 	margin-left: 10px;
 	margin-bottom: 10px;
