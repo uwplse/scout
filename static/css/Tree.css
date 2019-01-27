@@ -1,0 +1,43 @@
+.rc-tree li span.rc-tree-iconEle {
+	height: initial;
+	width: initial;
+}
+
+.rc-tree li .rc-tree-node-content-wrapper {
+	height: initial;
+}
+
+.rc-tree li ul {
+	padding: 0 0 0 50px;
+}
+
+.rc-tree li span.rc-tree-switcher {
+	height: 32px;
+	width: 32px;
+}
+
+.rc-tree li span.rc-tree-switcher.rc-tree-switcher_close:before {
+	content: "\002b";
+}
+
+.rc-tree li span.rc-tree-switcher.rc-tree-switcher_open:before {
+	content: "\2212";
+}
+
+.rc-tree li span.rc-tree-switcher.rc-tree-switcher_open, 
+.rc-tree li span.rc-tree-switcher.rc-tree-switcher_close  {
+	color: black;
+    opacity: 0.7;
+	position: relative;
+    top: 1px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    background-image: none;
+    height: 20px;
+    width: 20px;
+    transform: scale(1.5);
+}

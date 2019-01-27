@@ -434,14 +434,14 @@ export default class PageContainer extends React.Component {
     if(svgWidgets) {
       let svgWidgetsParsed = JSON.parse(svgWidgets); 
       if(svgWidgetsParsed && svgWidgetsParsed.length){
-        let groupID = _.uniqueId(); 
-        let group = {
-          id: groupID, 
-          svgData: groupSVG, 
-          type: "group", 
-          visible: true
-        }
-        this.state.svgWidgets.push(group);
+        // let groupID = _.uniqueId(); 
+        // let group = {
+        //   id: groupID, 
+        //   svgData: groupSVG, 
+        //   type: "group", 
+        //   visible: true
+        // }
+        // this.state.svgWidgets.push(group);
         this.setState({
           svgWidgets: this.state.svgWidgets.concat(svgWidgetsParsed)
         });
