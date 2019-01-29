@@ -40,9 +40,13 @@
     ]
   },
   "dependencies": {
+    "bootstrap": "^4.2.1",
+    "bootstrap-confirmation2": "^4.0.2",
     "jquery": "^3.3.1",
     "number-to-words": "^1.2.3",
+    "popper.js": "^1.14.6",
     "raw-loader": "^0.5.1",
+    "rc-tree": "^1.14.9",
     "react-sortable-tree": "file:../../react-sortable-tree/react-sortable-tree-2.1.0.tgz",
     "react-svg-inline": "^2.1.0",
     "script-loader": "^0.7.2",

@@ -16,7 +16,6 @@ import uuidv4 from 'uuid/v4';
 import SVGInline from "react-svg-inline"; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
-import groupSVG from '../assets/illustrator/groupContainer.svg';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -434,14 +433,6 @@ export default class PageContainer extends React.Component {
     if(svgWidgets) {
       let svgWidgetsParsed = JSON.parse(svgWidgets); 
       if(svgWidgetsParsed && svgWidgetsParsed.length){
-        // let groupID = _.uniqueId(); 
-        // let group = {
-        //   id: groupID, 
-        //   svgData: groupSVG, 
-        //   type: "group", 
-        //   visible: true
-        // }
-        // this.state.svgWidgets.push(group);
         this.setState({
           svgWidgets: this.state.svgWidgets.concat(svgWidgetsParsed)
         });
@@ -453,9 +444,6 @@ export default class PageContainer extends React.Component {
     let fileData = e.target.result; 
     let widgetID = _.uniqueId(); 
     if(fileData) {
-      // Add widgets to the front of the list 
-      // So that they are rendered at the top of the container
-      // While the automatically added elements (group) appears at the bottom
       let svgItem = {
         id: this.getSVGWidgetID(), 
         svgData: fileData, 
@@ -481,20 +469,6 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  populateGroupNodeIntoWidgetContainer = () => {
-    // Add the group container into the widgets panel 
-    // It will just be automatically added in when the drop happens
-    let groupID = this.getSVGWidgetID(); 
-    this.setState({
-      svgWidgets: this.state.svgWidgets.concat({
-        id: groupID, 
-        svgData: groupSVG, 
-        type: "group", 
-        visible: true
-      }) 
-    }); 
-  }
-
   handleFileDrop = (item, monitor) => {
     if (monitor) {
       const item = monitor.getItem(); 
@@ -510,10 +484,6 @@ export default class PageContainer extends React.Component {
         reader.onload = this.readSVGIntoWidgetContainer; 
         reader.readAsText(file); 
       }
-
-      // Add the group container node into the widgets container
-      // It will be added automatically when the designer drops in the other SVG elementst
-      this.populateGroupNodeIntoWidgetContainer();
     }
   }
 

@@ -1,30 +1,28 @@
 import React from "react";
+import 'rc-tree/assets/index.css';
 import '../css/ConstraintsCanvas.css'; 
+import '../css/Tree.css';
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import ConstraintsCanvasContainerSVGWidget from './ConstraintsCanvasContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import ConstraintActions from './ConstraintActions';
-import {
-  SortableTreeWithoutDndContext as SortableTree,
-  removeNodeAtPath, 
-  getNodeAtPath, 
-  changeNodeAtPath, 
-  defaultGetNodeKey, 
-  insertNode,
-  getFlatDataFromTree, 
-  addNodeUnderParent } 
-from 'react-sortable-tree';
+// import {
+//   SortableTreeWithoutDndContext as SortableTree,
+//   removeNodeAtPath, 
+//   getNodeAtPath, 
+//   changeNodeAtPath, 
+//   defaultGetNodeKey, 
+//   insertNode,
+//   getFlatDataFromTree, 
+//   addNodeUnderParent } 
+// from 'react-sortable-tree';
 import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import WidgetTyping from './WidgetTyping'; 
 import group from '../assets/illustrator/groupContainer.svg';
-import label from '../assets/illustrator/labelContainer.svg';
 import repeatGrid from '../assets/illustrator/repeatGrid.svg';
 import item from '../assets/illustrator/item.svg';
 import rootNode from '../assets/illustrator/canvas.svg';
-
-// import { Ios11Picker } from 'react-color';
-import 'react-sortable-tree/style.css'; // This only needs to be imported once in your app
-
+import Tree, { TreeNode } from 'rc-tree';
 
 export default class ConstraintsCanvas extends React.Component {
   constructor(props) {
@@ -53,6 +51,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.state = { 
       treeData: [], 
+      expandedTreeNodes: ["canvas"],
       pageFeedbackWidgets: [], 
       rightClickMenuShown: false, 
       rightClickMenuCallbacks: undefined, 
@@ -61,29 +60,30 @@ export default class ConstraintsCanvas extends React.Component {
         y: 0
       }, 
       rightClickShapeID: undefined, 
+      svgSourceMap: {}
     }; 
   }
 
   componentDidMount() {
     let cachedShapesJSON = localStorage.getItem('shapeHierarchy'); 
     if(!cachedShapesJSON) {
-      // } else {
       let rootNode = this.initRootNode();
       this.state.treeData = this.state.treeData.concat(rootNode); 
 
       this.setState(state => ({
         treeData: this.state.treeData
       }), this.updateShapeCache);
+    }else {
+      let cachedShapesJSON = localStorage.getItem('shapeHierarchy');
+      let cachedShapes = JSON.parse(cachedShapesJSON);
+      this.constructTreeFromCache(cachedShapes);
     }
   }
 
   componentDidUpdate = (prevProps) => {
     if(prevProps.svgWidgets.length != this.props.svgWidgets.length) {
-      // SVG widgets have been read from cache. Restore hierarchy from cache
-      // Retrieve cached shapes from local storage and repopulate them into the tree
-      let cachedShapesJSON = localStorage.getItem('shapeHierarchy');
-      let cachedShapes = JSON.parse(cachedShapesJSON);
-      this.constructTreeFromCache(cachedShapes);
+      // Update the tree nodes with the SVG source from the cache 
+      this.updateSVGSourceMap(); 
     }
   }
 
@@ -95,128 +95,109 @@ export default class ConstraintsCanvas extends React.Component {
     this.checkSolutionValidity();
   }
 
-  constructTreeFromCache = (canvasRootShape) => {
+  constructTreeFromCache = (treeData) => {   
+    let canvasNode = {
+      key: treeData.name, 
+      shape: treeData, 
+      src: rootNode, 
+      children: []
+    }
+
     // Restore the cosntraints tree from the cached shapes
-    this.canvasLevelShape = canvasRootShape; 
-    this.constraintsShapesMap[canvasRootShape.name] = canvasRootShape; 
+    this.canvasLevelShape = treeData; 
+    this.constraintsShapesMap[canvasNode.name] = treeData; 
+    this.widgetTreeNodeMap[canvasNode.name] = canvasNode; 
 
-    // Create the widget at the root node of the tree for the canvas
-    let newTreeData = [];
-    let canvasWidget = this.getWidget(this.canvasLevelShape, rootNode);
-    let newTreeNode = {
-      title: canvasWidget, 
-      subtitle: []
-    }; 
-
-    this.widgetTreeNodeMap[this.canvasLevelShape.name] = newTreeNode; 
-
-    if(this.canvasLevelShape.children) {
+    if(treeData.children) {
       // Restore feedback items
       // Check whether to remove or add a widget feedback item
-      if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
-        for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
-          let lock = this.canvasLevelShape.locks[i];
-          let action = ConstraintActions.getAction("keep", this.canvasLevelShape);
-          if(action){
-            let uniqueId = _.uniqueId();
-            let message = action["do"].getFeedbackMessage(lock, this.canvasLevelShape);
-            let id = this.canvasLevelShape.name + "_" + uniqueId; 
-            let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, lock, message);
-            newTreeNode.subtitle.push(widgetFeedback); 
-          } 
-        }     
-      } 
+      // if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
+      //   for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
+      //     let lock = this.canvasLevelShape.locks[i];
+      //     let action = ConstraintActions.getAction("keep", this.canvasLevelShape);
+      //     if(action){
+      //       let uniqueId = _.uniqueId();
+      //       let message = action["do"].getFeedbackMessage(lock, this.canvasLevelShape);
+      //       let id = this.canvasLevelShape.name + "_" + uniqueId; 
+      //       let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, lock, message);
+      //       newTreeNode.subtitle.push(widgetFeedback); 
+      //     } 
+      //   }     
+      // } 
 
-      newTreeData = newTreeData.concat(newTreeNode); 
-
-      if(this.canvasLevelShape.children) {
-        let parentKey = 0; 
-        let nodeIndex = parentKey; 
-        for(let i=0; i<this.canvasLevelShape.children.length; i++) {
-          nodeIndex = nodeIndex + 1; 
-          let child = this.canvasLevelShape.children[i]; 
-          let results = this.constructShapeHierarchy(child, parentKey, nodeIndex, newTreeData);
-          newTreeData = results.treeData; 
-          nodeIndex = results.nodeIndex; 
-        }
+      for(let i=0; i<treeData.children.length; i++) {
+        let child = treeData.children[i]; 
+        this.constructShapeHierarchy(child, canvasNode);
       }
+
+      this.state.treeData = this.state.treeData.concat(canvasNode); 
     }
 
     this.setState(state => ({
-      treeData: newTreeData
+      treeData: this.state.treeData
     }));
   }
 
-  getSVGSource = (node) => {
-    if(node.item) {
-      return item; 
+  updateSVGSourceMap = () => {
+    for(let i=0; i < this.props.svgWidgets.length; i++) {
+      let svgWidget = this.props.svgWidgets[i]; 
+      this.state.svgSourceMap[svgWidget.id] = svgWidget; 
     }
 
-    if(node.type == "labelGroup") {
-      return label; 
-    }
-
-    let svgElements = this.props.svgWidgets; 
-    let svgElement = svgElements.filter(element => element.id == node.id); 
-    if(svgElement && svgElement.length) {
-      svgElement = svgElement[0]; 
-      return svgElement.svgData; 
-    }
-
-    return ""; 
+    this.setState({
+      svgSourceMap: this.state.svgSourceMap
+    });
   }
 
-  constructShapeHierarchy = (node, parentKey, nodeIndex, treeData) => {
-    let source =  this.getSVGSource(node);
-    let widget = this.getWidget(node, source); 
+  // getSVGSource = (node) => {
+  //   if(node.item) {
+  //     return item; 
+  //   }
+
+  //   let svgElements = this.props.svgWidgets; 
+  //   let svgElement = svgElements.filter(element => element.id == node.id); 
+  //   if(svgElement && svgElement.length) {
+  //     svgElement = svgElement[0]; 
+  //     return svgElement.svgData; 
+  //   }
+
+  //   return ""; 
+  // }
+
+  constructShapeHierarchy = (node, treeData) => {
+    let source =  this.state.svgSourceMap[node.id];
     this.constraintsShapesMap[node.name] = node; 
 
     let newTreeNode = {
-        title: widget, 
-        subtitle: []
+        key: node.name, 
+        shape: node,
+        src: source
     }; 
 
     this.widgetTreeNodeMap[node.name] = newTreeNode; 
+    treeData.children.push(newTreeNode); 
 
     // Restore feedback items for locks 
-    if(node.locks && node.locks.length) {
-      for(let i=0; i<node.locks.length; i++) {
-        let lock = node.locks[i];
-        let action = ConstraintActions.getAction("keep", node);
-        if(action){
-          let uniqueId = _.uniqueId();
-          let message = action["do"].getFeedbackMessage(lock, node);
-          let id = node.name + "_" + uniqueId; 
-          let widgetFeedback = this.getWidgetFeedback(id, node, action, lock, message);
-          newTreeNode.subtitle.push(widgetFeedback); 
-        } 
-      }     
-    } 
-
-    let newTreeData = addNodeUnderParent({
-      treeData: treeData, 
-      newNode: newTreeNode, 
-      parentKey: parentKey, 
-      getNodeKey: defaultGetNodeKey, 
-      ignoreCollapsed: false, 
-      expandParent: true
-    }); 
-
-    treeData = newTreeData.treeData; 
-
-
-    let currNodeIndex = nodeIndex;
+    // if(node.locks && node.locks.length) {
+    //   for(let i=0; i<node.locks.length; i++) {
+    //     let lock = node.locks[i];
+    //     let action = ConstraintActions.getAction("keep", node);
+    //     if(action){
+    //       let uniqueId = _.uniqueId();
+    //       let message = action["do"].getFeedbackMessage(lock, node);
+    //       let id = node.name + "_" + uniqueId; 
+    //       let widgetFeedback = this.getWidgetFeedback(id, node, action, lock, message);
+    //       newTreeNode.subtitle.push(widgetFeedback); 
+    //     } 
+    //   }     
+    // } 
     if(node.children && node.children.length) {
+      newTreeNode.children = []; 
       for(let i=0; i<node.children.length; i++){
-        currNodeIndex = currNodeIndex + 1; 
         let child = node.children[i]; 
-        let results = this.constructShapeHierarchy(child, nodeIndex, currNodeIndex, treeData); 
-        treeData = results.treeData; 
-        currNodeIndex = results.nodeIndex; 
+        this.constructShapeHierarchy(child, newTreeNode); 
       }
     }
-
-    return { treeData: treeData, nodeIndex: currNodeIndex }; 
   }
 
   initRootNode = () => {
@@ -239,13 +220,17 @@ export default class ConstraintsCanvas extends React.Component {
     this.constraintsShapesMap[canvas.name] = this.canvasLevelShape; 
 
 
-    let widget = this.getWidget(this.canvasLevelShape, rootNode); 
-    let newTreeNode = {
-        title: widget, 
-        subtitle: []
+    let rootTreeNode = {
+        key: this.canvasLevelShape.name, 
+        shape: this.canvasLevelShape,
+        src: rootNode, 
+        children: []
+        // item: false, 
+        // typed: false, 
+        // highlighted: false
     }; 
 
-    return newTreeNode; 
+    return rootTreeNode; 
   }
 
   updateShapeCache = () => {
@@ -274,7 +259,6 @@ export default class ConstraintsCanvas extends React.Component {
                 checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
                 displayRightClickMenu={this.displayRightClickMenu}
                 hideRightClickMenu={this.hideRightClickMenu}
-                createLabelsGroup={this.createLabelsGroup.bind(this)}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 typed={typed}
@@ -289,45 +273,35 @@ export default class ConstraintsCanvas extends React.Component {
               checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
               displayRightClickMenu={this.displayRightClickMenu}
               hideRightClickMenu={this.hideRightClickMenu}
-              createLabelsGroup={this.createLabelsGroup.bind(this)}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex} />);
   }
 
   addShapeToCanvas = (id, source, type, width, height) => {
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height); 
-
-    let widget = this.getWidget(shape, source); 
-
     let newTreeNode = {
-        title: widget, 
-        subtitle: []
+        key: shape.name, 
+        shape: shape, 
+        src:  source
     }; 
 
     this.widgetTreeNodeMap[shape.name] = newTreeNode; 
 
-    let parentIndex = 0; 
-    let newTreeData = addNodeUnderParent({
-      treeData: this.state.treeData, 
-      newNode: newTreeNode, 
-      parentKey: 0, 
-      getNodeKey: defaultGetNodeKey, 
-      ignoreCollapsed: false, 
-      expandParent: true
-    }); 
+    if(this.state.treeData.length) {
+      this.state.treeData[0].children.push(newTreeNode); 
+    }
 
     this.setState(state => ({
-      treeData: newTreeData.treeData, 
+      treeData: this.state.treeData, 
     }), this.checkSolutionValidityAndUpdateCache);
   }
-
 
   clearShapesFromCanvas = () => {
     let newTreeData = []; 
     let rootNode = this.initRootNode(); 
-    newTreeData = newTreeData.concat(rootNode); 
+    this.state.treeData = this.state.treeData.concat(rootNode); 
     this.setState({
-      treeData: newTreeData
+      treeData: this.state.treeData
     }, this.updateShapeCache); 
   }
 
@@ -338,11 +312,11 @@ export default class ConstraintsCanvas extends React.Component {
     let width = 0;
     let height = 0; 
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
-    let widget = this.getWidget(shape, source, options); 
 
     let newTreeNode = {
-      title: widget, 
-      subtitle: []
+      key: shape.name, 
+      shape: shape, 
+      src: source
     }; 
 
     this.widgetTreeNodeMap[shape.name] = newTreeNode; 
@@ -390,7 +364,7 @@ export default class ConstraintsCanvas extends React.Component {
     // Get the two neighboring siblings for a shape in the tree
     for(let i=0; i<node.length; i++) {
       let treeNode = node[i]; 
-      let nodeID = treeNode.title.props.id; 
+      let nodeID = treeNode.key; 
       if(nodeID == shapeId) {
         if(i < node.length - 1) {
           let nextSibling = node[i+1];
@@ -411,7 +385,7 @@ export default class ConstraintsCanvas extends React.Component {
   findShapeIndex = (shapeId, node) => {
     for(let i=0; i<node.length; i++) {
       let treeNode = node[i]; 
-      let nodeID = treeNode.title.props.id; 
+      let nodeID = treeNode.key; 
       if(nodeID == shapeId) {
         return i; 
       }
@@ -449,13 +423,13 @@ export default class ConstraintsCanvas extends React.Component {
     let siblingItems = {}; 
     if(siblings.next) {
       siblingItems.next = {
-        id: siblings.next.title.props.id 
+        id: siblings.next.key 
       }; 
     }
 
     if(siblings.prev) {
       siblingItems.prev = {
-        id: siblings.prev.title.props.id
+        id: siblings.prev.key 
       }; 
     }
 
@@ -469,22 +443,22 @@ export default class ConstraintsCanvas extends React.Component {
 
   getCurrentContainerOrder = (shapeId) => {
     let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.title.props.shape.containerOrder; 
+    return node.shape.containerOrder; 
   }
 
   getCurrentShapeOrder = (shapeId) => {
     let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.title.props.shape.order; 
+    return node.shape.order; 
   }
 
   getCurrentShapeImportance = (shapeId) => {
     let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.title.props.shape.importance; 
+    return node.shape.importance; 
   }
 
   getCurrentShapeType = (shapeId) => {
     let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.title.props.shape.type; 
+    return node.shape.type; 
   }
  
   hideRightClickMenu = () => {
@@ -494,106 +468,106 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
   }
 
-  highlightAddedWidget = (shapeId, highlighted) => {
-    let treeNode = this.widgetTreeNodeMap[shapeId];
-    let treeNodeData = this.getPathAndChildrenForTreeNode(treeNode);
-    if(treeNodeData) {
-      let widget = this.getWidget(treeNode.title.props.shape, treeNode.title.props.source, { highlighted: highlighted }); 
+  // highlightAddedWidget = (shapeId, highlighted) => {
+  //   let treeNode = this.widgetTreeNodeMap[shapeId];
+  //   let treeNodeData = this.getPathAndChildrenForTreeNode(treeNode);
+  //   if(treeNodeData) {
+  //     let widget = this.getWidget(treeNode.title.props.shape, treeNode.title.props.source, { highlighted: highlighted }); 
 
-      // Create a new node for the widget
-      let newNode = {
-        title: widget, 
-        subtitle: [], 
-        expanded: treeNode.expanded || treeNodeData.expanded, 
-        children: treeNodeData.children
-      }; 
+  //     // Create a new node for the widget
+  //     let newNode = {
+  //       title: widget, 
+  //       subtitle: [], 
+  //       expanded: treeNode.expanded || treeNodeData.expanded, 
+  //       children: treeNodeData.children
+  //     }; 
 
-      // Replace the current node with this new node
-      this.state.treeData = changeNodeAtPath({
-        treeData: this.state.treeData,
-        path: treeNodeData.path,
-        getNodeKey: defaultGetNodeKey,
-        ignoreCollapsed: false,
-        newNode: newNode
-      }); 
+  //     // Replace the current node with this new node
+  //     this.state.treeData = changeNodeAtPath({
+  //       treeData: this.state.treeData,
+  //       path: treeNodeData.path,
+  //       getNodeKey: defaultGetNodeKey,
+  //       ignoreCollapsed: false,
+  //       newNode: newNode
+  //     }); 
 
-      this.setState(state => ({
-        treeData: this.state.treeData
-      })); 
-    }
-  }
+  //     this.setState(state => ({
+  //       treeData: this.state.treeData
+  //     })); 
+  //   }
+  // }
 
-  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
-    // Find the widget with this shape ID in the constraints tree
-    let treeNode = this.widgetTreeNodeMap[shapeId]; 
-    let feedbackItems = undefined; 
-    if(treeNode != undefined) {
-      feedbackItems = treeNode.subtitle; 
-    }else {
-      feedbackItems = this.state.pageFeedbackWidgets; 
-    }
+  // highlightWidgetFeedback = (shapeId, lock, highlighted) => {
+  //   // Find the widget with this shape ID in the constraints tree
+  //   let treeNode = this.widgetTreeNodeMap[shapeId]; 
+  //   let feedbackItems = undefined; 
+  //   if(treeNode != undefined) {
+  //     feedbackItems = treeNode.subtitle; 
+  //   }else {
+  //     feedbackItems = this.state.pageFeedbackWidgets; 
+  //   }
 
-    // Find the corresponding feedback item
-    let feedbackIndex = -1; 
-    for(let i=0; i<feedbackItems.length; i++) {
-      if(feedbackItems[i].props.action["do"].key == lock) {
-        feedbackIndex = i; 
-      }
-    }
+  //   // Find the corresponding feedback item
+  //   let feedbackIndex = -1; 
+  //   for(let i=0; i<feedbackItems.length; i++) {
+  //     if(feedbackItems[i].props.action["do"].key == lock) {
+  //       feedbackIndex = i; 
+  //     }
+  //   }
 
-    if(feedbackIndex > -1) {
-      let feedbackItem = feedbackItems[feedbackIndex]; 
+  //   if(feedbackIndex > -1) {
+  //     let feedbackItem = feedbackItems[feedbackIndex]; 
 
-      // Highlight parameter can be true or false which determines whether the new feedback item is highlighted or unhighlighted
-      let newFeedbackItem = this.getWidgetFeedback(shapeId, feedbackItem.props.parentShape, feedbackItem.props.action, feedbackItem.props.message, highlighted); 
+  //     // Highlight parameter can be true or false which determines whether the new feedback item is highlighted or unhighlighted
+  //     let newFeedbackItem = this.getWidgetFeedback(shapeId, feedbackItem.props.parentShape, feedbackItem.props.action, feedbackItem.props.message, highlighted); 
       
-      // Splice out the old item 
-      feedbackItems.splice(feedbackIndex, 1); 
-      feedbackItems.splice(feedbackIndex, 0, newFeedbackItem); 
-    }
+  //     // Splice out the old item 
+  //     feedbackItems.splice(feedbackIndex, 1); 
+  //     feedbackItems.splice(feedbackIndex, 0, newFeedbackItem); 
+  //   }
 
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }));      
-  }
+  //   this.setState(state => ({
+  //     treeData: this.state.treeData
+  //   }));      
+  // }
 
-  updateWidgetFeedbacks = (shape, action, actionType, property) => {    
-    // The shape was already updated so we just need to re-render the tree to get the new sizes
-    // Add WidgetFeedbackItem to correct item in the tree
+  // updateWidgetFeedbacks = (shape, action, actionType, property) => {    
+  //   // The shape was already updated so we just need to re-render the tree to get the new sizes
+  //   // Add WidgetFeedbackItem to correct item in the tree
 
-    // Find the corresponding tree node
-    let shapeId = shape.name; 
-    let uniqueId = _.uniqueId();
-    let treeNode = this.widgetTreeNodeMap[shapeId]; 
+  //   // Find the corresponding tree node
+  //   let shapeId = shape.name; 
+  //   let uniqueId = _.uniqueId();
+  //   let treeNode = this.widgetTreeNodeMap[shapeId]; 
 
-    // First, see whether there is already a feedback item for this action
-    // If there is, remove it, before updating with the new action
-    let feedbackItems = treeNode.subtitle; 
-    let feedbackIndex = -1; 
-    for(let i=0; i<feedbackItems.length; i++){
-      ///???
-      if(feedbackItems[i].props.property == property) {
-        feedbackIndex = i; 
-      }
-    }
+  //   // First, see whether there is already a feedback item for this action
+  //   // If there is, remove it, before updating with the new action
+  //   let feedbackItems = treeNode.subtitle; 
+  //   let feedbackIndex = -1; 
+  //   for(let i=0; i<feedbackItems.length; i++){
+  //     ///???
+  //     if(feedbackItems[i].props.property == property) {
+  //       feedbackIndex = i; 
+  //     }
+  //   }
 
-    // Remove the item at that index
-    if(feedbackIndex > -1) {
-      treeNode.subtitle.splice(feedbackIndex, 1);        
-    }
+  //   // Remove the item at that index
+  //   if(feedbackIndex > -1) {
+  //     treeNode.subtitle.splice(feedbackIndex, 1);        
+  //   }
 
-    // Check whether to remove or add a widget feedback item
-    if(actionType == "do") {
-      let message = action[actionType].getFeedbackMessage(property, shape);
-      let id = shapeId + "_" + uniqueId; 
-      let widgetFeedback = this.getWidgetFeedback(id, shape, action, property, message);
-      treeNode.subtitle.push(widgetFeedback);       
-    } 
+  //   // Check whether to remove or add a widget feedback item
+  //   if(actionType == "do") {
+  //     let message = action[actionType].getFeedbackMessage(property, shape);
+  //     let id = shapeId + "_" + uniqueId; 
+  //     let widgetFeedback = this.getWidgetFeedback(id, shape, action, property, message);
+  //     treeNode.subtitle.push(widgetFeedback);       
+  //   } 
 
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }), this.checkSolutionValidityAndUpdateCache);      
-  }
+  //   this.setState(state => ({
+  //     treeData: this.state.treeData
+  //   }), this.checkSolutionValidityAndUpdateCache);      
+  // }
 
   getShapeHierarchy = () => {
     let treeNodes = this.state.treeData; 
@@ -605,8 +579,8 @@ export default class ConstraintsCanvas extends React.Component {
         this.getShapeChildren(rootNode); 
       }
 
-      let rootNodeShape = rootNode.title.props.shape; 
-      if(rootNode.title.props.typed) {
+      let rootNodeShape = rootNode.shape; 
+      if(rootNode.typed) {
         // If the tree node is a typed group
         // Update the correspondingID list to
         // link the child elemeents with their corresponding shapes
@@ -622,19 +596,19 @@ export default class ConstraintsCanvas extends React.Component {
 
 
   getShapeChildren = (node) => {
-    let shape = node.title.props.shape; 
+    let shape = node.shape; 
     shape.children = []; 
     for(let i=0; i<node.children.length; i++){
       let child = node.children[i]; 
 
-      if(child.title.props.typed) {
+      if(child.typed) {
         this.getRepeatGroupMatchingChildren(child); 
-        child.title.props.shape.typed = true; 
+        child.shape.typed = true; 
       }
 
       
       // Add the child shape object to the shape children
-      let childShape = child.title.props.shape; 
+      let childShape = child.shape; 
       shape.children.push(childShape); 
 
       if(child.children){
@@ -643,26 +617,21 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  getPathAndChildrenForTreeNode = (treeNode) => {
-    // Innefficient but is the easiset to implement for now
-    // Get all the tree data as a flattened list
-    let treeNodeID = treeNode.title.props.shape.name; 
-    let flatData = getFlatDataFromTree({
-      treeData: this.state.treeData, 
-      getNodeKey: defaultGetNodeKey, 
-      ignoreCollapsed: false
-    }); 
+  // getPathAndChildrenForTreeNode = (treeNode) => {
+  //   // Innefficient but is the easiset to implement for now
+  //   // Get all the tree data as a flattened list
+  //   let treeNodeID = treeNode.key; 
 
-    for(let i=0; i<flatData.length; i++){
-      let node = flatData[i]; 
-      let nodeItem = node.node; 
-      if(nodeItem.title.props.shape && nodeItem.title.props.shape.name == treeNodeID) {
-        return { path: node.path, children: node.node.children, treeIndex: node.treeIndex, expanded: nodeItem.expanded }; 
-      }
-    }
+  //   for(let i=0; i<flatData.length; i++){
+  //     let node = flatData[i]; 
+  //     let nodeItem = node.node; 
+  //     if(nodeItem.title.props.shape && nodeItem.title.props.shape.name == treeNodeID) {
+  //       return { path: node.path, children: node.node.children, treeIndex: node.treeIndex, expanded: nodeItem.expanded }; 
+  //     }
+  //   }
 
-    return { path: [-1], children: [], treeIndex: 0 }; 
-  }
+  //   return { path: [-1], children: [], treeIndex: 0 }; 
+  // }
 
   inferShapeType = () => {
     return "button";
@@ -713,488 +682,470 @@ export default class ConstraintsCanvas extends React.Component {
     return shape;
   }
 
-  calculateRowHeight = ({treeIndex, node, path}) => {
-    let padding = 5; 
-    let actualRowHeight = node.title.props.shape.orig_height + (padding * 2);
-    let nodeElement = node.title.props.shape; 
-    let rowHeight = (actualRowHeight < this.minimumRowHeight) ? this.minimumRowHeight : actualRowHeight; 
-    let infoHeight = 23 
-    let infoShowing = (nodeElement.importance != "normal" || nodeElement.order != -1 || nodeElement.containerOrder);
-    rowHeight += (infoShowing ? infoHeight : 0);  
+  // canReparentWidgetNode = ({node, nextParent, prevPath, nextPath}) => {
+  //   if(nextParent && (nextParent.title.props.isContainer)) {
+  //       if(nextParent.title.props.item) {
+  //         return false;
+  //       }
+  //       return true;
+  //   }
 
-    // Row height
-    let feedbackItems = node.subtitle.filter(item => item.props.type == "feedback"); 
-    let typingAlert = node.subtitle.filter(item => item.props.type == "typing"); 
-    let numFeedback = feedbackItems ? feedbackItems.length : 0; 
-    let numTyping = typingAlert ? typingAlert.length : 0; 
+  //   return false;
+  // }
 
-    return this.rowPadding + rowHeight + (numFeedback * this.defaultFeedbackHeight) + (numTyping * this.defaultTypingAlertHeight); 
-  }
+  // typesMatch = (group1, group2) =>  {
+  //   // Check whether the set of types in each group list match 
+  //   if(group1.length != group2.length) {
+  //     return false;
+  //   }
 
-  canReparentWidgetNode = ({node, nextParent, prevPath, nextPath}) => {
-    if(nextParent && (nextParent.title.props.isContainer)) {
-        if(nextParent.title.props.item) {
-          return false;
-        }
-        return true;
-    }
+  //   for(let i=0; i<group1.length; i++) {
+  //     let item1 = group1[i]; 
+  //     let item2 = group2[i]; 
+  //     if(item1 != item2) {
+  //       return false;
+  //     }
+  //   }
 
-    return false;
-  }
+  //   return true;
+  // }
 
-  typesMatch = (group1, group2) =>  {
-    // Check whether the set of types in each group list match 
-    if(group1.length != group2.length) {
-      return false;
-    }
+  // canSplitIntoGroupOfSize = (node, size) => {
+  //   // Determine if the children of this node can be split into a group of the given size
+  //   let pattern = []; 
 
-    for(let i=0; i<group1.length; i++) {
-      let item1 = group1[i]; 
-      let item2 = group2[i]; 
-      if(item1 != item2) {
-        return false;
-      }
-    }
+  //   // Collect all the types and split them into groups based on the given size
+  //   let currSize = 0; 
+  //   let currGroup = []; 
+  //   for(let i=0; i<node.children.length; i++) {
+  //     let currChild = node.children[i]; 
+  //     currGroup.push(currChild.title.props.shape.type);
+  //     currSize++; 
 
-    return true;
-  }
+  //     if(currSize == size){
+  //       if(currGroup.length) {
+  //         pattern.push(currGroup); 
+  //       }
 
-  canSplitIntoGroupOfSize = (node, size) => {
-    // Determine if the children of this node can be split into a group of the given size
-    let pattern = []; 
+  //       currSize = 0; 
+  //       currGroup = []; 
+  //     }
+  //   }
 
-    // Collect all the types and split them into groups based on the given size
-    let currSize = 0; 
-    let currGroup = []; 
-    for(let i=0; i<node.children.length; i++) {
-      let currChild = node.children[i]; 
-      currGroup.push(currChild.title.props.shape.type);
-      currSize++; 
+  //   // Now, verify that each of the subgroups has the exact same set of types
+  //   for(let i=0; i<pattern.length; i++){
+  //     if(i < pattern.length - 1) {
+  //       let patternGroup = pattern[i]; 
+  //       let nextPatternGroup = pattern[i+1]; 
+  //       if(!this.typesMatch(patternGroup, nextPatternGroup)) {
+  //         return false;
+  //       }
+  //     }
+  //   }
 
-      if(currSize == size){
-        if(currGroup.length) {
-          pattern.push(currGroup); 
-        }
+  //   return true; 
+  // }
 
-        currSize = 0; 
-        currGroup = []; 
-      }
-    }
+  // getGroupSizes = (total) => {
+  //   // Get the set of group sizes to check by finding the possible divisors
+  //   let totalFloor = Math.floor(total/2); 
+  //   let sizes = []; 
+  //   for(let i=1; i<=totalFloor; i++) {
+  //     if(total % i == 0){
+  //       sizes.push(i); 
+  //     }
+  //   }
 
-    // Now, verify that each of the subgroups has the exact same set of types
-    for(let i=0; i<pattern.length; i++){
-      if(i < pattern.length - 1) {
-        let patternGroup = pattern[i]; 
-        let nextPatternGroup = pattern[i+1]; 
-        if(!this.typesMatch(patternGroup, nextPatternGroup)) {
-          return false;
-        }
-      }
-    }
+  //   return sizes;
+  // }
 
-    return true; 
-  }
+  // checkGroupTyping = (node) => {
+  //   // Do the type inference algorithm
+  //   // iterate through each set of possible groupings starting with the greatest common divisor
+  //   let numChildren = node.children.length; 
+  //   let groupSizes = this.getGroupSizes(numChildren);
+  //   // We want to split into the largest size group, so reverse the order
+  //   groupSizes.reverse();
+  //   for(let i=0; i<groupSizes.length; i++) {
+  //     let groupSize = groupSizes[i];
+  //     if(groupSize >= this.minimumGroupSize) {
+  //       if(this.canSplitIntoGroupOfSize(node, groupSize)) {
+  //         return groupSize;
+  //       }
+  //     }
+  //   }
 
-  getGroupSizes = (total) => {
-    // Get the set of group sizes to check by finding the possible divisors
-    let totalFloor = Math.floor(total/2); 
-    let sizes = []; 
-    for(let i=1; i<=totalFloor; i++) {
-      if(total % i == 0){
-        sizes.push(i); 
-      }
-    }
+  //   return false;
+  // }
 
-    return sizes;
-  }
+  // getRepeatGroupMatchingChildren = (group) => {
+  //   // For a given child, return the shape IDs of the child shapes that are in the
+  //   // corresponding positions in the other group(s)
+  //   let items = group.children; 
+  //   if(items) {
+  //     for(let i=0; i<items.length; i++) {
+  //       let currItem = items[i]; 
 
-  checkGroupTyping = (node) => {
-    // Do the type inference algorithm
-    // iterate through each set of possible groupings starting with the greatest common divisor
-    let numChildren = node.children.length; 
-    let groupSizes = this.getGroupSizes(numChildren);
-    // We want to split into the largest size group, so reverse the order
-    groupSizes.reverse();
-    for(let i=0; i<groupSizes.length; i++) {
-      let groupSize = groupSizes[i];
-      if(groupSize >= this.minimumGroupSize) {
-        if(this.canSplitIntoGroupOfSize(node, groupSize)) {
-          return groupSize;
-        }
-      }
-    }
+  //       let correspondingBefore = []
+  //       if(i > 0) {
+  //         correspondingBefore = _.range(0, i); 
+  //       }
 
-    return false;
-  }
+  //       let correspondingAfter = []; 
+  //       if(i < items.length - 1) {
+  //         correspondingAfter = _.range(i+1, items.length); 
+  //       }
 
-  getRepeatGroupMatchingChildren = (group) => {
-    // For a given child, return the shape IDs of the child shapes that are in the
-    // corresponding positions in the other group(s)
-    let items = group.children; 
-    if(items) {
-      for(let i=0; i<items.length; i++) {
-        let currItem = items[i]; 
+  //       let correspondingItems = correspondingBefore.concat(correspondingAfter); 
 
-        let correspondingBefore = []
-        if(i > 0) {
-          correspondingBefore = _.range(0, i); 
-        }
+  //       let itemChildren = currItem.children; 
+  //       if(itemChildren) {
+  //         for(let j=0; j<itemChildren.length; j++) {
+  //           let itemChild = itemChildren[j]; 
 
-        let correspondingAfter = []; 
-        if(i < items.length - 1) {
-          correspondingAfter = _.range(i+1, items.length); 
-        }
+  //           let correspondingIDs = []; 
+  //           for(let k=0; k<correspondingItems.length; k++) {
+  //             let correspondingItem = items[correspondingItems[k]]; 
+  //             let matchingItem = correspondingItem.children[j]; 
+  //             correspondingIDs.push(matchingItem.key);
+  //           }
 
-        let correspondingItems = correspondingBefore.concat(correspondingAfter); 
+  //           itemChild.shape.correspondingIDs = correspondingIDs; 
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
-        let itemChildren = currItem.children; 
-        if(itemChildren) {
-          for(let j=0; j<itemChildren.length; j++) {
-            let itemChild = itemChildren[j]; 
+  // restructureRepeatGroupChildren = (groupChildren, groupSize) => {
+  //   // Split the children of this group node into uniformly sized groups 
+  //   let curr = 0; 
+  //   let currGroup = []; 
+  //   let groups = []; 
+  //   for(let i=0; i<groupChildren.length; i++) {
+  //     currGroup.push(groupChildren[i]); 
+  //     curr++; 
 
-            let correspondingIDs = []; 
-            for(let k=0; k<correspondingItems.length; k++) {
-              let correspondingItem = items[correspondingItems[k]]; 
-              let matchingItem = correspondingItem.children[j]; 
-              correspondingIDs.push(matchingItem.title.props.id);
-            }
+  //     if(curr == groupSize) {
+  //       groups.push(currGroup);
+  //       currGroup = [];
+  //       curr = 0;  
+  //     }
+  //   }
 
-            itemChild.title.props.shape.correspondingIDs = correspondingIDs; 
-          }
-        }
-      }
-    }
-  }
+  //   // For each group of children, create a new group node in the tree, and return these groups as 
+  //   // the new children 
+  //   let newChildren = []; 
+  //   for(let i=0; i<groups.length; i++) {
+  //     let currGroup = groups[i]; 
+  //     let newGroupNode = this.createNewTreeNode("group", item, { item: true }); 
+  //     let isExpanded = (i == 0) ? true : false; 
+  //     newGroupNode.expanded = isExpanded; 
+  //     newGroupNode.children = currGroup; 
+  //     newChildren.push(newGroupNode); 
+  //   }
 
-  restructureRepeatGroupChildren = (groupChildren, groupSize) => {
-    // Split the children of this group node into uniformly sized groups 
-    let curr = 0; 
-    let currGroup = []; 
-    let groups = []; 
-    for(let i=0; i<groupChildren.length; i++) {
-      currGroup.push(groupChildren[i]); 
-      curr++; 
+  //   return newChildren; 
+  // }
 
-      if(curr == groupSize) {
-        groups.push(currGroup);
-        currGroup = [];
-        curr = 0;  
-      }
-    }
+  // createRepeatGroup = (groupID, typed, groupSize) => {
+  //   return () => {
+  //     let groupNode = this.widgetTreeNodeMap[groupID];
+  //     // let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
+  //     if(groupNode) {
+  //       let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typed: true }); 
+  //       let newGroupChildren = this.restructureRepeatGroupChildren(groupNodeData.children, groupSize); 
 
-    // For each group of children, create a new group node in the tree, and return these groups as 
-    // the new children 
-    let newChildren = []; 
-    for(let i=0; i<groups.length; i++) {
-      let currGroup = groups[i]; 
-      let newGroupNode = this.createNewTreeNode("group", item, { item: true }); 
-      let isExpanded = (i == 0) ? true : false; 
-      newGroupNode.expanded = isExpanded; 
-      newGroupNode.children = currGroup; 
-      newChildren.push(newGroupNode); 
-    }
+  //       // Create a new node for the widget
+  //       let newNode = {
+  //         title: widget, 
+  //         subtitle: [], 
+  //         expanded: true, 
+  //         children: newGroupChildren
+  //       }; 
 
-    return newChildren; 
-  }
+  //       // Replace the current node with this new node
+  //       this.state.treeData = changeNodeAtPath({
+  //         treeData: this.state.treeData,
+  //         path: groupNodeData.path,
+  //         getNodeKey: defaultGetNodeKey,
+  //         ignoreCollapsed: false,
+  //         newNode: newNode
+  //       }); 
 
-  createRepeatGroup = (groupID, typed, groupSize) => {
-    return () => {
-      let groupNode = this.widgetTreeNodeMap[groupID];
-      let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
-      if(groupNodeData) {
-        let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typed: true }); 
-        let newGroupChildren = this.restructureRepeatGroupChildren(groupNodeData.children, groupSize); 
+  //       this.setState(state => ({
+  //         treeData: this.state.treeData
+  //       }), this.checkSolutionValidityAndUpdateCache); 
+  //     }
+  //   }
+  // }
 
-        // Create a new node for the widget
-        let newNode = {
-          title: widget, 
-          subtitle: [], 
-          expanded: true, 
-          children: newGroupChildren
-        }; 
+  // closeTypingAlert = (groupID) => {
+  //   return () => {
+  //     // Close the group typing alert dialog without doing anything. 
+  //     let treeNode = this.widgetTreeNodeMap[groupID]; 
+  //     // Remove the typing dialog from the group
+  //     if(treeNode && treeNode.subtitle && treeNode.subtitle.length) {
+  //       let subtitleNode = treeNode.subtitle[0]; 
+  //       if(subtitleNode.props.type == "typing") {
+  //         treeNode.subtitle.splice(0,1);       
+  //       }
+  //     }
 
-        // Replace the current node with this new node
-        this.state.treeData = changeNodeAtPath({
-          treeData: this.state.treeData,
-          path: groupNodeData.path,
-          getNodeKey: defaultGetNodeKey,
-          ignoreCollapsed: false,
-          newNode: newNode
-        }); 
+  //     this.setState(state => ({
+  //       treeData: this.state.treeData
+  //     }));       
+  //   }
+  // }
 
-        this.setState(state => ({
-          treeData: this.state.treeData
-        }), this.checkSolutionValidityAndUpdateCache); 
-      }
-    }
-  }
+  // getWidgetTyping = (key, groupID, groupSize) => {
+  //   return (<WidgetTyping 
+  //     key={key} type="typing" 
+  //     groupID={groupID} 
+  //     groupSize={groupSize}
+  //     createRepeatGroup={this.createRepeatGroup} 
+  //     closeTypingAlert={this.closeTypingAlert} />); 
+  // }
 
-  closeTypingAlert = (groupID) => {
-    return () => {
-      // Close the group typing alert dialog without doing anything. 
-      let treeNode = this.widgetTreeNodeMap[groupID]; 
-      // Remove the typing dialog from the group
-      if(treeNode && treeNode.subtitle && treeNode.subtitle.length) {
-        let subtitleNode = treeNode.subtitle[0]; 
-        if(subtitleNode.props.type == "typing") {
-          treeNode.subtitle.splice(0,1);       
-        }
-      }
-
-      this.setState(state => ({
-        treeData: this.state.treeData
-      }));       
-    }
-  }
-
-  getWidgetTyping = (key, groupID, groupSize) => {
-    return (<WidgetTyping 
-      key={key} type="typing" 
-      groupID={groupID} 
-      groupSize={groupSize}
-      createRepeatGroup={this.createRepeatGroup} 
-      closeTypingAlert={this.closeTypingAlert} />); 
-  }
-
-  createLabelsGroup = (labelID, labeledID) => {
-    // Create a new group in the hierarchy to contain the labeled shape and the label shape 
-    let labelNode = this.widgetTreeNodeMap[labelID]; 
-    let labeledNode = this.widgetTreeNodeMap[labeledID]; 
-    let labelNodeData = this.getPathAndChildrenForTreeNode(labelNode); 
-    let labeledNodeData = this.getPathAndChildrenForTreeNode(labeledNode);
-    if(labelNodeData && labeledNodeData) {
-      // Remove labeled node from the tree before re-adding to the labels group
-      this.state.treeData = removeNodeAtPath({
-        treeData: this.state.treeData, 
-        path: labeledNodeData.path, 
-        getNodeKey: defaultGetNodeKey,
-      }); 
+  // createLabelsGroup = (labelID, labeledID) => {
+  //   // Create a new group in the hierarchy to contain the labeled shape and the label shape 
+  //   let labelNode = this.widgetTreeNodeMap[labelID]; 
+  //   let labeledNode = this.widgetTreeNodeMap[labeledID]; 
+  //   let labelNodeData = this.getPathAndChildrenForTreeNode(labelNode); 
+  //   let labeledNodeData = this.getPathAndChildrenForTreeNode(labeledNode);
+  //   if(labelNodeData && labeledNodeData) {
+  //     // Remove labeled node from the tree before re-adding to the labels group
+  //     this.state.treeData = removeNodeAtPath({
+  //       treeData: this.state.treeData, 
+  //       path: labeledNodeData.path, 
+  //       getNodeKey: defaultGetNodeKey,
+  //     }); 
       
-      // Create a new labelGroup element. The order should be important so the label always appears first in reading order. 
-      // Have to set the children on the object here when creating a new node
-      labeledNode.children = labeledNodeData.children; 
+  //     // Create a new labelGroup element. The order should be important so the label always appears first in reading order. 
+  //     // Have to set the children on the object here when creating a new node
+  //     labeledNode.children = labeledNodeData.children; 
 
-      let newLabelGroupNode = this.createNewTreeNode("labelGroup", label, { containerOrder: "important" }); 
-      newLabelGroupNode.expanded = true; 
-      newLabelGroupNode.children = [labelNode, labeledNode]; 
+  //     let newLabelGroupNode = this.createNewTreeNode("labelGroup", label, { containerOrder: "important" }); 
+  //     newLabelGroupNode.expanded = true; 
+  //     newLabelGroupNode.children = [labelNode, labeledNode]; 
 
-      // Replace the current node with this new node
-      this.state.treeData = changeNodeAtPath({
-        treeData: this.state.treeData,
-        path: labelNodeData.path,
-        getNodeKey: defaultGetNodeKey,
-        ignoreCollapsed: false,
-        newNode: newLabelGroupNode
-      }); 
-    }
-  }
+  //     // Replace the current node with this new node
+  //     this.state.treeData = changeNodeAtPath({
+  //       treeData: this.state.treeData,
+  //       path: labelNodeData.path,
+  //       getNodeKey: defaultGetNodeKey,
+  //       ignoreCollapsed: false,
+  //       newNode: newLabelGroupNode
+  //     }); 
+  //   }
+  // }
 
-  removeTypedGroup = (groupNode) => {
-   // Ungroup childen from the item containers
-    let children = groupNode.children; 
-    if(children) {
-      for(let i=0; i<children.length; i++){
-        let child = children[i]; 
-        if(child.title.props.item) {
-          let nodePath = this.getPathAndChildrenForTreeNode(child); 
+  // removeTypedGroup = (groupNode) => {
+  //  // Ungroup childen from the item containers
+  //   let children = groupNode.children; 
+  //   if(children) {
+  //     for(let i=0; i<children.length; i++){
+  //       let child = children[i]; 
+  //       if(child.title.props.item) {
+  //         let nodePath = this.getPathAndChildrenForTreeNode(child); 
 
-          this.state.treeData = removeNodeAtPath({
-            treeData: this.state.treeData, 
-            path: nodePath.path, 
-            getNodeKey: defaultGetNodeKey,
-          }); 
+  //         this.state.treeData = removeNodeAtPath({
+  //           treeData: this.state.treeData, 
+  //           path: nodePath.path, 
+  //           getNodeKey: defaultGetNodeKey,
+  //         }); 
 
-          // Remove the children of the item and place
-          // at the parent level
-          let itemChildren = child.children; 
-          if(itemChildren) {
-            let startingIndex = nodePath.treeIndex; 
-            for(let i=0; i<itemChildren.length; i++) {
-              let itemChild = itemChildren[i]; 
-              // Reinsert the children at the item node level
-              let result = insertNode({
-                treeData: this.state.treeData, 
-                depth: nodePath.path.length - 1, 
-                minimumTreeIndex: startingIndex, 
-                newNode: itemChild, 
-                getNodeKey: defaultGetNodeKey, 
-                ignoreCollapsed: false, 
-                expandParent: true
-              });  
+  //         // Remove the children of the item and place
+  //         // at the parent level
+  //         let itemChildren = child.children; 
+  //         if(itemChildren) {
+  //           let startingIndex = nodePath.treeIndex; 
+  //           for(let i=0; i<itemChildren.length; i++) {
+  //             let itemChild = itemChildren[i]; 
+  //             // Reinsert the children at the item node level
+  //             let result = insertNode({
+  //               treeData: this.state.treeData, 
+  //               depth: nodePath.path.length - 1, 
+  //               minimumTreeIndex: startingIndex, 
+  //               newNode: itemChild, 
+  //               getNodeKey: defaultGetNodeKey, 
+  //               ignoreCollapsed: false, 
+  //               expandParent: true
+  //             });  
 
-              if(result.treeData) {
-                this.state.treeData = result.treeData; 
-              }                     
+  //             if(result.treeData) {
+  //               this.state.treeData = result.treeData; 
+  //             }                     
 
-              startingIndex += 1; 
-            }
-          }
-        }
-      }
-    }
+  //             startingIndex += 1; 
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
 
-    // once children have been restructured, replace
-    // the group container with a regular group container
-    this.replaceTypedGroup(groupNode); 
-  }
+  //   // once children have been restructured, replace
+  //   // the group container with a regular group container
+  //   this.replaceTypedGroup(groupNode); 
+  // }
 
-  replaceTypedGroup = (groupNode) => {
-    let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
-    if(groupNodeData) {
-      let shape = groupNode.title.props.shape; 
-      shape.typed = false; 
+  // replaceTypedGroup = (groupNode) => {
+  //   let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
+  //   if(groupNodeData) {
+  //     let shape = groupNode.title.props.shape; 
+  //     shape.typed = false; 
 
-      let widget = this.getWidget(shape, group); 
+  //     let widget = this.getWidget(shape, group); 
 
-      // Create a new node for the widget
-      let newNode = {
-        title: widget, 
-        subtitle: [], 
-        expanded: true, 
-        children: groupNodeData.children
-      }; 
+  //     // Create a new node for the widget
+  //     let newNode = {
+  //       title: widget, 
+  //       subtitle: [], 
+  //       expanded: true, 
+  //       children: groupNodeData.children
+  //     }; 
 
-      // Replace the current node with this new node
-      this.state.treeData = changeNodeAtPath({
-        treeData: this.state.treeData,
-        path: groupNodeData.path,
-        getNodeKey: defaultGetNodeKey,
-        ignoreCollapsed: false,
-        newNode: newNode
-      }); 
-    }
-  }
+  //     // Replace the current node with this new node
+  //     this.state.treeData = changeNodeAtPath({
+  //       treeData: this.state.treeData,
+  //       path: groupNodeData.path,
+  //       getNodeKey: defaultGetNodeKey,
+  //       ignoreCollapsed: false,
+  //       newNode: newNode
+  //     }); 
+  //   }
+  // }
 
-  onMoveNode = ({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) => {
-    // If the node was moved into group, check whether group typing should be applied. 
-    if(nextParentNode) {
-      if(nextParentNode.title.props.shape.type == "group") {
-        this.removeWidgetTypingAlert(nextParentNode);
-        if(nextParentNode.title.props.typed) {
-          // The group is already typed. 
-          // Remove the group typing 
-          // Check first whether the widget typing alert has already been activated for this group
-          this.removeTypedGroup(nextParentNode);
-        } 
+  // onMoveNode = ({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) => {
+  //   // If the node was moved into group, check whether group typing should be applied. 
+  //   if(nextParentNode) {
+  //     if(nextParentNode.title.props.shape.type == "group") {
+  //       this.removeWidgetTypingAlert(nextParentNode);
+  //       if(nextParentNode.title.props.typed) {
+  //         // The group is already typed. 
+  //         // Remove the group typing 
+  //         // Check first whether the widget typing alert has already been activated for this group
+  //         this.removeTypedGroup(nextParentNode);
+  //       } 
 
-        let groupSize = this.checkGroupTyping(nextParentNode); 
-        let parentID = nextParentNode.title.props.shape.name; 
+  //       let groupSize = this.checkGroupTyping(nextParentNode); 
+  //       let parentID = nextParentNode.title.props.shape.name; 
 
-          // Find the group in the tree, remove it, and display the label to apply the typing
-        if(groupSize >= this.minimumGroupSize) {
-          let typingIndex = 0; 
-          let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
-          nextParentNode.subtitle.unshift(widgetTypingElement);
-        }   
-      }
-    }
+  //         // Find the group in the tree, remove it, and display the label to apply the typing
+  //       if(groupSize >= this.minimumGroupSize) {
+  //         let typingIndex = 0; 
+  //         let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
+  //         nextParentNode.subtitle.unshift(widgetTypingElement);
+  //       }   
+  //     }
+  //   }
 
-    // Remove the widget from the tree node map
-    let prevParentPath = prevPath.slice(0, prevPath.length-1);
-    let prevParentNode = getNodeAtPath({
-        treeData: this.state.treeData, 
-        path: prevParentPath, 
-        getNodeKey: defaultGetNodeKey,
-    }); 
+  //   // Remove the widget from the tree node map
+  //   let prevParentPath = prevPath.slice(0, prevPath.length-1);
+  //   let prevParentNode = getNodeAtPath({
+  //       treeData: this.state.treeData, 
+  //       path: prevParentPath, 
+  //       getNodeKey: defaultGetNodeKey,
+  //   }); 
 
-    // If the previous node was a typed group or item, remove the typing
-    // Also remove the alert if it was showin
-    prevParentNode = prevParentNode.node; 
-    if(prevParentNode && prevParentNode.title.props.shape.type == "group") {
-      this.removeWidgetTypingAlert(prevParentNode); 
+  //   // If the previous node was a typed group or item, remove the typing
+  //   // Also remove the alert if it was showin
+  //   prevParentNode = prevParentNode.node; 
+  //   if(prevParentNode && prevParentNode.title.props.shape.type == "group") {
+  //     this.removeWidgetTypingAlert(prevParentNode); 
 
-      if(prevParentNode.title.props.typed) {
-        this.removeTypedGroup(prevParentNode); 
-      }
-      else if(prevParentNode.title.props.item) {
-        let typedGroupPath = prevParentPath.slice(0, prevParentPath.length-1); 
-        let typedGroupNode = getNodeAtPath({
-          treeData: this.state.treeData, 
-          path: typedGroupPath, 
-          getNodeKey: defaultGetNodeKey
-        }); 
+  //     if(prevParentNode.title.props.typed) {
+  //       this.removeTypedGroup(prevParentNode); 
+  //     }
+  //     else if(prevParentNode.title.props.item) {
+  //       let typedGroupPath = prevParentPath.slice(0, prevParentPath.length-1); 
+  //       let typedGroupNode = getNodeAtPath({
+  //         treeData: this.state.treeData, 
+  //         path: typedGroupPath, 
+  //         getNodeKey: defaultGetNodeKey
+  //       }); 
 
-        this.removeTypedGroup(typedGroupNode.node);
-      }
-    }
+  //       this.removeTypedGroup(typedGroupNode.node);
+  //     }
+  //   }
 
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }), this.checkSolutionValidityAndUpdateCache); 
-  }
+  //   this.setState(state => ({
+  //     treeData: this.state.treeData
+  //   }), this.checkSolutionValidityAndUpdateCache); 
+  // }
 
-  removeWidgetTypingAlert = (node) => {
-    if(node.subtitle && node.subtitle.length) {
-      let firstSubtitle = node.subtitle[0]; 
-      if(firstSubtitle.props.type == "typing") {
-        // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
-        node.subtitle.splice(0,1);
-      }
-    }
-  }
+  // removeWidgetTypingAlert = (node) => {
+  //   if(node.subtitle && node.subtitle.length) {
+  //     let firstSubtitle = node.subtitle[0]; 
+  //     if(firstSubtitle.props.type == "typing") {
+  //       // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
+  //       node.subtitle.splice(0,1);
+  //     }
+  //   }
+  // }
 
-  removeWidgetNode = (path) => { 
-    return () => {
-      const getNodeKey = ({ treeIndex }) => treeIndex;
+  // removeWidgetNode = (path) => { 
+  //   return () => {
+  //     const getNodeKey = ({ treeIndex }) => treeIndex;
 
-      // Remove the widget from the tree node map
-      let treeNode = getNodeAtPath({
-          treeData: this.state.treeData, 
-          path: path, 
-          getNodeKey: defaultGetNodeKey,
-      }); 
+  //     // Remove the widget from the tree node map
+  //     let treeNode = getNodeAtPath({
+  //         treeData: this.state.treeData, 
+  //         path: path, 
+  //         getNodeKey: defaultGetNodeKey,
+  //     }); 
 
-      this.state.treeData = removeNodeAtPath({
-        treeData: this.state.treeData, 
-        path, 
-        getNodeKey,
-      })
+  //     this.state.treeData = removeNodeAtPath({
+  //       treeData: this.state.treeData, 
+  //       path, 
+  //       getNodeKey,
+  //     })
 
-      // Check if the parent node is an item or a typed group 
-      // If it is either an item or typed group
-      // Remove the typed group and unparent the children 
-      // from the item groups. 
-      let parentPath = path.slice(0, path.length-1); 
-      if(parentPath.length) {
-        let parentNode = getNodeAtPath({
-          treeData: this.state.treeData, 
-          path: parentPath, 
-          getNodeKey: defaultGetNodeKey
-        }); 
+  //     // Check if the parent node is an item or a typed group 
+  //     // If it is either an item or typed group
+  //     // Remove the typed group and unparent the children 
+  //     // from the item groups. 
+  //     let parentPath = path.slice(0, path.length-1); 
+  //     if(parentPath.length) {
+  //       let parentNode = getNodeAtPath({
+  //         treeData: this.state.treeData, 
+  //         path: parentPath, 
+  //         getNodeKey: defaultGetNodeKey
+  //       }); 
 
-        if(parentNode.node.title.props.typed) {
-          if(parentNode.node.children.length == 1) {
-            this.removeTypedGroup(parentNode.node); 
-          }
-        }
-        else if(parentNode.node.title.props.item) {
-          let typedGroupPath = parentPath.slice(0, parentPath.length-1); 
-          let typedGroupNode = getNodeAtPath({
-            treeData: this.state.treeData, 
-            path: typedGroupPath, 
-            getNodeKey: defaultGetNodeKey
-          }); 
+  //       if(parentNode.node.title.props.typed) {
+  //         if(parentNode.node.children.length == 1) {
+  //           this.removeTypedGroup(parentNode.node); 
+  //         }
+  //       }
+  //       else if(parentNode.node.title.props.item) {
+  //         let typedGroupPath = parentPath.slice(0, parentPath.length-1); 
+  //         let typedGroupNode = getNodeAtPath({
+  //           treeData: this.state.treeData, 
+  //           path: typedGroupPath, 
+  //           getNodeKey: defaultGetNodeKey
+  //         }); 
 
-          this.removeTypedGroup(typedGroupNode.node);
-        }
-        else if(parentNode.node.title.props.isContainer) {
-          // Hide the typing alert that was shown on the container, if there is one
-          this.removeWidgetTypingAlert(parentNode.node);
-        }
-      }
+  //         this.removeTypedGroup(typedGroupNode.node);
+  //       }
+  //       else if(parentNode.node.title.props.isContainer) {
+  //         // Hide the typing alert that was shown on the container, if there is one
+  //         this.removeWidgetTypingAlert(parentNode.node);
+  //       }
+  //     }
 
-      // Remove from the global map of widgets
-      let shapeID = treeNode.node.title.props.id; 
-      delete this.widgetTreeNodeMap[shapeID]; 
+  //     // Remove from the global map of widgets
+  //     let shapeID = treeNode.node.title.props.id; 
+  //     delete this.widgetTreeNodeMap[shapeID]; 
 
-      // Delete the entry in the constraints canvas shape map 
-      delete this.constraintsShapesMap[shapeID];
+  //     // Delete the entry in the constraints canvas shape map 
+  //     delete this.constraintsShapesMap[shapeID];
 
-      this.setState(state => ({
-        treeData: this.state.treeData,
-      }), this.checkSolutionValidityAndUpdateCache); 
-    }
-  }
+  //     this.setState(state => ({
+  //       treeData: this.state.treeData,
+  //     }), this.checkSolutionValidityAndUpdateCache); 
+  //   }
+  // }
 
   getNodeProps = ({node, path}) => {
     // if(path.length == 1 && path[0] == 0) {
@@ -1213,7 +1164,111 @@ export default class ConstraintsCanvas extends React.Component {
     // }
   }
 
+  onExpand = (expandedKeys) => {
+    console.log('onExpand', arguments);
+    this.setState({
+      expandedTreeNodes: expandedKeys
+    });
+  }
+
+
+  onSelected = (selectedKeys, evt) => {
+    let selected = selectedKeys[selectedKeys.length-1];
+    console.log(selected)
+    // Determine if the newly selected ID is a sibling of the selectedd
+    // If it is not a sibling, unselect 
+
+    // Use selectedKeys to set initially selectedx
+  }
+
+  onDrop = (info) => {
+    console.log('drop', info);
+    const dropKey = info.node.props.eventKey;
+    const dragKey = info.dragNode.props.eventKey;
+    const dropPos = info.node.props.pos.split('-');
+    const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+
+    const loop = (data, key, callback) => {
+      data.forEach((item, index, arr) => {
+        if (item.key === key) {
+          callback(item, index, arr);
+          return;
+        }
+        if (item.children) {
+          loop(item.children, key, callback);
+        }
+      });
+    };
+    const data = [...this.state.treeData];
+
+    // Find dragObject
+    let dragObj;
+    loop(data, dragKey, (item, index, arr) => {
+      arr.splice(index, 1);
+      dragObj = item;
+    });
+
+    if (!info.dropToGap) {
+      // Drop on the content
+      loop(data, dropKey, (item) => {
+        item.children = item.children || [];
+        item.children.push(dragObj);
+      });
+    } else if (
+      (info.node.props.children || []).length > 0 &&  // Has children
+      info.node.props.expanded &&                     // Is expanded
+      dropPosition === 1                              // On the bottom gap
+    ) {
+      loop(data, dropKey, (item) => {
+        item.children = item.children || [];
+        item.children.unshift(dragObj);
+      });
+    } else {
+      // Drop on the gap
+      let ar;
+      let i;
+      loop(data, dropKey, (item, index, arr) => {
+        ar = arr;
+        i = index;
+      });
+      if (dropPosition === -1) {
+        ar.splice(i, 0, dragObj);
+      } else {
+        ar.splice(i + 1, 0, dragObj);
+      }
+    }
+
+    this.setState({
+      treeData: data,
+    });
+  }
+
   render () {
+    // Gather the set of tree nodes
+    const gatherTreeNodes = data => {
+      return data.map((item) => {
+        let widgetOptions = {
+          highlighted: item.highlighted, 
+          typed: item.typed, 
+          item: item.item
+        }
+
+       let widgetSource = item.src; 
+       if(!widgetSource) {
+          let widgetSourceNode = this.state.svgSourceMap[item.shape.id]; 
+          if(widgetSourceNode) {
+            widgetSource = widgetSourceNode.svgData; 
+          }
+       }
+
+        let widget = this.getWidget(item.shape, widgetSource, widgetOptions); 
+        if (item.children && item.children.length) {
+          return <TreeNode key={item.key} icon={widget} title={""}>{gatherTreeNodes(item.children)}</TreeNode>;
+        }
+        return <TreeNode key={item.key} icon={widget} title={""} />;
+      });
+    };
+
     console.log("Render ConstraintsCanvas");
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
@@ -1231,8 +1286,6 @@ export default class ConstraintsCanvas extends React.Component {
       getCurrentShapeSiblings={this.getCurrentShapeSiblings}
       getCurrentShapeType={this.getCurrentShapeType}
       getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
-    // const colorPicker = (this.state.colorPickerShown ? <Ios11Picker onChangeComplete={this.updateBackgroundColor} /> : undefined);  
-    // const colorPickerPosition = this.state.colorPickerPosition; 
 
     // Process the queue of shapes to add to the canvas
 	  return (
@@ -1254,8 +1307,22 @@ export default class ConstraintsCanvas extends React.Component {
             <div className={(!rightClickMenu ? "hidden" : "")}> 
               {rightClickMenu}
             </div>
-            <div className="widgets-sortable-tree">
-              <SortableTree
+            <div className="widgets-sortable-tree draggable-container">
+              <Tree
+                draggable={true}
+                selectable={true}
+                showLine={false}
+                multiple={true}
+                defaultExpandedKeys={this.state.expandedTreeNodes}
+                onSelect={this.onSelected}
+                onDragStart={this.onDragStart}
+                onDragEnter={this.onDragEnter}
+                onDrop={this.onDrop}
+                onExpand={this.onExpand}
+              >
+                {gatherTreeNodes(this.state.treeData)}
+              </Tree>
+              {/*<SortableTree
                 treeData={this.state.treeData}
                 onChange={treeData => this.setState({ treeData })}
                 canDrop={this.canReparentWidgetNode}
@@ -1263,7 +1330,7 @@ export default class ConstraintsCanvas extends React.Component {
                 rowHeight={this.calculateRowHeight}
                 // isVirtualized={false}
                 generateNodeProps={this.getNodeProps}
-              />
+              />*/}
             </div>
           </div>
       </div>

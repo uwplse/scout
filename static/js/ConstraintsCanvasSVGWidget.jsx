@@ -239,12 +239,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         id={this.elementId} 
         className={"widget-container " + (highlighted ? "highlighted" : "")}>
         <div className="widget-control-row"> 
-          <SVGInline 
+          {source ? (<SVGInline 
             //contentEditable={isEditable} 
             className={"widget-control-" + this.type} 
             svg={source} 
             height={this.state.height + "px"} 
-            width={this.state.width + "px"} />
+            width={this.state.width + "px"} />) : undefined}
             <div 
               className={"widget-control-info " + ((importanceLabel.length || showOrder || this.isContainer) ? "" : "hidden")}>
               {this.isContainer ? 

@@ -41,3 +41,12 @@
     width: 20px;
     transform: scale(1.5);
 }
+
+.rc-tree li {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+}
+
+.rc-tree span.rc-tree-node-selected {
+    padding: 0.5em;
+}
