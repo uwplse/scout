@@ -6,6 +6,7 @@ import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import ConstraintsCanvasContainerSVGWidget from './ConstraintsCanvasContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
 import ConstraintActions from './ConstraintActions';
+import { getUniqueID } from './util';
 // import {
 //   SortableTreeWithoutDndContext as SortableTree,
 //   removeNodeAtPath, 
@@ -16,12 +17,13 @@ import ConstraintActions from './ConstraintActions';
 //   getFlatDataFromTree, 
 //   addNodeUnderParent } 
 // from 'react-sortable-tree';
-import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
+// import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
+import GroupingRightClickMenu from './GroupingRightClickMenu'; 
 import WidgetTyping from './WidgetTyping'; 
-import group from '../assets/illustrator/groupContainer.svg';
+import groupSVG from '../assets/GroupWidget.svg';
 import repeatGrid from '../assets/illustrator/repeatGrid.svg';
 import item from '../assets/illustrator/item.svg';
-import rootNode from '../assets/illustrator/canvas.svg';
+import rootNode from '../assets/CanvasWidget.svg';
 import Tree, { TreeNode } from 'rc-tree';
 
 export default class ConstraintsCanvas extends React.Component {
@@ -46,12 +48,13 @@ export default class ConstraintsCanvas extends React.Component {
     this.rowPadding = 10; 
     this.minimumRowHeight = 40; 
     this.minimumGroupSize = 2; 
-    this.rootNodeHeight = 46.5; 
-    this.rootNodeWidth = 239;
+    this.defaultNodeHeight = 46.5; 
+    this.defaultNodeWidth = 173;
 
     this.state = { 
       treeData: [], 
       expandedTreeNodes: ["canvas"],
+      selectedTreeNodes: [], 
       pageFeedbackWidgets: [], 
       rightClickMenuShown: false, 
       rightClickMenuCallbacks: undefined, 
@@ -210,10 +213,10 @@ export default class ConstraintsCanvas extends React.Component {
       "children": [],
       "x": 0, 
       "y": 0,
-      "width": this.rootNodeWidth, 
-      "height": this.rootNodeHeight, 
-      "orig_width": this.rootNodeWidth, 
-      "orig_height": this.rootNodeHeight
+      "width": this.defaultNodeWidth, 
+      "height": this.defaultNodeHeight, 
+      "orig_width": this.defaultNodeWidth, 
+      "orig_height": this.defaultNodeHeight
     }
 
     this.canvasLevelShape = canvas;
@@ -307,10 +310,10 @@ export default class ConstraintsCanvas extends React.Component {
 
   createNewTreeNode = (type, source, options={}) => {
     // Creates a new tree node widget and returns it
-    let id = _.uniqueId();
+    let id = getUniqueID();
 
-    let width = 0;
-    let height = 0; 
+    let width = options.width ? options.width : 0;
+    let height = options.height ? options.height : 0; 
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
 
     let newTreeNode = {
@@ -341,16 +344,31 @@ export default class ConstraintsCanvas extends React.Component {
     return this.constraintsShapesMap[shapeID]; 
   }
 
-  displayRightClickMenu = (evt, shapeID, menuCallbacks) => {
-    this.setState({
-      rightClickMenuShown: true, 
-      rightClickMenuCallbacks: menuCallbacks, 
-      rightClickMenuPosition: {
-        x: evt.clientX, 
-        y: evt.clientY
-      }, 
-      rightClickShapeID: shapeID
-    });  
+  displayRightClickMenu = (evt, shapeID) => {
+    let shape = this.constraintsShapesMap[shapeID]; 
+    if(shape) {
+      if(shape.type == "group") {
+        this.setState({
+          rightClickMenuShown: true, 
+          rightClickMenuPosition: {
+            x: evt.clientX, 
+            y: evt.clientY
+          }, 
+          rightClickShapeID: shapeID, 
+          rightClickGroup: false
+        });         
+      } else if(this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1) {
+        this.setState({
+          rightClickMenuShown: true, 
+          rightClickMenuPosition: {
+            x: evt.clientX, 
+            y: evt.clientY
+          }, 
+          rightClickShapeID: shapeID, 
+          rightClickGroup: true
+        });   
+      }
+    }
   }
 
 
@@ -617,26 +635,9 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  // getPathAndChildrenForTreeNode = (treeNode) => {
-  //   // Innefficient but is the easiset to implement for now
-  //   // Get all the tree data as a flattened list
-  //   let treeNodeID = treeNode.key; 
-
-  //   for(let i=0; i<flatData.length; i++){
-  //     let node = flatData[i]; 
-  //     let nodeItem = node.node; 
-  //     if(nodeItem.title.props.shape && nodeItem.title.props.shape.name == treeNodeID) {
-  //       return { path: node.path, children: node.node.children, treeIndex: node.treeIndex, expanded: nodeItem.expanded }; 
-  //     }
-  //   }
-
-  //   return { path: [-1], children: [], treeIndex: 0 }; 
-  // }
-
   inferShapeType = () => {
     return "button";
   }
-
 
   createConstraintsCanvasShapeObject = (id, type, width, height, options={}) => {
     // Optional set of initial properties cna be passed in through the intial object
@@ -657,7 +658,7 @@ export default class ConstraintsCanvas extends React.Component {
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
     let shape = {
-      "name": _.uniqueId(),
+      "name": getUniqueID(),
       "id": id, 
       "type": type,
       "importance": importance, 
@@ -681,17 +682,6 @@ export default class ConstraintsCanvas extends React.Component {
 
     return shape;
   }
-
-  // canReparentWidgetNode = ({node, nextParent, prevPath, nextPath}) => {
-  //   if(nextParent && (nextParent.title.props.isContainer)) {
-  //       if(nextParent.title.props.item) {
-  //         return false;
-  //       }
-  //       return true;
-  //   }
-
-  //   return false;
-  // }
 
   // typesMatch = (group1, group2) =>  {
   //   // Check whether the set of types in each group list match 
@@ -1164,6 +1154,77 @@ export default class ConstraintsCanvas extends React.Component {
     // }
   }
 
+  groupContainsKey = (treeNode, key) => {
+    for(let j=0; j<treeNode.children.length; j++) {
+      if(treeNode.children[j].key == key) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  groupTreeNodes = (treeNode, keys) => {
+    let nodes = []; 
+    let index = 0;
+    let firstIndex = -1; 
+    while(treeNode.children.length && index <= treeNode.children.length-1) {
+      let childNode = treeNode.children[index]; 
+      if(keys.indexOf(childNode.key) > -1) {
+        if(firstIndex == -1) {
+          firstIndex = index; 
+        }
+
+        let removedChild = treeNode.children.splice(index,1);
+        nodes.push(removedChild[0]); 
+      }else {
+        index += 1; 
+      }
+    }
+
+    // Make a new group to contain the nodes
+    let group = this.createNewTreeNode("group", groupSVG, {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+    group.children = nodes; 
+
+    if(firstIndex != -1) {
+      treeNode.children.splice(firstIndex, 0, group);
+    }
+  }
+
+  groupSelectedNodes = () => {
+    let firstKey = this.state.selectedTreeNodes[0];
+    let parentNode = this.getParentNodeForKey(firstKey, this.state.treeData[0]);
+    if(parentNode) {
+      this.groupTreeNodes(parentNode, this.state.selectedTreeNodes);
+    }
+
+    this.setState({
+      treeData: this.state.treeData 
+    })
+  }
+
+  ungroupGroup = (nodeKey) => {
+    let parentNode = this.getParentNodeForKey(nodeKey, this.state.treeData[0]); 
+    let index = -1; 
+    let groupChildren = [];
+    for(let i=0; i<parentNode.children.length; i++) {
+      let childNode = parentNode.children[i]; 
+      if(childNode.key == nodeKey) {
+        index = i; 
+        groupChildren = childNode.children; 
+        childNode.children = undefined; 
+      }
+    }
+
+    // remove the group element first
+    parentNode.children.splice(index, 1); 
+
+    // Now insert them into the parent at that index
+    if(index != -1) {
+      parentNode.children.splice(index, 0, ...groupChildren);
+    }
+  }
+
   onExpand = (expandedKeys) => {
     console.log('onExpand', arguments);
     this.setState({
@@ -1171,14 +1232,61 @@ export default class ConstraintsCanvas extends React.Component {
     });
   }
 
+  getParentNodeForKey = (treeNodeKey, treeNode) =>  {
+    if(treeNodeKey == "canvas") {
+      return treeNode; 
+    }
+
+    if(treeNode.children && treeNode.children.length) {
+      for(let i=0; i<treeNode.children.length; i++) {
+        let nodeChild = treeNode.children[i]; 
+        if(nodeChild.key == treeNodeKey) {
+          return treeNode; 
+        }
+
+        let subNode = this.getParentNodeForKey(treeNodeKey, nodeChild); 
+        if(subNode) {
+          return subNode; 
+        }
+      }
+    }
+
+    return undefined; 
+  }
+
+  hasSameParentNode = (treeNodeKey1, treeNodeKey2) => {
+    let parent1 = this.getParentNodeForKey(treeNodeKey1); 
+    let parent2 = this.getParentNodeForKey(treeNodeKey2); 
+    if(parent1 && parent2 && parent1.key == parent2.key) {
+      return true; 
+    }
+
+    return false;
+  }
 
   onSelected = (selectedKeys, evt) => {
     let selected = selectedKeys[selectedKeys.length-1];
-    console.log(selected)
-    // Determine if the newly selected ID is a sibling of the selectedd
-    // If it is not a sibling, unselect 
+    if(!evt.nativeEvent || !evt.nativeEvent.shiftKey) {
+      // allow multiple node seelction when shift key is pressed
+      // Only have the most recent node selected 
+      this.setState({
+        selectedTreeNodes: [selected]
+      }); 
+    } else {
+      // Get the last selected node and verify that it has the same parent node as the other 
+      // selected nodes
+      let selectedNodes = selectedKeys; 
+      if(this.state.selectedTreeNodes.length > 1) {
+        let prev = this.state.selectedTreeNodes[this.state.selectedTreeNodes.length-2]; 
+        if(!this.hasSameParentNode(selected, prev)) {
+          selectedNodes = [selected]; 
+        }
+      }
 
-    // Use selectedKeys to set initially selectedx
+      this.setState({
+        selectedTreeNodes: selectedNodes
+      }); 
+    }
   }
 
   onDrop = (info) => {
@@ -1269,23 +1377,20 @@ export default class ConstraintsCanvas extends React.Component {
       });
     };
 
+    const treeNodes = gatherTreeNodes(this.state.treeData); 
+
     console.log("Render ConstraintsCanvas");
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
-    const rightClickMenu = (this.state.rightClickMenuShown ?
-     <ConstraintsCanvasMenu 
-      left={rightClickMenuPosition.x} 
-      top={rightClickMenuPosition.y} 
-      menuCallbacks={this.state.rightClickMenuCallbacks}
-      shapeID={this.state.rightClickShapeID}
-      getSiblingLabelItem={this.getSiblingLabelItem}
-      getCurrentShapeIndex={this.getCurrentShapeIndex}
-      getCurrentShapeOrder={this.getCurrentShapeOrder}
-      getCurrentContainerOrder={this.getCurrentContainerOrder}
-      getCurrentShapeSiblings={this.getCurrentShapeSiblings}
-      getCurrentShapeType={this.getCurrentShapeType}
-      getCurrentShapeImportance={this.getCurrentShapeImportance}  /> : undefined);
+    const rightClickMenu = (this.state.rightClickMenuShown ? 
+      <GroupingRightClickMenu 
+        groupElements={this.state.rightClickGroup} 
+        groupSelected={this.groupSelectedNodes}
+        ungroupSelected={this.ungroupGroup}
+        menuLeft={rightClickMenuPosition.x}
+        menuTop={rightClickMenuPosition.y}
+        shapeID={this.state.rightClickShapeID} /> : undefined); 
 
     // Process the queue of shapes to add to the canvas
 	  return (
@@ -1308,20 +1413,24 @@ export default class ConstraintsCanvas extends React.Component {
               {rightClickMenu}
             </div>
             <div className="widgets-sortable-tree draggable-container">
-              <Tree
-                draggable={true}
-                selectable={true}
-                showLine={false}
-                multiple={true}
-                defaultExpandedKeys={this.state.expandedTreeNodes}
-                onSelect={this.onSelected}
-                onDragStart={this.onDragStart}
-                onDragEnter={this.onDragEnter}
-                onDrop={this.onDrop}
-                onExpand={this.onExpand}
-              >
-                {gatherTreeNodes(this.state.treeData)}
-              </Tree>
+              {treeNodes.length ? 
+                (<Tree
+                  draggable={true}
+                  selectable={true}
+                  showLine={false}
+                  multiple={true}
+                  autoExpandParent={true}
+                  expandedKeys={this.state.expandedTreeNodes}
+                  selectedKeys={this.state.selectedTreeNodes}
+                  defaultExpandedKeys={["canvas"]}
+                  onSelect={this.onSelected}
+                  onDragStart={this.onDragStart}
+                  onDragEnter={this.onDragEnter}
+                  onDrop={this.onDrop}
+                  onExpand={this.onExpand}
+                >
+                  {treeNodes}
+                </Tree>) : undefined}
               {/*<SortableTree
                 treeData={this.state.treeData}
                 onChange={treeData => this.setState({ treeData })}

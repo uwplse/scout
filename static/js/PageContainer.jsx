@@ -405,10 +405,6 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  getSVGWidgetID = () => {
-    return '_' + Math.random().toString(36).substr(2, 9);
-  }
-
   getRelativeDesigns = (elements, action) => {
     // get more designs relative to a specific design
     let jsonShapes = this.getShapesJSON(); 
@@ -442,10 +438,9 @@ export default class PageContainer extends React.Component {
 
   readSVGIntoWidgetContainer = (e) => {
     let fileData = e.target.result; 
-    let widgetID = _.uniqueId(); 
     if(fileData) {
       let svgItem = {
-        id: this.getSVGWidgetID(), 
+        id: this.getUniqueID(), 
         svgData: fileData, 
         visible: true
       }

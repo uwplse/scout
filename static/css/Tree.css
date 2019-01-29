@@ -3,6 +3,16 @@
 	width: initial;
 }
 
+.rc-tree li {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.rc-tree > li {
+    margin-top: 0;
+    margin-left: 0.5em;
+}
+
 .rc-tree li .rc-tree-node-content-wrapper {
 	height: initial;
 }
@@ -24,6 +34,12 @@
 	content: "\2212";
 }
 
+.rc-tree li span.rc-tree-switcher {
+    margin-right: 1em;
+    position: relative;
+    top: 5px;
+}
+
 .rc-tree li span.rc-tree-switcher.rc-tree-switcher_open, 
 .rc-tree li span.rc-tree-switcher.rc-tree-switcher_close  {
 	color: black;
@@ -42,11 +58,15 @@
     transform: scale(1.5);
 }
 
-.rc-tree li {
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-}
-
 .rc-tree span.rc-tree-node-selected {
     padding: 0.5em;
+}
+
+.rc-tree > li > span.rc-tree-swticher.rc-tree-switcher_noop {
+    /* Hide the tree switcher toggle for the canvas node since it is always expanded */
+    display: none;
+}
+
+.rc-tree > li > span.rc-tree-switcher.rc-tree-switcher_open {
+    display: none;
 }
