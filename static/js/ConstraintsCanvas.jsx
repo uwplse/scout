@@ -62,7 +62,8 @@ export default class ConstraintsCanvas extends React.Component {
         x: 0, 
         y: 0
       }, 
-      typeGroupSize: -1, 
+      rightClickMenuTypeGroupSize: -1, 
+      rightClickMenuIsTyped: false,
       rightClickShapeID: undefined, 
       svgSourceMap: {}
     }; 
@@ -199,9 +200,6 @@ export default class ConstraintsCanvas extends React.Component {
         src: rootNode, 
         disabled: true, 
         children: []
-        // item: false, 
-        // typed: false, 
-        // highlighted: false
     }; 
 
     return rootTreeNode; 
@@ -374,7 +372,8 @@ export default class ConstraintsCanvas extends React.Component {
           }, 
           rightClickShapeID: shapeID, 
           rightClickGroup: false, 
-          typeGroupSize: groupSize
+          rightClickMenuTypeGroupSize: groupSize, 
+          rightClickMenuIsTyped: node.typed
         });         
       } else if(this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1) {
         this.setState({
@@ -385,7 +384,8 @@ export default class ConstraintsCanvas extends React.Component {
           }, 
           rightClickShapeID: shapeID, 
           rightClickGroup: true, 
-          typeGroupSize: -1 
+          rightClickMenuIsTyped: false, 
+          rightClickMenuTypeGroupSize: -1 
         });   
       }
     }
@@ -711,6 +711,7 @@ export default class ConstraintsCanvas extends React.Component {
       let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
         {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
       newGroupNode.item = true;
+      newGroupNode.disabled = true; 
       newGroupNode.shape.item = true;
       newGroupNode.children = currGroup; 
       newChildren.push(newGroupNode); 
@@ -735,92 +736,31 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
+  removeRepeatGroup = (groupID) => {
+    let groupNode = this.widgetTreeNodeMap[groupID];
+   // Ungroup childen from the item containers
+    let groupChildren = groupNode.children; 
+    if(groupChildren) {
+      let toRemove = []
+      let index = 0; 
+      while(index < groupChildren.length) {
+        let childNode = groupChildren[index]; 
+        if(childNode.item) {
+          groupChildren.splice(index,1); 
+          groupChildren.splice(index,0,...childNode.children); 
+        }
+        index += 1; 
+      }
+    }
 
-  // removeTypedGroup = (groupNode) => {
-  //  // Ungroup childen from the item containers
-  //   let children = groupNode.children; 
-  //   if(children) {
-  //     for(let i=0; i<children.length; i++){
-  //       let child = children[i]; 
-  //       if(child.title.props.item) {
-  //         let nodePath = this.getPathAndChildrenForTreeNode(child); 
+    groupNode.typed = false; 
+    groupNode.src = groupSVG; 
+    groupNode.shape.typed = false; 
 
-  //         this.state.treeData = removeNodeAtPath({
-  //           treeData: this.state.treeData, 
-  //           path: nodePath.path, 
-  //           getNodeKey: defaultGetNodeKey,
-  //         }); 
-
-  //         // Remove the children of the item and place
-  //         // at the parent level
-  //         let itemChildren = child.children; 
-  //         if(itemChildren) {
-  //           let startingIndex = nodePath.treeIndex; 
-  //           for(let i=0; i<itemChildren.length; i++) {
-  //             let itemChild = itemChildren[i]; 
-  //             // Reinsert the children at the item node level
-  //             let result = insertNode({
-  //               treeData: this.state.treeData, 
-  //               depth: nodePath.path.length - 1, 
-  //               minimumTreeIndex: startingIndex, 
-  //               newNode: itemChild, 
-  //               getNodeKey: defaultGetNodeKey, 
-  //               ignoreCollapsed: false, 
-  //               expandParent: true
-  //             });  
-
-  //             if(result.treeData) {
-  //               this.state.treeData = result.treeData; 
-  //             }                     
-
-  //             startingIndex += 1; 
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-
-  //   // once children have been restructured, replace
-  //   // the group container with a regular group container
-  //   this.replaceTypedGroup(groupNode); 
-  // }
-
-  // replaceTypedGroup = (groupNode) => {
-  //   let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
-  //   if(groupNodeData) {
-  //     let shape = groupNode.title.props.shape; 
-  //     shape.typed = false; 
-
-  //     let widget = this.getWidget(shape, group); 
-
-  //     // Create a new node for the widget
-  //     let newNode = {
-  //       title: widget, 
-  //       subtitle: [], 
-  //       expanded: true, 
-  //       children: groupNodeData.children
-  //     }; 
-
-  //     // Replace the current node with this new node
-  //     this.state.treeData = changeNodeAtPath({
-  //       treeData: this.state.treeData,
-  //       path: groupNodeData.path,
-  //       getNodeKey: defaultGetNodeKey,
-  //       ignoreCollapsed: false,
-  //       newNode: newNode
-  //     }); 
-  //   }
-  // }
-
-  // removeWidgetTypingAlert = (node) => {
-  //   if(node.subtitle && node.subtitle.length) {
-  //     let firstSubtitle = node.subtitle[0]; 
-  //     if(firstSubtitle.props.type == "typing") {
-  //       // Splice out the typing message that is already there, and replace it with a new one to keep the current group size. 
-  //       node.subtitle.splice(0,1);
-  //     }
-  //   }
-  // }
+    this.setState({
+      treeData: this.state.treeData
+    });
+  }
 
   removeWidgetNode = (key) => { 
     let parentNode = this.getParentNodeForKey(key, this.state.treeData[0]); 
@@ -848,43 +788,21 @@ export default class ConstraintsCanvas extends React.Component {
       this.removeWidgetNode(parentNode.key);
     }
 
+    // Check if the parent was a repeat group or an item 
+    if(parentNode.typed) {
+      this.removeRepeatGroup(parentNode.key); 
+    }
+
+    if(parentNode.item) {
+      let itemParent = this.getParentNodeForKey(parentNode.key, this.state.treeData[0]); 
+      if(itemParent.typed) {
+        this.removeRepeatGroup(itemParent.key); 
+      }
+    }
+
     this.setState(state => ({
       treeData: this.state.treeData,
     }), this.checkSolutionValidityAndUpdateCache); 
-
-    // // Check if the parent node is an item or a typed group 
-    // // If it is either an item or typed group
-    // // Remove the typed group and unparent the children 
-    // // from the item groups. 
-    // let parentPath = path.slice(0, path.length-1); 
-    // if(parentPath.length) {
-    //   let parentNode = getNodeAtPath({
-    //     treeData: this.state.treeData, 
-    //     path: parentPath, 
-    //     getNodeKey: defaultGetNodeKey
-    //   }); 
-
-    //   if(parentNode.node.title.props.typed) {
-    //     if(parentNode.node.children.length == 1) {
-    //       this.removeTypedGroup(parentNode.node); 
-    //     }
-    //   }
-    //   else if(parentNode.node.title.props.item) {
-    //     let typedGroupPath = parentPath.slice(0, parentPath.length-1); 
-    //     let typedGroupNode = getNodeAtPath({
-    //       treeData: this.state.treeData, 
-    //       path: typedGroupPath, 
-    //       getNodeKey: defaultGetNodeKey
-    //     }); 
-
-    //     this.removeTypedGroup(typedGroupNode.node);
-    //   }
-    //   else if(parentNode.node.title.props.isContainer) {
-    //     // Hide the typing alert that was shown on the container, if there is one
-    //     this.removeWidgetTypingAlert(parentNode.node);
-    //   }
-    // }
-
   }
 
   closeTypingAlert = (groupID) => {
@@ -977,6 +895,10 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   checkGroupTyping = (node) => {
+    if(node.typed) {
+      return -1; 
+    }
+
     // Do the type inference algorithm
     // iterate through each set of possible groupings starting with the greatest common divisor
     let numChildren = node.children.length; 
@@ -1173,6 +1095,23 @@ export default class ConstraintsCanvas extends React.Component {
       droppedOnGroup = true;
     }
 
+    let droppedOnRepeatGroup = false; 
+    if(dropObj.typed) {
+      droppedOnRepeatGroup = true; 
+    }
+
+    let droppedOnItemGroup = false; 
+    if(dropObj.item) {
+      droppedOnItemGroup = true; 
+    }
+
+    let droppedInItemGroup = false; 
+    let parentDropNode = this.getParentNodeForKey(dropObj.key, this.state.treeData[0]); 
+    if(parentDropNode && parentDropNode.item) {
+      droppedInItemGroup = true; 
+    }
+
+
     // Find dragObject
     let dragObj;
     loop(data, dragKey, (item, index, arr) => {
@@ -1211,6 +1150,22 @@ export default class ConstraintsCanvas extends React.Component {
       }
     }
 
+    // If the node was dropped in a repeat group, we need to remove it as it will no longer match the pattern 
+    if(droppedOnRepeatGroup) {
+      this.removeRepeatGroup(dropObj); 
+    }
+
+    if(droppedOnItemGroup) {
+      // Get the parent repeat group node 
+      let parentRepeatGroup = this.getParentNodeForKey(dropObj.key, this.state.treeData[0]); 
+      this.removeRepeatGroup(parentRepeatGroup);
+    }
+
+    if(droppedInItemGroup) {
+      let parentRepeatGroup = this.getParentNodeForKey(parentDropNode.key, this.state.treeData[0]); 
+      this.removeRepeatGroup(parentRepeatGroup); 
+    }
+
     this.setState({
       treeData: data,
     });
@@ -1229,9 +1184,16 @@ export default class ConstraintsCanvas extends React.Component {
 
         let widgetSource = item.src; 
         if(!widgetSource) {
-          let widgetSourceNode = this.state.svgSourceMap[item.shape.id]; 
-          if(widgetSourceNode) {
-            widgetSource = widgetSourceNode.svgData; 
+          if(item.shape.typed) {
+            widgetSource = repeatGridSVG; 
+          }
+          else if(item.shape.item) {
+            widgetSource = itemSVG; 
+          } else {
+            let widgetSourceNode = this.state.svgSourceMap[item.shape.id]; 
+            if(widgetSourceNode) {
+              widgetSource = widgetSourceNode.svgData; 
+            }
           }
         }
 
@@ -1254,8 +1216,10 @@ export default class ConstraintsCanvas extends React.Component {
         groupElements={this.state.rightClickGroup} 
         groupSelected={this.groupSelectedNodes}
         ungroupSelected={this.ungroupGroup}
-        typeGroupSize={this.state.typeGroupSize}
+        typeGroupSize={this.state.rightClickMenuTypeGroupSize}
         createRepeatGroup={this.createRepeatGroup}
+        removeRepeatGroup={this.removeRepeatGroup}
+        isTyped={this.state.rightClickMenuIsTyped}
         menuLeft={rightClickMenuPosition.x}
         menuTop={rightClickMenuPosition.y}
         shapeID={this.state.rightClickShapeID} /> : undefined); 

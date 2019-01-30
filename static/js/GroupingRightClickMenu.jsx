@@ -38,13 +38,22 @@ export default class GroupingRightClickMenu extends React.Component {
 
     const menuItems = [groupMenuItem, ungroupMenuItem]; 
 
-    if(this.props.typeGroupSize > 1) {
+    let groupToType = this.props.typeGroupSize > 1; 
+    let isTyped = this.props.isTyped; 
+    if(groupToType || isTyped) {
       const repeatGroupMenuItem = <GroupingMenuItem
         onClick={this.props.createRepeatGroup}
         shapeID={this.props.shapeID}
         label={"Create repeat group"}
-        disabled={false} />;
+        disabled={isTyped} />;
       menuItems.push(repeatGroupMenuItem);
+
+      const removeRepeatGroupMenuItem = <GroupingMenuItem
+        onClick={this.props.removeRepeatGroup}
+        shapeID={this.props.shapeID}
+        label={"Remove repeat group"}
+        disabled={!isTyped} />;
+      menuItems.push(removeRepeatGroupMenuItem);
     }
 
 	  return (
