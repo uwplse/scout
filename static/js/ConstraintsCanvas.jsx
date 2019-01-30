@@ -1309,6 +1309,16 @@ export default class ConstraintsCanvas extends React.Component {
     };
     const data = [...this.state.treeData];
 
+    let dropObj; 
+    loop(data, dropKey, (item) => {
+      dropObj = item; 
+    });
+
+    let droppedOnGroup = false; 
+    if(dropObj.shape.type == "group") {
+      droppedOnGroup = true;
+    }
+
     // Find dragObject
     let dragObj;
     loop(data, dragKey, (item, index, arr) => {
@@ -1316,11 +1326,12 @@ export default class ConstraintsCanvas extends React.Component {
       dragObj = item;
     });
 
-    if (!info.dropToGap) {
+    if (droppedOnGroup) {
       // Drop on the content
+      // Only allow the drop if the element dropped on is a gorup
       loop(data, dropKey, (item) => {
         item.children = item.children || [];
-        item.children.push(dragObj);
+        item.children.unshift(dragObj);
       });
     } else if (
       (info.node.props.children || []).length > 0 &&  // Has children
