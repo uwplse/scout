@@ -66,6 +66,7 @@
 	display: flex; 
 	flex-direction: row; 
 	align-items: center;
+	
 }
 
 .widget-container > .widget-control-importance {
@@ -74,8 +75,8 @@
 }
 
 .widget-container.highlighted {	
-	border: 2px dashed white;
-	padding: 4;
+	border: 2px dashed black;
+	padding: 0.5em;
 }
 
 .widget-control-group .widget-control {
@@ -181,6 +182,10 @@
     border: 1px solid #ddd;
     padding: 5px;
     border-radius: 2px;
+}
+
+.widget-feedback-container {
+	margin-top: 0.5em;
 }
 
 .widget-feedback-items.highlighted {

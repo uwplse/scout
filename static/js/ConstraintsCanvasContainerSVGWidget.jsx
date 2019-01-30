@@ -15,6 +15,7 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         id={this.props.id}
         source={this.props.source}
         isContainer={this.props.isContainer}
+        feedbackItems={this.props.feedbackItems}
         highlighted={this.props.highlighted}
         typed={this.props.typed}
         item={this.props.item}

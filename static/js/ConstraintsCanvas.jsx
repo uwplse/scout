@@ -108,26 +108,10 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Restore the cosntraints tree from the cached shapes
     this.canvasLevelShape = treeData; 
-    this.constraintsShapesMap[canvasNode.name] = treeData; 
-    this.widgetTreeNodeMap[canvasNode.name] = canvasNode; 
+    this.constraintsShapesMap[treeData.name] = treeData; 
+    this.widgetTreeNodeMap[treeData.name] = canvasNode; 
 
     if(treeData.children) {
-      // Restore feedback items
-      // Check whether to remove or add a widget feedback item
-      // if(this.canvasLevelShape.locks && this.canvasLevelShape.locks.length) {
-      //   for(let i=0; i<this.canvasLevelShape.locks.length; i++) {
-      //     let lock = this.canvasLevelShape.locks[i];
-      //     let action = ConstraintActions.getAction("keep", this.canvasLevelShape);
-      //     if(action){
-      //       let uniqueId = _.uniqueId();
-      //       let message = action["do"].getFeedbackMessage(lock, this.canvasLevelShape);
-      //       let id = this.canvasLevelShape.name + "_" + uniqueId; 
-      //       let widgetFeedback = this.getWidgetFeedback(id, this.canvasLevelShape, action, lock, message);
-      //       newTreeNode.subtitle.push(widgetFeedback); 
-      //     } 
-      //   }     
-      // } 
-
       for(let i=0; i<treeData.children.length; i++) {
         let child = treeData.children[i]; 
         this.constructShapeHierarchy(child, canvasNode);
@@ -160,21 +144,6 @@ export default class ConstraintsCanvas extends React.Component {
     });
   }
 
-  // getSVGSource = (node) => {
-  //   if(node.item) {
-  //     return item; 
-  //   }
-
-  //   let svgElements = this.props.svgWidgets; 
-  //   let svgElement = svgElements.filter(element => element.id == node.id); 
-  //   if(svgElement && svgElement.length) {
-  //     svgElement = svgElement[0]; 
-  //     return svgElement.svgData; 
-  //   }
-
-  //   return ""; 
-  // }
-
   constructShapeHierarchy = (node, treeData) => {
     let source =  this.state.svgSourceMap[node.id];
     this.constraintsShapesMap[node.name] = node; 
@@ -188,20 +157,6 @@ export default class ConstraintsCanvas extends React.Component {
     this.widgetTreeNodeMap[node.name] = newTreeNode; 
     treeData.children.push(newTreeNode); 
 
-    // Restore feedback items for locks 
-    // if(node.locks && node.locks.length) {
-    //   for(let i=0; i<node.locks.length; i++) {
-    //     let lock = node.locks[i];
-    //     let action = ConstraintActions.getAction("keep", node);
-    //     if(action){
-    //       let uniqueId = _.uniqueId();
-    //       let message = action["do"].getFeedbackMessage(lock, node);
-    //       let id = node.name + "_" + uniqueId; 
-    //       let widgetFeedback = this.getWidgetFeedback(id, node, action, lock, message);
-    //       newTreeNode.subtitle.push(widgetFeedback); 
-    //     } 
-    //   }     
-    // } 
     if(node.children && node.children.length) {
       newTreeNode.children = []; 
       for(let i=0; i<node.children.length; i++){
@@ -209,6 +164,12 @@ export default class ConstraintsCanvas extends React.Component {
         this.constructShapeHierarchy(child, newTreeNode); 
       }
     }
+  }
+
+  renderTree = () => {
+    this.setState({
+      treeData: this.state.treeData
+    }, this.checkSolutionValidityAndUpdateCache); 
   }
 
   initRootNode = () => {
@@ -235,6 +196,7 @@ export default class ConstraintsCanvas extends React.Component {
         key: this.canvasLevelShape.name, 
         shape: this.canvasLevelShape,
         src: rootNode, 
+        disabled: true, 
         children: []
         // item: false, 
         // typed: false, 
@@ -258,6 +220,7 @@ export default class ConstraintsCanvas extends React.Component {
     let isContainer = shape.type == "group" || shape.type == "canvas";
     let item = options.item ? options.item : false;
     let typed = options.typed ? options.typed : false;
+    let feedback = options.feedback ? options.feedback : []; 
 
     if(isContainer) {
       return (<ConstraintsCanvasContainerSVGWidget 
@@ -267,6 +230,7 @@ export default class ConstraintsCanvas extends React.Component {
                 source={src}
                 highlighted={highlighted}
                 isContainer={true}
+                feedbackItems={feedback}
                 checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
                 displayRightClickMenu={this.displayRightClickMenu}
                 hideRightClickMenu={this.hideRightClickMenu}
@@ -281,6 +245,7 @@ export default class ConstraintsCanvas extends React.Component {
               shape={shape} 
               id={shapeId} 
               source={src}
+              feedbackItems={feedback}
               highlighted={highlighted}
               checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
               displayRightClickMenu={this.displayRightClickMenu}
@@ -288,6 +253,40 @@ export default class ConstraintsCanvas extends React.Component {
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
               removeWidgetNode={this.removeWidgetNode} />);
+  }
+
+  getWidgetFeedbacks = (shape) => {
+    // Restore feedback items for locks 
+    let feedbackItems = []; 
+    if(shape.locks && shape.locks.length) {
+      for(let i=0; i<shape.locks.length; i++) {
+        let lock = shape.locks[i];
+        let action = ConstraintActions.getAction("keep", shape);
+        if(action){
+          let uniqueId = getUniqueID();
+          let message = action["do"].getFeedbackMessage(lock, shape);
+          let id = shape.name + "_" + uniqueId; 
+          let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, message);
+          feedbackItems.push(widgetFeedback); 
+        } 
+      }     
+    } 
+
+    if(shape.prevents && shape.prevents.length) {
+      for(let i=0; i<shape.prevents.length; i++) {
+        let prevent = shape.prevents[i];
+        let action = ConstraintActions.getAction("prevent", shape);
+        if(action){
+          let uniqueId = getUniqueID();
+          let message = action["do"].getFeedbackMessage(prevent, shape);
+          let id = shape.name + "_" + uniqueId; 
+          let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, message);
+          feedbackItems.push(widgetFeedback); 
+        } 
+      }     
+    } 
+
+    return feedbackItems; 
   }
 
   addShapeToCanvas = (id, source, type, width, height) => {
@@ -494,34 +493,16 @@ export default class ConstraintsCanvas extends React.Component {
     }); 
   }
 
-  // highlightAddedWidget = (shapeId, highlighted) => {
-  //   let treeNode = this.widgetTreeNodeMap[shapeId];
-  //   let treeNodeData = this.getPathAndChildrenForTreeNode(treeNode);
-  //   if(treeNodeData) {
-  //     let widget = this.getWidget(treeNode.title.props.shape, treeNode.title.props.source, { highlighted: highlighted }); 
+  highlightAddedWidget = (shapeId, highlighted) => {
+    let treeNode = this.widgetTreeNodeMap[shapeId];
+    if(treeNode) {
+      treeNode.highlighted = highlighted;
 
-  //     // Create a new node for the widget
-  //     let newNode = {
-  //       title: widget, 
-  //       subtitle: [], 
-  //       expanded: treeNode.expanded || treeNodeData.expanded, 
-  //       children: treeNodeData.children
-  //     }; 
-
-  //     // Replace the current node with this new node
-  //     this.state.treeData = changeNodeAtPath({
-  //       treeData: this.state.treeData,
-  //       path: treeNodeData.path,
-  //       getNodeKey: defaultGetNodeKey,
-  //       ignoreCollapsed: false,
-  //       newNode: newNode
-  //     }); 
-
-  //     this.setState(state => ({
-  //       treeData: this.state.treeData
-  //     })); 
-  //   }
-  // }
+      this.setState(state => ({
+        treeData: this.state.treeData
+      })); 
+    }
+  }
 
   // highlightWidgetFeedback = (shapeId, lock, highlighted) => {
   //   // Find the widget with this shape ID in the constraints tree
@@ -905,39 +886,6 @@ export default class ConstraintsCanvas extends React.Component {
   //     closeTypingAlert={this.closeTypingAlert} />); 
   // }
 
-  // createLabelsGroup = (labelID, labeledID) => {
-  //   // Create a new group in the hierarchy to contain the labeled shape and the label shape 
-  //   let labelNode = this.widgetTreeNodeMap[labelID]; 
-  //   let labeledNode = this.widgetTreeNodeMap[labeledID]; 
-  //   let labelNodeData = this.getPathAndChildrenForTreeNode(labelNode); 
-  //   let labeledNodeData = this.getPathAndChildrenForTreeNode(labeledNode);
-  //   if(labelNodeData && labeledNodeData) {
-  //     // Remove labeled node from the tree before re-adding to the labels group
-  //     this.state.treeData = removeNodeAtPath({
-  //       treeData: this.state.treeData, 
-  //       path: labeledNodeData.path, 
-  //       getNodeKey: defaultGetNodeKey,
-  //     }); 
-      
-  //     // Create a new labelGroup element. The order should be important so the label always appears first in reading order. 
-  //     // Have to set the children on the object here when creating a new node
-  //     labeledNode.children = labeledNodeData.children; 
-
-  //     let newLabelGroupNode = this.createNewTreeNode("labelGroup", label, { containerOrder: "important" }); 
-  //     newLabelGroupNode.expanded = true; 
-  //     newLabelGroupNode.children = [labelNode, labeledNode]; 
-
-  //     // Replace the current node with this new node
-  //     this.state.treeData = changeNodeAtPath({
-  //       treeData: this.state.treeData,
-  //       path: labelNodeData.path,
-  //       getNodeKey: defaultGetNodeKey,
-  //       ignoreCollapsed: false,
-  //       newNode: newLabelGroupNode
-  //     }); 
-  //   }
-  // }
-
   // removeTypedGroup = (groupNode) => {
   //  // Ungroup childen from the item containers
   //   let children = groupNode.children; 
@@ -1012,64 +960,6 @@ export default class ConstraintsCanvas extends React.Component {
   //       newNode: newNode
   //     }); 
   //   }
-  // }
-
-  // onMoveNode = ({ treeData, node, nextParentNode, prevPath, prevTreeIndex, nextPath, nextTreeIndex }) => {
-  //   // If the node was moved into group, check whether group typing should be applied. 
-  //   if(nextParentNode) {
-  //     if(nextParentNode.title.props.shape.type == "group") {
-  //       this.removeWidgetTypingAlert(nextParentNode);
-  //       if(nextParentNode.title.props.typed) {
-  //         // The group is already typed. 
-  //         // Remove the group typing 
-  //         // Check first whether the widget typing alert has already been activated for this group
-  //         this.removeTypedGroup(nextParentNode);
-  //       } 
-
-  //       let groupSize = this.checkGroupTyping(nextParentNode); 
-  //       let parentID = nextParentNode.title.props.shape.name; 
-
-  //         // Find the group in the tree, remove it, and display the label to apply the typing
-  //       if(groupSize >= this.minimumGroupSize) {
-  //         let typingIndex = 0; 
-  //         let widgetTypingElement = this.getWidgetTyping(typingIndex, parentID, groupSize); 
-  //         nextParentNode.subtitle.unshift(widgetTypingElement);
-  //       }   
-  //     }
-  //   }
-
-  //   // Remove the widget from the tree node map
-  //   let prevParentPath = prevPath.slice(0, prevPath.length-1);
-  //   let prevParentNode = getNodeAtPath({
-  //       treeData: this.state.treeData, 
-  //       path: prevParentPath, 
-  //       getNodeKey: defaultGetNodeKey,
-  //   }); 
-
-  //   // If the previous node was a typed group or item, remove the typing
-  //   // Also remove the alert if it was showin
-  //   prevParentNode = prevParentNode.node; 
-  //   if(prevParentNode && prevParentNode.title.props.shape.type == "group") {
-  //     this.removeWidgetTypingAlert(prevParentNode); 
-
-  //     if(prevParentNode.title.props.typed) {
-  //       this.removeTypedGroup(prevParentNode); 
-  //     }
-  //     else if(prevParentNode.title.props.item) {
-  //       let typedGroupPath = prevParentPath.slice(0, prevParentPath.length-1); 
-  //       let typedGroupNode = getNodeAtPath({
-  //         treeData: this.state.treeData, 
-  //         path: typedGroupPath, 
-  //         getNodeKey: defaultGetNodeKey
-  //       }); 
-
-  //       this.removeTypedGroup(typedGroupNode.node);
-  //     }
-  //   }
-
-  //   this.setState(state => ({
-  //     treeData: this.state.treeData
-  //   }), this.checkSolutionValidityAndUpdateCache); 
   // }
 
   // removeWidgetTypingAlert = (node) => {
@@ -1262,7 +1152,14 @@ export default class ConstraintsCanvas extends React.Component {
 
   onSelected = (selectedKeys, evt) => {
     let selected = selectedKeys[selectedKeys.length-1];
-    if(!evt.nativeEvent || !evt.nativeEvent.shiftKey) {
+    if(selected == "canvas") {
+      // Ensure that the canvas cannot be selected
+      selectedKeys.splice(selectedKeys.length-1, 1); 
+      this.setState({
+        selectedTreeNodes: selectedKeys
+      })
+    }
+    else if(!evt.nativeEvent || !evt.nativeEvent.shiftKey) {
       // allow multiple node seelction when shift key is pressed
       // Only have the most recent node selected 
       this.setState({
@@ -1290,7 +1187,10 @@ export default class ConstraintsCanvas extends React.Component {
     const dropKey = info.node.props.eventKey;
     const dragKey = info.dragNode.props.eventKey;
     const dropPos = info.node.props.pos.split('-');
-    const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+    const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);    
+    if(dragKey == "canvas") {
+      return;
+    }
 
     const loop = (data, key, callback) => {
       data.forEach((item, index, arr) => {
@@ -1368,25 +1268,25 @@ export default class ConstraintsCanvas extends React.Component {
           item: item.item
         }
 
-       let widgetSource = item.src; 
-       if(!widgetSource) {
+        let widgetSource = item.src; 
+        if(!widgetSource) {
           let widgetSourceNode = this.state.svgSourceMap[item.shape.id]; 
           if(widgetSourceNode) {
             widgetSource = widgetSourceNode.svgData; 
           }
-       }
+        }
 
+        let widgetFeedbacks = this.getWidgetFeedbacks(item.shape); 
+        widgetOptions.feedback = widgetFeedbacks; 
         let widget = this.getWidget(item.key, item.shape, widgetSource, widgetOptions); 
         if (item.children && item.children.length) {
-          return <TreeNode key={item.key} icon={widget} title={""}>{gatherTreeNodes(item.children)}</TreeNode>;
+          return <TreeNode key={item.key} icon={widget} title={""} disabled={item.disabled}>{gatherTreeNodes(item.children)}</TreeNode>;
         }
-        return <TreeNode key={item.key} icon={widget} title={""} />;
+        return <TreeNode key={item.key} icon={widget} title={""} disabled={item.disabled} />;
       });
     };
 
     const treeNodes = gatherTreeNodes(this.state.treeData); 
-
-    console.log("Render ConstraintsCanvas");
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
     const rightClickMenuPosition = this.state.rightClickMenuPosition; 
@@ -1427,6 +1327,7 @@ export default class ConstraintsCanvas extends React.Component {
                   showLine={false}
                   multiple={true}
                   autoExpandParent={true}
+                  defaultExpandParent={true}
                   expandedKeys={this.state.expandedTreeNodes}
                   selectedKeys={this.state.selectedTreeNodes}
                   defaultExpandedKeys={["canvas"]}
@@ -1438,15 +1339,6 @@ export default class ConstraintsCanvas extends React.Component {
                 >
                   {treeNodes}
                 </Tree>) : undefined}
-              {/*<SortableTree
-                treeData={this.state.treeData}
-                onChange={treeData => this.setState({ treeData })}
-                canDrop={this.canReparentWidgetNode}
-                onMoveNode={this.onMoveNode}
-                rowHeight={this.calculateRowHeight}
-                // isVirtualized={false}
-                generateNodeProps={this.getNodeProps}
-              />*/}
             </div>
           </div>
       </div>

@@ -210,17 +210,12 @@ export default class PageContainer extends React.Component {
     // Retrieve the shape object in the constraints tree and apply teh updates
     let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
     action[actionType].updateConstraintsCanvasShape(property, constraintsCanvasShape, designCanvasShape);
-
-    // Notify the constraints canvas to add or remove the widget feedback to the tree
-    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType, property);
+    this.constraintsCanvasRef.current.renderTree();
   }
 
   updateConstraintsCanvas = (constraintsCanvasShape, action, property) => {
     return () => {
       action["undo"].updateConstraintsCanvasShape(property, constraintsCanvasShape, undefined);
-
-      // Notify the constraintss canvasa
-      this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo", property);
 
       // Check for the validity of current state of constriants, and update valid state of solutions
       this.checkSolutionValidity();       

@@ -211,15 +211,19 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   }
 
   onMouseOver = () => {
-    this.setState({
-      hovered: true
-    });
+    if(this.type != "canvas") {
+      this.setState({
+        hovered: true
+      });
+    }
   }
 
   onMouseOut = () => {
-    this.setState({
-      hovered: false
-    }); 
+    if(this.type != "canvas") {
+      this.setState({
+        hovered: false
+      }); 
+    }
   }
 
   render () {
@@ -232,10 +236,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const labelPosition = this.state.labelPosition; 
     const order = this.state.order;
     const ordered = this.state.containerOrder == "important"; 
-
-    // const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1);
     const orderLabel = order == 0 ? "First" : "Last"; 
-
     const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
 
@@ -252,11 +253,17 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         id={this.elementId} 
         className={"widget-container " + (highlighted ? "highlighted" : "")}>
         <div className="widget-control-row"> 
-          {source ? (<SVGInline 
-            className={"widget-control-" + this.type} 
-            svg={source} 
-            height={this.state.height + "px"} 
-            width={this.state.width + "px"} />) : undefined}
+           <div>
+           {source ? (<SVGInline 
+              className={"widget-control-" + this.type} 
+              svg={source} 
+              height={this.state.height + "px"} 
+              width={this.state.width + "px"} />) : undefined}
+            <span 
+              className="widget-control-remove-icon glyphicon glyphicon-remove"
+              style={{visibility: (this.state.hovered ? "" : "hidden")}}
+              onClick={this.props.removeWidgetNode.bind(this, this.props.id)}></span>
+           </div>
             <div 
               className={"widget-control-info " + ((importanceLabel.length || showOrder || this.isContainer) ? "" : "hidden")}>
               {this.isContainer ? 
@@ -267,11 +274,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
                 {importanceLabel}
               </span>
             </div>
+            {this.props.feedbackItems}
         </div>
-        <span 
-          className="widget-control-remove-icon glyphicon glyphicon-remove"
-          style={{visibility: (this.state.hovered ? "" : "hidden")}}
-          onClick={this.props.removeWidgetNode.bind(this, this.props.id)}></span>
       </div>); 
   }
 
