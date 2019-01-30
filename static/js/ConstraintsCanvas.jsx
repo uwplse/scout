@@ -150,10 +150,15 @@ export default class ConstraintsCanvas extends React.Component {
     let source =  this.state.svgSourceMap[node.id];
     this.constraintsShapesMap[node.name] = node; 
 
+    let disabled = node.item || treeData.item; 
+
     let newTreeNode = {
         key: node.name, 
         shape: node,
-        src: source
+        src: source, 
+        typed: node.typed, 
+        item: node.item,
+        disabled: disabled
     }; 
 
     this.widgetTreeNodeMap[node.name] = newTreeNode; 
@@ -710,6 +715,11 @@ export default class ConstraintsCanvas extends React.Component {
 
       let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
         {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+
+      for(let j=0; j<currGroup.length; j++) {
+        currGroup[j].disabled = true;
+      }
+
       newGroupNode.item = true;
       newGroupNode.disabled = true; 
       newGroupNode.shape.item = true;
@@ -746,6 +756,10 @@ export default class ConstraintsCanvas extends React.Component {
       while(index < groupChildren.length) {
         let childNode = groupChildren[index]; 
         if(childNode.item) {
+          for(let i=0; i<childNode.children.length; i++) {
+            childNode.children[i].disabled = false;
+          }
+
           groupChildren.splice(index,1); 
           groupChildren.splice(index,0,...childNode.children); 
         }
@@ -1178,8 +1192,7 @@ export default class ConstraintsCanvas extends React.Component {
         let widgetOptions = {
           highlighted: item.highlighted, 
           typed: item.typed, 
-          item: item.item, 
-          typeGroupSize: item.typeGroupSize, 
+          item: item.item 
         }
 
         let widgetSource = item.src; 
