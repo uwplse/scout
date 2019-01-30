@@ -68,3 +68,19 @@
 .rc-tree > li > span.rc-tree-switcher.rc-tree-switcher_open {
     display: none;
 }
+
+.rc-tree li.drag-over-gap-bottom > .draggable {
+    border-bottom: none;
+}
+
+.rc-tree li.drag-over-gap-bottom {
+    border-bottom: 8px solid #2c3e50; 
+}
+
+.rc-tree li.drag-over-gap-top > .draggable {
+    border-bottom: none;
+}
+
+.rc-tree li.drag-over-gap-top {
+    border-top: 8px solid #2c3e50; 
+}
