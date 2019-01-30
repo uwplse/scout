@@ -1097,6 +1097,11 @@ export default class ConstraintsCanvas extends React.Component {
     // Delete the entry in the constraints canvas shape map 
     delete this.constraintsShapesMap[key];
 
+    // Check whether the parent group should be removed if all its children are gone
+    if(!parentNode.children.length) {
+      this.removeWidgetNode(parentNode.key);
+    }
+
     this.setState(state => ({
       treeData: this.state.treeData,
     }), this.checkSolutionValidityAndUpdateCache); 
@@ -1180,9 +1185,11 @@ export default class ConstraintsCanvas extends React.Component {
       this.groupTreeNodes(parentNode, this.state.selectedTreeNodes);
     }
 
+    // Remove the selected tree nodes after grouping
     this.setState({
-      treeData: this.state.treeData 
-    })
+      treeData: this.state.treeData, 
+      selectedTreeNodes: []
+    }); 
   }
 
   ungroupGroup = (nodeKey) => {
@@ -1237,8 +1244,8 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   hasSameParentNode = (treeNodeKey1, treeNodeKey2) => {
-    let parent1 = this.getParentNodeForKey(treeNodeKey1); 
-    let parent2 = this.getParentNodeForKey(treeNodeKey2); 
+    let parent1 = this.getParentNodeForKey(treeNodeKey1, this.state.treeData[0]); 
+    let parent2 = this.getParentNodeForKey(treeNodeKey2, this.state.treeData[0]); 
     if(parent1 && parent2 && parent1.key == parent2.key) {
       return true; 
     }
