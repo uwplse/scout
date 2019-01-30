@@ -244,7 +244,7 @@ export default class ConstraintsCanvas extends React.Component {
     localStorage.setItem('shapeHierarchy', shapeHierarchyJSON); 
   }
 
-  getWidget = (shape, src, options={}) => {
+  getWidget = (key, shape, src, options={}) => {
     let shapeId = shape.name;
     let highlighted = options.highlighted ? options.highlighted : false; 
     let isContainer = shape.type == "group" || shape.type == "canvas";
@@ -264,6 +264,7 @@ export default class ConstraintsCanvas extends React.Component {
                 hideRightClickMenu={this.hideRightClickMenu}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
+                removeWidgetNode={this.removeWidgetNode}
                 typed={typed}
                 item={item} />);
     }
@@ -277,7 +278,8 @@ export default class ConstraintsCanvas extends React.Component {
               displayRightClickMenu={this.displayRightClickMenu}
               hideRightClickMenu={this.hideRightClickMenu}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
-              getCurrentShapeIndex={this.getCurrentShapeIndex} />);
+              getCurrentShapeIndex={this.getCurrentShapeIndex}
+              removeWidgetNode={this.removeWidgetNode} />);
   }
 
   addShapeToCanvas = (id, source, type, width, height) => {
@@ -1074,84 +1076,64 @@ export default class ConstraintsCanvas extends React.Component {
   //   }
   // }
 
-  // removeWidgetNode = (path) => { 
-  //   return () => {
-  //     const getNodeKey = ({ treeIndex }) => treeIndex;
+  removeWidgetNode = (key) => { 
+    let parentNode = this.getParentNodeForKey(key, this.state.treeData[0]); 
+    let index = -1; 
+    for(let i=0; i<parentNode.children.length; i++) {
+      let childNode = parentNode.children[i]; 
+      if(childNode.key == key) {
+        index = i; 
+        break;
+      }
+    }
 
-  //     // Remove the widget from the tree node map
-  //     let treeNode = getNodeAtPath({
-  //         treeData: this.state.treeData, 
-  //         path: path, 
-  //         getNodeKey: defaultGetNodeKey,
-  //     }); 
+    if(index != -1) {
+      parentNode.children.splice(index, 1); 
+    }
 
-  //     this.state.treeData = removeNodeAtPath({
-  //       treeData: this.state.treeData, 
-  //       path, 
-  //       getNodeKey,
-  //     })
+    // Remove from the global map of widgets
+    delete this.widgetTreeNodeMap[key]; 
 
-  //     // Check if the parent node is an item or a typed group 
-  //     // If it is either an item or typed group
-  //     // Remove the typed group and unparent the children 
-  //     // from the item groups. 
-  //     let parentPath = path.slice(0, path.length-1); 
-  //     if(parentPath.length) {
-  //       let parentNode = getNodeAtPath({
-  //         treeData: this.state.treeData, 
-  //         path: parentPath, 
-  //         getNodeKey: defaultGetNodeKey
-  //       }); 
+    // Delete the entry in the constraints canvas shape map 
+    delete this.constraintsShapesMap[key];
 
-  //       if(parentNode.node.title.props.typed) {
-  //         if(parentNode.node.children.length == 1) {
-  //           this.removeTypedGroup(parentNode.node); 
-  //         }
-  //       }
-  //       else if(parentNode.node.title.props.item) {
-  //         let typedGroupPath = parentPath.slice(0, parentPath.length-1); 
-  //         let typedGroupNode = getNodeAtPath({
-  //           treeData: this.state.treeData, 
-  //           path: typedGroupPath, 
-  //           getNodeKey: defaultGetNodeKey
-  //         }); 
+    this.setState(state => ({
+      treeData: this.state.treeData,
+    }), this.checkSolutionValidityAndUpdateCache); 
 
-  //         this.removeTypedGroup(typedGroupNode.node);
-  //       }
-  //       else if(parentNode.node.title.props.isContainer) {
-  //         // Hide the typing alert that was shown on the container, if there is one
-  //         this.removeWidgetTypingAlert(parentNode.node);
-  //       }
-  //     }
+    // // Check if the parent node is an item or a typed group 
+    // // If it is either an item or typed group
+    // // Remove the typed group and unparent the children 
+    // // from the item groups. 
+    // let parentPath = path.slice(0, path.length-1); 
+    // if(parentPath.length) {
+    //   let parentNode = getNodeAtPath({
+    //     treeData: this.state.treeData, 
+    //     path: parentPath, 
+    //     getNodeKey: defaultGetNodeKey
+    //   }); 
 
-  //     // Remove from the global map of widgets
-  //     let shapeID = treeNode.node.title.props.id; 
-  //     delete this.widgetTreeNodeMap[shapeID]; 
+    //   if(parentNode.node.title.props.typed) {
+    //     if(parentNode.node.children.length == 1) {
+    //       this.removeTypedGroup(parentNode.node); 
+    //     }
+    //   }
+    //   else if(parentNode.node.title.props.item) {
+    //     let typedGroupPath = parentPath.slice(0, parentPath.length-1); 
+    //     let typedGroupNode = getNodeAtPath({
+    //       treeData: this.state.treeData, 
+    //       path: typedGroupPath, 
+    //       getNodeKey: defaultGetNodeKey
+    //     }); 
 
-  //     // Delete the entry in the constraints canvas shape map 
-  //     delete this.constraintsShapesMap[shapeID];
-
-  //     this.setState(state => ({
-  //       treeData: this.state.treeData,
-  //     }), this.checkSolutionValidityAndUpdateCache); 
-  //   }
-  // }
-
-  getNodeProps = ({node, path}) => {
-    // if(path.length == 1 && path[0] == 0) {
-    //   return {}; 
+    //     this.removeTypedGroup(typedGroupNode.node);
+    //   }
+    //   else if(parentNode.node.title.props.isContainer) {
+    //     // Hide the typing alert that was shown on the container, if there is one
+    //     this.removeWidgetTypingAlert(parentNode.node);
+    //   }
     // }
-    // else {
-    //   return {
-    //     buttons: [
-    //       <button 
-    //         className="widgets-sortable-tree-remove"  
-    //         onClick={this.removeWidgetNode(path)}>
-    //         <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
-    //       </button>
-    //     ]
-    //   }; 
-    // }
+
   }
 
   groupContainsKey = (treeNode, key) => {
@@ -1380,7 +1362,7 @@ export default class ConstraintsCanvas extends React.Component {
           }
        }
 
-        let widget = this.getWidget(item.shape, widgetSource, widgetOptions); 
+        let widget = this.getWidget(item.key, item.shape, widgetSource, widgetOptions); 
         if (item.children && item.children.length) {
           return <TreeNode key={item.key} icon={widget} title={""}>{gatherTreeNodes(item.children)}</TreeNode>;
         }

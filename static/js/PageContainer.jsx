@@ -16,6 +16,7 @@ import uuidv4 from 'uuid/v4';
 import SVGInline from "react-svg-inline"; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
+import {getUniqueID} from './util'; 
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -440,7 +441,7 @@ export default class PageContainer extends React.Component {
     let fileData = e.target.result; 
     if(fileData) {
       let svgItem = {
-        id: this.getUniqueID(), 
+        id: getUniqueID(), 
         svgData: fileData, 
         visible: true
       }

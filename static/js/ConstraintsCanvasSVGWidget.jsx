@@ -48,7 +48,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       svgSource: props.source, 
       highlighted: props.highlighted, 
       hasText: false, 
-      cursorPos: 0
+      cursorPos: 0, 
+      hovered: false
     }; 
   }
 
@@ -63,7 +64,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       cursorPos: prevState.cursorPos,
       svgSource: nextProps.source, 
       containerOrder: prevState.containerOrder, 
-      highlighted: nextProps.highlighted
+      highlighted: nextProps.highlighted, 
+      hovered: prevState.hovered
     }    
   }
   
@@ -208,6 +210,18 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.checkSolutionValidity();
   }
 
+  onMouseOver = () => {
+    this.setState({
+      hovered: true
+    });
+  }
+
+  onMouseOut = () => {
+    this.setState({
+      hovered: false
+    }); 
+  }
+
   render () {
     const source = this.state.svgSource; 
     const height = this.state.height; 
@@ -219,7 +233,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const order = this.state.order;
     const ordered = this.state.containerOrder == "important"; 
 
-    // const orderOrdinal = Converter.toWordsOrdinal(order+1); 
     // const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1);
     const orderLabel = order == 0 ? "First" : "Last"; 
 
@@ -229,18 +242,17 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
 
     const isEditable = this.state.hasText;
-    // const fontSize = (this.type == "text" ? { fontSize: this.state.fontSize } : {}); 
     return (
       <div  
         onContextMenu={this.showContextMenu} 
         suppressContentEditableWarning="true" 
-        // onInput={this.updateAndResizeText}
         onBlur={this.updateTextLabel} 
+        onMouseOver={this.onMouseOver}
+        onMouseOut={this.onMouseOut}
         id={this.elementId} 
         className={"widget-container " + (highlighted ? "highlighted" : "")}>
         <div className="widget-control-row"> 
           {source ? (<SVGInline 
-            //contentEditable={isEditable} 
             className={"widget-control-" + this.type} 
             svg={source} 
             height={this.state.height + "px"} 
@@ -256,6 +268,10 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
               </span>
             </div>
         </div>
+        <span 
+          className="widget-control-remove-icon glyphicon glyphicon-remove"
+          style={{visibility: (this.state.hovered ? "" : "hidden")}}
+          onClick={this.props.removeWidgetNode.bind(this, this.props.id)}></span>
       </div>); 
   }
 

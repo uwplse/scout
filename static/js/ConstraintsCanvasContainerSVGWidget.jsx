@@ -23,6 +23,7 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         hideRightClickMenu={this.props.hideRightClickMenu}
         createLabelsGroup={this.props.createLabelsGroup}
         getCurrentShapeSiblings={this.props.getCurrentShapeSiblings}
-        getCurrentShapeIndex={this.props.getCurrentShapeIndex} />); 
+        getCurrentShapeIndex={this.props.getCurrentShapeIndex}
+        removeWidgetNode={this.props.removeWidgetNode} />); 
   }
 }

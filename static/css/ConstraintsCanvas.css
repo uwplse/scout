@@ -58,69 +58,16 @@
 }
 
 
-/* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
-.widgets-sortable-tree .rst__rowContents {
-	border: none;
-	box-shadow: none;
-	min-width: initial;
-	background-color: initial;
-}
-
-.widgets-sortable-tree .rst__row {
-	align-items: center;
-}
-
-.widgets-sortable-tree .rst__rowWrapper {
-	padding: 0px;
-}
-
-.widgets-sortable-tree .rst__moveHandle {
-	height: 44px;
-}
-
-.widgets-sortable-tree .rst__rowTitleWithSubtitle {
-    height: inherit; 
-}
-
-.widgets-sortable-tree .widgets-sortable-tree-remove {
-	background-color: initial;
-	color: #000000;
-}
-
-.widgets-sortable-tree .rst__rowTitle {
-	font-weight: normal;
-}
-
-.widgets-sortable-tree .rst__rowSubtitle {
-	font-size: 14px;
-}
-
-.widgets-sortable-tree .rst__lineFullVertical:after {
-	height: 100%;
-}
-
-.widgets-sortable-tree .rst__rowLabel {
-	padding-right: 5px;
-}
-
-.widgets-sortable-tree .rst__lineChildren:after {
-	height: calc(50%); 
-	background-color: #000000;
-}
-
-.widgets-sortable-tree-remove {
-	border: none;
-}
-
-.widgets-sortable-tree .rst__lineBlock:after,
-.widgets-sortable-tree .rst__lineBlock:before {
-	background-color: #000000;
-}
-
-
 /**
 	Other styles 
 **/
+
+.widget-container {
+	display: flex; 
+	flex-direction: row; 
+	align-items: center;
+}
+
 .widget-container > .widget-control-importance {
 	margin-top: 5px;
 	display: flex;
@@ -180,6 +127,11 @@
 	position: absolute;
 /*	z-index: 1000; 
 */
+}
+
+.widget-control-remove-icon {
+	transform: scale(2.0); 
+	margin-left: 1em;
 }
 
 .widget-control-typing {
