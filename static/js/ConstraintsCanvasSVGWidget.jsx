@@ -275,6 +275,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
               </span>
             </div>
             {this.props.feedbackItems}
+            {this.props.typingAlerts}
         </div>
       </div>); 
   }

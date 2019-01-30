@@ -21,8 +21,8 @@ import { getUniqueID } from './util';
 import GroupingRightClickMenu from './GroupingRightClickMenu'; 
 import WidgetTyping from './WidgetTyping'; 
 import groupSVG from '../assets/GroupWidget.svg';
-import repeatGrid from '../assets/illustrator/repeatGrid.svg';
-import item from '../assets/illustrator/item.svg';
+import repeatGridSVG from '../assets/RepeatGroupWidget.svg';
+import itemSVG from '../assets/ItemWidget.svg';
 import rootNode from '../assets/CanvasWidget.svg';
 import Tree, { TreeNode } from 'rc-tree';
 
@@ -62,6 +62,7 @@ export default class ConstraintsCanvas extends React.Component {
         x: 0, 
         y: 0
       }, 
+      typeGroupSize: -1, 
       rightClickShapeID: undefined, 
       svgSourceMap: {}
     }; 
@@ -214,13 +215,18 @@ export default class ConstraintsCanvas extends React.Component {
     localStorage.setItem('shapeHierarchy', shapeHierarchyJSON); 
   }
 
-  getWidget = (key, shape, src, options={}) => {
+  getWidget = (shape, src, options={}) => {
     let shapeId = shape.name;
     let highlighted = options.highlighted ? options.highlighted : false; 
     let isContainer = shape.type == "group" || shape.type == "canvas";
     let item = options.item ? options.item : false;
     let typed = options.typed ? options.typed : false;
     let feedback = options.feedback ? options.feedback : []; 
+
+    let typingAlerts = [];
+    if(options.typeGroupSize > 1) {
+      typingAlerts = this.getWidgetTyping(shapeId, options.typeGroupSize); 
+    }
 
     if(isContainer) {
       return (<ConstraintsCanvasContainerSVGWidget 
@@ -231,6 +237,7 @@ export default class ConstraintsCanvas extends React.Component {
                 highlighted={highlighted}
                 isContainer={true}
                 feedbackItems={feedback}
+                typingAlerts={typingAlerts}
                 checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
                 displayRightClickMenu={this.displayRightClickMenu}
                 hideRightClickMenu={this.hideRightClickMenu}
@@ -246,6 +253,7 @@ export default class ConstraintsCanvas extends React.Component {
               id={shapeId} 
               source={src}
               feedbackItems={feedback}
+              typingAlerts={typingAlerts}
               highlighted={highlighted}
               checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
               displayRightClickMenu={this.displayRightClickMenu}
@@ -326,7 +334,7 @@ export default class ConstraintsCanvas extends React.Component {
     let newTreeNode = {
       key: shape.name, 
       shape: shape, 
-      src: source
+      src: source, 
     }; 
 
     this.widgetTreeNodeMap[shape.name] = newTreeNode; 
@@ -352,9 +360,12 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   displayRightClickMenu = (evt, shapeID) => {
-    let shape = this.constraintsShapesMap[shapeID]; 
-    if(shape) {
-      if(shape.type == "group") {
+    let node = this.widgetTreeNodeMap[shapeID]; 
+    if(node) {
+      if(node.shape.type == "group") {
+        // Check whether the repeat group menu item should be shown 
+        let groupSize = this.checkGroupTyping(node)
+        node.typedGroupSize = groupSize; 
         this.setState({
           rightClickMenuShown: true, 
           rightClickMenuPosition: {
@@ -362,7 +373,8 @@ export default class ConstraintsCanvas extends React.Component {
             y: evt.clientY
           }, 
           rightClickShapeID: shapeID, 
-          rightClickGroup: false
+          rightClickGroup: false, 
+          typeGroupSize: groupSize
         });         
       } else if(this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1) {
         this.setState({
@@ -372,7 +384,8 @@ export default class ConstraintsCanvas extends React.Component {
             y: evt.clientY
           }, 
           rightClickShapeID: shapeID, 
-          rightClickGroup: true
+          rightClickGroup: true, 
+          typeGroupSize: -1 
         });   
       }
     }
@@ -538,44 +551,6 @@ export default class ConstraintsCanvas extends React.Component {
   //   }));      
   // }
 
-  // updateWidgetFeedbacks = (shape, action, actionType, property) => {    
-  //   // The shape was already updated so we just need to re-render the tree to get the new sizes
-  //   // Add WidgetFeedbackItem to correct item in the tree
-
-  //   // Find the corresponding tree node
-  //   let shapeId = shape.name; 
-  //   let uniqueId = _.uniqueId();
-  //   let treeNode = this.widgetTreeNodeMap[shapeId]; 
-
-  //   // First, see whether there is already a feedback item for this action
-  //   // If there is, remove it, before updating with the new action
-  //   let feedbackItems = treeNode.subtitle; 
-  //   let feedbackIndex = -1; 
-  //   for(let i=0; i<feedbackItems.length; i++){
-  //     ///???
-  //     if(feedbackItems[i].props.property == property) {
-  //       feedbackIndex = i; 
-  //     }
-  //   }
-
-  //   // Remove the item at that index
-  //   if(feedbackIndex > -1) {
-  //     treeNode.subtitle.splice(feedbackIndex, 1);        
-  //   }
-
-  //   // Check whether to remove or add a widget feedback item
-  //   if(actionType == "do") {
-  //     let message = action[actionType].getFeedbackMessage(property, shape);
-  //     let id = shapeId + "_" + uniqueId; 
-  //     let widgetFeedback = this.getWidgetFeedback(id, shape, action, property, message);
-  //     treeNode.subtitle.push(widgetFeedback);       
-  //   } 
-
-  //   this.setState(state => ({
-  //     treeData: this.state.treeData
-  //   }), this.checkSolutionValidityAndUpdateCache);      
-  // }
-
   getShapeHierarchy = () => {
     let treeNodes = this.state.treeData; 
 
@@ -672,219 +647,94 @@ export default class ConstraintsCanvas extends React.Component {
     return shape;
   }
 
-  // typesMatch = (group1, group2) =>  {
-  //   // Check whether the set of types in each group list match 
-  //   if(group1.length != group2.length) {
-  //     return false;
-  //   }
+  getRepeatGroupMatchingChildren = (group) => {
+    // For a given child, return the shape IDs of the child shapes that are in the
+    // corresponding positions in the other group(s)
+    let items = group.children; 
+    if(items) {
+      for(let i=0; i<items.length; i++) {
+        let currItem = items[i]; 
 
-  //   for(let i=0; i<group1.length; i++) {
-  //     let item1 = group1[i]; 
-  //     let item2 = group2[i]; 
-  //     if(item1 != item2) {
-  //       return false;
-  //     }
-  //   }
+        let correspondingBefore = []
+        if(i > 0) {
+          correspondingBefore = _.range(0, i); 
+        }
 
-  //   return true;
-  // }
+        let correspondingAfter = []; 
+        if(i < items.length - 1) {
+          correspondingAfter = _.range(i+1, items.length); 
+        }
 
-  // canSplitIntoGroupOfSize = (node, size) => {
-  //   // Determine if the children of this node can be split into a group of the given size
-  //   let pattern = []; 
+        let correspondingItems = correspondingBefore.concat(correspondingAfter); 
 
-  //   // Collect all the types and split them into groups based on the given size
-  //   let currSize = 0; 
-  //   let currGroup = []; 
-  //   for(let i=0; i<node.children.length; i++) {
-  //     let currChild = node.children[i]; 
-  //     currGroup.push(currChild.title.props.shape.type);
-  //     currSize++; 
+        let itemChildren = currItem.children; 
+        if(itemChildren) {
+          for(let j=0; j<itemChildren.length; j++) {
+            let itemChild = itemChildren[j]; 
 
-  //     if(currSize == size){
-  //       if(currGroup.length) {
-  //         pattern.push(currGroup); 
-  //       }
+            let correspondingIDs = []; 
+            for(let k=0; k<correspondingItems.length; k++) {
+              let correspondingItem = items[correspondingItems[k]]; 
+              let matchingItem = correspondingItem.children[j]; 
+              correspondingIDs.push(matchingItem.key);
+            }
 
-  //       currSize = 0; 
-  //       currGroup = []; 
-  //     }
-  //   }
+            itemChild.shape.correspondingIDs = correspondingIDs; 
+          }
+        }
+      }
+    }
+  }
 
-  //   // Now, verify that each of the subgroups has the exact same set of types
-  //   for(let i=0; i<pattern.length; i++){
-  //     if(i < pattern.length - 1) {
-  //       let patternGroup = pattern[i]; 
-  //       let nextPatternGroup = pattern[i+1]; 
-  //       if(!this.typesMatch(patternGroup, nextPatternGroup)) {
-  //         return false;
-  //       }
-  //     }
-  //   }
+  restructureRepeatGroupChildren = (groupChildren, groupSize) => {
+    // Split the children of this group node into uniformly sized groups 
+    let curr = 0; 
+    let currGroup = []; 
+    let groups = []; 
+    for(let i=0; i<groupChildren.length; i++) {
+      currGroup.push(groupChildren[i]); 
+      curr++; 
 
-  //   return true; 
-  // }
+      if(curr == groupSize) {
+        groups.push(currGroup);
+        currGroup = [];
+        curr = 0;  
+      }
+    }
 
-  // getGroupSizes = (total) => {
-  //   // Get the set of group sizes to check by finding the possible divisors
-  //   let totalFloor = Math.floor(total/2); 
-  //   let sizes = []; 
-  //   for(let i=1; i<=totalFloor; i++) {
-  //     if(total % i == 0){
-  //       sizes.push(i); 
-  //     }
-  //   }
+    // For each group of children, create a new group node in the tree, and return these groups as 
+    // the new children 
+    let newChildren = []; 
+    for(let i=0; i<groups.length; i++) {
+      let currGroup = groups[i]; 
 
-  //   return sizes;
-  // }
+      let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
+        {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+      newGroupNode.item = true;
+      newGroupNode.shape.item = true;
+      newGroupNode.children = currGroup; 
+      newChildren.push(newGroupNode); 
+    }
 
-  // checkGroupTyping = (node) => {
-  //   // Do the type inference algorithm
-  //   // iterate through each set of possible groupings starting with the greatest common divisor
-  //   let numChildren = node.children.length; 
-  //   let groupSizes = this.getGroupSizes(numChildren);
-  //   // We want to split into the largest size group, so reverse the order
-  //   groupSizes.reverse();
-  //   for(let i=0; i<groupSizes.length; i++) {
-  //     let groupSize = groupSizes[i];
-  //     if(groupSize >= this.minimumGroupSize) {
-  //       if(this.canSplitIntoGroupOfSize(node, groupSize)) {
-  //         return groupSize;
-  //       }
-  //     }
-  //   }
+    return newChildren; 
+  }
 
-  //   return false;
-  // }
+  createRepeatGroup = (groupID) => {
+    let groupNode = this.widgetTreeNodeMap[groupID];
+    if(groupNode) {
+      groupNode.typed = true; 
+      groupNode.src = repeatGridSVG; 
+      groupNode.shape.typed = true; 
 
-  // getRepeatGroupMatchingChildren = (group) => {
-  //   // For a given child, return the shape IDs of the child shapes that are in the
-  //   // corresponding positions in the other group(s)
-  //   let items = group.children; 
-  //   if(items) {
-  //     for(let i=0; i<items.length; i++) {
-  //       let currItem = items[i]; 
+      let newGroupChildren = this.restructureRepeatGroupChildren(groupNode.children, groupNode.typedGroupSize); 
+      groupNode.children = newGroupChildren; 
 
-  //       let correspondingBefore = []
-  //       if(i > 0) {
-  //         correspondingBefore = _.range(0, i); 
-  //       }
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }), this.checkSolutionValidityAndUpdateCache); 
+    }
+  }
 
-  //       let correspondingAfter = []; 
-  //       if(i < items.length - 1) {
-  //         correspondingAfter = _.range(i+1, items.length); 
-  //       }
-
-  //       let correspondingItems = correspondingBefore.concat(correspondingAfter); 
-
-  //       let itemChildren = currItem.children; 
-  //       if(itemChildren) {
-  //         for(let j=0; j<itemChildren.length; j++) {
-  //           let itemChild = itemChildren[j]; 
-
-  //           let correspondingIDs = []; 
-  //           for(let k=0; k<correspondingItems.length; k++) {
-  //             let correspondingItem = items[correspondingItems[k]]; 
-  //             let matchingItem = correspondingItem.children[j]; 
-  //             correspondingIDs.push(matchingItem.key);
-  //           }
-
-  //           itemChild.shape.correspondingIDs = correspondingIDs; 
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
-  // restructureRepeatGroupChildren = (groupChildren, groupSize) => {
-  //   // Split the children of this group node into uniformly sized groups 
-  //   let curr = 0; 
-  //   let currGroup = []; 
-  //   let groups = []; 
-  //   for(let i=0; i<groupChildren.length; i++) {
-  //     currGroup.push(groupChildren[i]); 
-  //     curr++; 
-
-  //     if(curr == groupSize) {
-  //       groups.push(currGroup);
-  //       currGroup = [];
-  //       curr = 0;  
-  //     }
-  //   }
-
-  //   // For each group of children, create a new group node in the tree, and return these groups as 
-  //   // the new children 
-  //   let newChildren = []; 
-  //   for(let i=0; i<groups.length; i++) {
-  //     let currGroup = groups[i]; 
-  //     let newGroupNode = this.createNewTreeNode("group", item, { item: true }); 
-  //     let isExpanded = (i == 0) ? true : false; 
-  //     newGroupNode.expanded = isExpanded; 
-  //     newGroupNode.children = currGroup; 
-  //     newChildren.push(newGroupNode); 
-  //   }
-
-  //   return newChildren; 
-  // }
-
-  // createRepeatGroup = (groupID, typed, groupSize) => {
-  //   return () => {
-  //     let groupNode = this.widgetTreeNodeMap[groupID];
-  //     // let groupNodeData = this.getPathAndChildrenForTreeNode(groupNode);
-  //     if(groupNode) {
-  //       let widget = this.getWidget(groupNode.title.props.shape, repeatGrid, { typed: true }); 
-  //       let newGroupChildren = this.restructureRepeatGroupChildren(groupNodeData.children, groupSize); 
-
-  //       // Create a new node for the widget
-  //       let newNode = {
-  //         title: widget, 
-  //         subtitle: [], 
-  //         expanded: true, 
-  //         children: newGroupChildren
-  //       }; 
-
-  //       // Replace the current node with this new node
-  //       this.state.treeData = changeNodeAtPath({
-  //         treeData: this.state.treeData,
-  //         path: groupNodeData.path,
-  //         getNodeKey: defaultGetNodeKey,
-  //         ignoreCollapsed: false,
-  //         newNode: newNode
-  //       }); 
-
-  //       this.setState(state => ({
-  //         treeData: this.state.treeData
-  //       }), this.checkSolutionValidityAndUpdateCache); 
-  //     }
-  //   }
-  // }
-
-  // closeTypingAlert = (groupID) => {
-  //   return () => {
-  //     // Close the group typing alert dialog without doing anything. 
-  //     let treeNode = this.widgetTreeNodeMap[groupID]; 
-  //     // Remove the typing dialog from the group
-  //     if(treeNode && treeNode.subtitle && treeNode.subtitle.length) {
-  //       let subtitleNode = treeNode.subtitle[0]; 
-  //       if(subtitleNode.props.type == "typing") {
-  //         treeNode.subtitle.splice(0,1);       
-  //       }
-  //     }
-
-  //     this.setState(state => ({
-  //       treeData: this.state.treeData
-  //     }));       
-  //   }
-  // }
-
-  // getWidgetTyping = (key, groupID, groupSize) => {
-  //   return (<WidgetTyping 
-  //     key={key} type="typing" 
-  //     groupID={groupID} 
-  //     groupSize={groupSize}
-  //     createRepeatGroup={this.createRepeatGroup} 
-  //     closeTypingAlert={this.closeTypingAlert} />); 
-  // }
 
   // removeTypedGroup = (groupNode) => {
   //  // Ungroup childen from the item containers
@@ -1035,6 +885,114 @@ export default class ConstraintsCanvas extends React.Component {
     //   }
     // }
 
+  }
+
+  closeTypingAlert = (groupID) => {
+    return () => {
+      // Set the typeGroupSize value to -1 so the alert will no longer be shown.
+      let treeNode = this.widgetTreeNodeMap[groupID]; 
+      treeNode.typeGroupSize = -1; 
+
+      this.setState(state => ({
+        treeData: this.state.treeData
+      }));       
+    }
+  }
+
+  getWidgetTyping = (groupID, groupSize) => {
+    let key = getUniqueID();
+    return (<WidgetTyping
+      key={key} 
+      type="typing" 
+      groupID={groupID} 
+      groupSize={groupSize}
+      createRepeatGroup={this.createRepeatGroup} 
+      closeTypingAlert={this.closeTypingAlert} />); 
+  }
+
+  typesMatch = (group1, group2) =>  {
+    // Check whether the set of types in each group list match 
+    if(group1.length != group2.length) {
+      return false;
+    }
+
+    for(let i=0; i<group1.length; i++) {
+      let item1 = group1[i]; 
+      let item2 = group2[i]; 
+      if(item1 != item2) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  canSplitIntoGroupOfSize = (node, size) => {
+    // Determine if the children of this node can be split into a group of the given size
+    let pattern = []; 
+
+    // Collect all the types and split them into groups based on the given size
+    let currSize = 0; 
+    let currGroup = []; 
+    for(let i=0; i<node.children.length; i++) {
+      let currChild = node.children[i]; 
+      currGroup.push(currChild.shape.type);
+      currSize++; 
+
+      if(currSize == size){
+        if(currGroup.length) {
+          pattern.push(currGroup); 
+        }
+
+        currSize = 0; 
+        currGroup = []; 
+      }
+    }
+
+    // Now, verify that each of the subgroups has the exact same set of types
+    for(let i=0; i<pattern.length; i++){
+      if(i < pattern.length - 1) {
+        let patternGroup = pattern[i]; 
+        let nextPatternGroup = pattern[i+1]; 
+        if(!this.typesMatch(patternGroup, nextPatternGroup)) {
+          return false;
+        }
+      }
+    }
+
+    return true; 
+  }
+
+  getGroupSizes = (total) => {
+    // Get the set of group sizes to check by finding the possible divisors
+    let totalFloor = Math.floor(total/2); 
+    let sizes = []; 
+    for(let i=2; i<=totalFloor; i++) {
+      if(total % i == 0){
+        sizes.push(i); 
+      }
+    }
+
+    return sizes;
+  }
+
+  checkGroupTyping = (node) => {
+    // Do the type inference algorithm
+    // iterate through each set of possible groupings starting with the greatest common divisor
+    let numChildren = node.children.length; 
+    let groupSizes = this.getGroupSizes(numChildren);
+    // We want to split into the largest size group, so reverse the order
+    groupSizes.reverse();
+    for(let i=0; i<groupSizes.length; i++) {
+      let groupSize = groupSizes[i];
+      if(groupSize >= this.minimumGroupSize) {
+        if(this.canSplitIntoGroupOfSize(node, groupSize)) {
+          return groupSize;
+        }
+      }
+    }
+
+    return -1;
   }
 
   groupContainsKey = (treeNode, key) => {
@@ -1265,7 +1223,8 @@ export default class ConstraintsCanvas extends React.Component {
         let widgetOptions = {
           highlighted: item.highlighted, 
           typed: item.typed, 
-          item: item.item
+          item: item.item, 
+          typeGroupSize: item.typeGroupSize, 
         }
 
         let widgetSource = item.src; 
@@ -1278,7 +1237,7 @@ export default class ConstraintsCanvas extends React.Component {
 
         let widgetFeedbacks = this.getWidgetFeedbacks(item.shape); 
         widgetOptions.feedback = widgetFeedbacks; 
-        let widget = this.getWidget(item.key, item.shape, widgetSource, widgetOptions); 
+        let widget = this.getWidget(item.shape, widgetSource, widgetOptions); 
         if (item.children && item.children.length) {
           return <TreeNode key={item.key} icon={widget} title={""} disabled={item.disabled}>{gatherTreeNodes(item.children)}</TreeNode>;
         }
@@ -1295,6 +1254,8 @@ export default class ConstraintsCanvas extends React.Component {
         groupElements={this.state.rightClickGroup} 
         groupSelected={this.groupSelectedNodes}
         ungroupSelected={this.ungroupGroup}
+        typeGroupSize={this.state.typeGroupSize}
+        createRepeatGroup={this.createRepeatGroup}
         menuLeft={rightClickMenuPosition.x}
         menuTop={rightClickMenuPosition.y}
         shapeID={this.state.rightClickShapeID} /> : undefined); 

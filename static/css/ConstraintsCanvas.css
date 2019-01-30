@@ -7,6 +7,7 @@
 .dropdown-menu {
 	padding-top: 0;
 	font-size: initial;
+	padding-bottom: 0;
 }
 
 .dropdown-menu .caret {
@@ -39,6 +40,16 @@
 
 .dropdown-menu > li {
 	border-top: 1px solid lightgray;
+}
+
+.dropdown-menu > li.dropdown-disabled > a {
+	color: #a8a8a8;
+	cursor: default; 
+}
+
+.dropdown-menu > li.dropdown-disabled > a:focus, 
+.dropdown-menu > li.dropdown-disabled > a:hover {
+	background-color: white;
 }
 
 
