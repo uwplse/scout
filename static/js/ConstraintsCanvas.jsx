@@ -147,6 +147,14 @@ export default class ConstraintsCanvas extends React.Component {
       this.state.svgSourceMap[svgWidget.id] = svgWidget; 
     }
 
+    let svgItem = {
+      id: "group", 
+      svgData: groupSVG, 
+      visible: true
+    }
+
+    this.state.svgSourceMap["group"] = svgItem; 
+
     this.setState({
       svgSourceMap: this.state.svgSourceMap
     });
@@ -310,10 +318,8 @@ export default class ConstraintsCanvas extends React.Component {
     }, this.updateShapeCache); 
   }
 
-  createNewTreeNode = (type, source, options={}) => {
+  createNewTreeNode = (id, type, source, options={}) => {
     // Creates a new tree node widget and returns it
-    let id = getUniqueID();
-
     let width = options.width ? options.width : 0;
     let height = options.height ? options.height : 0; 
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
@@ -1098,7 +1104,7 @@ export default class ConstraintsCanvas extends React.Component {
     delete this.constraintsShapesMap[key];
 
     // Check whether the parent group should be removed if all its children are gone
-    if(!parentNode.children.length) {
+    if(!parentNode.children.length && parentNode.shape.type != "canvas") {
       this.removeWidgetNode(parentNode.key);
     }
 
@@ -1170,7 +1176,8 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     // Make a new group to contain the nodes
-    let group = this.createNewTreeNode("group", groupSVG, {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+    let group = this.createNewTreeNode("group", "group", groupSVG, 
+      {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
     group.children = nodes; 
 
     if(firstIndex != -1) {
@@ -1189,7 +1196,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.setState({
       treeData: this.state.treeData, 
       selectedTreeNodes: []
-    }); 
+    }, this.checkSolutionValidityAndUpdateCache); 
   }
 
   ungroupGroup = (nodeKey) => {
