@@ -145,13 +145,18 @@ class Shape(object):
 		if "correspondingIDs" in element: 
 			self.correspondingIDs = element["correspondingIDs"]
 
+
+		size_height = self.orig_height
+		size_width = self.orig_width
 		if "alternate" in element and element["alternate"]:
 			self.is_alternate = True
 			domain = element["representations"] 
+			size_width = element["alternate_width"]
+			size_height = element["alternate_height"]
 			self.variables.alternate = sh.Variable(shape_id, "alternate", domain)
 
 		if self.type == "leaf": 
-			size_domain = compute_size_domain(self.importance, self.orig_width, self.orig_height)
+			size_domain = compute_size_domain(self.importance, size_width, size_height)
 			self.variables.height = sh.Variable(shape_id, "height", 
 				[x[1] for x in size_domain], index_domain=False)
 			self.variables.width = sh.Variable(shape_id, "width", 
