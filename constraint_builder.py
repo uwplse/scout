@@ -95,13 +95,20 @@ class ConstraintBuilder(object):
 			self.constraints += cb.eq(shape.variables.baseline.id, 
 				cb.add(shape.variables.y.id, shape.orig_baseline), "baseine_" + shape.shape_id)
 
-	# def init_shape_bounds(self, shape):
-	# 	self.constraints += cb.assert_expr(cb.gte(shape.variables.x.id, "0"), "shape_" + shape.shape_id + "_x_gt_zero")
-	# 	self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.x.id, str(shape.computed_width())), 
-	# 		str(CANVAS_WIDTH)), "shape_" + shape.shape_id + "_right_lt_width")
-	# 	self.constraints += cb.assert_expr(cb.gte(shape.variables.y.id, "0"), "shape_" + shape.shape_id + "_y_gt_zero")
-	# 	self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.y.id, str(shape.computed_height())), 
-	# 		str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
+	def init_shape_alternate(self, shape): 
+		if shape.is_alternate: 
+			alternate = shape.variables.alternate.id
+			self.constraints += cb.assert_expr(cb.gte(alternate, "0"), "shape_" + shape.shape_id + "_alternate_gt_0")
+			self.constraints += cb.assert_expr(cb.lt(alternate, str(len(shape.variables.alternate.domain))),
+				"alternate_" + shape.shape_id + "_alternate_lt_domain" )
+
+	def init_shape_bounds(self, shape):
+		self.constraints += cb.assert_expr(cb.gte(shape.variables.x.id, "0"), "shape_" + shape.shape_id + "_x_gt_zero")
+		self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.x.id, str(shape.computed_width())), 
+			str(CANVAS_WIDTH)), "shape_" + shape.shape_id + "_right_lt_width")
+		self.constraints += cb.assert_expr(cb.gte(shape.variables.y.id, "0"), "shape_" + shape.shape_id + "_y_gt_zero")
+		self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.y.id, str(shape.computed_height())), 
+			str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
 
 	def init_canvas_constraints(self, canvas): 
 		canvas_x = canvas.variables.x

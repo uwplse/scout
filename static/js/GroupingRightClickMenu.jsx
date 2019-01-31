@@ -29,12 +29,12 @@ export default class GroupingRightClickMenu extends React.Component {
       shapeID={this.props.shapeID} 
       onClick={this.props.groupSelected} 
       label={"Group"}
-      disabled={!this.props.groupElements} />;
+      disabled={this.props.isGroup} />;
     const ungroupMenuItem = <GroupingMenuItem 
       onClick={this.props.ungroupSelected} 
       shapeID={this.props.shapeID}
       label={"Ungroup"}
-      disabled={this.props.groupElements} />;
+      disabled={!this.props.isGroup} />;
 
     const menuItems = [groupMenuItem, ungroupMenuItem]; 
 
@@ -46,14 +46,30 @@ export default class GroupingRightClickMenu extends React.Component {
         shapeID={this.props.shapeID}
         label={"Create repeat group"}
         disabled={isTyped} />;
-      menuItems.push(repeatGroupMenuItem);
 
+      menuItems.push(repeatGroupMenuItem);
       const removeRepeatGroupMenuItem = <GroupingMenuItem
         onClick={this.props.removeRepeatGroup}
         shapeID={this.props.shapeID}
         label={"Remove repeat group"}
         disabled={!isTyped} />;
       menuItems.push(removeRepeatGroupMenuItem);
+    }
+
+    if(!this.props.containsGroup) {
+      const alternateGroupMenuItem = <GroupingMenuItem
+        onClick={this.props.createAlternateGroup}
+        shapeID={this.props.shapeID}
+        label={"Create alternate group"}
+        disabled={this.props.isAlternate} />;
+
+      menuItems.push(alternateGroupMenuItem);
+      const removeAlternateGroupMenuItem = <GroupingMenuItem
+        onClick={this.props.removeAlternateGroup}
+        shapeID={this.props.shapeID}
+        label={"Remove alternate group"}
+        disabled={!this.props.isAlternate} />;
+      menuItems.push(removeAlternateGroupMenuItem);
     }
 
 	  return (

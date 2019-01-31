@@ -132,8 +132,9 @@ class Solver(object):
 
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
-				# self.cb.init_shape_bounds(shape)
+				self.cb.init_shape_bounds(shape)
 				self.cb.init_shape_baseline(shape)
+				self.cb.init_shape_alternate(shape)
 
 	def build_shape_hierarchy(self): 
 		shapes = dict()
@@ -155,8 +156,13 @@ class Solver(object):
 
 			sub_hierarchy = None
 
+
+			is_alternate = False
+			if "alternate" in element and element["alternate"]: 
+				is_alternate = True
+
 			is_at_root = True if element_type == "canvas" else False
-			if "children" in element: 
+			if "children" in element and not is_alternate: 
 				children = element["children"]
 				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis, is_at_root)
 
@@ -165,7 +171,7 @@ class Solver(object):
 				shape_object = shape_classes.CanvasShape(self.solver_ctx, 
 					element["name"], element, num_siblings)
 				shapes[shape_object.shape_id] = shape_object
-			elif element_type == "group" or element_type == "labelGroup":
+			elif element_type == "group" and not is_alternate:
 				shape_object = shape_classes.ContainerShape(self.solver_ctx, 
 					element["name"], element, num_siblings, at_root=at_root)
 				shapes[shape_object.shape_id] = shape_object
@@ -199,6 +205,10 @@ class Solver(object):
 				if shape.at_root: 
 					last.append(shape.variables.column)
 					last.append(shape.variables.y)
+
+				if shape.is_alternate: 
+					last.append(shape.variables.alternate)
+
 				last.append(shape.variables.size_factor)
 
 			if shape.at_root: 

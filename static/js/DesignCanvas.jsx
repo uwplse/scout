@@ -3,8 +3,7 @@ import React from "react";
 import DesignCanvasMenu from "./DesignCanvasMenu"; 
 import DesignMenu from "./DesignMenu";
 import DesignCanvasSVGWidget from "./DesignCanvasSVGWidget";
-import group from '../assets/illustrator/groupDesign.svg';
-import item from '../assets/illustrator/item.svg';
+import groupSVG from '../assets/illustrator/groupDesign.svg';
 import '../css/DesignCanvas.css'; 
 
 export default class DesignCanvas extends React.Component {
@@ -122,12 +121,17 @@ export default class DesignCanvas extends React.Component {
   }
 
   getSVGSource = (node) => {
-    if(node.item || node.type == "labelGroup") {
-      return groupDesign;
+    if(node.type == "group" && !node.alternate) {
+      return groupSVG;
+    }
+
+    let svgID = node.id; 
+    if(node.alternate) {
+      svgID = node.alternate; 
     }
 
     let svgElements = this.props.svgWidgets; 
-    let svgElement = svgElements.filter(element => element.id == node.id); 
+    let svgElement = svgElements.filter(element => element.id == svgID); 
     if(svgElement && svgElement.length) {
       svgElement = svgElement[0]; 
       return svgElement.svgData; 
@@ -139,11 +143,10 @@ export default class DesignCanvas extends React.Component {
   createSVGElement = (shape) => {
     // Get the control SVG element from the control type
     let type = shape.type; 
-    let isContainer = type == "group" || type == "labelGroup"; 
-    let svgSource = (isContainer ? group : this.getSVGSource(shape)); 
+    let svgSource = this.getSVGSource(shape); 
     if(svgSource != undefined) {
       let padding = 0; 
-      if(isContainer) {
+      if(shape.type == "group" && !shape.alternate) {
         padding = 5;
       }
 
