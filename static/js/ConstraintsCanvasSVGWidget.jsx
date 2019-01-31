@@ -17,19 +17,11 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.elementId = "widget-container-" + this.id; 
 
     // Callback to notify the parent container to re-check the solution validity
-    this.checkSolutionValidity =  props.checkSolutionValidity; 
     this.displayRightClickMenu = props.displayRightClickMenu; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
-    this.displayLabelIndicator = props.displayLabelIndicator; 
-    this.createLabelsGroup = props.createLabelsGroup; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
     this.isContainer = props.isContainer; 
-
-    this.setOrder = this.setOrder.bind(this); 
-    this.setContainerOrder = this.setContainerOrder.bind(this); 
-    this.setLabel = this.setLabel.bind(this); 
-    this.setImportanceLevel = this.setImportanceLevel.bind(this); 
 
     // Timer for handling text change events
     this.timer = null;  
@@ -41,13 +33,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       containerOrder: this.element.containerOrder, 
       importance: this.element.importance, 
       showLabels: this.element.labels ? true : false, 
-      labelPosition: {
-        x: 0, 
-        y: 0
-      }, 
       svgSource: props.source, 
       highlighted: props.highlighted, 
-      hasText: false, 
       cursorPos: 0, 
       hovered: false
     }; 
@@ -60,7 +47,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       order: prevState.order, 
       importance: prevState.importance, 
       showLabels: prevState.showLabels, 
-      labelPosition: prevState.labelPosition, 
       cursorPos: prevState.cursorPos,
       svgSource: nextProps.source, 
       containerOrder: prevState.containerOrder, 
@@ -68,146 +54,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       hovered: prevState.hovered
     }    
   }
-  
-  componentDidMount() {
-    // Set the initial value for the text label
-    this.setState({
-      hasText: true, 
-      labelPosition: this.computeLabelPosition()
-    }); 
-  }
-
-  getHasText = () => {
-    let rootElement = document.getElementById(this.elementId); 
-    let editableText = rootElement.getElementsByTagName('text');
-    if(editableText[0]) {
-      return true;  
-    }
-
-    return false;
-  }
-
-  adjustElementSize = (element, includeHeight=false) => {
-    let boundingRect = element.getBoundingClientRect(); 
-
-    // Set it on the element object
-    let widthRounded = Math.round(boundingRect.width); 
-    let heightRounded = Math.round(boundingRect.height);
-
-    // When height and width are updated by font size changes, update the element object. 
-    let height = this.state.height; 
-    if(includeHeight) {
-      height = heightRounded; 
-      this.element.height = heightRounded; 
-    }
-
-    this.element.width = widthRounded; 
-    this.setState({
-      width: widthRounded, 
-      height: height
-    }); 
-
-    return boundingRect; 
-  }
-
-
-  setElementTyping = (typed) => {
-    this.element.typed = typed; 
-  }
 
   showContextMenu = (evt) => {
     evt.stopPropagation();
     evt.preventDefault();
 
-    if(this.type == "text") {
-      this.displayRightClickMenu(evt, this.id, {
-        setLabel: this.setLabel, 
-        setImportanceLevel: this.setImportanceLevel, 
-        setOrder: this.setOrder
-      }); 
-    }
-    else if(this.type == "group"){
-      this.displayRightClickMenu(evt, this.id, {
-        setImportanceLevel: this.setImportanceLevel, 
-        setOrder: this.setOrder,
-        setContainerOrder: this.setContainerOrder
-      });     
-    }
-    else if(this.type == "canvas") {
-      this.displayRightClickMenu(evt, this.id, {
-        setContainerOrder: this.setContainerOrder
-      }); 
-    }
-    else {
-      this.displayRightClickMenu(evt, this.id, {
-        setImportanceLevel: this.setImportanceLevel, 
-        setOrder: this.setOrder
-      }); 
-    }
-  }
-
-  computeLabelPosition = () => {
-    let svgElement = document.getElementById(this.elementId); 
-    let svgBox = svgElement.getBoundingClientRect(); 
-
-    return {
-      x: (svgBox.width)/2, 
-      y: svgBox.height + 25
-    }; 
-  }
-
-  setImportanceLevel(evt, level) {
-    evt.stopPropagation(); 
-
-    // Update the object
-    this.element.importance = level; 
-
-    // Update the number of stars showing
-    this.setState({
-      importance: level, 
-    }); 
-
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();
-  }
-
-  setLabel(evt, shapeId) {
-    evt.stopPropagation(); 
-
-    // Save the labels relationship to the shape object 
-    this.element.labels = shapeId; 
-    this.setState({
-      showLabels: true 
-    }); 
-
-    this.createLabelsGroup(this.id, shapeId); 
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();
-  }
-
-  setOrder(evt, value) {
-    evt.stopPropagation(); 
-
-    this.element.order = value; 
-    this.setState({
-      order: value
-    });
-
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();      
-  }
-
-  setContainerOrder(evt, orderValue) {
-    evt.stopPropagation(); 
-
-    this.element.containerOrder = orderValue; 
-    this.element.test = "test"; 
-    this.setState({
-      containerOrder: orderValue
-    }); 
-
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();
+    this.displayRightClickMenu(evt, this.id); 
   }
 
   onMouseOver = () => {
@@ -233,21 +85,15 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const importance = this.state.importance; 
     const showImportance = this.state.showImportance; 
     const showLabels = this.state.showLabels; 
-    const labelPosition = this.state.labelPosition; 
     const order = this.state.order;
     const ordered = this.state.containerOrder == "important"; 
     const orderLabel = order == 0 ? "First" : "Last"; 
     const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
-
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
-
-    const isEditable = this.state.hasText;
     return (
       <div  
         onContextMenu={this.showContextMenu} 
-        suppressContentEditableWarning="true" 
-        onBlur={this.updateTextLabel} 
         onMouseOver={this.onMouseOver}
         onMouseOut={this.onMouseOut}
         id={this.elementId} 
@@ -275,7 +121,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
               </span>
             </div>
             {this.props.feedbackItems}
-            {this.props.typingAlerts}
         </div>
       </div>); 
   }

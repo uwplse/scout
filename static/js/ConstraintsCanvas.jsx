@@ -5,6 +5,7 @@ import '../css/Tree.css';
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import ConstraintsCanvasContainerSVGWidget from './ConstraintsCanvasContainerSVGWidget';
 import WidgetFeedback from './WidgetFeedback';
+import WidgetFeedbackPanel from './WidgetFeedbackPanel';
 import ConstraintActions from './ConstraintActions';
 import { getUniqueID } from './util';
 // import {
@@ -56,6 +57,8 @@ export default class ConstraintsCanvas extends React.Component {
       expandedTreeNodes: ["canvas"],
       selectedTreeNodes: [], 
       pageFeedbackWidgets: [], 
+      selectedElement: undefined, 
+      selectedElementY: 0, 
       rightClickMenuShown: false, 
       rightClickMenuCallbacks: undefined, 
       rightClickMenuPosition: {
@@ -241,9 +244,7 @@ export default class ConstraintsCanvas extends React.Component {
                 isContainer={true}
                 feedbackItems={feedback}
                 typingAlerts={typingAlerts}
-                checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
                 displayRightClickMenu={this.displayRightClickMenu}
-                hideRightClickMenu={this.hideRightClickMenu}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 removeWidgetNode={this.removeWidgetNode}
@@ -258,9 +259,7 @@ export default class ConstraintsCanvas extends React.Component {
               feedbackItems={feedback}
               typingAlerts={typingAlerts}
               highlighted={highlighted}
-              checkSolutionValidity={this.checkSolutionValidityAndUpdateCache} 
               displayRightClickMenu={this.displayRightClickMenu}
-              hideRightClickMenu={this.hideRightClickMenu}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
               removeWidgetNode={this.removeWidgetNode} />);
@@ -345,11 +344,11 @@ export default class ConstraintsCanvas extends React.Component {
     return newTreeNode; 
   }
 
-  getWidgetFeedback = (shapeId, parentShape, action, property, message, highlighted) => {
+  getWidgetFeedback = (shapeID, parentShape, action, property, message, highlighted) => {
     return (<WidgetFeedback 
-              key={shapeId} 
+              key={shapeID} 
               type="feedback"
-              id={shapeId} 
+              id={shapeID} 
               parentShape={parentShape}
               action={action}
               property={property}
@@ -360,6 +359,14 @@ export default class ConstraintsCanvas extends React.Component {
 
   getConstraintsCanvasShape = (shapeID) => {
     return this.constraintsShapesMap[shapeID]; 
+  }
+
+  showWidgetFeedback = (shapeID) => {
+    // open the widget feedback panel with the new shape selected
+    this.setState({
+      selectedElement: shapeID, 
+      selectedTreeNodes: [shapeID]
+    }); 
   }
 
   displayRightClickMenu = (evt, shapeID) => {
@@ -395,7 +402,6 @@ export default class ConstraintsCanvas extends React.Component {
       }
     }
   }
-
 
   closeRightClickMenu = (evt) => {
     if(this.state.rightClickMenuShown) {
@@ -617,7 +623,8 @@ export default class ConstraintsCanvas extends React.Component {
     let isContainer = type == "group" || type == "labelGroup"; 
 
     if(isContainer) {
-      containerOrder = options.containerOrder ? options.containerOrder : "unimportant";
+      // TBD : Remove im pmrotance
+      containerOrder = options.containerOrder ? options.containerOrder : "important";
     }
 
     let importance = (options.importance ? options.importance : "normal");
@@ -1046,6 +1053,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   onSelected = (selectedKeys, evt) => {
     let selected = selectedKeys[selectedKeys.length-1];
+    let pos = evt.nativeEvent.clientY; 
     if(selected == "canvas") {
       // Ensure that the canvas cannot be selected
       selectedKeys.splice(selectedKeys.length-1, 1); 
@@ -1057,7 +1065,9 @@ export default class ConstraintsCanvas extends React.Component {
       // allow multiple node seelction when shift key is pressed
       // Only have the most recent node selected 
       this.setState({
-        selectedTreeNodes: [selected]
+        selectedTreeNodes: [selected],
+        selectedElement: selected, 
+        selectedElementY: pos
       }); 
     } else {
       // Get the last selected node and verify that it has the same parent node as the other 
@@ -1071,7 +1081,9 @@ export default class ConstraintsCanvas extends React.Component {
       }
 
       this.setState({
-        selectedTreeNodes: selectedNodes
+        selectedElement: selectedNodes[selectedNodes.length-1],
+        selectedTreeNodes: selectedNodes, 
+        selectedElementY: pos
       }); 
     }
   }
@@ -1250,34 +1262,41 @@ export default class ConstraintsCanvas extends React.Component {
                 onClick={this.props.checkSolutionValidity.bind(this, {getDesigns: true})}>Generate Designs</button>
             </div>
           </div>
-          <div id="constraints-canvas-container" tabIndex="1" className="constraints-canvas-container panel-body"> 
-            <div className="constraints-canvas-page-feedback">
-              {pageFeedbacks}
+          <div className="constraints-canvas-container panel-body">
+            <div className="constraints-canvas-tree-container"> 
+              <div className="constraints-canvas-page-feedback">
+                {pageFeedbacks}
+              </div>
+              <div className={(!rightClickMenu ? "hidden" : "")}> 
+                {rightClickMenu}
+              </div>
+              <div className="widgets-sortable-tree draggable-container">
+                {treeNodes.length ? 
+                  (<Tree
+                    draggable={true}
+                    selectable={true}
+                    showLine={false}
+                    multiple={true}
+                    autoExpandParent={true}
+                    defaultExpandParent={true}
+                    expandedKeys={this.state.expandedTreeNodes}
+                    selectedKeys={this.state.selectedTreeNodes}
+                    defaultExpandedKeys={["canvas"]}
+                    onSelect={this.onSelected}
+                    onDragStart={this.onDragStart}
+                    onDragEnter={this.onDragEnter}
+                    onDrop={this.onDrop}
+                    onExpand={this.onExpand}
+                  >
+                    {treeNodes}
+                  </Tree>) : undefined}
+              </div>
             </div>
-            <div className={(!rightClickMenu ? "hidden" : "")}> 
-              {rightClickMenu}
-            </div>
-            <div className="widgets-sortable-tree draggable-container">
-              {treeNodes.length ? 
-                (<Tree
-                  draggable={true}
-                  selectable={true}
-                  showLine={false}
-                  multiple={true}
-                  autoExpandParent={true}
-                  defaultExpandParent={true}
-                  expandedKeys={this.state.expandedTreeNodes}
-                  selectedKeys={this.state.selectedTreeNodes}
-                  defaultExpandedKeys={["canvas"]}
-                  onSelect={this.onSelected}
-                  onDragStart={this.onDragStart}
-                  onDragEnter={this.onDragEnter}
-                  onDrop={this.onDrop}
-                  onExpand={this.onExpand}
-                >
-                  {treeNodes}
-                </Tree>) : undefined}
-            </div>
+            {/*<div className="constraints-canvas-feedback-container">
+               <WidgetFeedbackPanel
+                selectedElement={this.state.selectedElement}
+                selectedElementY={this.state.selectedElementY} />
+            </div> */}
           </div>
       </div>
     );

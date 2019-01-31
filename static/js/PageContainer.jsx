@@ -123,7 +123,7 @@ export default class PageContainer extends React.Component {
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               getRelativeDesigns={this.getRelativeDesigns}
-              closeRightClickMenus={this.closeRightClickMenus} />); 
+              showWidgetFeedback={this.showWidgetFeedback} />); 
   }
 
   getSmallDesignCanvas = (solution, id, zoomed=false) => {
@@ -147,7 +147,7 @@ export default class PageContainer extends React.Component {
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               getRelativeDesigns={this.getRelativeDesigns}
-              closeRightClickMenus={this.closeRightClickMenus} />); 
+              showWidgetFeedback={this.showWidgetFeedback} />); 
   }
 
   checkSolutionValidity = (options={}) => {
@@ -192,6 +192,11 @@ export default class PageContainer extends React.Component {
    // Send an ajax request to the server 
    // Solve for the new designs
     $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
+  }
+
+  showWidgetFeedback = (shapeId, evt) => {
+    evt.stopPropagation();
+    this.constraintsCanvasRef.current.showWidgetFeedback(shapeId); 
   }
 
   getConstraintsCanvasShape = (shapeId) => {

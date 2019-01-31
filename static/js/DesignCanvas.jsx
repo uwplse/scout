@@ -24,8 +24,6 @@ export default class DesignCanvas extends React.Component {
   	this.state = {
       childSVGs: [],
   		constraintsMenuShape: undefined, // Current shape that triggered the open menu
-      constraintsMenuX: 0, // Current X location of the constraints menu
-      constraintsMenuY: 0, // Current Y location of the constriants menu
       designMenu: undefined, // The design saving options menu with trash and star icons
       savedState: props.savedState, 
       valid: props.valid, 
@@ -41,9 +39,10 @@ export default class DesignCanvas extends React.Component {
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape;
+    this.showWidgetFeedback = props.showWidgetFeedback; 
 
-    // Way to close all of the right click menus currently open before opening a new one
-    this.closeRightClickMenus = props.closeRightClickMenus; 
+    // // Way to close all of the right click menus currently open before opening a new one
+    // this.closeRightClickMenus = props.closeRightClickMenus; 
 
     // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
     this.highlightWidgetFeedback = props.highlightWidgetFeedback; 
@@ -58,8 +57,6 @@ export default class DesignCanvas extends React.Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     return {
-      constraintsMenuX: prevState.constraintsMenuX,
-      constraintsMenuY: prevState.constraintsMenuY, 
       constraintsMenuShape: prevState.constraintsMenuShape,
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState,
@@ -87,28 +84,6 @@ export default class DesignCanvas extends React.Component {
     } 
     
     return 0.5;
-  }
-
-  showConstraintsContextMenu = (shape) => {
-    return (evt) => {
-      evt.stopPropagation();
-      evt.preventDefault();
-
-      // Close all right click menus before opening new ones
-      this.closeRightClickMenus();
-
-      this.setState({
-        constraintsMenuShape: undefined
-      }); 
-
-      if(this.state.savedState == 0) {
-        this.setState({
-          constraintsMenuShape: shape, 
-          constraintsMenuX: evt.clientX, 
-          constraintsMenuY: evt.clientY, 
-        });
-      }
-    }
   }
 
   performActionAndCloseMenu = (menuTriggerShape, action, actionType, property) => {
@@ -143,7 +118,7 @@ export default class DesignCanvas extends React.Component {
             top={top}
             scaling={this.scalingFactor}
             inMainCanvas={inMainCanvas}
-            contextMenu={this.showConstraintsContextMenu}/>); 
+            showWidgetFeedback={this.showWidgetFeedback}/>); 
   }
 
   getSVGSource = (node) => {
@@ -322,8 +297,6 @@ export default class DesignCanvas extends React.Component {
 
   render () {
     // The shape metadata and location for the current opened constraints menu, if there is one
-   	let constraintsMenuY = this.state.constraintsMenuY; 
-   	let constraintsMenuX = this.state.constraintsMenuX; 
     let constraintsMenuShape = this.state.constraintsMenuShape; 
 
     // The current design menu object for saving and trashing the designs 
@@ -356,18 +329,18 @@ export default class DesignCanvas extends React.Component {
           menuAction={this.performDesignCanvasMenuAction}
           new={this.state.new} />
   			<div className={(constraintsMenuShape ? "" : "hidden")}>
-        {constraintsMenuShape ? 
+        {/*constraintsMenuShape ? 
           (<DesignCanvasMenu 
             left={constraintsMenuX} 
             top={constraintsMenuY} 
             menuTrigger={constraintsMenuShape} 
             onClick={this.performActionAndCloseMenu} 
-            getConstraintsCanvasShape={this.getConstraintsCanvasShape} />) : undefined}
+            getConstraintsCanvasShape={this.getConstraintsCanvasShape} />) : undefined*/}
   			</div>
         <div id={"design-canvas-" + this.id} 
             className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered " : " ")}
-            onContextMenu={this.showConstraintsContextMenu(this.state.canvasShape)}
+            onClick={this.showWidgetFeedback.bind(this, "canvas")}
             style={{height: "100%", width: "100%"}}>
           {childSVGs}
         </div>

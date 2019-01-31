@@ -67,7 +67,6 @@ export default class WidgetsContainerSVGWidget extends React.Component {
         if(this.state.type != "group") {
           let containsNotText = this.containsNotText(element); 
           let type = containsNotText ? 'element' : 'text'; 
-          console.log(type);
           this.setState({
             type: type
           }); 

@@ -56,18 +56,25 @@
 /* 
   Constraints canvas 
  */
-.constraints-canvas-container {
-	/* Needed when we do not have the virtualized grid enabled where it makes its own scrollbar */
-	overflow: auto;
-    height: calc(100% - 120px);
-/*    background-color: #414656;
-*/}
 
-.constraints-container {
-	width: 550px;
-	min-width: 550px;
+ .constraints-canvas-container {
+ 	display: flex; 
+ 	overflow: auto;
+ }
+
+/** 
+  Widget feedback panel area 
+**/ 
+.widget-feedback-panel {
+	background-color: #f5f5f5;
+	border: 1px solid #ddd;
+	padding: 0.5em;
+	position: relative;
 }
 
+.widget-feedback-panel span {
+	white-space: nowrap;
+}
 
 /**
 	Other styles 
