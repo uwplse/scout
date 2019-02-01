@@ -112,9 +112,9 @@ export default class ConstraintsCanvas extends React.Component {
       // Restore the cosntraints tree from the cached shapes
       this.widgetTreeNodeMap[canvasNode.shape.name] = canvasNode; 
 
-      if(treeData.children) {
-        for(let i=0; i<treeData.children.length; i++) {
-          let child = treeData.children[i]; 
+      if(canvasNode.children) {
+        for(let i=0; i<canvasNode.children.length; i++) {
+          let child = canvasNode.children[i]; 
           this.constructShapeHierarchy(child);
         }
       }
@@ -145,13 +145,11 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   constructShapeHierarchy = (treeNode) => {
-    this.widgetTreeNodeMap[node.shape.name] = treeNode; 
-    treeData.children.push(treeNode); 
+    this.widgetTreeNodeMap[treeNode.shape.name] = treeNode; 
 
-    if(node.children && node.children.length) {
-      newTreeNode.children = []; 
-      for(let i=0; i<node.children.length; i++){
-        let child = node.children[i]; 
+    if(treeNode.children && treeNode.children.length) {
+      for(let i=0; i<treeNode.children.length; i++){
+        let child = treeNode.children[i]; 
         this.constructShapeHierarchy(child); 
       }
     }
@@ -349,7 +347,9 @@ export default class ConstraintsCanvas extends React.Component {
   displayRightClickMenu = (evt, shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID]; 
     if(node) {
-      if(node.shape.type == "group") {
+      let selectedAndMultipleSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1
+      let isGroup = node.shape.type == "group"; 
+      if(!selectedAndMultipleSelected && isGroup) {
         // Check whether the repeat group menu item should be shown 
         let groupSize = this.checkGroupTyping(node);
         node.typedGroupSize = groupSize; 
@@ -368,7 +368,7 @@ export default class ConstraintsCanvas extends React.Component {
           rightClickMenuIsAlternate: node.alternate,
           rightClickMenuContainsGroup: containsGroup
         });         
-      } else if(this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1) {
+      } else if(selectedAndMultipleSelected) {
         let containsGroup = this.selectedItemsContainGroup();
         this.setState({
           rightClickMenuShown: true, 
@@ -1100,7 +1100,6 @@ export default class ConstraintsCanvas extends React.Component {
 
   onSelected = (selectedKeys, evt) => {
     let selected = selectedKeys[selectedKeys.length-1];
-    let pos = evt.nativeEvent.clientY; 
     if(selected == "canvas") {
       // Ensure that the canvas cannot be selected
       selectedKeys.splice(selectedKeys.length-1, 1); 
@@ -1108,20 +1107,53 @@ export default class ConstraintsCanvas extends React.Component {
         selectedTreeNodes: selectedKeys
       })
     }
-    else if(!evt.nativeEvent || !evt.nativeEvent.shiftKey) {
-      // allow multiple node seelction when shift key is pressed
-      // Only have the most recent node selected 
-      this.setState({
-        selectedTreeNodes: [selected],
-        selectedElement: selected, 
-        selectedElementY: pos
-      }); 
-    } else {
+    else if (evt.nativeEvent && evt.nativeEvent.shiftKey) {
       // Get the last selected node and verify that it has the same parent node as the other 
       // selected nodes
       let selectedNodes = selectedKeys; 
-      if(this.state.selectedTreeNodes.length > 1) {
-        let prev = this.state.selectedTreeNodes[this.state.selectedTreeNodes.length-2]; 
+      if(selectedNodes.length > 1) {
+        let prev = selectedNodes[selectedNodes.length-2]; 
+        if(!this.hasSameParentNode(selected, prev)) {
+          selectedNodes = [selected]; 
+        }
+        else {
+          let parentNode = this.getParentNodeForKey(selected, this.state.treeData[0]);  
+          let newSelectedNodes = []; 
+          let collect = false;
+
+          // Find the range of elements in bewtween the last two selected nodes
+          for(let i=0; i<parentNode.children.length; i++) {
+            let child = parentNode.children[i]; 
+            if((child.key == prev || child.key == selected) && collect) {
+              newSelectedNodes.push(child.key); 
+              // Stop collecting
+              break;
+            }
+
+            if((child.key == prev || child.key == selected) && !collect) {
+              collect = true; 
+            }
+
+            if(collect) {
+              newSelectedNodes.push(child.key); 
+            }
+          }
+
+          selectedNodes = newSelectedNodes; 
+        }
+
+        this.setState({
+          selectedTreeNodes: selectedNodes, 
+          selectedElement: selected
+        }); 
+      }
+    }   
+    else if (evt.nativeEvent && evt.nativeEvent.ctrlKey) {
+      // Get the last selected node and verify that it has the same parent node as the other 
+      // selected nodes
+      let selectedNodes = selectedKeys; 
+      if(selectedNodes.length > 1) {
+        let prev = selectedNodes[selectedNodes.length-2]; 
         if(!this.hasSameParentNode(selected, prev)) {
           selectedNodes = [selected]; 
         }
@@ -1130,8 +1162,14 @@ export default class ConstraintsCanvas extends React.Component {
       this.setState({
         selectedElement: selectedNodes[selectedNodes.length-1],
         selectedTreeNodes: selectedNodes, 
-        selectedElementY: pos
       }); 
+    }
+    else {
+      // Only have the most recent node selected as shift or ctrl was not pressed 
+      this.setState({
+        selectedTreeNodes: [selected],
+        selectedElement: selected, 
+      });
     }
   }
 
