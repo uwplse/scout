@@ -37,7 +37,6 @@ export default class ConstraintsCanvas extends React.Component {
     this.checkSolutionValidity =  props.checkSolutionValidity; 
 
     // This collection contains the set of shapes on the constraints canvas
-    this.constraintsShapesMap = {};
     this.widgetTreeNodeMap = {};
 
     // A bunch of constants
@@ -85,8 +84,7 @@ export default class ConstraintsCanvas extends React.Component {
       this.setState(state => ({
         treeData: this.state.treeData
       }), this.updateShapeCache);
-    }else {
-      let cachedShapesJSON = localStorage.getItem('shapeHierarchy');
+    } else {
       let cachedShapes = JSON.parse(cachedShapesJSON);
       this.constructTreeFromCache(cachedShapes);
     }
@@ -107,31 +105,24 @@ export default class ConstraintsCanvas extends React.Component {
     this.checkSolutionValidity();
   }
 
-  constructTreeFromCache = (treeData) => {   
-    let canvasNode = {
-      key: treeData.name, 
-      shape: treeData, 
-      src: rootNode, 
-      children: []
-    }
+  constructTreeFromCache = (treeData) => {  
+    if(treeData.length) {
+      let canvasNode = treeData[0]; 
 
-    // Restore the cosntraints tree from the cached shapes
-    this.canvasLevelShape = treeData; 
-    this.constraintsShapesMap[treeData.name] = treeData; 
-    this.widgetTreeNodeMap[treeData.name] = canvasNode; 
+      // Restore the cosntraints tree from the cached shapes
+      this.widgetTreeNodeMap[canvasNode.shape.name] = canvasNode; 
 
-    if(treeData.children) {
-      for(let i=0; i<treeData.children.length; i++) {
-        let child = treeData.children[i]; 
-        this.constructShapeHierarchy(child, canvasNode);
+      if(treeData.children) {
+        for(let i=0; i<treeData.children.length; i++) {
+          let child = treeData.children[i]; 
+          this.constructShapeHierarchy(child);
+        }
       }
 
-      this.state.treeData = this.state.treeData.concat(canvasNode); 
-    }
-
-    this.setState(state => ({
-      treeData: this.state.treeData
-    }));
+      this.setState(state => ({
+        treeData: treeData
+      }));
+    } 
   }
 
   updateSVGSourceMap = () => {
@@ -153,30 +144,15 @@ export default class ConstraintsCanvas extends React.Component {
     });
   }
 
-  constructShapeHierarchy = (node, treeData) => {
-    let source =  this.state.svgSourceMap[node.id];
-    this.constraintsShapesMap[node.name] = node; 
-
-    let disabled = node.item || treeData.item; 
-
-    let newTreeNode = {
-        key: node.name, 
-        shape: node,
-        src: source, 
-        typed: node.typed, 
-        item: node.item,
-        alternate: node.alternate, 
-        disabled: disabled
-    }; 
-
-    this.widgetTreeNodeMap[node.name] = newTreeNode; 
-    treeData.children.push(newTreeNode); 
+  constructShapeHierarchy = (treeNode) => {
+    this.widgetTreeNodeMap[node.shape.name] = treeNode; 
+    treeData.children.push(treeNode); 
 
     if(node.children && node.children.length) {
       newTreeNode.children = []; 
       for(let i=0; i<node.children.length; i++){
         let child = node.children[i]; 
-        this.constructShapeHierarchy(child, newTreeNode); 
+        this.constructShapeHierarchy(child); 
       }
     }
   }
@@ -203,13 +179,9 @@ export default class ConstraintsCanvas extends React.Component {
       "orig_height": this.defaultNodeHeight
     }
 
-    this.canvasLevelShape = canvas;
-    this.constraintsShapesMap[canvas.name] = this.canvasLevelShape; 
-
-
     let rootTreeNode = {
-        key: this.canvasLevelShape.name, 
-        shape: this.canvasLevelShape,
+        key: canvas.name, 
+        shape: canvas,
         src: rootNode, 
         disabled: true, 
         children: []
@@ -221,9 +193,9 @@ export default class ConstraintsCanvas extends React.Component {
   updateShapeCache = () => {
     // Update the entry for the constraintShapesMap in the localStorage cache
     // so we can repopulate the constraints tree on refresh 
-    let shapeHierarchy = this.getShapeHierarchy();
-    let shapeHierarchyJSON = JSON.stringify(shapeHierarchy); 
-    localStorage.setItem('shapeHierarchy', shapeHierarchyJSON); 
+    let treeHierarchy = this.state.treeData; 
+    let treeHierarchyJSON = JSON.stringify(treeHierarchy); 
+    localStorage.setItem('shapeHierarchy', treeHierarchyJSON); 
   }
 
   getWidget = (shape, src, options={}) => {
@@ -363,7 +335,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   getConstraintsCanvasShape = (shapeID) => {
-    return this.constraintsShapesMap[shapeID]; 
+    return this.widgetTreeNodeMap[shapeID].shape; 
   }
 
   showWidgetFeedback = (shapeID) => {
@@ -643,11 +615,7 @@ export default class ConstraintsCanvas extends React.Component {
     let order = options.order ? options.order : -1; 
 
     let containerOrder = undefined; 
-
-    let isContainer = type == "group" || type == "labelGroup"; 
-
-    if(isContainer) {
-      // TBD : Remove im pmrotance
+    if(type == "group") {
       containerOrder = options.containerOrder ? options.containerOrder : "important";
     }
 
@@ -674,11 +642,9 @@ export default class ConstraintsCanvas extends React.Component {
       "typed": typed
     }
 
-    if (isContainer) {
+    if (type == "group") {
       shape.children = []; 
     }
-
-    this.constraintsShapesMap[shape["name"]] = shape; 
 
     return shape;
   }
@@ -856,9 +822,6 @@ export default class ConstraintsCanvas extends React.Component {
     // Remove from the global map of widgets
     delete this.widgetTreeNodeMap[key]; 
 
-    // Delete the entry in the constraints canvas shape map 
-    delete this.constraintsShapesMap[key];
-
     // Check whether the parent group should be removed if all its children are gone
     if(!parentNode.children.length && parentNode.shape.type != "canvas") {
       this.removeWidgetNode(parentNode.key);
@@ -1003,8 +966,7 @@ export default class ConstraintsCanvas extends React.Component {
     // iterate through each set of possible groupings starting with the greatest common divisor
     let numChildren = node.children.length; 
     let groupSizes = this.getGroupSizes(numChildren);
-    // We want to split into the largest size group, so reverse the order
-    groupSizes.reverse();
+
     for(let i=0; i<groupSizes.length; i++) {
       let groupSize = groupSizes[i];
       if(groupSize >= this.minimumGroupSize) {
@@ -1174,7 +1136,6 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   onDrop = (info) => {
-    console.log('drop', info);
     const dropKey = info.node.props.eventKey;
     const dragKey = info.dragNode.props.eventKey;
     const dropPos = info.node.props.pos.split('-');
@@ -1279,7 +1240,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     this.setState({
       treeData: data,
-    });
+    }, this.checkSolutionValidityAndUpdateCache);
   }
 
   render () {
