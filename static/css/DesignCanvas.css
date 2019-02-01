@@ -7,16 +7,7 @@
 
 .design-canvas:hover {
 	transform: scale(1.5) translate(0, 20px);
-	z-index: 100000;
 }
-
-/*.design-canvas .widget-control {
-	cursor: pointer;
-}*/
-
-/*.design-canvas .widget-control-leaf {
-	z-index: 500; 
-}*/
 
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {

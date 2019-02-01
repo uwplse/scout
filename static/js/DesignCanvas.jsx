@@ -317,8 +317,7 @@ export default class DesignCanvas extends React.Component {
     let showInvalidIndicatorLines = (!this.state.valid) && (!saved)
 
     return  (      
-      <div onMouseEnter={this.showMenuAndHighlightConstraints} 
-           onMouseLeave={this.closeMenuAndRemoveHighlightConstraints} 
+      <div 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
            id={"canvas-box-" + this.id} 
            style={{
@@ -331,19 +330,12 @@ export default class DesignCanvas extends React.Component {
           hidden={saved || trashed || invalidated}
           menuAction={this.performDesignCanvasMenuAction}
           new={this.state.new} />
-  			<div className={(constraintsMenuShape ? "" : "hidden")}>
-        {/*constraintsMenuShape ? 
-          (<DesignCanvasMenu 
-            left={constraintsMenuX} 
-            top={constraintsMenuY} 
-            menuTrigger={constraintsMenuShape} 
-            onClick={this.performActionAndCloseMenu} 
-            getConstraintsCanvasShape={this.getConstraintsCanvasShape} />) : undefined*/}
-  			</div>
         <div id={"design-canvas-" + this.id} 
             className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered " : " ")}
             onClick={this.showWidgetFeedback.bind(this, "canvas")}
+            onMouseEnter={this.showMenuAndHighlightConstraints} 
+            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints}
             style={{height: "100%", width: "100%"}}>
           {childSVGs}
         </div>
