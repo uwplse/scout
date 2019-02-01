@@ -306,7 +306,7 @@ export default class DesignCanvas extends React.Component {
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
     let valid = this.state.valid; 
-    let menuVisible = !saved && !trashed && valid; 
+    let menuVisible = !saved && !trashed && valid && !this.state.hovered; 
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.getScalingFactor();      
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
