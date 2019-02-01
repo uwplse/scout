@@ -12,7 +12,7 @@ class GroupingMenuItem extends React.Component {
   render () {
     let self = this; 
     return <li className={(this.disabled ? "dropdown-disabled" : "")}> 
-              <a onClick={this.onClick.bind(this, this.props.shapeID)} tabIndex="-1" href="#">
+              <a onClick={(!this.disabled ? this.onClick.bind(this, this.props.shapeID) : undefined)} tabIndex="-1" href="#">
                 {this.label}
               </a>
           </li>; 
