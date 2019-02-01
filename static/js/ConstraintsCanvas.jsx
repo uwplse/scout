@@ -1330,9 +1330,10 @@ export default class ConstraintsCanvas extends React.Component {
                     selectable={true}
                     showLine={false}
                     multiple={true}
+                    showIcon={true}
                     autoExpandParent={true}
                     defaultExpandParent={true}
-                    expandedKeys={this.state.expandedTreeNodes}
+                    defaultExpandAll={true}
                     selectedKeys={this.state.selectedTreeNodes}
                     defaultExpandedKeys={["canvas"]}
                     onSelect={this.onSelected}
