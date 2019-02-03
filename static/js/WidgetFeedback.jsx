@@ -23,6 +23,44 @@ export default class WidgetFeedback extends React.Component {
     }    
   }
 
+
+  setImportanceLevel(evt, level) {
+    evt.stopPropagation(); 
+
+    // Update the object
+    this.state.selectedElement.importance = level; 
+
+    this.setState({
+      selectedElement: this.state.selectedElement
+    }); 
+
+    this.props.updateTreeAndCheckValidity();
+  }
+
+  setOrder(evt, value) {
+    evt.stopPropagation(); 
+
+    this.state.selectedElement.order = value; 
+
+    this.setState({
+      selectedElement: this.state.selectedElement
+    }); 
+
+    this.props.checkSolutionValidity();      
+  }
+
+  setContainerOrder(evt, orderValue) {
+    evt.stopPropagation(); 
+
+    this.state.selectedElement.containerOrder = orderValue; 
+
+    this.setState({
+      selectedElement: this.state.selectedElement
+    }); 
+
+    this.props.checkSolutionValidity();
+  }
+
   render () {
     var highlighted = this.state.highlighted; 
     return (

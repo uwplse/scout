@@ -220,6 +220,7 @@ export default class ConstraintsCanvas extends React.Component {
                 feedbackItems={feedback}
                 typingAlerts={typingAlerts}
                 displayRightClickMenu={this.displayRightClickMenu}
+                displayWidgetFeedback={this.displayWidgetFeedback}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 removeWidgetNode={this.removeWidgetNode}
@@ -235,6 +236,7 @@ export default class ConstraintsCanvas extends React.Component {
               typingAlerts={typingAlerts}
               highlighted={highlighted}
               displayRightClickMenu={this.displayRightClickMenu}
+              displayWidgetFeedback={this.displayWidgetFeedback}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
               removeWidgetNode={this.removeWidgetNode} />);
@@ -336,12 +338,9 @@ export default class ConstraintsCanvas extends React.Component {
     return this.widgetTreeNodeMap[shapeID].shape; 
   }
 
-  showWidgetFeedback = (shapeID) => {
-    // open the widget feedback panel with the new shape selected
-    this.setState({
-      selectedElement: shapeID, 
-      selectedTreeNodes: [shapeID]
-    }); 
+  displayWidgetFeedback = (shape, callbacks) => {
+    // Call the PageContainer method to open the feedback panel 
+    this.props.displayWidgetFeedback(shape, callbacks); 
   }
 
   displayRightClickMenu = (evt, shapeID) => {
@@ -433,19 +432,6 @@ export default class ConstraintsCanvas extends React.Component {
 
     return -1; 
   }
-
-  getSiblingLabelItem = (shapeId) => {
-    // Go through tree data (recursive) and find the level of the element
-    let node = this.state.treeData; 
-    let siblings = this.getCurrentShapeSiblings(shapeId);
-
-    let menuItems = []; 
-    if(siblings.next) {
-      menuItems.push(siblings.next); 
-    }
-
-    return menuItems; 
-  }
   
   getCurrentShapeSiblings = (shapeId) => {
     // Go through tree data (recursive) and find the level of the element
@@ -472,26 +458,6 @@ export default class ConstraintsCanvas extends React.Component {
   getCurrentShapeIndex = (shapeId) => {
     let node = this.state.treeData; 
     return this.findShapeIndex(shapeId, node);
-  }
-
-  getCurrentContainerOrder = (shapeId) => {
-    let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.shape.containerOrder; 
-  }
-
-  getCurrentShapeOrder = (shapeId) => {
-    let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.shape.order; 
-  }
-
-  getCurrentShapeImportance = (shapeId) => {
-    let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.shape.importance; 
-  }
-
-  getCurrentShapeType = (shapeId) => {
-    let node = this.widgetTreeNodeMap[shapeId]; 
-    return node.shape.type; 
   }
  
   hideRightClickMenu = () => {
@@ -1100,21 +1066,20 @@ export default class ConstraintsCanvas extends React.Component {
 
   onSelected = (selectedKeys, evt) => {
     let selected = selectedKeys[selectedKeys.length-1];
+    let selectedNodes = selectedKeys; 
+    let selectedElement = selected; 
     if(selected == "canvas") {
       // Ensure that the canvas cannot be selected
       selectedKeys.splice(selectedKeys.length-1, 1); 
-      this.setState({
-        selectedTreeNodes: selectedKeys
-      })
+      selectedNodes = selectedKeys; 
     }
     else if (evt.nativeEvent && evt.nativeEvent.shiftKey) {
       // Get the last selected node and verify that it has the same parent node as the other 
       // selected nodes
-      let selectedNodes = selectedKeys; 
-      if(selectedNodes.length > 1) {
-        let prev = selectedNodes[selectedNodes.length-2]; 
+      if(selectedKeys.length > 1) {
+        let prev = selectedKeys[selectedKeys.length-2]; 
         if(!this.hasSameParentNode(selected, prev)) {
-          selectedNodes = [selected]; 
+          selectedNodes = [selected];
         }
         else {
           let parentNode = this.getParentNodeForKey(selected, this.state.treeData[0]);  
@@ -1142,10 +1107,7 @@ export default class ConstraintsCanvas extends React.Component {
           selectedNodes = newSelectedNodes; 
         }
 
-        this.setState({
-          selectedTreeNodes: selectedNodes, 
-          selectedElement: selected
-        }); 
+        selectedElement = selected; 
       }
     }   
     else if (evt.nativeEvent && evt.nativeEvent.ctrlKey) {
@@ -1158,19 +1120,18 @@ export default class ConstraintsCanvas extends React.Component {
           selectedNodes = [selected]; 
         }
       }
-
-      this.setState({
-        selectedElement: selectedNodes[selectedNodes.length-1],
-        selectedTreeNodes: selectedNodes, 
-      }); 
+      selectedElement = selectedNodes[selectedNodes.length-1]; 
     }
     else {
-      // Only have the most recent node selected as shift or ctrl was not pressed 
-      this.setState({
-        selectedTreeNodes: [selected],
-        selectedElement: selected, 
-      });
+      // Only have the most recent node selected as shift or ctrl was not pressed
+      selectedNodes = [selected]; 
+      selectedElement = selected;  
     }
+
+    this.setState({
+      selectedTreeNodes: selectedNodes, 
+      selectedElement: selectedElement
+    }); 
   }
 
   onDrop = (info) => {

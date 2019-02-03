@@ -62,6 +62,10 @@
  	overflow: auto;
  }
 
+ .constraints-canvas-tree-container {
+ 	min-width: 500px;
+ }
+
 /** 
   Widget feedback panel area 
 **/ 
@@ -151,40 +155,6 @@
 .widget-control-remove-icon {
 	transform: scale(2.0); 
 	margin-left: 1em;
-}
-
-.widget-control-typing {
-	margin-top: 0.5em;
-	margin-bottom: 0.5em; 
-}
-
-.widget-control-typing span {
-	margin-left: 0.5em;
-	cursor: pointer;
-	color: blue;
-}
-
-.widget-control-typing span:hover {
-	text-decoration: underline;
-}
-
-.widget-stepper {
-	height: 25px; 
-}
-
-.widget-label {
-	height: 30px;
-}
-
-.widget-container > .widget-container-svg {
-	margin-right: 5px;
-	margin-left: 5px;
-}
-
-.containers-panel {
-	display: flex;
-    flex-direction: row;
-    justify-content: center;
 }
 
 .widget-container .badge {

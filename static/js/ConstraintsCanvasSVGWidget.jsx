@@ -18,6 +18,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
 
     // Callback to notify the parent container to re-check the solution validity
     this.displayRightClickMenu = props.displayRightClickMenu; 
+    this.displayWidgetFeedback = props.displayWidgetFeedback; 
+    this.checkSolutionValidity = props.checkSolutionValidity; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
@@ -55,6 +57,31 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }    
   }
 
+  setImportanceLevel = (level) => {
+    // Update the object
+    this.element.importance = level; 
+
+    this.setState({
+      importance: level
+    }, this.checkSolutionValidity);
+  }
+
+  setOrder = (value) => {
+    this.element.order = value; 
+
+    this.setState({
+      order: value
+    }, this.checkSolutionValidity); 
+  }
+
+  setContainerOrder = (orderValue) => {
+    this.element.containerOrder = orderValue; 
+
+    this.setState({
+      containerOrder: orderValue
+    }, this.checkSolutionValidity); 
+  }
+
   showContextMenu = (evt) => {
     evt.stopPropagation();
     evt.preventDefault();
@@ -78,6 +105,31 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }
   }
 
+  onClick = () => {
+    let feedbackCallbacks = {}; 
+    if(this.type == "group") {
+      feedbackCallbacks.setContainerOrder = this.setContainerOrder;  
+      feedbackCallbacks.setOrder = this.setOrder; 
+      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
+      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
+      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings; 
+    }
+    else if(this.type == "canvas") {
+      feedbackCallbacks.setContainerOrder = this.setContainerOrder
+    }
+    else {
+      feedbackCallbacks.setOrder = this.setOrder; 
+      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
+      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings;
+      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
+    }
+
+    this.displayWidgetFeedback(this.element, feedbackCallbacks); 
+  }
+
+  // onClick -> displayWidgetFeedback -> widgetFeedbackCallbacks with setter methods
+  // ConstraintsCanvas -> displayWidgetFeedback -> PageContainer -> Feedback Container takes callbacks and sets them up 
+
   render () {
     const source = this.state.svgSource; 
     const height = this.state.height; 
@@ -94,6 +146,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     return (
       <div  
         onContextMenu={this.showContextMenu} 
+        onClick={this.onClick}
         onMouseOver={this.onMouseOver}
         onMouseOut={this.onMouseOut}
         id={this.elementId} 

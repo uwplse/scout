@@ -135,7 +135,6 @@ export default class ConstraintsCanvasMenu extends React.Component {
 
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
-    this.getSiblingLabelItem = props.getSiblingLabelItem; 
     this.getBeforeAndAfterSiblings = props.getBeforeAndAfterSiblings; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
@@ -169,16 +168,6 @@ export default class ConstraintsCanvasMenu extends React.Component {
       labelMenuShown: false, 
       orderMenuShown: false
     }
-  }
-
-  getFontSizeMenuItems = () => {
-    let menuItems = []; 
-    for(var i=0; i<this.fontSizes.length; i++) {
-      let size = this.fontSizes[i];
-      menuItems.push(<FontSizeMenuItem key={size} value={size} onClick={this.setFontSize} />);
-    }
-
-    return menuItems; 
   }
 
   getImportanceMenuItems = () => {

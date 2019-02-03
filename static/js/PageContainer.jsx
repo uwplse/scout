@@ -36,7 +36,8 @@ export default class PageContainer extends React.Component {
       droppedFiles: [], 
       svgWidgets: [], 
       zoomedDesignCanvasID: undefined, 
-      activeDesignPanel: "designs" 
+      activeDesignPanel: "designs", 
+      selectedElement: undefined
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -520,6 +521,13 @@ export default class PageContainer extends React.Component {
     });
   }
 
+  displayWidgetFeedback = (shape, feedbackCallbacks) => {
+    this.setState({
+      selectedElement: shape, 
+      feedbackCallbacks: feedbackCallbacks
+    }); 
+  }
+
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
@@ -589,8 +597,14 @@ export default class PageContainer extends React.Component {
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
               updateConstraintsCanvas={this.updateConstraintsCanvas} 
+              displayWidgetFeedback={this.displayWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
+              setSelectedWidget={this.setSelectedWidget}
               svgWidgets={this.state.svgWidgets} />
+            {this.state.selectedElement ? 
+              <FeedbackContainer selectedElement={this.state.selectedElement}
+                feedbackCallbacks={this.state.feedbackCallbacks}
+                checkSolutionValidity={this.checkSolutionValidity} /> : undefined}
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Designs
