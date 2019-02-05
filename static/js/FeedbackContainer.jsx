@@ -34,25 +34,33 @@ class ContainerOrderFeedback extends React.Component {
 class OrderFeedback extends React.Component {
   constructor(props) {
     super(props); 
+
+    this.state = {
+      currentOrder: props.order
+    }; 
   }
 
-  // static getDerivedStateFromProps(nextProps, prevState) {
-  //   return {
-  //     height: nextProps.index,  
-  //   }    
-  // }
+  onClick = () => {
+    let newOrder = this.state.currentOrder == -1 ? this.props.index : -1; 
+    this.setState({
+      currentOrder: newOrder
+    })
+
+    this.props.onClick(newOrder);
+  }
+
   render () {
     let orderPosition = this.props.index == 0 ? "first" : "last"; 
 
-    let ordered = (this.props.currentOrder != -1 || this.props.currentOrder != undefined); 
+    let ordered = (this.state.currentOrder != -1); 
     let label = "Keep " + orderPosition + "."; 
     let newOrder = (ordered ? this.props.index : -1); 
 
     return (<div class="custom-control custom-switch">
               <input type="checkbox" class="custom-control-input" 
-                id="customSwitch1" checked={ordered} 
-                onClick={() => this.props.onClick(newOrder)} />
-              <label class="custom-control-label" for="customSwitch1">{label}</label>
+                id="customSwitch3" checked={ordered} 
+                onClick={this.onClick} />
+              <label class="custom-control-label" for="customSwitch3">{label}</label>
             </div>); 
   }
 }
@@ -69,9 +77,9 @@ class ImportanceFeedback extends React.Component {
     let self = this; 
     return (<div class="custom-control custom-switch">
               <input type="checkbox" class="custom-control-input" 
-                id="customSwitch1" checked={ordered} 
+                id="customSwitch2" checked={ordered} 
                 onClick={this.onClick.bind(this, newOrder)} />
-              <label class="custom-control-label" for="customSwitch1">{label}</label>
+              <label class="custom-control-label" for="customSwitch2">{label}</label>
             </div>); 
   }
 }

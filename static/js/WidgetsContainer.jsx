@@ -32,9 +32,8 @@ class WidgetsContainer extends React.Component {
     super(props); 
 
     this.state = {
-      hovered: false, 
-      expanded: true
-    }
+      hovered: false
+    };
   }
 
   onDragOver = () => {
@@ -56,25 +55,14 @@ class WidgetsContainer extends React.Component {
     });
   }
 
-  togglePanelExpanded = () => {
-    if(this.state.expanded) {
-      this.setState({
-        expanded: false
-      });       
-    }
-    else {
-      this.setState({
-        expanded: true
-      }); 
-    }
-  }
 
   render() {
     const { connectDropTarget } = this.props
     const visibleWidgets = this.props.widgets.filter((widget) => { return (widget.visible); }); 
     const hasVisibleWidgets = visibleWidgets.length;
-    const expandedClass = (this.state.expanded ? "glyphicon-chevron-left" : "glyphicon-chevron-right");
-    const buttonGroupClass = (this.state.expanded ? "" : "widgets-button-collapsed");  
+    const expandedClass = (!this.state.collapsed ? "glyphicon-chevron-left" : "glyphicon-chevron-right");
+    const buttonGroupClass = (!this.state.collapsed ? "" : "widgets-button-collapsed");  
+    const expanded = !this.props.widgetsCollapsed; 
 
     const widgets = this.props.widgets.map((widget) => {
       if(!widget.item && (widget.visible || widget.type == "group")) { // Items cannot be directly added as they are children of typed groups
@@ -94,27 +82,27 @@ class WidgetsContainer extends React.Component {
       connectDropTarget &&
       connectDropTarget(
         <div className={"panel panel-primary widgets-container " 
-        + (this.state.expanded ? "" : "widgets-container-collapsed")}>
+        + (expanded ? "" : "widgets-container-collapsed")}>
           <div className="panel-heading"> 
             <h3 
-              className={"panel-title " + (this.state.expanded ? "" : "collapsed")}>
+              className={"panel-title " + (expanded ? "" : "collapsed")}>
               Widgets
             </h3>
             <div 
               className={"btn-group header-button-group " 
-              + (this.state.expanded ? "" : "collapsed")}>
+              + (expanded ? "" : "collapsed")}>
               <button type="button" className="btn btn-default design-canvas-button" 
                 onClick={this.props.onClick}>Clear Widgets</button>
             </div>
             <div 
               className={"btn-group header-button-group " + buttonGroupClass}> 
               <button type="button" className={"btn btn-default glyphicon " + expandedClass}
-                onClick={this.togglePanelExpanded}></button>
+                onClick={this.props.toggleWidgetsPanel}></button>
             </div>
           </div>  
           <div 
             className={"panel-body widgets-panel " 
-            + (this.state.expanded ? "" : "collapsed")}
+            + (expanded ? "" : "collapsed")}
             onDragOver={this.onDragOver}
             onDragLeave={this.onDragLeave}
             onDrop={this.onDrop}>         

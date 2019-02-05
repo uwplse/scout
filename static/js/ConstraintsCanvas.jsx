@@ -1064,6 +1064,14 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
+  unselectedSelectedElement = (evt) => {
+    let stopped = evt.isPropagationStopped();
+    this.setState({
+      selectedTreeNodes: [], 
+      selectedElement: undefined
+    }); 
+  }
+
   onSelected = (selectedKeys, evt) => {
     let selected = selectedKeys[selectedKeys.length-1];
     let selectedNodes = selectedKeys; 

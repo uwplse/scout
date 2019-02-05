@@ -3,63 +3,6 @@ import React from "react";
 import ConstraintActions from "./ConstraintActions"; 
 import Converter from "number-to-words";
 
-class FontSizeMenuItem extends React.Component {
-  constructor(props) {
-  	super(props); 
-    this.value = props.value; 
-    this.onClick = props.onClick; 
-  }
-
-  render () {
-	  return <li onClick={this.onClick(this.value)}>
-            {this.value}
-          </li>; 
-  }
-}
-
-// class LabelMenuItem extends React.Component {
-//   constructor(props) {
-//     super(props); 
-//     this.shapeID = props.shapeID; 
-//     this.shapeLabel = props.shapeLabel; 
-//     this.onClick = props.onClick; 
-//   }
-
-//   render () {
-//     let self = this; 
-//     let label = "Make label for \"" + this.shapeLabel + "\"."; 
-//     return (<li>
-//                <a 
-//                 tabIndex="-1" 
-//                 href="#" 
-//                 onClick={function (evt) { self.onClick(evt, self.shapeID); }}>
-//                 {label}
-//                </a>
-//             </li>); 
-//   }
-// }
-
-// class RelativeMenuItem extends React.Component {
-//   constructor(props) {
-//     super(props); 
-//     this.shapeID = props.shapeID; 
-//     this.shapeLabel = props.shapeLabel; 
-//     this.onClick = props.onClick; 
-//   }
-
-//   render () {
-//     let label = "Make label for \"" + this.shapeLabel + "\"."; 
-//     return (<li>
-//                <a 
-//                 tabIndex="-1" 
-//                 href="#" 
-//                 onClick={this.onClick(this.shapeID)}>
-//                 {label}
-//                </a>
-//             </li>); 
-//   }
-// }
-
 class OrderMenuItem extends React.Component {
   constructor(props) {
     super(props); 

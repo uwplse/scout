@@ -12,6 +12,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.type = props.shape.type; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
+    this.alternate = props.shape.alternate; 
 
     // ID for querying element from the DOM
     this.elementId = "widget-container-" + this.id; 
@@ -108,7 +109,10 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   onClick = () => {
     let feedbackCallbacks = {}; 
     if(this.type == "group") {
-      feedbackCallbacks.setContainerOrder = this.setContainerOrder;  
+      if(!this.alternate) {
+        feedbackCallbacks.setContainerOrder = this.setContainerOrder;  
+      }
+      
       feedbackCallbacks.setOrder = this.setOrder; 
       feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
       feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 

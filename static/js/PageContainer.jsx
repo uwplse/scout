@@ -37,7 +37,8 @@ export default class PageContainer extends React.Component {
       svgWidgets: [], 
       zoomedDesignCanvasID: undefined, 
       activeDesignPanel: "designs", 
-      selectedElement: undefined
+      selectedElement: undefined, 
+      widgetsCollapsed: false
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -436,6 +437,13 @@ export default class PageContainer extends React.Component {
         });
       }
     }
+
+    let widgetsCollapsed = localStorage.getItem('widgetsCollapsed'); 
+    if(widgetsCollapsed && widgetsCollapsed == "true") {
+      this.setState({
+        widgetsCollapsed: true
+      }); 
+    }
   }
 
   readSVGIntoWidgetContainer = (e) => {
@@ -521,6 +529,15 @@ export default class PageContainer extends React.Component {
     });
   }
 
+  toggleWidgetsPanel = () => {
+    let newState = !this.state.widgetsCollapsed; 
+    this.setState({
+      widgetsCollapsed: newState
+    }); 
+
+    localStorage.setItem('widgetsCollapsed', newState); 
+  }
+
   displayWidgetFeedback = (shape, feedbackCallbacks) => {
     this.setState({
       selectedElement: shape, 
@@ -593,6 +610,8 @@ export default class PageContainer extends React.Component {
                   onDrop={this.handleFileDrop} 
                   widgets={this.state.svgWidgets}
                   onClick={this.clearWidgetsContainer}
+                  widgetsCollapsed={this.state.widgetsCollapsed}
+                  toggleWidgetsPanel={this.toggleWidgetsPanel}
                   addShapeToConstraintsCanvas={this.addShapeToConstraintsCanvas} />
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
