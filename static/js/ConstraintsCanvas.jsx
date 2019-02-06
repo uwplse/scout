@@ -113,8 +113,12 @@ export default class ConstraintsCanvas extends React.Component {
       // and will set the properties in the feedback panel based on that 
       widgetTreeNode.activeDesignWidget = this.props.activeDesignWidget; 
 
+      // When the widget becomes active from a DesignCanvas, we should select the corresponding shape in the 
+      // ConstraintsCanvas tree. 
       this.setState({
-        treeData: this.state.treeData
+        treeData: this.state.treeData, 
+        selectedTreeNodes: [this.props.activeDesignWidget.name], 
+        selectedElement: this.props.activeDesignWidget.name
       }); 
     }
     else {
@@ -238,6 +242,7 @@ export default class ConstraintsCanvas extends React.Component {
     let typed = options.typed ? options.typed : false;
     let feedback = options.feedback ? options.feedback : [];
     let activeDesignWidget = options.activeDesignWidget ? options.activeDesignWidget : undefined; 
+    let activeCanvasWidget = options.activeCanvasWidget ? options.activeCanvasWidget : undefined;
 
     let typingAlerts = [];
     if(options.typeGroupSize > 1) {
@@ -259,6 +264,7 @@ export default class ConstraintsCanvas extends React.Component {
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 activeDesignWidget={activeDesignWidget}
+                activeCanvasWidget={activeCanvasWidget}
                 removeWidgetNode={this.removeWidgetNode}
                 typed={typed}
                 item={item} />);
@@ -276,6 +282,7 @@ export default class ConstraintsCanvas extends React.Component {
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
               activeDesignWidget={activeDesignWidget}
+              activeCanvasWidget={activeCanvasWidget}
               removeWidgetNode={this.removeWidgetNode} />);
   }
 
@@ -1039,10 +1046,14 @@ export default class ConstraintsCanvas extends React.Component {
       this.groupTreeNodes(parentNode, this.state.selectedTreeNodes, alternate);
     }
 
+    // Hide the widget feedback panel beacuse no nodes will be selected
+    this.props.hideWidgetFeedback();
+
     // Remove the selected tree nodes after grouping
     this.setState({
       treeData: this.state.treeData, 
-      selectedTreeNodes: []
+      selectedTreeNodes: [], 
+      selectedElement: undefined
     }, this.checkSolutionValidityAndUpdateCache); 
   }
 
@@ -1107,14 +1118,6 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  unselectedSelectedElement = (evt) => {
-    let stopped = evt.isPropagationStopped();
-    this.setState({
-      selectedTreeNodes: [], 
-      selectedElement: undefined
-    }); 
-  }
-
   onSelected = (selectedKeys, evt) => {
     let selected = selectedKeys[selectedKeys.length-1];
     let selectedNodes = selectedKeys; 
@@ -1177,6 +1180,31 @@ export default class ConstraintsCanvas extends React.Component {
       // Only have the most recent node selected as shift or ctrl was not pressed
       selectedNodes = [selected]; 
       selectedElement = selected;  
+    }
+
+    // Update the activeCanvasWidget on the selected element so it displays the feedback 
+    if(selectedElement) {
+      let selectedElementNode = this.widgetTreeNodeMap[selectedElement]; 
+      if(selectedElementNode) {
+        selectedElementNode.activeCanvasWidget = selectedElementNode.shape; 
+
+        this.setState({
+          treeData: this.state.treeData
+        }); 
+      }
+    }  else {
+      this.props.hideWidgetFeedback();
+    }
+
+    if(this.state.selectedElement && this.state.selectedElement != selectedElement) {
+      let prevSelectedElementNode = this.widgetTreeNodeMap[this.state.selectedElement]; 
+      if(prevSelectedElementNode) {
+        delete prevSelectedElementNode.activeCanvasWidget; 
+
+        this.setState({
+          treeData: this.state.treeData
+        });
+      }
     }
 
     this.setState({
@@ -1301,7 +1329,8 @@ export default class ConstraintsCanvas extends React.Component {
           highlighted: item.highlighted, 
           typed: item.typed, 
           item: item.item, 
-          activeDesignWidget: item.activeDesignWidget
+          activeDesignWidget: item.activeDesignWidget, 
+          activeCanvasWidget: item.activeCanvasWidget
         }
 
         let widgetSource = item.src; 

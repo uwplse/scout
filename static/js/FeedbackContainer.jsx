@@ -136,8 +136,10 @@ export default class FeedbackContainer extends React.Component {
       let siblings = callbacks.getCurrentShapeSiblings(shape.name);
       let showOrderMenuItem = (!siblings.prev || !siblings.next);  
 
-      feedbackItems.push(<OrderFeedback 
-        index={shapeIndex} currentOrder={shape.order} onClick={callbacks.setOrder} />); 
+      if(showOrderMenuItem) {
+        feedbackItems.push(<OrderFeedback 
+          index={shapeIndex} currentOrder={shape.order} onClick={callbacks.setOrder} />); 
+      }
     }
 
 

@@ -552,15 +552,19 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  hideWidgetFeedback = () => {
+    this.setState({
+      selectedElement: undefined, 
+      feedbackCallbacks: undefined
+    }); 
+  }
+
   displayWidgetFeedbackFromDesignCanvas = (shape) => {
     // Set this property to activate the corresponding element in the tree
     // And display feedback based on this instance of the element in the design canvas
     this.setState({
       activeDesignWidget: shape
     });
-
-    console.log("activate design shape");
-    console.log(shape); 
   }
 
   render () {
@@ -635,6 +639,7 @@ export default class PageContainer extends React.Component {
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
               updateConstraintsCanvas={this.updateConstraintsCanvas} 
               displayWidgetFeedback={this.displayWidgetFeedback}
+              hideWidgetFeedback={this.hideWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
               activeDesignWidget={this.state.activeDesignWidget}
               svgWidgets={this.state.svgWidgets} />

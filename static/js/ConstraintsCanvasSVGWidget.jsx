@@ -68,6 +68,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       // the widget has been selected from a DesignCanvas
       this.displayWidgetFeedback(this.props.activeDesignWidget, this.feedbackCallbacks, true); 
     }
+
+    if(prevProps.activeCanvasWidget != this.props.activeCanvasWidget && 
+      this.props.activeCanvasWidget != undefined) {
+      // Display the widget with the proper callbacks
+      this.displayWidgetFeedback(this.props.activeCanvasWidget, this.feedbackCallbacks, false);    
+    }
   }
 
   getFeedbackCallbacks = () => {
@@ -143,12 +149,9 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }
   }
 
-  onClick = () => {
-    this.displayWidgetFeedback(this.element, this.feedbackCallbacks); 
-  }
-
-  // onClick -> displayWidgetFeedback -> widgetFeedbackCallbacks with setter methods
-  // ConstraintsCanvas -> displayWidgetFeedback -> PageContainer -> Feedback Container takes callbacks and sets them up 
+  // onClick = () => {
+  //   this.displayWidgetFeedback(this.element, this.feedbackCallbacks); 
+  // }
 
   render () {
     const source = this.state.svgSource; 
