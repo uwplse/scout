@@ -1,6 +1,8 @@
 // App.jsx
 import React from "react";
 import '../css/FeedbackContainer.css';
+import Toggle from 'react-bootstrap-toggle';
+import {Dropdown} from 'react-bootstrap'; 
 
 class ContainerOrderFeedback extends React.Component {
   constructor(props) {
@@ -11,7 +13,7 @@ class ContainerOrderFeedback extends React.Component {
     }
   }
 
-  onClick = () => {
+  onToggle = () => {
     let newOrder = this.state.currentOrderValue == "important" ? "unimportant" : "important"; 
     this.setState({
       currentOrderValue: newOrder
@@ -22,12 +24,18 @@ class ContainerOrderFeedback extends React.Component {
 
   render () {
     let checked = this.state.currentOrderValue == "important"; 
-    let label = "Order " + (this.state.currentOrderValue == "important" ? "Important." : "Unimportant."); 
-    return (<div class="custom-control custom-switch">
-                <input type="checkbox" class="custom-control-input" id="customSwitch1" 
-                  checked={checked} onClick={this.onClick} />
-                <label class="custom-control-label" for="customSwitch1">{label}</label>
-            </div>);   
+    let label = "Order Important";
+    return (
+        <div className="feedback-container-toggle"> 
+          <Toggle
+            onClick={this.onToggle}
+            on={<h2>ON</h2>}
+            off={<h2>OFF</h2>}
+            size="xs"
+            active={checked}
+          />
+          <label className="feedback-container-label">{label}</label>
+        </div>);  
   }
 }
 
@@ -36,11 +44,11 @@ class OrderFeedback extends React.Component {
     super(props); 
 
     this.state = {
-      currentOrder: props.order
+      currentOrder: props.currentOrder
     }; 
   }
 
-  onClick = () => {
+  onToggle = () => {
     let newOrder = this.state.currentOrder == -1 ? this.props.index : -1; 
     this.setState({
       currentOrder: newOrder
@@ -50,38 +58,60 @@ class OrderFeedback extends React.Component {
   }
 
   render () {
-    let orderPosition = this.props.index == 0 ? "first" : "last"; 
+    let orderPosition = this.props.index == 0 ? "first" : "last";  
 
     let ordered = (this.state.currentOrder != -1); 
     let label = "Keep " + orderPosition + "."; 
     let newOrder = (ordered ? this.props.index : -1); 
 
-    return (<div class="custom-control custom-switch">
-              <input type="checkbox" class="custom-control-input" 
-                id="customSwitch3" checked={ordered} 
-                onClick={this.onClick} />
-              <label class="custom-control-label" for="customSwitch3">{label}</label>
-            </div>); 
+    return (
+        <div className="feedback-container-toggle"> 
+          <Toggle
+            onClick={this.onToggle}
+            on={<h2>ON</h2>}
+            off={<h2>OFF</h2>}
+            size="xs"
+            active={ordered}
+          />
+          <label className="feedback-container-label">{label}</label>
+        </div>); 
   }
 }
 
 class ImportanceFeedback extends React.Component {
   constructor(props) {
     super(props); 
-    this.onClick = props.onClick; 
-    this.importanceLevel = props.importanceLevel; 
-    this.label = (this.importanceLevel == "most" ? "Add more emphasis." : (this.importanceLevel == "least" ? "Add less emphasis." : "Add normal emphasis.")); 
+  
+    this.state = {
+      importanceLevel: props.currentImportance
+    }; 
+  }
+
+  onClick = (newImportanceLevel) => {
+    this.setState({
+      importanceLevel: newImportanceLevel
+    }); 
+
+    this.props.onClick(newImportanceLevel); 
   }
 
   render () {
-    let self = this; 
-    return (<div class="custom-control custom-switch">
-              <input type="checkbox" class="custom-control-input" 
-                id="customSwitch2" checked={ordered} 
-                onClick={this.onClick.bind(this, newOrder)} />
-              <label class="custom-control-label" for="customSwitch2">{label}</label>
-            </div>); 
-  }
+    let label = this.state.importanceLevel.charAt(0).toUpperCase() + this.state.importanceLevel.slice(1); 
+    return (<div className="feedback-container-toggle">
+              <Dropdown>
+                <Dropdown.Toggle id="dropdown-basic">
+                  {label}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu> 
+                  <Dropdown.Item onClick={this.onClick.bind(this, "high")}>High</Dropdown.Item>
+                  <Dropdown.Item onClick={this.onClick.bind(this, "normal")}>Normal</Dropdown.Item>
+                  <Dropdown.Item onClick={this.onClick.bind(this, "low")}>Low</Dropdown.Item>
+                </Dropdown.Menu>
+              </Dropdown>
+              <label className="feedback-container-label">Emphasis</label>
+            </div>);
+      }
 }
 
 export default class FeedbackContainer extends React.Component {
@@ -110,11 +140,15 @@ export default class FeedbackContainer extends React.Component {
         index={shapeIndex} currentOrder={shape.order} onClick={callbacks.setOrder} />); 
     }
 
+
+    if(callbacks.setImportanceLevel) {
+        feedbackItems.push(
+          <ImportanceFeedback
+            currentImportance={shape.importance}
+            onClick={callbacks.setImportanceLevel} />); 
+    }
+
     return feedbackItems; 
-
-    // if(callbacks.setImportanceLevel) {
-
-    // }
   }
 
   render () {

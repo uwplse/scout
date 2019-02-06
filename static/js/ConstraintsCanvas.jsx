@@ -90,10 +90,44 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    return {
+      left: nextProps.left, 
+      top: nextProps.top, 
+      menuTrigger: nextProps.menuTrigger
+    };     
+  }
+
   componentDidUpdate = (prevProps) => {
     if(prevProps.svgWidgets.length != this.props.svgWidgets.length) {
       // Update the tree nodes with the SVG source from the cache 
       this.updateSVGSourceMap(); 
+    }
+
+    if(this.props.activeDesignWidget != undefined 
+      && prevProps.activeDesignWidget != this.props.activeDesignWidget){
+      let widgetTreeNode = this.widgetTreeNodeMap[this.props.activeDesignWidget.name]; 
+
+      // Set the activeDesignWidget so that this node will activate its feedback with 
+      // an instance of the widget selected from the design (A specific instance of this widget)
+      // and will set the properties in the feedback panel based on that 
+      widgetTreeNode.activeDesignWidget = this.props.activeDesignWidget; 
+
+      this.setState({
+        treeData: this.state.treeData
+      }); 
+    }
+    else {
+      if(prevProps.activeDesignWidget != undefined) {
+        let widgetTreeNode = this.widgetTreeNodeMap[prevProps.activeDesignWidget.name]; 
+
+        // Unset the activeDesignWidget property for this node so it goes back to its default state 
+        delete widgetTreeNode.activeDesignWidget; 
+
+        this.setState({
+          treeData: this.state.treeData
+        }); 
+      }
     }
   }
 
@@ -202,7 +236,8 @@ export default class ConstraintsCanvas extends React.Component {
     let isContainer = shape.type == "group" || shape.type == "canvas";
     let item = options.item ? options.item : false;
     let typed = options.typed ? options.typed : false;
-    let feedback = options.feedback ? options.feedback : []; 
+    let feedback = options.feedback ? options.feedback : [];
+    let activeDesignWidget = options.activeDesignWidget ? options.activeDesignWidget : undefined; 
 
     let typingAlerts = [];
     if(options.typeGroupSize > 1) {
@@ -223,6 +258,7 @@ export default class ConstraintsCanvas extends React.Component {
                 displayWidgetFeedback={this.displayWidgetFeedback}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
+                activeDesignWidget={activeDesignWidget}
                 removeWidgetNode={this.removeWidgetNode}
                 typed={typed}
                 item={item} />);
@@ -239,6 +275,7 @@ export default class ConstraintsCanvas extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedback}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
+              activeDesignWidget={activeDesignWidget}
               removeWidgetNode={this.removeWidgetNode} />);
   }
 
@@ -582,7 +619,7 @@ export default class ConstraintsCanvas extends React.Component {
 
     let containerOrder = undefined; 
     if(type == "group") {
-      containerOrder = options.containerOrder ? options.containerOrder : "important";
+      containerOrder = options.containerOrder ? options.containerOrder : "unimportant";
     }
 
     let importance = (options.importance ? options.importance : "normal");
@@ -803,6 +840,12 @@ export default class ConstraintsCanvas extends React.Component {
       if(itemParent.typed) {
         this.removeRepeatGroup(itemParent.key); 
       }
+    }
+
+    if(key == this.state.selectedElement) {
+      this.setState({
+        selectedElement: undefined
+      });
     }
 
     this.setState(state => ({
@@ -1257,7 +1300,8 @@ export default class ConstraintsCanvas extends React.Component {
         let widgetOptions = {
           highlighted: item.highlighted, 
           typed: item.typed, 
-          item: item.item 
+          item: item.item, 
+          activeDesignWidget: item.activeDesignWidget
         }
 
         let widgetSource = item.src; 

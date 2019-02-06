@@ -38,10 +38,7 @@ export default class DesignCanvas extends React.Component {
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape;
-    this.showWidgetFeedback = props.showWidgetFeedback; 
-
-    // // Way to close all of the right click menus currently open before opening a new one
-    // this.closeRightClickMenus = props.closeRightClickMenus; 
+    this.displayWidgetFeedback = props.displayWidgetFeedback; 
 
     // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
     this.highlightWidgetFeedback = props.highlightWidgetFeedback; 
@@ -117,7 +114,7 @@ export default class DesignCanvas extends React.Component {
             top={top}
             scaling={this.scalingFactor}
             inMainCanvas={inMainCanvas}
-            showWidgetFeedback={this.showWidgetFeedback}/>); 
+            displayWidgetFeedback={this.displayWidgetFeedback}/>); 
   }
 
   getSVGSource = (node) => {
@@ -333,7 +330,7 @@ export default class DesignCanvas extends React.Component {
         <div id={"design-canvas-" + this.id} 
             className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered " : " ")}
-            onClick={this.showWidgetFeedback.bind(this, "canvas")}
+            onClick={this.displayWidgetFeedback.bind(this, this.state.canvasShape)}
             onMouseEnter={this.showMenuAndHighlightConstraints} 
             onMouseLeave={this.closeMenuAndRemoveHighlightConstraints}
             style={{height: "100%", width: "100%"}}>

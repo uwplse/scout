@@ -11,7 +11,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 
-    this.showWidgetFeedback = props.showWidgetFeedback; 
+    this.displayWidgetFeedback = props.displayWidgetFeedback; 
     this.timer = null;
 
     this.uniqueID = _.uniqueId();
@@ -55,6 +55,13 @@ export default class DesignCanvasSVGWidget extends React.Component {
     }); 
   }
 
+  onClick = (evt) => {
+    // Stop the event from propagating to the canvas shape. 
+    evt.stopPropagation();
+    
+    this.displayWidgetFeedback(this.element); 
+  }
+
   render () {
     const source = this.svgSource; 
     const height = this.state.height; 
@@ -69,7 +76,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     return (
       <div 
         id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} 
-        onClick={this.showWidgetFeedback.bind(this, this.element.name)}
+        onClick={this.onClick}
         className={"widget-control-"  + (isContainer ? "container" : "leaf")+ (this.state.hovered ? " design-canvas-hovered" : "")}
         onMouseEnter={this.setHovered}
         onMouseLeave={this.hideHovered}

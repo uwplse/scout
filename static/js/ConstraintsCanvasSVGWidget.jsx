@@ -29,6 +29,8 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     // Timer for handling text change events
     this.timer = null;  
 
+    this.feedbackCallbacks = this.getFeedbackCallbacks(); 
+
     this.state = {
       height: this.element.orig_height,
       width: this.element.orig_width,
@@ -56,6 +58,41 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       highlighted: nextProps.highlighted, 
       hovered: prevState.hovered
     }    
+  }
+
+  componentDidUpdate = (prevProps) => {
+    if(prevProps.activeDesignWidget != this.props.activeDesignWidget && 
+      this.props.activeDesignWidget != undefined) {
+      // Display the widget with the proper callbacks
+      // Use the true flag to indicate to the PageContainer that 
+      // the widget has been selected from a DesignCanvas
+      this.displayWidgetFeedback(this.props.activeDesignWidget, this.feedbackCallbacks, true); 
+    }
+  }
+
+  getFeedbackCallbacks = () => {
+    let feedbackCallbacks = {}; 
+    if(this.type == "group") {
+      if(!this.alternate) {
+        feedbackCallbacks.setContainerOrder = this.setContainerOrder;  
+      }
+      
+      feedbackCallbacks.setOrder = this.setOrder; 
+      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
+      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
+      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings; 
+    }
+    else if(this.type == "canvas") {
+      feedbackCallbacks.setContainerOrder = this.setContainerOrder
+    }
+    else {
+      feedbackCallbacks.setOrder = this.setOrder; 
+      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
+      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings;
+      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
+    }
+
+    return feedbackCallbacks; 
   }
 
   setImportanceLevel = (level) => {
@@ -107,28 +144,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   }
 
   onClick = () => {
-    let feedbackCallbacks = {}; 
-    if(this.type == "group") {
-      if(!this.alternate) {
-        feedbackCallbacks.setContainerOrder = this.setContainerOrder;  
-      }
-      
-      feedbackCallbacks.setOrder = this.setOrder; 
-      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
-      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
-      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings; 
-    }
-    else if(this.type == "canvas") {
-      feedbackCallbacks.setContainerOrder = this.setContainerOrder
-    }
-    else {
-      feedbackCallbacks.setOrder = this.setOrder; 
-      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
-      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings;
-      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
-    }
-
-    this.displayWidgetFeedback(this.element, feedbackCallbacks); 
+    this.displayWidgetFeedback(this.element, this.feedbackCallbacks); 
   }
 
   // onClick -> displayWidgetFeedback -> widgetFeedbackCallbacks with setter methods
@@ -144,7 +160,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const order = this.state.order;
     const ordered = this.state.containerOrder == "important"; 
     const orderLabel = order == 0 ? "First" : "Last"; 
-    const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
+    const importanceLabel = importance == "high" ? "Emphasized" : (importance == "low" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
     return (

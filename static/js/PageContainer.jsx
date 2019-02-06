@@ -38,7 +38,8 @@ export default class PageContainer extends React.Component {
       zoomedDesignCanvasID: undefined, 
       activeDesignPanel: "designs", 
       selectedElement: undefined, 
-      widgetsCollapsed: false
+      widgetsCollapsed: false, 
+      activeDesignWidget: undefined
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -125,7 +126,7 @@ export default class PageContainer extends React.Component {
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               getRelativeDesigns={this.getRelativeDesigns}
-              showWidgetFeedback={this.showWidgetFeedback} />); 
+              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
 
   getSmallDesignCanvas = (solution, id, zoomed=false) => {
@@ -149,7 +150,7 @@ export default class PageContainer extends React.Component {
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               getRelativeDesigns={this.getRelativeDesigns}
-              showWidgetFeedback={this.showWidgetFeedback} />); 
+              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
 
   checkSolutionValidity = (options={}) => {
@@ -538,11 +539,28 @@ export default class PageContainer extends React.Component {
     localStorage.setItem('widgetsCollapsed', newState); 
   }
 
-  displayWidgetFeedback = (shape, feedbackCallbacks) => {
+  displayWidgetFeedback = (shape, feedbackCallbacks, fromDesign=false) => {
+    if(!fromDesign) {
+      this.setState({
+        activeDesignWidget: undefined
+      }); 
+    }
+
     this.setState({
       selectedElement: shape, 
       feedbackCallbacks: feedbackCallbacks
     }); 
+  }
+
+  displayWidgetFeedbackFromDesignCanvas = (shape) => {
+    // Set this property to activate the corresponding element in the tree
+    // And display feedback based on this instance of the element in the design canvas
+    this.setState({
+      activeDesignWidget: shape
+    });
+
+    console.log("activate design shape");
+    console.log(shape); 
   }
 
   render () {
@@ -618,7 +636,7 @@ export default class PageContainer extends React.Component {
               updateConstraintsCanvas={this.updateConstraintsCanvas} 
               displayWidgetFeedback={this.displayWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
-              setSelectedWidget={this.setSelectedWidget}
+              activeDesignWidget={this.state.activeDesignWidget}
               svgWidgets={this.state.svgWidgets} />
             {this.state.selectedElement ? 
               <FeedbackContainer selectedElement={this.state.selectedElement}

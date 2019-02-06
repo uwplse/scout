@@ -46,7 +46,7 @@ def compute_size_domain(importance, width, height):
 	aspect_ratio = width/height
 
 	for i in range(0, len(MINIFICATION_VALUES)):
-		if importance != "most": 
+		if importance != "high": 
 			min_value = MINIFICATION_VALUES[i] 
 			computed_height = int(round(height*min_value,0))
 
@@ -71,7 +71,7 @@ def compute_size_domain(importance, width, height):
 	factor_id += 1
 
 	for i in range(0, len(MAGNIFICATION_VALUES)):
-		if importance != "least": 
+		if importance != "low": 
 			max_value = MAGNIFICATION_VALUES[i] 
 			computed_height = int(round(height*max_value,0))
 

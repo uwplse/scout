@@ -252,7 +252,7 @@ class Solution(object):
 						element["alternate"] = alt_value
 
 					# Only consider emphassis for leaf node elements
-					if shape.importance == "most": 
+					if shape.importance == "high": 
 						# Cost will be the distance from the maximum size
 						importance_change += (height - shape.orig_height)
 						importance_change += (width - shape.orig_width)
@@ -261,7 +261,7 @@ class Solution(object):
 
 						# Compute the distance of the shape from the center of the canvas
 						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
-					elif shape.importance == "least": 
+					elif shape.importance == "low": 
 						# Used for computing importance cost
 						importance_change += (shape.orig_height - height)
 						importance_change += (shape.orig_width - width)

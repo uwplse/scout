@@ -7,3 +7,21 @@
 	margin-left: 1em; 
 	margin-top: 1em;
 }
+
+.feedback-container-label {
+	margin-right: 1em;
+	margin-left: 1em;
+	font-size: 20px;
+}
+
+.feedback-container-toggle {
+	margin-top: 1em;
+	margin-bottom: 1em;
+	margin-left: 1em;
+	display: flex; 
+	flex-direction: row;
+}
+
+.feedback-container-toggle .dropdown {
+	position: initial;
+}
