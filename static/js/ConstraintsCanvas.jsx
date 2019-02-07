@@ -219,7 +219,7 @@ export default class ConstraintsCanvas extends React.Component {
         key: canvas.name, 
         shape: canvas,
         src: rootNode, 
-        disabled: true, 
+        // disabled: true, 
         children: []
     }; 
 
@@ -365,17 +365,17 @@ export default class ConstraintsCanvas extends React.Component {
     return newTreeNode; 
   }
 
-  getWidgetFeedback = (shapeID, parentShape, action, property, message, highlighted) => {
+  getWidgetFeedback = (shapeID, shape, action, property, message, highlighted) => {
     return (<WidgetFeedback 
               key={shapeID} 
               type="feedback"
               id={shapeID} 
-              parentShape={parentShape}
+              shape={shape}
               action={action}
               property={property}
               message={message} 
               highlighted={highlighted}
-              updateConstraintsCanvas={this.updateConstraintsCanvas}/>); 
+              update={this.updateConstraintsCanvas}/>); 
   }
 
   getConstraintsCanvasShape = (shapeID) => {
@@ -1122,12 +1122,13 @@ export default class ConstraintsCanvas extends React.Component {
     let selected = selectedKeys[selectedKeys.length-1];
     let selectedNodes = selectedKeys; 
     let selectedElement = selected; 
-    if(selected == "canvas") {
-      // Ensure that the canvas cannot be selected
-      selectedKeys.splice(selectedKeys.length-1, 1); 
-      selectedNodes = selectedKeys; 
-    }
-    else if (evt.nativeEvent && evt.nativeEvent.shiftKey) {
+    // if(selected == "canvas") {
+    //   // Ensure that the canvas cannot be selected
+    //   selectedKeys.splice(selectedKeys.length-1, 1); 
+    //   selectedNodes = selectedKeys; 
+    // }
+    // else 
+    if (evt.nativeEvent && evt.nativeEvent.shiftKey) {
       // Get the last selected node and verify that it has the same parent node as the other 
       // selected nodes
       if(selectedKeys.length > 1) {

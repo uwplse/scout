@@ -56,28 +56,26 @@ ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(proper
 	delete shape[property]; 
 }
 
-ConstraintActions.defaultPreventConstraint = function preventConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-  	if(constraintsCanvasShape["prevents"] == undefined) {
-		constraintsCanvasShape["prevents"] = []; 
+ConstraintActions.defaultPreventConstraint = function preventConstraint(property, shape, value) {
+  	if(shape["prevents"] == undefined) {
+		shape["prevents"] = []; 
 	} 
 
-	if(constraintsCanvasShape["prevents"].indexOf(constraintKey) == -1) {
-		constraintsCanvasShape["prevents"].push(constraintKey); 
+	if(shape["prevents"].indexOf(property) == -1) {
+		shape["prevents"].push(property); 
 	}
 
-	// Also should the constraints canvas arrange itself in the way of the designs canvas?
-	// Update the constraint property on the object
-	constraintsCanvasShape[constraintKey] = designCanvasShape[constraintKey]; 	
+	shape[property] = value; 	
 }
 
-ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
-	constraintsCanvasShape["prevents"].splice(index,1); 
-	if(!constraintsCanvasShape["prevents"].length) {
-		delete constraintsCanvasShape["prevents"]; 
+ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(property, shape, value=undefined) {
+	var index = shape["prevents"].indexOf(property); 
+	shape["prevents"].splice(index,1); 
+	if(!shape["prevents"].length) {
+		delete shape["prevents"]; 
 	}
 
-	delete constraintsCanvasShape[constraintKey]; 
+	delete shape[property]; 
 }
 
 
@@ -120,8 +118,7 @@ ConstraintActions.messages = {
 	}, 
 	"arrangement": function getMessage(shape) {
 		let value = shape["arrangement"];
-		let arrangementValue = ConstraintActions.arrangements[value]; 
-		return " arrangement " + arrangementValue + "."; 
+		return " arrangement " + value + "."; 
 	}, 
 	"padding": function getMessage(shape) {
 		let value = shape["padding"];
@@ -159,8 +156,8 @@ ConstraintActions.messages = {
 }
 
 ConstraintActions.defaultDoKeep = {
-	"updateConstraintsCanvasShape": function keepConstraint(property, value, constraintsCanvasShape) {
-		ConstraintActions.defaultKeepConstraint(property, value, constraintsCanvasShape);
+	"updateConstraintsCanvasShape": function keepConstraint(property, shape, value) {
+		ConstraintActions.defaultKeepConstraint(property, shape, value);
 	}, 
 	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
 		let message = ConstraintActions.messages[property](shape); 
@@ -169,8 +166,8 @@ ConstraintActions.defaultDoKeep = {
 }
 
 ConstraintActions.defaultUndoKeep =  {
-	"updateConstraintsCanvasShape": function undoKeepConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function undoKeepConstraint(property, shape) {
+		ConstraintActions.defaultUndoKeepConstraint(property, shape);
 	}, 
 	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
 		let message = ConstraintActions.messages[property](shape); 
@@ -179,8 +176,8 @@ ConstraintActions.defaultUndoKeep =  {
 } 
 
 ConstraintActions.defaultDoPrevent = {
-	"updateConstraintsCanvasShape": function preventConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultPreventConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function preventConstraint(property, shape, value) {
+		ConstraintActions.defaultPreventConstraint(property, shape, value);
 	}, 
 	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
 		let message = ConstraintActions.messages[property](shape); 
@@ -189,8 +186,8 @@ ConstraintActions.defaultDoPrevent = {
 } 
 
 ConstraintActions.defaultUndoPrevent = {
-	"updateConstraintsCanvasShape": function undoPreventConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultUndoPreventConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function undoPreventConstraint(property, shape, value) {
+		ConstraintActions.defaultUndoPreventConstraint(property, shape, value);
 	}, 
 	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
 		let message = ConstraintActions.messages[property](shape); 

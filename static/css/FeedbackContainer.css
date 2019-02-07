@@ -1,5 +1,4 @@
 .feedback-container {
-	width: 400px;
 	min-width: 400px;
 }
 
@@ -27,6 +26,13 @@
 	margin-top: 10em;
 }
 
+hr.feedback-container-separator {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-top: 1px solid rgba(0,0,0,0.125);
+    height: 1;
+}
+
 .feedback-container-toggle .dropdown {
 	position: initial;
 	margin-right: 1em;
@@ -40,7 +46,7 @@
 .feedback-container-locks span {
 	padding-left: 0.5em;
 	cursor: pointer; 
-	transform: scale(1.5);
+	font-size: 24px;
 }
 
 .feedback-container-locks span.locked {
@@ -49,4 +55,12 @@
 
 .feedback-container-locks span.unlocked {
 	color: lightgray;
+}
+
+.feedback-container-locks span.disabled {
+	cursor: default; 
+}
+
+.feedback-container-locks span.enabled:hover {
+	color: black;
 }

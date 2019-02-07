@@ -210,7 +210,7 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
-  updateConstraintsCanvasFromFeedbackContainer = () => {
+  updateConstraintsCanvas = () => {
     // Notify the tree to re-render in response to the update
     // from the FeedbackContainer    
     this.constraintsCanvasRef.current.renderTree();
@@ -218,15 +218,6 @@ export default class PageContainer extends React.Component {
     // re-verify the constraints after feedback is applied
     this.checkSolutionValidity();
   }
-
-  // updateConstraintsCanvas = (constraintsCanvasShape, action, property) => {
-  //   return () => {
-  //     action["undo"].updateConstraintsCanvasShape(property, constraintsCanvasShape, undefined);
-
-  //     // Check for the validity of current state of constriants, and update valid state of solutions
-  //     this.checkSolutionValidity();       
-  //   }
-  // }
 
   updateSolutionValidity = (solutions) => {
     // Update the state of each solution to display the updated valid/invalid state
@@ -644,7 +635,7 @@ export default class PageContainer extends React.Component {
             <FeedbackContainer selectedElement={this.state.selectedElement}
               feedbackCallbacks={this.state.feedbackCallbacks}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              updateConstraintsCanvas={this.updateConstraintsCanvasFromFeedbackContainer}
+              updateConstraintsCanvas={this.updateConstraintsCanvas}
               checkSolutionValidity={this.checkSolutionValidity} />
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 

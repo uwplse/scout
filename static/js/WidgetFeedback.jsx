@@ -1,5 +1,6 @@
 // App.jsx
 import React from "react";
+import '../css/WidgetFeedback.css'; 
 
 export default class WidgetFeedback extends React.Component {
   constructor(props) {
@@ -7,7 +8,7 @@ export default class WidgetFeedback extends React.Component {
     this.feedbackMessage = props.message; 
     this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
     this.id = props.id; 
-    this.parentShape = props.parentShape; 
+    this.shape = props.shape; 
     this.action = props.action; 
     this.type = props.type; 
     this.property = props.property; 
@@ -23,6 +24,13 @@ export default class WidgetFeedback extends React.Component {
     }    
   }
 
+  onClick = () => {
+    this.action["undo"].updateConstraintsCanvasShape(this.property, this.shape, undefined);
+
+    // Notify the ConstraintsCanvas to update its rendering
+    this.props.update(); 
+  }
+
   render () {
     var highlighted = this.state.highlighted; 
     return (
@@ -35,7 +43,7 @@ export default class WidgetFeedback extends React.Component {
               </span>
               <button 
                 className={"widget-feedback-items-remove " + (highlighted ? "highlighted" : "")} 
-                onClick={this.updateConstraintsCanvas(this.parentShape, this.action, this.property)}>
+                onClick={this.onClick}>
                 <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
               </button>
             </li>

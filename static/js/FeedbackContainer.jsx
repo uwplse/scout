@@ -8,20 +8,64 @@ import ConstraintActions from "./ConstraintActions";
 class FeedbackItem extends React.Component {
   constructor(props) {
     super(props); 
-    this.shape = props.shape;  // The shape associated with this FeedbackItem
-    this.property = props.property; 
-    this.action = props.action; 
     
     this.state = {
       selected: "Vary", 
-      locked: this.action['keep'].type == "undo", 
-      prevented: this.action['keep'].type == "undo"
+      locked: false,
+      prevented: false, 
+      shape: props.shape, 
+      property: props.property, 
+      action: props.action
     }; 
   }
 
   componentDidMount() {
-    // let locked = this.action['keep'].type == "undo";
+    // intialize the selector state based on the locked prevented values 
+    let selected = FeedbackItem.getInitialSelected(this.state.shape, this.state.property); 
+    let locked = FeedbackItem.getInitialLocked(this.state.shape, this.state.property); 
+    let prevented = FeedbackItem.getInitialPrevented(this.state.shape, this.state.property); 
+    this.setState({
+      selected: selected, 
+      prevented: prevented, 
+      locked: locked
+    }); 
+  }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    let shapeChanged = nextProps.shape != prevState.shape; 
+
+    return {
+      shape: nextProps.shape, 
+      action: nextProps.action, 
+      property: nextProps.property, 
+      selected: (shapeChanged ? FeedbackItem.getInitialSelected(nextProps.shape, nextProps.property) : prevState.selected),
+      locked: (shapeChanged ? FeedbackItem.getInitialLocked(nextProps.shape, nextProps.property) : prevState.locked), 
+      prevented: (shapeChanged ? FeedbackItem.getInitialPrevented(nextProps.shape, nextProps.property) : prevState.prevented)
+    };     
+  }
+
+  static getInitialPrevented(shape, property) {
+    if(shape.prevents && shape.prevents.length && shape.prevents.indexOf(property) > -1) {
+      return true;
+    }
+
+    return false;
+  }
+
+  static getInitialLocked(shape, property) {
+    if(shape.locks && shape.locks.length && shape.locks.indexOf(property) > -1) {
+      return true; 
+    }
+  
+    return false;
+  }
+
+  static getInitialSelected(shape, property) {
+    if(shape[property]) {
+      return shape[property];
+    }
+
+    return "Vary";
   }
 
   onSelected = (newValue) => {
@@ -31,11 +75,23 @@ class FeedbackItem extends React.Component {
   }
 
   onLocked = () => {
-    let keepType = this.action['keep'].type; 
-    this.action['keep'].action[keepType].updateConstraintsCanvasShape(this.property, this.shape, this.state.selected);
+    let preventValue = this.state.prevented; 
+    if(this.state.prevented) {
+      // If the property was already "Kept", remove it and keep the Prevent instead
+      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.shape);
+      preventValue = false;
+    }
+
+    if(this.state.locked){
+      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.shape);    
+    }
+    else {
+      this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, this.state.shape, this.state.selected);     
+    }
 
     this.setState({
-      locked: !this.state.locked
+      locked: !this.state.locked, 
+      prevented: preventValue
     });
 
     // Notify the ConstraintsCanvas tree of the update
@@ -43,11 +99,22 @@ class FeedbackItem extends React.Component {
   }
 
   onPrevented = () => {
-    let preventType = this.action['prevent'].type;
-    this.action['prevent'].action[preventType].updateConstraintsCanvasShape(this.property, this.shape, this.state.selected);
+    let lockedValue = this.state.locked; 
+    if(this.state.locked) {
+      // If the property was already "Kept", remove it and keep the Prevent instead
+      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.shape);
+      lockedValue = false;
+    }
+
+    if(this.state.prevented) {
+      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.shape);
+    } else {
+      this.state.action['prevent']['do'].updateConstraintsCanvasShape(this.state.property, this.state.shape, this.state.selected); 
+    }
 
     this.setState({
-      prevented: !this.state.prevented
+      prevented: !this.state.prevented, 
+      locked: lockedValue
     });
 
     // Notify the ConstraintsCanvas tree of the update
@@ -57,12 +124,11 @@ class FeedbackItem extends React.Component {
   render () {
     // The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
     let locked = this.state.locked;
-    let keep = this.action['keep'].action;  
     let prevented = this.state.prevented;
-    let prevent = this.action['prevent'].action;
-    let domain = this.action.domain; 
+    let domain = this.state.action.domain; 
     let label = locked ? "" : "Vary"; 
-    let propertyLabel = this.property.charAt(0).toUpperCase() + this.property.slice(1); 
+    let propertyLabel = this.state.property.charAt(0).toUpperCase() + this.state.property.slice(1); 
+    let lockDisabled = this.state.selected == "Vary"; 
 
     // Lock -> 
     return (<div className="feedback-container-toggle">
@@ -78,10 +144,10 @@ class FeedbackItem extends React.Component {
                 </Dropdown.Menu>
               </Dropdown>
               <div className="feedback-container-locks">
-                <span className={"glyphicon glyphicon-lock " + (locked ? "locked" : "unlocked")}
-                  onClick={this.onLocked}></span>
-                <span className={"glyphicon glyphicon-remove " + (locked ? "locked" : "unlocked")}
-                  onClick={this.onPrevented}></span>
+                <span className={"glyphicon glyphicon-lock " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
+                  onClick={(!lockDisabled ? this.onLocked : undefined)}></span>
+                <span className={"glyphicon glyphicon-remove " + (prevented ? "locked " : "unlocked ") + (lockDisabled ? "disabled" : "enabled")}
+                  onClick={(!lockDisabled ? this.onPrevented : undefined)}></span>
               </div> 
             </div>);
   }
@@ -242,41 +308,6 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
-  getAction(constraint, constraintsMenu) {
-      let constraintsCanvasShape = this.getConstraintsCanvasShape(this.props.selectedElement.name);
-      let action = {}; 
-
-      if(constraintsCanvasShape["locks"]
-        && constraintsCanvasShape["locks"].indexOf(constraint) >= 0) {
-        if(constraintsCanvasShape[constraint] == this.props.selectedElement[constraint]) {
-          // The constraint is active and set to true, show the undo option
-          action.keep = { type: "undo", action: constraintsMenu["keep"]};           
-        }
-        else {
-          action.keep = { type: "do", action: constraintsMenu["keep"]};  
-        }
-      } else {
-        action.keep = { type: "do", action: constraintsMenu["keep"]}; 
-      } 
-
-      if(constraintsCanvasShape["prevents"]
-        && constraintsCanvasShape["prevents"].indexOf(constraint) >= 0) {
-        let currValue = this.props.selectedElement[constraint]; 
-        if(constraintsCanvasShape[constraint] == currValue) {
-          // The constraint is active and set to true, show the undo option
-          action.prevent = { type: "undo", action: constraintsMenu["prevent"], value: currValue};           
-        }
-        else {
-          action.prevent = { type: "do", action: constraintsMenu["prevent"]};  
-        }
-      } else {
-        action.prevent = { type: "do", action: constraintsMenu["prevent"]}; 
-      } 
-
-      action.domain = constraintsMenu["domains"][constraint]; 
-      return action; 
-  }
-
   getDesignFeedbackItems = () => {
     let shape = this.props.selectedElement; 
 
@@ -292,10 +323,13 @@ export default class FeedbackContainer extends React.Component {
     // Arrangement - Values
     // Alignemnt - values
     // Padding - values
-    if(shape.type == "group") {
+    if(shape.type == "group" || shape.type == "canvas") {
       // Dropdown for each 
       let groupVariableSelectors = ConstraintActions.groupConstraints.values.map((key) => {
-        let action = this.getAction(key, ConstraintActions.groupConstraints);
+        let action = {}; 
+        action.keep = ConstraintActions.groupConstraints['keep']; 
+        action.prevent = ConstraintActions.groupConstraints['prevent'];
+        action.domain = ConstraintActions.groupConstraints.domains[key];
         return (<FeedbackItem onClick={this.props.onClick} 
                   action={action}
                   shape={this.props.selectedElement} 
@@ -335,6 +369,7 @@ export default class FeedbackContainer extends React.Component {
           </div>
           <div tabIndex="1" className="panel-body"> 
             {treeFeedbackItems}
+            <hr className="feedback-container-separator" />
             {designFeedbackItems}
             {!this.props.selectedElement ? 
               (<div className="card card-body bg-light feedback-container-alert">
