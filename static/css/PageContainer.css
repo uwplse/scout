@@ -26,11 +26,13 @@
 	justify-content: flex-end;
 }
 
-.designs-area-container .designs-area-alert-container {
+.designs-area-container .designs-area-alert-container .card {
 	margin: 2em;
+	margin-top: 10em;
 }
 
-.designs-area-container .designs-area-alert-container .alert {
+.designs-area-container .panel-heading {
+	height: 62.5px;
 }
 
 .zoomed-design-container {

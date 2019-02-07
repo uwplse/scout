@@ -1381,6 +1381,7 @@ export default class ConstraintsCanvas extends React.Component {
         menuLeft={rightClickMenuPosition.x}
         menuTop={rightClickMenuPosition.y}
         shapeID={this.state.rightClickShapeID} /> : undefined); 
+    const showAddWidgetsCard = this.state.treeData.length == 1 && !this.state.treeData[0].children.length; // The canvas is empty 
 
     // Process the queue of shapes to add to the canvas
 	  return (
@@ -1424,6 +1425,8 @@ export default class ConstraintsCanvas extends React.Component {
                   >
                     {treeNodes}
                   </Tree>) : undefined}
+                {(showAddWidgetsCard ? (<div className="card card-body bg-light constraints-canvas-alert">Click an element in the <span className="card-emph">
+                  Widgets Panel</span> to add it to your design outline.</div>) : undefined)}
               </div>
             </div>
             {/*<div className="constraints-canvas-feedback-container">

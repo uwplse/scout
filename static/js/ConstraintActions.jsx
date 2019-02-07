@@ -11,9 +11,8 @@ ConstraintActions.verticalArrangements = ["vertical", "columns"];
 ConstraintActions.arrangments = ["horizontal", "vertical", "rows", "columns"]; 
 ConstraintActions.verticalAlignments = ["left", "center", "right"];
 ConstraintActions.horizontalAlignments = ["top", "center", "bottom"];
-
+ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40]; 
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
-ConstraintActions.justifications = ["top", "center", "bottom"];
 
 ConstraintActions.getAction = function getAction(actionType, shape) {
 	if(shape.type == "canvas") {
@@ -35,28 +34,26 @@ ConstraintActions.getAction = function getAction(actionType, shape) {
 	}
 }
 
-ConstraintActions.defaultKeepConstraint = function keepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-  	if(constraintsCanvasShape["locks"] == undefined) {
-		constraintsCanvasShape["locks"] = []; 
+ConstraintActions.defaultKeepConstraint = function keepConstraint(property, shape, value) {
+  	if(shape["locks"] == undefined) {
+		shape["locks"] = []; 
 	} 
 
-	if(constraintsCanvasShape["locks"].indexOf(constraintKey) == -1) {
-		constraintsCanvasShape["locks"].push(constraintKey); 
+	if(shape["locks"].indexOf(property) == -1) {
+		shape["locks"].push(property); 
 	}
 
-	// Also should the constraints canvas arrange itself in the way of the designs canvas?
-	// Update the constraint property on the object
-	constraintsCanvasShape[constraintKey] = designCanvasShape[constraintKey]; 	
+	shape[property] = value; 	
 }
 
-ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
-	constraintsCanvasShape["locks"].splice(index,1); 
-	if(!constraintsCanvasShape["locks"].length) {
-		delete constraintsCanvasShape["locks"]; 
+ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(property, shape, value=undefined) {
+	var index = shape["locks"].indexOf(property); 
+	shape["locks"].splice(index,1); 
+	if(!shape["locks"].length) {
+		delete shape["locks"]; 
 	}
 
-	delete constraintsCanvasShape[constraintKey]; 
+	delete shape[property]; 
 }
 
 ConstraintActions.defaultPreventConstraint = function preventConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
@@ -162,8 +159,8 @@ ConstraintActions.messages = {
 }
 
 ConstraintActions.defaultDoKeep = {
-	"updateConstraintsCanvasShape": function keepConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function keepConstraint(property, value, constraintsCanvasShape) {
+		ConstraintActions.defaultKeepConstraint(property, value, constraintsCanvasShape);
 	}, 
 	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
 		let message = ConstraintActions.messages[property](shape); 
@@ -250,7 +247,12 @@ ConstraintActions.canvasChildConstraints = {
 ConstraintActions.groupConstraints = {
 	"values": ["arrangement", "alignment", "padding"], 
 	"keep": ConstraintActions.defaultKeep, 
-	"prevent": ConstraintActions.defaultPrevent
+	"prevent": ConstraintActions.defaultPrevent, 
+	"domains": {
+		"arrangement": ConstraintActions.arrangments, 
+		"alignment": ConstraintActions.verticalAlignments, 
+		"padding": ConstraintActions.paddings
+	}
 }
 
 ConstraintActions.canvasConstraints = {

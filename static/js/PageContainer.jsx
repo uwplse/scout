@@ -118,8 +118,6 @@ export default class PageContainer extends React.Component {
               linkedSolutionId={linkedSolutionId}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
-              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas} 
@@ -142,8 +140,6 @@ export default class PageContainer extends React.Component {
               zoomed={zoomed}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
-              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas} 
@@ -214,21 +210,23 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
-  updateConstraintsCanvasFromDesignCanvas = (designCanvasShape, action, actionType, property) => {
-    // Retrieve the shape object in the constraints tree and apply teh updates
-    let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
-    action[actionType].updateConstraintsCanvasShape(property, constraintsCanvasShape, designCanvasShape);
+  updateConstraintsCanvasFromFeedbackContainer = () => {
+    // Notify the tree to re-render in response to the update
+    // from the FeedbackContainer    
     this.constraintsCanvasRef.current.renderTree();
+
+    // re-verify the constraints after feedback is applied
+    this.checkSolutionValidity();
   }
 
-  updateConstraintsCanvas = (constraintsCanvasShape, action, property) => {
-    return () => {
-      action["undo"].updateConstraintsCanvasShape(property, constraintsCanvasShape, undefined);
+  // updateConstraintsCanvas = (constraintsCanvasShape, action, property) => {
+  //   return () => {
+  //     action["undo"].updateConstraintsCanvasShape(property, constraintsCanvasShape, undefined);
 
-      // Check for the validity of current state of constriants, and update valid state of solutions
-      this.checkSolutionValidity();       
-    }
-  }
+  //     // Check for the validity of current state of constriants, and update valid state of solutions
+  //     this.checkSolutionValidity();       
+  //   }
+  // }
 
   updateSolutionValidity = (solutions) => {
     // Update the state of each solution to display the updated valid/invalid state
@@ -623,7 +621,7 @@ export default class PageContainer extends React.Component {
           <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <div className="navbar-header">
               <SVGInline className="scout-logo" svg={pageLogo} />
-              <h1>Scout</h1>
+              <h1>Scout <span className="scout-tagline"><small>Exploring design layout alternatives</small></span></h1>
             </div>
           </nav>
           <div className="bottom">
@@ -643,10 +641,11 @@ export default class PageContainer extends React.Component {
               checkSolutionValidity={this.checkSolutionValidity}
               activeDesignWidget={this.state.activeDesignWidget}
               svgWidgets={this.state.svgWidgets} />
-            {this.state.selectedElement ? 
-              <FeedbackContainer selectedElement={this.state.selectedElement}
-                feedbackCallbacks={this.state.feedbackCallbacks}
-                checkSolutionValidity={this.checkSolutionValidity} /> : undefined}
+            <FeedbackContainer selectedElement={this.state.selectedElement}
+              feedbackCallbacks={this.state.feedbackCallbacks}
+              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
+              updateConstraintsCanvas={this.updateConstraintsCanvasFromFeedbackContainer}
+              checkSolutionValidity={this.checkSolutionValidity} />
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Designs
@@ -714,25 +713,22 @@ export default class PageContainer extends React.Component {
               </div>  
               {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div className="alert alert-success">
-                    You currently have no designs under consideration. <br /><br />
-                    Click <strong>Generate Designs</strong> in the outline to see more. 
+                  <div className="card card-body bg-light">
+                    <span>You currently have no designs under consideration. Click <span className="card-emph">Generate Designs</span> in the outline to see more.</span>
                   </div>
                 </div>) : null
               }
               {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div className="alert alert-success">
-                    You currently have no saved designs. <br /><br />
-                    Click the star icon above a design in the <strong>Under Consideration</strong> panel to save a design. 
+                  <div className="card card-body bg-light">
+                    <span>You currently have no saved designs. Click the star icon above a design in the <span className="card-emph">Under Consideration</span> panel to save a design.</span>
                   </div>
                 </div>) : null
               }
               {(this.state.activeDesignPanel == "discarded" && discardedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div className="alert alert-success">
-                    You currently have no discarded designs. <br /><br />
-                    Click the trash icon in the <strong>Under Consideration</strong> panel to discard any designs that you don't like. 
+                  <div className="card card-body bg-light">
+                    <span>You currently have no discarded designs. Click the trash icon in the <span className="card-emph">Under Consideration</span> panel to discard any designs that you don't like.</span>
                   </div>
                 </div>) : null
               }

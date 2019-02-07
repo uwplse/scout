@@ -39,7 +39,6 @@
 .box {
 	font-size: 1.25rem;
 	position: relative;
-	padding: 100px 20px;
 }
 
 .box__dragndrop,
@@ -70,8 +69,9 @@
 	margin-bottom: 0; 
 	flex: 1 1 0px;
 	display: flex;
-    flex-direction: column;
-    justify-content: center;
+  flex-direction: column;
+  margin: 2em;
+  margin-top: 6em;
 }
 
 .box.has-advanced-upload .box__icon {
@@ -84,7 +84,6 @@
 
 .box.has-advanced-upload .box__dragndrop {
   display: inline;
-  font-size: 20px;
 }
 
 .box.is-dragover {

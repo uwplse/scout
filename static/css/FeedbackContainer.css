@@ -12,16 +12,41 @@
 	margin-right: 1em;
 	margin-left: 1em;
 	font-size: 20px;
+	width: 175px;
 }
 
 .feedback-container-toggle {
-	margin-top: 1em;
-	margin-bottom: 1em;
-	margin-left: 1em;
+	margin: 1em; 
 	display: flex; 
 	flex-direction: row;
+	align-items: center;
+}
+
+.feedback-container-alert {
+	margin: 2em;
+	margin-top: 10em;
 }
 
 .feedback-container-toggle .dropdown {
 	position: initial;
+	margin-right: 1em;
+}
+
+.feedback-container-locks {
+	display: flex; 
+	flex-direction: row;
+}
+
+.feedback-container-locks span {
+	padding-left: 0.5em;
+	cursor: pointer; 
+	transform: scale(1.5);
+}
+
+.feedback-container-locks span.locked {
+	color: black;
+}
+
+.feedback-container-locks span.unlocked {
+	color: lightgray;
 }
