@@ -24,7 +24,10 @@ export default class WidgetFeedback extends React.Component {
     }    
   }
 
-  onClick = () => {
+  onClick = (evt) => {
+    // Prevent from reaching the selected node and unselecting it. 
+    evt.stopPropagation(); 
+
     this.action["undo"].updateConstraintsCanvasShape(this.property, this.shape, undefined);
 
     // Notify the ConstraintsCanvas to update its rendering
