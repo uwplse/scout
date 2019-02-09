@@ -61,18 +61,17 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   }
 
   componentDidUpdate = (prevProps) => {
-    if(prevProps.activeDesignWidget != this.props.activeDesignWidget && 
-      this.props.activeDesignWidget != undefined) {
+    if(prevProps.activeDesignShape != this.props.activeDesignShape && 
+      this.props.activeDesignShape != undefined) {
       // Display the widget with the proper callbacks
       // Use the true flag to indicate to the PageContainer that 
       // the widget has been selected from a DesignCanvas
-      this.displayWidgetFeedback(this.props.activeDesignWidget, this.feedbackCallbacks, true); 
+      this.displayWidgetFeedback(this.props.activeDesignShape, this.feedbackCallbacks, this.props.activeCanvasShape); 
     }
-
-    if(prevProps.activeCanvasWidget != this.props.activeCanvasWidget && 
-      this.props.activeCanvasWidget != undefined) {
+    else if(prevProps.activeCanvasShape != this.props.activeCanvasShape && 
+      this.props.activeCanvasShape != undefined) {
       // Display the widget with the proper callbacks
-      this.displayWidgetFeedback(this.props.activeCanvasWidget, this.feedbackCallbacks, false);    
+      this.displayWidgetFeedback(this.props.activeCanvasShape, this.feedbackCallbacks);    
     }
   }
 
@@ -148,10 +147,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       }); 
     }
   }
-
-  // onClick = () => {
-  //   this.displayWidgetFeedback(this.element, this.feedbackCallbacks); 
-  // }
 
   render () {
     const source = this.state.svgSource; 

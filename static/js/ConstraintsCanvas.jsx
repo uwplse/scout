@@ -104,29 +104,32 @@ export default class ConstraintsCanvas extends React.Component {
       this.updateSVGSourceMap(); 
     }
 
-    if(this.props.activeDesignWidget != undefined 
-      && prevProps.activeDesignWidget != this.props.activeDesignWidget){
-      let widgetTreeNode = this.widgetTreeNodeMap[this.props.activeDesignWidget.name]; 
+    if(this.props.activeDesignShape != undefined){
+      if(prevProps.activeDesignShape != this.props.activeDesignShape) {
+        let widgetTreeNode = this.widgetTreeNodeMap[this.props.activeDesignShape.name]; 
 
-      // Set the activeDesignWidget so that this node will activate its feedback with 
-      // an instance of the widget selected from the design (A specific instance of this widget)
-      // and will set the properties in the feedback panel based on that 
-      widgetTreeNode.activeDesignWidget = this.props.activeDesignWidget; 
+        // Set the activeDesignShape so that this node will activate its feedback with 
+        // an instance of the widget selected from the design (A specific instance of this widget)
+        // and will set the properties in the feedback panel based on that 
+        widgetTreeNode.activeDesignShape = this.props.activeDesignShape; 
+        widgetTreeNode.activeCanvasShape = widgetTreeNode.shape; 
 
-      // When the widget becomes active from a DesignCanvas, we should select the corresponding shape in the 
-      // ConstraintsCanvas tree. 
-      this.setState({
-        treeData: this.state.treeData, 
-        selectedTreeNodes: [this.props.activeDesignWidget.name], 
-        selectedElement: this.props.activeDesignWidget.name
-      }); 
+        // When the widget becomes active from a DesignCanvas, we should select the corresponding shape in the 
+        // ConstraintsCanvas tree. 
+        this.setState({
+          treeData: this.state.treeData, 
+          selectedTreeNodes: [this.props.activeDesignShape.name], 
+          selectedElement: this.props.activeDesignShape.name
+        });
+      } 
     }
     else {
-      if(prevProps.activeDesignWidget != undefined) {
-        let widgetTreeNode = this.widgetTreeNodeMap[prevProps.activeDesignWidget.name]; 
+      if(prevProps.activeDesignShape != undefined) {
+        let widgetTreeNode = this.widgetTreeNodeMap[prevProps.activeDesignShape.name]; 
 
-        // Unset the activeDesignWidget property for this node so it goes back to its default state 
-        delete widgetTreeNode.activeDesignWidget; 
+        // Unset the activeDesignShape property for this node so it goes back to its default state 
+        delete widgetTreeNode.activeDesignShape; 
+        delete widgetTreeNode.activeCanvasShape; 
 
         this.setState({
           treeData: this.state.treeData
@@ -241,8 +244,8 @@ export default class ConstraintsCanvas extends React.Component {
     let item = options.item ? options.item : false;
     let typed = options.typed ? options.typed : false;
     let feedback = options.feedback ? options.feedback : [];
-    let activeDesignWidget = options.activeDesignWidget ? options.activeDesignWidget : undefined; 
-    let activeCanvasWidget = options.activeCanvasWidget ? options.activeCanvasWidget : undefined;
+    let activeDesignShape = options.activeDesignShape ? options.activeDesignShape : undefined; 
+    let activeCanvasShape = options.activeCanvasShape ? options.activeCanvasShape : undefined;
 
     let typingAlerts = [];
     if(options.typeGroupSize > 1) {
@@ -263,8 +266,8 @@ export default class ConstraintsCanvas extends React.Component {
                 displayWidgetFeedback={this.displayWidgetFeedback}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
-                activeDesignWidget={activeDesignWidget}
-                activeCanvasWidget={activeCanvasWidget}
+                activeDesignShape={activeDesignShape}
+                activeCanvasShape={activeCanvasShape}
                 removeWidgetNode={this.removeWidgetNode}
                 typed={typed}
                 item={item} />);
@@ -281,8 +284,8 @@ export default class ConstraintsCanvas extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedback}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
-              activeDesignWidget={activeDesignWidget}
-              activeCanvasWidget={activeCanvasWidget}
+              activeDesignShape={activeDesignShape}
+              activeCanvasShape={activeCanvasShape}
               removeWidgetNode={this.removeWidgetNode} />);
   }
 
@@ -382,9 +385,9 @@ export default class ConstraintsCanvas extends React.Component {
     return this.widgetTreeNodeMap[shapeID].shape; 
   }
 
-  displayWidgetFeedback = (shape, callbacks) => {
+  displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
     // Call the PageContainer method to open the feedback panel 
-    this.props.displayWidgetFeedback(shape, callbacks); 
+    this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
   }
 
   displayRightClickMenu = (evt, shapeID) => {
@@ -1183,11 +1186,11 @@ export default class ConstraintsCanvas extends React.Component {
       selectedElement = selected;  
     }
 
-    // Update the activeCanvasWidget on the selected element so it displays the feedback 
+    // Update the activeCanvasShape on the selected element so it displays the feedback 
     if(selectedElement) {
       let selectedElementNode = this.widgetTreeNodeMap[selectedElement]; 
       if(selectedElementNode) {
-        selectedElementNode.activeCanvasWidget = selectedElementNode.shape; 
+        selectedElementNode.activeCanvasShape = selectedElementNode.shape; 
 
         this.setState({
           treeData: this.state.treeData
@@ -1200,7 +1203,7 @@ export default class ConstraintsCanvas extends React.Component {
     if(this.state.selectedElement && this.state.selectedElement != selectedElement) {
       let prevSelectedElementNode = this.widgetTreeNodeMap[this.state.selectedElement]; 
       if(prevSelectedElementNode) {
-        delete prevSelectedElementNode.activeCanvasWidget; 
+        delete prevSelectedElementNode.activeCanvasShape; 
 
         this.setState({
           treeData: this.state.treeData
@@ -1330,8 +1333,8 @@ export default class ConstraintsCanvas extends React.Component {
           highlighted: item.highlighted, 
           typed: item.typed, 
           item: item.item, 
-          activeDesignWidget: item.activeDesignWidget, 
-          activeCanvasWidget: item.activeCanvasWidget
+          activeDesignShape: item.activeDesignShape, 
+          activeCanvasShape: item.activeCanvasShape
         }
 
         let widgetSource = item.src; 
@@ -1430,11 +1433,6 @@ export default class ConstraintsCanvas extends React.Component {
                   Widgets Panel</span> to add it to your design outline.</div>) : undefined)}
               </div>
             </div>
-            {/*<div className="constraints-canvas-feedback-container">
-               <WidgetFeedbackPanel
-                selectedElement={this.state.selectedElement}
-                selectedElementY={this.state.selectedElementY} />
-            </div> */}
           </div>
       </div>
     );

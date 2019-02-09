@@ -32,14 +32,14 @@ export default class PageContainer extends React.Component {
       solutions: [],
       designsFound: -1, 
       showDesignsAlert: false, 
-      currentPallette: 'hollywood', 
       droppedFiles: [], 
       svgWidgets: [], 
       zoomedDesignCanvasID: undefined, 
       activeDesignPanel: "designs", 
-      selectedElement: undefined, 
+      activeCanvasShape: undefined, 
+      activeDesignShape: undefined, 
       widgetsCollapsed: false, 
-      activeDesignWidget: undefined
+      activeDesignShape: undefined
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -214,6 +214,12 @@ export default class PageContainer extends React.Component {
     // Notify the tree to re-render in response to the update
     // from the FeedbackContainer    
     this.constraintsCanvasRef.current.renderTree();
+
+    // Also update the activeCanvasShape to trigger the FeedbackContainer to re-render
+    // To update the state of the unlocked properties
+    this.setState({
+      activeCanvasShape: this.state.activeCanvasShape
+    }); 
 
     // re-verify the constraints after feedback is applied
     this.checkSolutionValidity();
@@ -528,22 +534,29 @@ export default class PageContainer extends React.Component {
     localStorage.setItem('widgetsCollapsed', newState); 
   }
 
-  displayWidgetFeedback = (shape, feedbackCallbacks, fromDesign=false) => {
-    if(!fromDesign) {
-      this.setState({
-        activeDesignWidget: undefined
-      }); 
+  displayWidgetFeedback = (shape, feedbackCallbacks, constraintsCanvasShape=undefined) => {
+    let canvasShape = undefined; 
+    let designShape = undefined; 
+
+    if(!constraintsCanvasShape) {
+      canvasShape = shape; 
+    }
+    else {
+      canvasShape = constraintsCanvasShape; 
+      designShape = shape; 
     }
 
     this.setState({
-      selectedElement: shape, 
+      activeCanvasShape: canvasShape,
+      activeDesignShape: designShape,  
       feedbackCallbacks: feedbackCallbacks
     }); 
   }
 
   hideWidgetFeedback = () => {
     this.setState({
-      selectedElement: undefined, 
+      activeDesignShape: undefined, 
+      activeCanvasShape: undefined, 
       feedbackCallbacks: undefined
     }); 
   }
@@ -552,7 +565,7 @@ export default class PageContainer extends React.Component {
     // Set this property to activate the corresponding element in the tree
     // And display feedback based on this instance of the element in the design canvas
     this.setState({
-      activeDesignWidget: shape
+      activeDesignShape: shape
     });
   }
 
@@ -630,11 +643,12 @@ export default class PageContainer extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedback}
               hideWidgetFeedback={this.hideWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
-              activeDesignWidget={this.state.activeDesignWidget}
+              activeDesignShape={this.state.activeDesignShape}
               svgWidgets={this.state.svgWidgets} />
-            <FeedbackContainer selectedElement={this.state.selectedElement}
+            <FeedbackContainer 
+              activeCanvasShape={this.state.activeCanvasShape}
+              activeDesignShape={this.state.activeDesignShape}
               feedbackCallbacks={this.state.feedbackCallbacks}
-              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               updateConstraintsCanvas={this.updateConstraintsCanvas}
               checkSolutionValidity={this.checkSolutionValidity} />
             <div className="panel panel-primary designs-area-container">
