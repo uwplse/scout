@@ -2,7 +2,8 @@
 	position: relative;
 	border: 1px solid #c4c4c4;
 	cursor: pointer;
-	transition: all .2s ease-in-out;
+	transition: all .1s ease-in-out;
+	background-color: white; 
 }
 
 .design-canvas:hover {
@@ -12,6 +13,7 @@
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
 	outline: 1px dashed #000000;
+	z-index: 1000; 
 }
 
 .design-canvas.hovered .SVGInline-svg {
@@ -21,6 +23,10 @@
 .design-body > .canvas-container {
 	display: inline-block;
 	margin: 25px;
+}
+
+.canvas-container {
+	background-color: white; 
 }
 
 .canvas-container .canvas-container-invalid {

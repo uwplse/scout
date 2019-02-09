@@ -319,8 +319,7 @@ export default class DesignCanvas extends React.Component {
            id={"canvas-box-" + this.id} 
            style={{
             height: (this.canvasHeight * scalingFactor) + "px", 
-            width: (this.canvasWidth * scalingFactor) + "px", 
-            backgroundColor: "#ffffff"}}> 
+            width: (this.canvasWidth * scalingFactor) + "px"}}> 
         <DesignMenu 
           showZoom={!this.props.zoomed}
           visible={menuVisible}
