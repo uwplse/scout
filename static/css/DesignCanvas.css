@@ -6,7 +6,7 @@
 }
 
 .design-canvas:hover {
-	transform: scale(1.5) translate(0, 20px);
+	transform: scale(1.25) translate(0, 20px);
 }
 
 .design-canvas.hovered, 

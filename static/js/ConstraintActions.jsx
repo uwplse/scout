@@ -4,6 +4,10 @@
 // Global - Whitespace, Density 
 class ConstraintActions {}
 
+// Variables where the domains are encoded as integer values into the domain list
+// rather than string values, or real values (e.g., margins)
+ConstraintActions.index_domains = ["arrangement", "alignment"]
+
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
 ConstraintActions.horizontalArrangements = ["horizontal", "rows"];
@@ -13,6 +17,12 @@ ConstraintActions.verticalAlignments = ["left", "center", "right"];
 ConstraintActions.horizontalAlignments = ["top", "center", "bottom"];
 ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40]; 
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
+
+ConstraintActions.margins = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]; 
+ConstraintActions.columns = [2,3,4,6,12]; 
+ConstraintActions.column_widths = [0]; // TODO
+ConstraintActions.gutter_widths = [10]
+ConstraintActions.baseline_grids = [4,8,16]
 
 ConstraintActions.getAction = function getAction(actionType, shape) {
 	if(shape.type == "canvas") {
@@ -118,7 +128,8 @@ ConstraintActions.messages = {
 	}, 
 	"arrangement": function getMessage(shape) {
 		let value = shape["arrangement"];
-		return " arrangement " + value + "."; 
+		let labelValue = ConstraintActions.arrangements[value]; 
+		return " arrangement " + labelValue + "."; 
 	}, 
 	"padding": function getMessage(shape) {
 		let value = shape["padding"];
@@ -147,7 +158,7 @@ ConstraintActions.messages = {
 	"alignment": function getMessage(shape) {
 		// Generate the message based on the axis of alignment
 		let alignmentValue = ConstraintActions.verticalAlignments[shape["alignment"]];
-		let arrangementValue = ConstraintActions.arrangments[shape["arrangement"]]; 
+		let arrangementValue = ConstraintActions.arrangements[shape["arrangement"]]; 
 		if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
 			alignmentValue = ConstraintActions.horizontalAlignments[shape["alignment"]]; 
 		}
@@ -255,7 +266,14 @@ ConstraintActions.groupConstraints = {
 ConstraintActions.canvasConstraints = {
 	"values": ["margin", "baseline_grid", "columns", "gutter_width", "column_width"], 
 	"keep": ConstraintActions.defaultKeep, 
-	"prevent": ConstraintActions.defaultPrevent
+	"prevent": ConstraintActions.defaultPrevent, 
+	"domains": {
+		"margin": ConstraintActions.margins, 
+		"baseline_grid": ConstraintActions.baseline_grids, 
+		"columns": ConstraintActions.columns, 
+		"gutter_width": ConstraintActions.gutter_widths, 
+		"column_width": ConstraintActions.column_widths
+	}
 }
 
 export default ConstraintActions; 

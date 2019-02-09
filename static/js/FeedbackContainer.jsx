@@ -21,7 +21,7 @@ class FeedbackItem extends React.Component {
 
   componentDidMount() {
     // intialize the selector state based on the locked prevented values 
-    let selected = FeedbackItem.getInitialSelected(this.state.shape, this.state.property); 
+    let selected = FeedbackItem.getInitialSelected(this.state.shape, this.state.property, this.state.action.domain); 
     let locked = FeedbackItem.getInitialLocked(this.state.shape, this.state.property); 
     let prevented = FeedbackItem.getInitialPrevented(this.state.shape, this.state.property); 
     this.setState({
@@ -38,7 +38,7 @@ class FeedbackItem extends React.Component {
       shape: nextProps.shape, 
       action: nextProps.action, 
       property: nextProps.property, 
-      selected: (shapeChanged ? FeedbackItem.getInitialSelected(nextProps.shape, nextProps.property) : prevState.selected),
+      selected: (shapeChanged ? FeedbackItem.getInitialSelected(nextProps.shape, nextProps.property, nextProps.action.domain) : prevState.selected),
       locked: (shapeChanged ? FeedbackItem.getInitialLocked(nextProps.shape, nextProps.property) : prevState.locked), 
       prevented: (shapeChanged ? FeedbackItem.getInitialPrevented(nextProps.shape, nextProps.property) : prevState.prevented)
     };     
@@ -60,9 +60,10 @@ class FeedbackItem extends React.Component {
     return false;
   }
 
-  static getInitialSelected(shape, property) {
-    if(shape[property]) {
-      return shape[property];
+  static getInitialSelected(shape, property, domain) {
+    let value = shape[property]; 
+    if(value != undefined) {
+      return value; 
     }
 
     return "Vary";
@@ -121,26 +122,70 @@ class FeedbackItem extends React.Component {
     this.props.update();
   }
 
+  getPropertyLabel = () => {
+    let splits = this.state.property.split("_"); 
+    let label = ""; 
+    for(let i=0; i<splits.length; i++) {
+      let token = splits[i]; 
+      label += token.charAt(0).toUpperCase() + token.slice(1);
+      if(i < splits.length-1) {
+        label += " "; 
+      }
+    }
+    return label; 
+  }
+
+  toUpperCase(label) {
+    if(typeof label == "string" && label.length > 1) {
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
+    return label;
+  }
+
+  getDomainValue = (value) => {
+    let index = ConstraintActions.index_domains.indexOf(this.state.property); 
+    if(index > -1) {
+      let indexInDomain = this.state.action.domain.indexOf(value); 
+      return indexInDomain; 
+    }
+
+    return value;
+  }
+
+  getSelectedValue = (value) => {
+    if(value != "Vary" && ConstraintActions.index_domains.indexOf(this.state.property) > -1) {
+      return this.state.action.domain[value]; 
+    }
+
+    return value;
+  }
+
   render () {
     // The bind will send the menu trigger (JSON shape object) and selected item (text) back to the canvas to propogate it back to the constraints canvas
     let locked = this.state.locked;
     let prevented = this.state.prevented;
     let domain = this.state.action.domain; 
     let label = locked ? "" : "Vary"; 
-    let propertyLabel = this.state.property.charAt(0).toUpperCase() + this.state.property.slice(1); 
+    let propertyLabel = this.getPropertyLabel(); 
     let lockDisabled = this.state.selected == "Vary"; 
-
+    let menuItems = domain.map((key) => {
+                    let labelValue = this.toUpperCase(key); 
+                    let domainValue = this.getDomainValue(key);
+                    return (<Dropdown.Item onClick={this.onSelected.bind(this, domainValue)}>{labelValue}</Dropdown.Item>);
+                  }); 
+    menuItems.unshift(<Dropdown.Item onClick={this.onSelected.bind(this, "Vary")}>{"Vary"}</Dropdown.Item>); 
+    let selectedLabel = this.getSelectedValue(this.state.selected); 
+    
     // Lock -> 
     return (<div className="feedback-container-toggle">
               <label className="feedback-container-label">{propertyLabel}</label>
               <Dropdown>
                 <Dropdown.Toggle id="dropdown-basic">
-                  {this.state.selected}
+                  {this.toUpperCase(selectedLabel)}
                 </Dropdown.Toggle>
                 <Dropdown.Menu> 
-                  {domain.map((key) => {
-                    return (<Dropdown.Item onClick={this.onSelected.bind(this, key)}>{key}</Dropdown.Item>);
-                  })} 
+                  {menuItems} 
                 </Dropdown.Menu>
               </Dropdown>
               <div className="feedback-container-locks">
@@ -308,7 +353,7 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
-  getDesignFeedbackItems = () => {
+  getGroupFeedbackItems = () => {
     let shape = this.props.selectedElement; 
 
     let feedbackItems = [];
@@ -323,7 +368,7 @@ export default class FeedbackContainer extends React.Component {
     // Arrangement - Values
     // Alignemnt - values
     // Padding - values
-    if(shape.type == "group" || shape.type == "canvas") {
+    if(shape.type == "group") {
       // Dropdown for each 
       let groupVariableSelectors = ConstraintActions.groupConstraints.values.map((key) => {
         let action = {}; 
@@ -341,26 +386,38 @@ export default class FeedbackContainer extends React.Component {
       feedbackItems.push(groupVariableSelectors);
     }
 
-    return feedbackItems; 
+    return feedbackItems;
+  }
 
-    // if(shape.type == "canvas") {
-    //   // Dropdown for each 
-    //   let canvasVariableSelectors = ConstraintActions.canvasConstraints.values.map((key) => {
-    //     let keepAction = this.getKeepAction(key, ConstraintActions.canvasConstraints);
-    //     let preventAction = this.getPreventAction(key, ConstraintActions.canvasConstraints);
-    //     return (<FeedbackItem onClick={this.props.onClick} 
-    //               keepAction={keepAction}
-    //               preventAction={preventAction} 
-    //               shape={this.props.selectedElement} 
-    //               property={key}
-    //               key={key} />);
-    //   }); 
-    // }
+  getCanvasFeedbackItems = () => {
+    let feedbackItems = []; 
+    let shape = this.props.selectedElement; 
+
+    if(shape.type == "canvas") {
+      // Dropdown for each 
+      let canvasVariableSelectors = ConstraintActions.canvasConstraints.values.map((key) => {
+        let action = {}; 
+        action.keep = ConstraintActions.canvasConstraints['keep']; 
+        action.prevent = ConstraintActions.canvasConstraints['prevent'];
+        action.domain = ConstraintActions.canvasConstraints.domains[key];     
+        return (<FeedbackItem onClick={this.props.onClick} 
+                  action={action}
+                  shape={this.props.selectedElement} 
+                  property={key}
+                  update={this.props.updateConstraintsCanvas}
+                  key={key} />);
+      }); 
+
+      feedbackItems.push(canvasVariableSelectors); 
+    }
+
+    return feedbackItems;
   }
 
   render () {
     let treeFeedbackItems = this.props.selectedElement ? this.getTreeFeedbackItems() : undefined; 
-    let designFeedbackItems = this.props.selectedElement ? this.getDesignFeedbackItems() : undefined; 
+    let groupFeedbackItems = this.props.selectedElement ? this.getGroupFeedbackItems() : undefined; 
+    let canvasFeedbackItems = this.props.selectedElement ? this.getCanvasFeedbackItems() : undefined; 
     return (
         <div className="panel panel-primary feedback-container">
           <div className="panel-heading"> 
@@ -370,7 +427,9 @@ export default class FeedbackContainer extends React.Component {
           <div tabIndex="1" className="panel-body"> 
             {treeFeedbackItems}
             <hr className="feedback-container-separator" />
-            {designFeedbackItems}
+            {groupFeedbackItems}
+            <hr className="feedback-container-separator" />
+            {canvasFeedbackItems}
             {!this.props.selectedElement ? 
               (<div className="card card-body bg-light feedback-container-alert">
                 <span className="feedback-container-empty">Select an element in the Outline Panel or in a Design to see feedback options.</span>

@@ -18,7 +18,7 @@ LAYOUT_COLUMNS = [2,3,4,6,12]
 GUTTERS = [10] # TODO can introduce a variable value for these at some point
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
-MARGINS = [8,12,16,20,24,28,32,36,40]
+MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
 PADDINGS = [4,8,12,16,20,24,28,32,36,40]
 
 def compute_y_domain(): 
