@@ -426,9 +426,9 @@ export default class FeedbackContainer extends React.Component {
           </div>
           <div tabIndex="1" className="panel-body"> 
             {treeFeedbackItems}
-            <hr className="feedback-container-separator" />
+            {groupFeedbackItems && groupFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {groupFeedbackItems}
-            <hr className="feedback-container-separator" />
+            {canvasFeedbackItems && canvasFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {canvasFeedbackItems}
             {!this.props.selectedElement ? 
               (<div className="card card-body bg-light feedback-container-alert">
