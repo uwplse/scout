@@ -106,7 +106,7 @@
 	padding: 0.5em;
 }
 
-.widget-container.primary-selection {
+.rc-tree span.rc-tree-node-selected .widget-container.primary-selection {
 	border: 1px #FF83A8 dotted;
 	background-color: pink;
     padding: 0.5em;

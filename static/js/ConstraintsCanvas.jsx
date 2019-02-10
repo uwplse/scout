@@ -858,6 +858,9 @@ export default class ConstraintsCanvas extends React.Component {
     this.setState(state => ({
       treeData: this.state.treeData,
     }), this.checkSolutionValidityAndUpdateCache); 
+
+    // Hide the FeedbackContainer in case the displayed widget was removed. 
+    this.props.hideWidgetFeedback();
   }
 
   closeTypingAlert = (groupID) => {

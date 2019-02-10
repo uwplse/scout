@@ -56,8 +56,14 @@
     transform: scale(1.5);
 }
 
+.rc-tree span.rc-tree-node-selected .widget-container {
+    border: 1px darkblue dotted;
+    background-color: lightblue;    
+    padding: 0.5em;
+}
+
 .rc-tree span.rc-tree-node-selected {
-    background-color: white;
+    background-color: white; 
     border: none;
 }
 

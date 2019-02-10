@@ -573,6 +573,10 @@ export default class PageContainer extends React.Component {
     this.setState({
       primarySelection: undefined
     });
+
+    if(this.constraintsCanvasRef) {
+      this.constraintsCanvasRef.current.closeRightClickMenu(); 
+    }
   }
 
   render () {
