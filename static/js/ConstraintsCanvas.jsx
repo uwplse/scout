@@ -266,6 +266,7 @@ export default class ConstraintsCanvas extends React.Component {
                 displayWidgetFeedback={this.displayWidgetFeedback}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
+                getCurrentParentNode={this.getCurrentParentNode}
                 activeDesignShape={activeDesignShape}
                 activeCanvasShape={activeCanvasShape}
                 removeWidgetNode={this.removeWidgetNode}
@@ -284,6 +285,7 @@ export default class ConstraintsCanvas extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedback}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
+              getCurrentParentNode={this.getCurrentParentNode}
               activeDesignShape={activeDesignShape}
               activeCanvasShape={activeCanvasShape}
               removeWidgetNode={this.removeWidgetNode} />);
@@ -505,6 +507,12 @@ export default class ConstraintsCanvas extends React.Component {
   getCurrentShapeIndex = (shapeId) => {
     let node = this.state.treeData; 
     return this.findShapeIndex(shapeId, node);
+  }
+
+  getCurrentParentNode = (shapeId) => {
+    let node = this.widgetTreeNodeMap[shapeId]; 
+    let parentNode = this.getParentNodeForKey(node.key, this.state.treeData[0]); 
+    return parentNode.shape; 
   }
  
   hideRightClickMenu = () => {

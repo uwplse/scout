@@ -8,6 +8,11 @@ class ConstraintActions {}
 // rather than string values, or real values (e.g., margins)
 ConstraintActions.index_domains = ["arrangement", "alignment"]
 
+ConstraintActions.canvas_width = 375; 
+ConstraintActions.canvas_height = 667; 
+
+ConstraintActions.grid_constant = 4; 
+
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
 ConstraintActions.horizontalArrangements = ["horizontal", "rows"];
@@ -18,11 +23,18 @@ ConstraintActions.horizontalAlignments = ["top", "center", "bottom"];
 ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40]; 
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
 
+// Canvas variable domains 
 ConstraintActions.margins = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]; 
-ConstraintActions.columns = [2,3,4,6,12]; 
+ConstraintActions.num_columns = [2,3,4,6,12]; 
 ConstraintActions.column_widths = [0]; // TODO
 ConstraintActions.gutter_widths = [10]
 ConstraintActions.baseline_grids = [4,8,16]
+
+// Element specific domains
+ConstraintActions.columns = [1,2,3,4,5,6,7,8,9,10,11,12]
+ConstraintActions.y_positions = [...Array(ConstraintActions.canvas_height).keys()].filter((value) => {
+	return ((value % 4) == 0); 
+})
 
 ConstraintActions.getAction = function getAction(actionType, shape) {
 	if(shape.type == "canvas") {
@@ -247,9 +259,13 @@ ConstraintActions.elementConstraints = {
 
 // These actions will only appear for direct children of the canvas container
 ConstraintActions.canvasChildConstraints = {
-	"values": ["column"],
+	"values": ["column", "y"],
 	"keep": ConstraintActions.defaultKeep, 
-	"prevent": ConstraintActions.defaultPrevent
+	"prevent": ConstraintActions.defaultPrevent, 
+	"domains": {
+		"column": ConstraintActions.columns, 
+		"y": ConstraintActions.y_positions
+	}
 }
 
 ConstraintActions.groupConstraints = {

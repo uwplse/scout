@@ -24,6 +24,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.hideRightClickMenu = props.hideRightClickMenu; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
+    this.getCurrentParentNode = props.getCurrentParentNode; 
     this.isContainer = props.isContainer; 
 
     // Timer for handling text change events
@@ -86,6 +87,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
       feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
       feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings; 
+      feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
     }
     else if(this.type == "canvas") {
       feedbackCallbacks.setContainerOrder = this.setContainerOrder
@@ -94,6 +96,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       feedbackCallbacks.setOrder = this.setOrder; 
       feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
       feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings;
+      feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
       feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
     }
 

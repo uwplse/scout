@@ -24,6 +24,7 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         displayWidgetFeedback={this.props.displayWidgetFeedback}
         getCurrentShapeSiblings={this.props.getCurrentShapeSiblings}
         getCurrentShapeIndex={this.props.getCurrentShapeIndex}
+        getCurrentParentNode={this.props.getCurrentParentNode}
         activeDesignShape={this.props.activeDesignShape}
         activeCanvasShape={this.props.activeCanvasShape}
         removeWidgetNode={this.props.removeWidgetNode} />); 

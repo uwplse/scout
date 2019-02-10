@@ -64,3 +64,9 @@ hr.feedback-container-separator {
 .feedback-container-locks span.enabled:hover {
 	color: black;
 }
+
+.feedback-container .dropdown-menu.scrollable-menu {
+	height: auto;
+	max-height: 400px;
+	overflow-x: hidden;
+}

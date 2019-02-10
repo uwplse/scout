@@ -187,7 +187,7 @@ class FeedbackItem extends React.Component {
                 <Dropdown.Toggle id="dropdown-basic">
                   {this.toUpperCase(selectedLabel)}
                 </Dropdown.Toggle>
-                <Dropdown.Menu> 
+                <Dropdown.Menu className="scrollable-menu"> 
                   {menuItems} 
                 </Dropdown.Menu>
               </Dropdown>
@@ -368,21 +368,39 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
+  getCanvasChildFeedbackItems = () => {
+    let shape = this.state.activeCanvasShape; 
+    let feedbackItems = []; 
+
+    if(this.state.feedbackCallbacks.getCurrentParentNode) {
+      let parentNode = this.state.feedbackCallbacks.getCurrentParentNode(shape.name); 
+      let isCanvasChild = parentNode.type == "canvas"; 
+      if(isCanvasChild){    // Dropdown for each 
+        let canvasChildSelectors = ConstraintActions.canvasChildConstraints.values.map((key) => {
+          let action = {}; 
+          action.keep = ConstraintActions.canvasChildConstraints['keep']; 
+          action.prevent = ConstraintActions.canvasChildConstraints['prevent'];
+          action.domain = ConstraintActions.canvasChildConstraints.domains[key];
+          return (<FeedbackItem onClick={this.props.onClick} 
+                    action={action}
+                    canvasShape={this.state.activeCanvasShape} 
+                    designShape={this.state.activeDesignShape}
+                    property={key}
+                    update={this.props.updateConstraintsCanvas}
+                    key={key} />);
+        }); 
+        
+        feedbackItems.push(canvasChildSelectors);
+      }
+    }
+
+    return feedbackItems; 
+  }
+
   getGroupFeedbackItems = () => {
     let shape = this.state.activeCanvasShape; 
+    let feedbackItems = []; 
 
-    let feedbackItems = [];
-
-    // Element --?
-    // X, Y, Width (?), Height (?)
-    // X, Y - > Vary (?)
-    // Width, Height -> Precompute the possible values.
-    // Columns -> Should prune the values (within reason?)
-
-    // Container 
-    // Arrangement - Values
-    // Alignemnt - values
-    // Padding - values
     if(shape.type == "group") {
       // Dropdown for each 
       let groupVariableSelectors = ConstraintActions.groupConstraints.values.map((key) => {
@@ -433,6 +451,7 @@ export default class FeedbackContainer extends React.Component {
 
   render () {
     let treeFeedbackItems = this.state.activeCanvasShape ? this.getTreeFeedbackItems() : undefined; 
+    let canvasChildItems = this.state.activeCanvasShape ? this.getCanvasChildFeedbackItems() : undefined; 
     let groupFeedbackItems = this.state.activeCanvasShape ? this.getGroupFeedbackItems() : undefined; 
     let canvasFeedbackItems = this.state.activeCanvasShape ? this.getCanvasFeedbackItems() : undefined; 
     return (
@@ -443,6 +462,8 @@ export default class FeedbackContainer extends React.Component {
           </div>
           <div tabIndex="1" className="panel-body"> 
             {treeFeedbackItems}
+            {canvasChildItems && canvasChildItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {canvasChildItems}  
             {groupFeedbackItems && groupFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {groupFeedbackItems}
             {canvasFeedbackItems && canvasFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
