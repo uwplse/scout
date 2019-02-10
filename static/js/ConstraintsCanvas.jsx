@@ -1268,7 +1268,7 @@ export default class ConstraintsCanvas extends React.Component {
       dragObj = item;
     });
 
-    if (droppedOnGroup) {
+    if (droppedOnGroup && !info.dropToGap) {
       // Drop on the content
       // Only allow the drop if the element dropped on is a gorup
       loop(data, dropKey, (item) => {
