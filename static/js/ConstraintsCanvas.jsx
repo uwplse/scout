@@ -271,7 +271,8 @@ export default class ConstraintsCanvas extends React.Component {
                 activeCanvasShape={activeCanvasShape}
                 removeWidgetNode={this.removeWidgetNode}
                 typed={typed}
-                item={item} />);
+                item={item}
+                update={this.renderTree} />);
     }
     return (<ConstraintsCanvasSVGWidget 
               key={shapeId} 
@@ -288,7 +289,8 @@ export default class ConstraintsCanvas extends React.Component {
               getCurrentParentNode={this.getCurrentParentNode}
               activeDesignShape={activeDesignShape}
               activeCanvasShape={activeCanvasShape}
-              removeWidgetNode={this.removeWidgetNode} />);
+              removeWidgetNode={this.removeWidgetNode} 
+              update={this.renderTree} />);
   }
 
   getWidgetFeedbacks = (shape) => {

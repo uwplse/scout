@@ -20,7 +20,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     // Callback to notify the parent container to re-check the solution validity
     this.displayRightClickMenu = props.displayRightClickMenu; 
     this.displayWidgetFeedback = props.displayWidgetFeedback; 
-    this.checkSolutionValidity = props.checkSolutionValidity; 
+    this.checkSolutionValidity = props.checkSolutionValidit; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
@@ -109,7 +109,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
 
     this.setState({
       importance: level
-    }, this.checkSolutionValidity);
+    }, this.props.update);
   }
 
   setOrder = (value) => {
@@ -117,7 +117,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
 
     this.setState({
       order: value
-    }, this.checkSolutionValidity); 
+    }, this.props.update); 
   }
 
   setContainerOrder = (orderValue) => {
@@ -125,7 +125,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
 
     this.setState({
       containerOrder: orderValue
-    }, this.checkSolutionValidity); 
+    }, this.props.update); 
   }
 
   showContextMenu = (evt) => {

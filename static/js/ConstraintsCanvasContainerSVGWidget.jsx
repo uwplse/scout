@@ -27,6 +27,7 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         getCurrentParentNode={this.props.getCurrentParentNode}
         activeDesignShape={this.props.activeDesignShape}
         activeCanvasShape={this.props.activeCanvasShape}
-        removeWidgetNode={this.props.removeWidgetNode} />); 
+        removeWidgetNode={this.props.removeWidgetNode}
+        update={this.props.update}  />); 
   }
 }

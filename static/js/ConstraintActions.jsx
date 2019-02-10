@@ -4,12 +4,31 @@
 // Global - Whitespace, Density 
 class ConstraintActions {}
 
+ConstraintActions.computeColumnWidths = function computeColumnWidths() {
+	let widths = [];
+	for(let i=0; i<ConstraintActions.margins.length; i++) {
+		for(let j=0; j<ConstraintActions.num_columns.length; j++) {
+			for(let k=0; k<ConstraintActions.gutter_widths.length; k++) {
+				let margin_value = ConstraintActions.margins[i]; 
+				let column_value = ConstraintActions.num_columns[j]; 
+				let gutter_width_value = ConstraintActions.gutter_widths[k]; 
+				let column_width = (ConstraintActions.canvas_width - (2*margin_value) - ((column_value-1)*gutter_width_value))/column_value; 
+				if(column_width - Math.round(column_width) == 0) {
+					widths.push(column_width); 
+				}
+			}
+		}
+	}
+
+	return _.uniq(widths).sort((a, b) => a - b); 
+}
+
 // Variables where the domains are encoded as integer values into the domain list
 // rather than string values, or real values (e.g., margins)
 ConstraintActions.index_domains = ["arrangement", "alignment"]
 
-ConstraintActions.canvas_width = 375; 
-ConstraintActions.canvas_height = 667; 
+ConstraintActions.canvas_width = 360; 
+ConstraintActions.canvas_height = 640; 
 
 ConstraintActions.grid_constant = 4; 
 
@@ -26,9 +45,9 @@ ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
 // Canvas variable domains 
 ConstraintActions.margins = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]; 
 ConstraintActions.num_columns = [2,3,4,6,12]; 
-ConstraintActions.column_widths = [0]; // TODO
-ConstraintActions.gutter_widths = [10]
+ConstraintActions.gutter_widths = [4,8,16]
 ConstraintActions.baseline_grids = [4,8,16]
+ConstraintActions.column_widths = ConstraintActions.computeColumnWidths(); 
 
 // Element specific domains
 ConstraintActions.columns = [1,2,3,4,5,6,7,8,9,10,11,12]

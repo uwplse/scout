@@ -15,7 +15,7 @@ GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 LAYOUT_COLUMNS = [2,3,4,6,12]
-GUTTERS = [10] # TODO can introduce a variable value for these at some point
+GUTTERS = [4,18,16] # TODO can introduce a variable value for these at some point
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
 MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
@@ -34,9 +34,10 @@ def compute_layout_grid_domains():
 	for margin_value in MARGINS: 
 		for column_value in COLUMNS: 
 			for gutter_value in GUTTERS: 
-				column_width = (CANVAS_WIDTH - (2*margin_value) - ((column_value-1)*gutter_value))/column_value
-				column_width = int(round(column_width,0))
-				domain.append([margin_value, column_value, gutter_value, column_width])
+				column_width = float((CANVAS_WIDTH - (2*margin_value) - ((column_value-1)*gutter_value)))/float(column_value)
+				int_column_width = int(round(column_width,0))
+				if column_width - int_column_width == 0: 
+					domain.append([margin_value, column_value, gutter_value, column_width])
 
 	return domain
 

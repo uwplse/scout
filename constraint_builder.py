@@ -4,8 +4,8 @@ import math
 import time
 import smtlib_builder as cb
 
-CANVAS_HEIGHT = 667
-CANVAS_WIDTH = 375
+CANVAS_HEIGHT = 640
+CANVAS_WIDTH = 360
 
 def abs(x):
 	return If(x>=0,x,-x)
