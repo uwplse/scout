@@ -106,6 +106,18 @@
 	padding: 0.5em;
 }
 
+.widget-container.primary-selection {
+	border: 1px #FF83A8 dotted;
+	background-color: pink;
+    padding: 0.5em;
+}
+
+.widget-container.secondary-selection {
+	border: 1px darkblue dotted;
+	background-color: lightblue;    
+	padding: 0.5em;
+}
+
 .widget-control-group .widget-control {
 	margin-right: 10px;
 }

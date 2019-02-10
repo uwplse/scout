@@ -72,5 +72,16 @@
 }
 
 .design-canvas-widget:hover {
-	outline: 1px dashed #000000;	
+	outline: 2px dashed #000000;	
+	cursor: pointer;
+}
+
+.design-canvas-widget.primary-selection {
+	border: 1px #FF83A8 dotted;
+	background-color: pink;
+}
+
+.design-canvas-widget.secondary-selection {
+	border: 1px darkblue dotted;
+	background-color: lightblue;
 }

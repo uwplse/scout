@@ -170,6 +170,9 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const importanceLabel = importance == "high" ? "Emphasized" : (importance == "low" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
+
+    const isPrimary = this.props.primarySelection && this.props.primarySelection == this.props.shape; 
+    const isSecondary = this.props.primarySelection && !isPrimary && this.props.primarySelection.name == this.props.shape.name; 
     return (
       <div  
         onContextMenu={this.showContextMenu} 
@@ -177,7 +180,10 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         onMouseOver={this.onMouseOver}
         onMouseOut={this.onMouseOut}
         id={this.elementId} 
-        className={"widget-container " + (highlighted ? "highlighted" : "")}>
+        className={"widget-container " 
+        + (highlighted ? "highlighted " : " ")
+        + (isPrimary ? "primary-selection " : " ")
+        + (isSecondary ? "secondary-selection" : "")}>
         <div className="widget-control-row"> 
            <div>
            {source ? (<SVGInline 

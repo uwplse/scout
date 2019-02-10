@@ -39,7 +39,8 @@ export default class PageContainer extends React.Component {
       activeCanvasShape: undefined, 
       activeDesignShape: undefined, 
       widgetsCollapsed: false, 
-      activeDesignShape: undefined
+      activeDesignShape: undefined, 
+      primarySelection: undefined
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -75,21 +76,6 @@ export default class PageContainer extends React.Component {
     localStorage.setItem('solutions', solutionsJSON);
   }
 
-  closeRightClickMenus = () => {
-    // Close all of the right click menus in response to a click on the PageContainer
-    if(this.constraintsCanvasRef) {
-      this.constraintsCanvasRef.current.closeRightClickMenu(); 
-    }
-
-    for(var i=0; i<this.state.solutions.length; i++) {
-      let canvasID = "design-canvas-" + this.state.solutions[i].id; 
-      let designCanvas = this.refs[canvasID]; 
-      if(designCanvas) {
-        designCanvas.hideMenu();
-      }
-    }
-  }
-
   // Update the addedShapes property on the constraints canvas to notify it to create new shapes
   // for a shape of this type
   addShapeToConstraintsCanvas = (id, src, type, width, height) => {
@@ -102,7 +88,7 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
   }
 
-  getDesignCanvas = (solution, id, zoomed=false, linkedSolutionId=undefined) => {
+  getDesignCanvas = (solution, id, zoomed=false, solutionID=undefined) => {
     return (<DesignCanvas 
               key={id} 
               id={id} 
@@ -115,7 +101,8 @@ export default class PageContainer extends React.Component {
               added={solution.added}
               removed={solution.removed}
               zoomed={zoomed}
-              linkedSolutionId={linkedSolutionId}
+              solutionID={solutionID}
+              primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
@@ -145,7 +132,6 @@ export default class PageContainer extends React.Component {
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
-              getRelativeDesigns={this.getRelativeDesigns}
               displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
 
@@ -544,10 +530,18 @@ export default class PageContainer extends React.Component {
 
     if(!constraintsCanvasShape) {
       canvasShape = shape; 
+
+      this.setState({
+        primarySelection: canvasShape
+      }); 
     }
     else {
       canvasShape = constraintsCanvasShape; 
       designShape = shape; 
+
+      this.setState({
+        primarySelection: designShape
+      }); 
     }
 
     this.setState({
@@ -561,7 +555,8 @@ export default class PageContainer extends React.Component {
     this.setState({
       activeDesignShape: undefined, 
       activeCanvasShape: undefined, 
-      feedbackCallbacks: undefined
+      feedbackCallbacks: undefined, 
+      primarySelection: undefined
     }); 
   }
 
@@ -569,7 +564,14 @@ export default class PageContainer extends React.Component {
     // Set this property to activate the corresponding element in the tree
     // And display feedback based on this instance of the element in the design canvas
     this.setState({
-      activeDesignShape: shape
+      activeDesignShape: shape, 
+      primarySelection: shape
+    });
+  }
+
+  unsetPrimarySelection = () => {
+    this.setState({
+      primarySelection: undefined
     });
   }
 
@@ -625,7 +627,8 @@ export default class PageContainer extends React.Component {
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
-        <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
+        <div className="page-container"
+          onClick={this.unsetPrimarySelection}>
           <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <div className="navbar-header">
               <SVGInline className="scout-logo" svg={pageLogo} />
@@ -648,6 +651,7 @@ export default class PageContainer extends React.Component {
               hideWidgetFeedback={this.hideWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
               activeDesignShape={this.state.activeDesignShape}
+              primarySelection={this.state.primarySelection}
               svgWidgets={this.state.svgWidgets} />
             <FeedbackContainer 
               activeCanvasShape={this.state.activeCanvasShape}

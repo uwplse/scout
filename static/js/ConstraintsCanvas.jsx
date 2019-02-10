@@ -90,14 +90,6 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  static getDerivedStateFromProps(nextProps, prevState) {
-    return {
-      left: nextProps.left, 
-      top: nextProps.top, 
-      menuTrigger: nextProps.menuTrigger
-    };     
-  }
-
   componentDidUpdate = (prevProps) => {
     if(prevProps.svgWidgets.length != this.props.svgWidgets.length) {
       // Update the tree nodes with the SVG source from the cache 
@@ -266,6 +258,7 @@ export default class ConstraintsCanvas extends React.Component {
                 getCurrentParentNode={this.getCurrentParentNode}
                 activeDesignShape={activeDesignShape}
                 activeCanvasShape={activeCanvasShape}
+                primarySelection={this.props.primarySelection}
                 removeWidgetNode={this.removeWidgetNode}
                 typed={typed}
                 item={item}
@@ -286,6 +279,7 @@ export default class ConstraintsCanvas extends React.Component {
               getCurrentParentNode={this.getCurrentParentNode}
               activeDesignShape={activeDesignShape}
               activeCanvasShape={activeCanvasShape}
+              primarySelection={this.props.primarySelection}
               removeWidgetNode={this.removeWidgetNode} 
               update={this.renderTree} />);
   }

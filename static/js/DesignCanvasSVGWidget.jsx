@@ -21,7 +21,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
       width: props.width, 
       left: props.left, 
       top: props.top, 
-      scaling: props.scaling
+      scaling: props.scaling, 
+      primarySelection: props.primarySelection
     }
   }
 
@@ -31,7 +32,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
       width: prevState.width, 
       left: prevState.left, 
       top: prevState.top, 
-      scaling: nextProps.scaling
+      scaling: nextProps.scaling, 
+      primarySelection: nextProps.primarySelection
     }
   }
 
@@ -49,14 +51,17 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const left = this.state.left; 
     const top = this.state.top;
     
-    // this.setTextLabel();
-    // this.rescaleTextLabel();
     let isContainer = (this.type == "group" || this.type == "labelGroup" || this.type == "canvas"); 
+    const isPrimary = this.state.primarySelection && this.state.primarySelection == this.props.shape; 
+    const isSecondary = this.state.primarySelection && !isPrimary && this.state.primarySelection.name == this.props.shape.name; 
+
     return (
       <div 
         id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} 
         onClick={this.onClick}
-        className="design-canvas-widget"
+        className={"design-canvas-widget " 
+          + (isPrimary ? "primary-selection" : " ")
+          + (isSecondary ? "secondary-selection" : "")}
         style={{position: "absolute", left: left + "px", top: top + "px"}}>
         <SVGInline 
           className={"widget-control-" + this.type} 
