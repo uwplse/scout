@@ -44,8 +44,8 @@ export default class DesignCanvas extends React.Component {
     this.highlightWidgetFeedback = props.highlightWidgetFeedback; 
     this.highlightAddedWidget = props.highlightAddedWidget; 
 
-    this.canvasWidth = 375; 
-    this.canvasHeight = 667; 
+    this.canvasWidth = 360; 
+    this.canvasHeight = 640; 
 
     // Original scaling factor
     this.scalingFactor = this.getScalingFactor();
@@ -316,23 +316,22 @@ export default class DesignCanvas extends React.Component {
     return  (      
       <div 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
-           id={"canvas-box-" + this.id} 
-           style={{
-            height: (this.canvasHeight * scalingFactor) + "px", 
-            width: (this.canvasWidth * scalingFactor) + "px"}}> 
+           id={"canvas-box-" + this.id}>
         <DesignMenu 
           showZoom={!this.props.zoomed}
           visible={menuVisible}
           hidden={saved || trashed || invalidated}
           menuAction={this.performDesignCanvasMenuAction}
           new={this.state.new} />
-        <div id={"design-canvas-" + this.id} 
+        <div id={"design-canvas-" + this.id}
+           style={{
+            height: (this.canvasHeight * scalingFactor) + "px", 
+            width: (this.canvasWidth * scalingFactor) + "px"}}
             className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered " : " ")}
             onClick={this.displayWidgetFeedback.bind(this, this.state.canvasShape)}
             onMouseEnter={this.showMenuAndHighlightConstraints} 
-            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints}
-            style={{height: "100%", width: "100%"}}>
+            onMouseLeave={this.closeMenuAndRemoveHighlightConstraints}>
           {childSVGs}
         </div>
 	    </div>); 

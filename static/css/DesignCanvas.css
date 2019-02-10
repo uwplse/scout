@@ -70,3 +70,7 @@
 .design-canvas-button {
 	margin-left: 10px;
 }
+
+.design-canvas-widget:hover {
+	outline: 1px dashed #000000;	
+}

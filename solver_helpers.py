@@ -7,8 +7,8 @@ import shapes as shape_objects
 from fractions import Fraction
 import time
 
-CANVAS_WIDTH = 375
-CANVAS_HEIGHT = 667
+CANVAS_WIDTH = 360
+CANVAS_HEIGHT = 640
 
 def get_row_column_values(num_siblings):
 	values = []

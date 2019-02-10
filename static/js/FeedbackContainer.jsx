@@ -23,7 +23,7 @@ class FeedbackItem extends React.Component {
   componentDidMount() {
     // intialize the selector state based on the locked prevented values 
     let selectedShape = this.state.designShape ? this.state.designShape : this.state.canvasShape; 
-    let selected = FeedbackItem.getInitialSelected(selectedShape, this.state.property, this.state.action.domain); 
+    let selected = FeedbackItem.getInitialSelected(selectedShape, this.state.property); 
     let locked = FeedbackItem.getInitialLocked(this.state.canvasShape, this.state.property); 
     let prevented = FeedbackItem.getInitialPrevented(this.state.canvasShape, this.state.property); 
     this.setState({
@@ -35,13 +35,15 @@ class FeedbackItem extends React.Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     let designShapeChanged = nextProps.designShape != prevState.designShape; 
+    let canvasShapeChanged = nextProps.canvasShape != prevState.canvasShape; 
+
     let selectedShape = nextProps.designShape ? nextProps.designShape : nextProps.canvasShape;  
     return {
       canvasShape: nextProps.canvasShape,
       designShape: nextProps.designShape,  
       action: nextProps.action, 
       property: nextProps.property, 
-      selected: (designShapeChanged ? FeedbackItem.getInitialSelected(selectedShape, nextProps.property, nextProps.action.domain) : prevState.selected),
+      selected: (designShapeChanged || canvasShapeChanged  ? FeedbackItem.getInitialSelected(selectedShape, nextProps.property) : prevState.selected),
       locked: FeedbackItem.getInitialLocked(nextProps.canvasShape, nextProps.property), 
       prevented: FeedbackItem.getInitialPrevented(nextProps.canvasShape, nextProps.property)
     };     
@@ -63,7 +65,7 @@ class FeedbackItem extends React.Component {
     return false;
   }
 
-  static getInitialSelected(shape, property, domain) {
+  static getInitialSelected(shape, property) {
     let value = shape[property]; 
     if(value != undefined) {
       return value; 
@@ -368,6 +370,53 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
+
+  getElementFeedbackItems = () => {
+    let shape = this.state.activeCanvasShape; 
+    let feedbackItems = []; 
+
+    if(this.state.feedbackCallbacks.getCurrentParentNode) {
+      let parentNode = this.state.feedbackCallbacks.getCurrentParentNode(shape.name); 
+      let isCanvasChild = parentNode.type == "canvas"; 
+
+      // Dropdown for each 
+      for(let i=0; i<ConstraintActions.elementConstraints.values.length; i++) {
+        let key = ConstraintActions.elementConstraints.values[i]; 
+        let action = {}; 
+        action.keep = ConstraintActions.elementConstraints['keep']; 
+        action.prevent = ConstraintActions.elementConstraints['prevent'];
+
+        if(key == "height" || key == "width") {
+          action.domain = ConstraintActions.elementConstraints.domains["size"](shape)[key]; 
+        }
+        else {
+          // For X, Y, if activated by a design shape, the computed value should be in the dropdown
+          // Otherwise, only show the "Vary" as it doesn't make sense to give htem 
+          // A selction for absolute x,y from the canvas node. 
+          if(this.state.activeDesignShape) {
+            action.domain = [this.state.activeDesignShape[key]]; 
+          }
+          else {
+            action.domain = []; 
+          }
+        }
+
+        let pushItem = (key == "x" || key == "y") && isCanvasChild ? false : true; 
+        if(pushItem) {
+          feedbackItems.push(<FeedbackItem onClick={this.props.onClick} 
+                    action={action}
+                    canvasShape={this.state.activeCanvasShape} 
+                    designShape={this.state.activeDesignShape}
+                    property={key}
+                    update={this.props.updateConstraintsCanvas}
+                    key={key} />);
+        }
+      } 
+    }
+
+    return feedbackItems;
+  }
+
   getCanvasChildFeedbackItems = () => {
     let shape = this.state.activeCanvasShape; 
     let feedbackItems = []; 
@@ -451,6 +500,7 @@ export default class FeedbackContainer extends React.Component {
 
   render () {
     let treeFeedbackItems = this.state.activeCanvasShape ? this.getTreeFeedbackItems() : undefined; 
+    let elementFeedbackItems = this.state.activeCanvasShape ? this.getElementFeedbackItems() : undefined; 
     let canvasChildItems = this.state.activeCanvasShape ? this.getCanvasChildFeedbackItems() : undefined; 
     let groupFeedbackItems = this.state.activeCanvasShape ? this.getGroupFeedbackItems() : undefined; 
     let canvasFeedbackItems = this.state.activeCanvasShape ? this.getCanvasFeedbackItems() : undefined; 
@@ -462,6 +512,8 @@ export default class FeedbackContainer extends React.Component {
           </div>
           <div tabIndex="1" className="panel-body"> 
             {treeFeedbackItems}
+            {elementFeedbackItems && elementFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {elementFeedbackItems}
             {canvasChildItems && canvasChildItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {canvasChildItems}  
             {groupFeedbackItems && groupFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}

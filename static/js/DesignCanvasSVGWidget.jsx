@@ -21,8 +21,6 @@ export default class DesignCanvasSVGWidget extends React.Component {
       width: props.width, 
       left: props.left, 
       top: props.top, 
-      hovered: false, 
-      fontSize: this.element.fontSize,
       scaling: props.scaling
     }
   }
@@ -33,26 +31,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
       width: prevState.width, 
       left: prevState.left, 
       top: prevState.top, 
-      hovered: prevState.hovered, 
-      fontSize: prevState.fontSize, 
       scaling: nextProps.scaling
     }
-  }
-
-  setHovered = (evt) => {
-    this.setState({
-      hovered: true
-    }); 
-  }
-
-  hideHovered = (evt) => {
-    let id = "design-canvas-widget-" + this.id + "-" + this.uniqueID; 
-    let element = document.getElementById(id); 
-    let elementBox = element.getBoundingClientRect();
-
-    this.setState({
-      hovered: false
-    }); 
   }
 
   onClick = (evt) => {
@@ -68,7 +48,6 @@ export default class DesignCanvasSVGWidget extends React.Component {
     const width = this.state.width; 
     const left = this.state.left; 
     const top = this.state.top;
-    const fontSize = (this.type == "label" ? { fontSize: this.state.fontSize } : {}); 
     
     // this.setTextLabel();
     // this.rescaleTextLabel();
@@ -77,12 +56,9 @@ export default class DesignCanvasSVGWidget extends React.Component {
       <div 
         id={"design-canvas-widget-" + this.id + "-" + this.uniqueID} 
         onClick={this.onClick}
-        className={"widget-control-"  + (isContainer ? "container" : "leaf")+ (this.state.hovered ? " design-canvas-hovered" : "")}
-        onMouseEnter={this.setHovered}
-        onMouseLeave={this.hideHovered}
+        className="design-canvas-widget"
         style={{position: "absolute", left: left + "px", top: top + "px"}}>
         <SVGInline 
-          style={fontSize} 
           className={"widget-control-" + this.type} 
           svg={source} 
           height={this.state.height + "px"} 

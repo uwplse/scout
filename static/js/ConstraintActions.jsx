@@ -31,7 +31,10 @@ ConstraintActions.canvas_width = 360;
 ConstraintActions.canvas_height = 640; 
 
 ConstraintActions.grid_constant = 4; 
-
+ConstraintActions.min_height = 48; 
+ConstraintActions.min_width = 48; 
+ConstraintActions.max_height = 636; 
+ConstraintActions.max_width = 356;
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
 ConstraintActions.horizontalArrangements = ["horizontal", "rows"];
@@ -54,6 +57,16 @@ ConstraintActions.columns = [1,2,3,4,5,6,7,8,9,10,11,12]
 ConstraintActions.y_positions = [...Array(ConstraintActions.canvas_height).keys()].filter((value) => {
 	return ((value % 4) == 0); 
 })
+
+
+
+
+
+
+
+
+
+
 
 ConstraintActions.getAction = function getAction(actionType, shape) {
 	if(shape.type == "canvas") {
@@ -273,7 +286,61 @@ ConstraintActions.elementConstraints = {
 				return "Don't prevent " + message; 
 			}
 		}
-	}	
+	}, 
+	"domains": {
+		"size": function(shape) {
+			let heights = [];
+			let widths = []; 
+
+			let orig_height = shape.orig_height; 
+			let orig_width = shape.orig_width; 
+			let aspect_ratio = orig_width/orig_height; 
+
+			let height_diff = orig_height % ConstraintActions.grid_constant; 
+			let height = orig_height - height_diff; 
+			let width = Math.round(height * aspect_ratio); 
+
+			heights.push(height);
+			widths.push(width); 
+
+			let minimum_element_height = ConstraintActions.min_height > (orig_height / 2) ? ConstraintActions.min_height : (orig_height / 2); 
+			let minimum_element_width = ConstraintActions.min_width > (orig_width / 2) ? ConstraintActions.min_width : (orig_width / 2); 
+			let computed_height = height;
+			let computed_width = width; 
+
+			if(shape.importance != "high") {
+				while (computed_height > minimum_element_height && computed_width > minimum_element_width) {
+					computed_height -= ConstraintActions.grid_constant; 
+					computed_width = Math.round(computed_height * aspect_ratio); 
+
+					if(computed_height > minimum_element_height && computed_width > minimum_element_width) {
+						heights.push(computed_height);
+						widths.push(computed_width); 
+					}
+				}
+			}
+
+			let maximum_element_height = ConstraintActions.max_height < (orig_height * 2) ? ConstraintActions.max_height : (orig_height * 2); 
+			let maximum_element_width = ConstraintActions.max_height < (orig_width * 2) ? ConstraintActions.max_height : (orig_width * 2); 
+			computed_height = height;
+			computed_width = width; 
+			if(shape.importance != "low") {
+				while (computed_height < maximum_element_height && computed_width < maximum_element_width) {
+					computed_height += ConstraintActions.grid_constant; 
+					computed_width = Math.round(computed_height * aspect_ratio); 
+
+					if(computed_height < maximum_element_height && computed_width < maximum_element_width) {
+						heights.push(computed_height);
+						widths.push(computed_width); 
+					}
+				}
+			}
+
+			return { "height" : heights, "width" : widths }
+		}, 
+		"x": [], 
+		"y": []
+	}
 }
 
 // These actions will only appear for direct children of the canvas container

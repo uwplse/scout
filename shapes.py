@@ -5,17 +5,17 @@ import smtlib_builder as smt
 
 label_types = ["text"]
 
-CANVAS_HEIGHT = 667
-CANVAS_WIDTH = 375
-MAX_WIDTH = 367 # Largest while subtracting the smallest amount of padding
-MAX_HEIGHT = 659 # Largest while subtracting the smallest amount of padding
+CANVAS_HEIGHT = 640
+CANVAS_WIDTH = 360
+MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
+MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
 MIN_HEIGHT = 48
 GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 LAYOUT_COLUMNS = [2,3,4,6,12]
-GUTTERS = [4,18,16] # TODO can introduce a variable value for these at some point
+GUTTERS = [4,8,16] # TODO can introduce a variable value for these at some point
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
 MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
@@ -32,12 +32,12 @@ def compute_layout_grid_domains():
 	# the performance generally tends to be slow for these operators
 	domain = []
 	for margin_value in MARGINS: 
-		for column_value in COLUMNS: 
+		for column_value in LAYOUT_COLUMNS:
 			for gutter_value in GUTTERS: 
 				column_width = float((CANVAS_WIDTH - (2*margin_value) - ((column_value-1)*gutter_value)))/float(column_value)
 				int_column_width = int(round(column_width,0))
 				if column_width - int_column_width == 0: 
-					domain.append([margin_value, column_value, gutter_value, column_width])
+					domain.append([margin_value, column_value, gutter_value, int_column_width])
 
 	return domain
 
@@ -46,46 +46,48 @@ def compute_size_domain(importance, width, height):
 	factor_id = 0
 	aspect_ratio = width/height
 
-	for i in range(0, len(MINIFICATION_VALUES)):
-		if importance != "high": 
-			min_value = MINIFICATION_VALUES[i] 
-			computed_height = int(round(height*min_value,0))
-
-			height_diff = computed_height % GRID_CONSTANT 
-			computed_height -= height_diff
-
-			# Compute width as a function of height
-			computed_width = computed_height * aspect_ratio
-			computed_width = int(round(computed_width,0))
-
-			if computed_height >= MIN_HEIGHT and computed_width >= MIN_WIDTH: 
-				domain.append([computed_width, computed_height, factor_id])
-
-		factor_id += 1
-
+	# First, round the values down to a mult of the grid constant
 	height_diff = height % GRID_CONSTANT
-	squared_height = height - height_diff 
-	squared_width = squared_height * aspect_ratio
-	squared_width = int(round(squared_width,0))
-	domain.append([squared_width, squared_height, factor_id])
+	orig_height = height -  height_diff
 
-	factor_id += 1
+	orig_width = orig_height * aspect_ratio
+	orig_width = int(round(orig_width, 0))
 
-	for i in range(0, len(MAGNIFICATION_VALUES)):
-		if importance != "low": 
-			max_value = MAGNIFICATION_VALUES[i] 
-			computed_height = int(round(height*max_value,0))
+	domain.append([orig_width, orig_height, factor_id])
 
-			height_diff = computed_height % GRID_CONSTANT 
-			computed_height -= height_diff
+	computed_height = orig_height
+	computed_width = orig_width
 
-			# Compute width as a function of height
+	# Don't reduce height greater than half from the original 
+	minimum_element_height = MIN_HEIGHT if MIN_HEIGHT > (orig_height/2) else (orig_height/2)
+	minimum_element_width = MIN_WIDTH if MIN_WIDTH > (orig_width/2)  else (orig_width/2)
+
+	while computed_height > minimum_element_height and computed_width > minimum_element_width: 
+		if importance != "high": 
+			factor_id += 1
+
+			computed_height -= GRID_CONSTANT
 			computed_width = computed_height * aspect_ratio
-			computed_width = int(round(computed_width,0))
+			computed_width = int(round(computed_width, 0))
 
-			if computed_width <= MAX_WIDTH and computed_height <= MAX_HEIGHT: 
+			if computed_height >= minimum_element_height and computed_width >= minimum_element_width: 
 				domain.append([computed_width, computed_height, factor_id])
-		factor_id += 1 
+
+	computed_width = orig_width
+	computed_height = orig_height
+
+	maximum_element_height = MAX_HEIGHT if MAX_HEIGHT < (orig_height * 2) else (orig_height * 2)
+	maximum_element_width = MAX_WIDTH if MAX_WIDTH < (orig_width * 2) else (orig_width * 2)
+	while computed_width < maximum_element_width and computed_height < maximum_element_height: 
+		if importance != "low": 
+			factor_id += 1
+
+			computed_height += GRID_CONSTANT
+			computed_width = computed_height * aspect_ratio
+			computed_width = int(round(computed_width, 0))
+
+			if computed_width <= maximum_element_width and computed_height <= maximum_element_height: 
+				domain.append([computed_width, computed_height, factor_id])
 
 	return domain
 

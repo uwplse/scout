@@ -40,8 +40,8 @@ export default class ConstraintsCanvas extends React.Component {
     this.widgetTreeNodeMap = {};
 
     // A bunch of constants
-    this.canvasWidth = 375; 
-    this.canvasHeight = 667; 
+    this.canvasWidth = 360; 
+    this.canvasHeight = 640; 
     this.defaultControlWidth = 120; 
     this.defaultControlHeight = 40; 
     this.defaultFeedbackHeight = 40; 
@@ -126,14 +126,15 @@ export default class ConstraintsCanvas extends React.Component {
     else {
       if(prevProps.activeDesignShape != undefined) {
         let widgetTreeNode = this.widgetTreeNodeMap[prevProps.activeDesignShape.name]; 
+        if(widgetTreeNode) {
+          // Unset the activeDesignShape property for this node so it goes back to its default state 
+          delete widgetTreeNode.activeDesignShape; 
+          delete widgetTreeNode.activeCanvasShape; 
 
-        // Unset the activeDesignShape property for this node so it goes back to its default state 
-        delete widgetTreeNode.activeDesignShape; 
-        delete widgetTreeNode.activeCanvasShape; 
-
-        this.setState({
-          treeData: this.state.treeData
-        }); 
+          this.setState({
+            treeData: this.state.treeData
+          });
+        } 
       }
     }
   }
@@ -210,10 +211,6 @@ export default class ConstraintsCanvas extends React.Component {
       "controlType": "canvas",
       "containerOrder": "important",
       "children": [],
-      "x": 0, 
-      "y": 0,
-      "width": this.defaultNodeWidth, 
-      "height": this.defaultNodeHeight, 
       "orig_width": this.defaultNodeWidth, 
       "orig_height": this.defaultNodeHeight
     }
@@ -655,12 +652,8 @@ export default class ConstraintsCanvas extends React.Component {
       "importance": importance, 
       "containerOrder": containerOrder, 
       "order": order, 
-      "width": width, 
-      "height": height,
       "orig_width": width, 
       "orig_height": height,
-      "x": 0, 
-      "y": 0,
       "item": item, 
       "typed": typed
     }
@@ -1048,6 +1041,8 @@ export default class ConstraintsCanvas extends React.Component {
     if(firstIndex != -1) {
       treeNode.children.splice(firstIndex, 0, group);
     }
+
+    return group; 
   }
 
   groupSelectedNodes = (options={}) => {
@@ -1056,18 +1051,16 @@ export default class ConstraintsCanvas extends React.Component {
     let firstKey = this.state.selectedTreeNodes[0];
     let parentNode = this.getParentNodeForKey(firstKey, this.state.treeData[0]);
     if(parentNode) {
-      this.groupTreeNodes(parentNode, this.state.selectedTreeNodes, alternate);
+      let newGroupNode = this.groupTreeNodes(parentNode, this.state.selectedTreeNodes, alternate);
+      newGroupNode.activeCanvasShape = newGroupNode.shape; 
+
+      // Remove the selected tree nodes after grouping
+      this.setState({
+        treeData: this.state.treeData, 
+        selectedTreeNodes: [newGroupNode.key], 
+        selectedElement: newGroupNode.key, 
+      }, this.checkSolutionValidityAndUpdateCache); 
     }
-
-    // Hide the widget feedback panel beacuse no nodes will be selected
-    this.props.hideWidgetFeedback();
-
-    // Remove the selected tree nodes after grouping
-    this.setState({
-      treeData: this.state.treeData, 
-      selectedTreeNodes: [], 
-      selectedElement: undefined
-    }, this.checkSolutionValidityAndUpdateCache); 
   }
 
   ungroupGroup = (nodeKey) => {
@@ -1135,12 +1128,7 @@ export default class ConstraintsCanvas extends React.Component {
     let selected = selectedKeys[selectedKeys.length-1];
     let selectedNodes = selectedKeys; 
     let selectedElement = selected; 
-    // if(selected == "canvas") {
-    //   // Ensure that the canvas cannot be selected
-    //   selectedKeys.splice(selectedKeys.length-1, 1); 
-    //   selectedNodes = selectedKeys; 
-    // }
-    // else 
+
     if (evt.nativeEvent && evt.nativeEvent.shiftKey) {
       // Get the last selected node and verify that it has the same parent node as the other 
       // selected nodes

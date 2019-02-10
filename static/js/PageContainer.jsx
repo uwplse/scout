@@ -230,13 +230,17 @@ export default class PageContainer extends React.Component {
     for(var i=0; i<solutions.length; i++) {
       let solution = solutions[i]; 
       let designSolution = this.solutionsMap[solution.id]; 
-      designSolution.valid = solution.valid; 
-      designSolution.added = solution.added; 
-      designSolution.removed = solution.removed;
-      designSolution.conflicts = solution.conflicts; 
 
-      if(designSolution.valid) {
-        designSolution.invalidated = false;
+      // In case the design was already removed while the request was processing. 
+      if(designSolution) {
+        designSolution.valid = solution.valid; 
+        designSolution.added = solution.added; 
+        designSolution.removed = solution.removed;
+        designSolution.conflicts = solution.conflicts; 
+
+        if(designSolution.valid) {
+          designSolution.invalidated = false;
+        }
       }
     }
 
