@@ -186,7 +186,7 @@ class FeedbackItem extends React.Component {
     return (<div className="feedback-container-toggle">
               <label className="feedback-container-label">{propertyLabel}</label>
               <Dropdown>
-                <Dropdown.Toggle id="dropdown-basic">
+                <Dropdown.Toggle disabled={(locked || prevented)} id="dropdown-basic">
                   {this.toUpperCase(selectedLabel)}
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="scrollable-menu"> 

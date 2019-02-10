@@ -526,39 +526,39 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  // highlightWidgetFeedback = (shapeId, lock, highlighted) => {
-  //   // Find the widget with this shape ID in the constraints tree
-  //   let treeNode = this.widgetTreeNodeMap[shapeId]; 
-  //   let feedbackItems = undefined; 
-  //   if(treeNode != undefined) {
-  //     feedbackItems = treeNode.subtitle; 
-  //   }else {
-  //     feedbackItems = this.state.pageFeedbackWidgets; 
-  //   }
+  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
+    // Find the widget with this shape ID in the constraints tree
+    let treeNode = this.widgetTreeNodeMap[shapeId]; 
+    let feedbackItems = undefined; 
+    if(treeNode != undefined) {
+      feedbackItems = treeNode.subtitle; 
+    }else {
+      feedbackItems = this.state.pageFeedbackWidgets; 
+    }
 
-  //   // Find the corresponding feedback item
-  //   let feedbackIndex = -1; 
-  //   for(let i=0; i<feedbackItems.length; i++) {
-  //     if(feedbackItems[i].props.action["do"].key == lock) {
-  //       feedbackIndex = i; 
-  //     }
-  //   }
+    // Find the corresponding feedback item
+    let feedbackIndex = -1; 
+    for(let i=0; i<feedbackItems.length; i++) {
+      if(feedbackItems[i].props.action["do"].key == lock) {
+        feedbackIndex = i; 
+      }
+    }
 
-  //   if(feedbackIndex > -1) {
-  //     let feedbackItem = feedbackItems[feedbackIndex]; 
+    if(feedbackIndex > -1) {
+      let feedbackItem = feedbackItems[feedbackIndex]; 
 
-  //     // Highlight parameter can be true or false which determines whether the new feedback item is highlighted or unhighlighted
-  //     let newFeedbackItem = this.getWidgetFeedback(shapeId, feedbackItem.props.parentShape, feedbackItem.props.action, feedbackItem.props.message, highlighted); 
+      // Highlight parameter can be true or false which determines whether the new feedback item is highlighted or unhighlighted
+      let newFeedbackItem = this.getWidgetFeedback(shapeId, feedbackItem.props.parentShape, feedbackItem.props.action, feedbackItem.props.message, highlighted); 
       
-  //     // Splice out the old item 
-  //     feedbackItems.splice(feedbackIndex, 1); 
-  //     feedbackItems.splice(feedbackIndex, 0, newFeedbackItem); 
-  //   }
+      // Splice out the old item 
+      feedbackItems.splice(feedbackIndex, 1); 
+      feedbackItems.splice(feedbackIndex, 0, newFeedbackItem); 
+    }
 
-  //   this.setState(state => ({
-  //     treeData: this.state.treeData
-  //   }));      
-  // }
+    this.setState(state => ({
+      treeData: this.state.treeData
+    }));      
+  }
 
   getShapeHierarchy = () => {
     let treeNodes = this.state.treeData; 
