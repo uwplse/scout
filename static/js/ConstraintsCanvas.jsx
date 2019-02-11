@@ -97,6 +97,13 @@ export default class ConstraintsCanvas extends React.Component {
       this.updateSVGSourceMap(); 
     }
 
+    if(!this.props.primarySelection && prevProps.primarySelection) {
+      this.setState({
+        selectedElement: undefined, 
+        selectedTreeNodes: []
+      })
+    }
+
     if(this.props.activeDesignShape != undefined){
       if(prevProps.activeDesignShape != this.props.activeDesignShape) {
         let widgetTreeNode = this.widgetTreeNodeMap[this.props.activeDesignShape.name]; 
@@ -292,7 +299,7 @@ export default class ConstraintsCanvas extends React.Component {
               update={this.renderTreeAndCheckValidity} />);
   }
 
-  getWidgetFeedbacks = (shape) => {
+  getWidgetFeedbacks = (shape, highlightedFeedback=[]) => {
     // Restore feedback items for locks 
     let feedbackItems = []; 
     if(shape.locks && shape.locks.length) {
@@ -300,10 +307,11 @@ export default class ConstraintsCanvas extends React.Component {
         let lock = shape.locks[i];
         let action = ConstraintActions.getAction("keep", shape);
         if(action){
+          let highlighted = highlightedFeedback.indexOf(lock) > -1; 
           let uniqueId = getUniqueID();
           let message = action["do"].getFeedbackMessage(lock, shape);
           let id = shape.name + "_" + uniqueId; 
-          let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, message);
+          let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, message, highlighted);
           feedbackItems.push(widgetFeedback); 
         } 
       }     
@@ -314,10 +322,11 @@ export default class ConstraintsCanvas extends React.Component {
         let prevent = shape.prevents[i];
         let action = ConstraintActions.getAction("prevent", shape);
         if(action){
+          let highlighted = highlightedFeedback.indexOf(prevent) > -1; 
           let uniqueId = getUniqueID();
           let message = action["do"].getFeedbackMessage(prevent, shape);
           let id = shape.name + "_" + uniqueId; 
-          let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, message);
+          let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, message, highlighted);
           feedbackItems.push(widgetFeedback); 
         } 
       }     
@@ -534,38 +543,26 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  ugetFeedback = (shapeId, lock, highlighted) => {
-    // Find the widget with this shape ID in the constraints tree
+  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
     let treeNode = this.widgetTreeNodeMap[shapeId]; 
-    let feedbackItems = undefined; 
-    if(treeNode != undefined) {
-      feedbackItems = treeNode.subtitle; 
-    }else {
-      feedbackItems = this.state.pageFeedbackWidgets; 
-    }
+    if(treeNode) {
+      if(!treeNode.highlightedFeedback) {
+        treeNode.highlightedFeedback = []; 
+      }
 
-    // Find the corresponding feedback item
-    let feedbackIndex = -1; 
-    for(let i=0; i<feedbackItems.length; i++) {
-      if(feedbackItems[i].props.action["do"].key == lock) {
-        feedbackIndex = i; 
+      if(highlighted) {
+        treeNode.highlightedFeedback.push(lock); 
+      } else {
+        let index = treeNode.highlightedFeedback.indexOf(lock); 
+        if(index > -1) {
+          treeNode.highlightedFeedback.splice(index, 1); 
+        }
       }
     }
 
-    if(feedbackIndex > -1) {
-      let feedbackItem = feedbackItems[feedbackIndex]; 
-
-      // Highlight parameter can be true or false which determines whether the new feedback item is highlighted or unhighlighted
-      let newFeedbackItem = this.getWidgetFeedback(shapeId, feedbackItem.props.parentShape, feedbackItem.props.action, feedbackItem.props.message, highlighted); 
-      
-      // Splice out the old item 
-      feedbackItems.splice(feedbackIndex, 1); 
-      feedbackItems.splice(feedbackIndex, 0, newFeedbackItem); 
-    }
-
-    this.setState(state => ({
+    this.setState({
       treeData: this.state.treeData
-    }));      
+    });
   }
 
   getShapeHierarchy = () => {
@@ -1358,7 +1355,8 @@ export default class ConstraintsCanvas extends React.Component {
           }
         }
 
-        let widgetFeedbacks = this.getWidgetFeedbacks(item.shape); 
+        let highlighedFeedbackItems = item.highlightedFeedback ? item.highlightedFeedback : []; 
+        let widgetFeedbacks = this.getWidgetFeedbacks(item.shape, highlighedFeedbackItems); 
         widgetOptions.feedback = widgetFeedbacks; 
         let widget = this.getWidget(item.shape, widgetSource, widgetOptions); 
         if (item.children && item.children.length) {

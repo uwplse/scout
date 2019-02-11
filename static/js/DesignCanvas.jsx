@@ -79,37 +79,19 @@ export default class DesignCanvas extends React.Component {
   updateValidity =() => {
     let conflicts = []; 
     let valid = true;
+
+    let canvasConflicts = this.getElementConflicts(this.state.canvasShape); 
+    if(canvasConflicts.length) {
+      valid = false; 
+      conflicts.push(...canvasConflicts);
+    }
+
     for(let i=0; i<this.state.elements.length; i++) {
       let element = this.state.elements[i]; 
-      let constraintsShape = this.getConstraintsCanvasShape(element.name); 
-      if(constraintsShape.locks && constraintsShape.locks.length) {
-        for(let j=0; j<constraintsShape.locks.length; j++) {
-          let lock = constraintsShape.locks[j]; 
-          let value = constraintsShape[lock]; 
-          if(element[lock] != value) {
-            conflicts.push({
-              shape_id: constraintsShape.name, 
-              variable: lock
-            }); 
-
-            valid = false;
-          }
-        }
-      }
-
-      if(constraintsShape.prevents && constraintsShape.prevents.length) {
-        for(let j=0; j<constraintsShape.prevents.length; j++) {
-          let prevent = constraintsShape.prevents[j]; 
-          let value = constraintsShape[prevent]; 
-          if(element[prevent] == value) {
-            conflicts.push({
-              shape_id: constraintsShape.name, 
-              variable: prevent
-            }); 
-
-            valid = false;
-          }
-        }
+      let eltConflicts = this.getElementConflicts(element);
+      if(eltConflicts.length) {
+        conflicts.push(...eltConflicts);
+        valid = false;
       }
     }
 
@@ -117,6 +99,38 @@ export default class DesignCanvas extends React.Component {
       valid: valid, 
       conflicts: conflicts
     }); 
+  }
+
+  getElementConflicts(element) {
+    let conflicts = [];
+    let constraintsShape = this.getConstraintsCanvasShape(element.name); 
+    if(constraintsShape.locks && constraintsShape.locks.length) {
+      for(let j=0; j<constraintsShape.locks.length; j++) {
+        let lock = constraintsShape.locks[j]; 
+        let value = constraintsShape[lock]; 
+        if(element[lock] != value) {
+          conflicts.push({
+            shape_id: constraintsShape.name, 
+            variable: lock
+          }); 
+        }
+      }
+    }
+
+    if(constraintsShape.prevents && constraintsShape.prevents.length) {
+      for(let j=0; j<constraintsShape.prevents.length; j++) {
+        let prevent = constraintsShape.prevents[j]; 
+        let value = constraintsShape[prevent]; 
+        if(element[prevent] == value) {
+          conflicts.push({
+            shape_id: constraintsShape.name, 
+            variable: prevent
+          }); 
+        }
+      }
+    }
+
+    return conflicts;
   }
  
   getScalingFactor = () => {
