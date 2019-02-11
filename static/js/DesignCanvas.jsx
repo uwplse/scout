@@ -33,7 +33,7 @@ export default class DesignCanvas extends React.Component {
       canvasShape: undefined, // The root level shape of the DesignCanvas
       hovered: false, 
       primarySelection: props.primarySelection,
-      elements: []
+      elements: [], 
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -54,21 +54,69 @@ export default class DesignCanvas extends React.Component {
 
   static getDerivedStateFromProps(nextProps, prevState) {
     return {
-      constraintsMenuShape: prevState.constraintsMenuShape,
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState,
-      valid: nextProps.valid, 
+      valid: nextProps.valid && prevState.valid, 
       new: nextProps.new, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
       removed: nextProps.removed, 
-      conflicts: nextProps.conflicts,
-      primarySelection: nextProps.primarySelection
+      conflicts: prevState.conflicts,
+      primarySelection: nextProps.primarySelection, 
     }    
   }
 
   componentDidMount() {
     this.initElements();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(this.props.updateValidity != prevProps.updateValidity) {
+      this.updateValidity(); 
+    }
+  }
+
+  updateValidity =() => {
+    let conflicts = []; 
+    let valid = true;
+    for(let i=0; i<this.state.elements.length; i++) {
+      let element = this.state.elements[i]; 
+      let constraintsShape = this.getConstraintsCanvasShape(element.name); 
+      if(constraintsShape.locks && constraintsShape.locks.length) {
+        for(let j=0; j<constraintsShape.locks.length; j++) {
+          let lock = constraintsShape.locks[j]; 
+          let value = constraintsShape[lock]; 
+          if(element[lock] != value) {
+            conflicts.push({
+              shape_id: constraintsShape.name, 
+              variable: lock
+            }); 
+
+            valid = false;
+          }
+        }
+      }
+
+      if(constraintsShape.prevents && constraintsShape.prevents.length) {
+        for(let j=0; j<constraintsShape.prevents.length; j++) {
+          let prevent = constraintsShape.prevents[j]; 
+          let value = constraintsShape[prevent]; 
+          if(element[prevent] == value) {
+            conflicts.push({
+              shape_id: constraintsShape.name, 
+              variable: prevent
+            }); 
+
+            valid = false;
+          }
+        }
+      }
+    }
+
+    this.setState({
+      valid: valid, 
+      conflicts: conflicts
+    }); 
   }
  
   getScalingFactor = () => {
@@ -296,6 +344,10 @@ export default class DesignCanvas extends React.Component {
         return this.createSVGElement(element);
     });
 
+
+    const canvasIsPrimary = this.props.primarySelection && this.props.primarySelection == this.state.canvasShape; 
+    const canvasIsSecondary = this.props.primarySelection && !canvasIsPrimary && this.props.primarySelection.name == this.state.canvasShape.name; 
+
     return  (      
       <div 
            className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
@@ -311,7 +363,9 @@ export default class DesignCanvas extends React.Component {
             height: (this.canvasHeight * scalingFactor) + "px", 
             width: (this.canvasWidth * scalingFactor) + "px"}}
             className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
-            + (this.state.hovered ? "hovered " : " ")}
+            + (this.state.hovered ? "hovered " : " ")
+            + (canvasIsPrimary ? "primary-selection " : " ")
+            + (canvasIsSecondary ? "secondary-selection " : " ")}
             onClick={this.displayWidgetFeedback.bind(this, this.state.canvasShape)}
             onMouseEnter={this.highlightConflicts} 
             onMouseLeave={this.unhighlightConflicts}>

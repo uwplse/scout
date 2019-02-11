@@ -76,12 +76,12 @@
 	cursor: pointer;
 }
 
+.design-canvas.primary-selection,
 .design-canvas-widget.primary-selection {
-	border: 1px #FF83A8 dotted;
-	background-color: pink;
+	border: 4px #FF83A8 dotted;
 }
 
+.design-canvas.secondary-selection,
 .design-canvas-widget.secondary-selection {
-	border: 1px darkblue dotted;
-	background-color: lightblue;
+	border: 4px lightblue dotted;
 }

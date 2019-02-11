@@ -79,6 +79,7 @@ export default class ConstraintsCanvas extends React.Component {
     let cachedShapesJSON = localStorage.getItem('shapeHierarchy'); 
     if(!cachedShapesJSON) {
       let rootNode = this.initRootNode();
+
       this.state.treeData = this.state.treeData.concat(rootNode); 
 
       this.setState(state => ({
@@ -189,10 +190,16 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  renderTree = () => {
+  renderTreeAndCheckValidity = () => {
     this.setState({
       treeData: this.state.treeData
     }, this.checkSolutionValidityAndUpdateCache); 
+  }
+
+  renderTreeCacheUpdate = () => {
+    this.setState({
+      treeData: this.state.treeData
+    }, this.updateShapeCache); 
   }
 
   initRootNode = () => {
@@ -215,6 +222,7 @@ export default class ConstraintsCanvas extends React.Component {
         children: []
     }; 
 
+    this.widgetTreeNodeMap[canvas.name] = rootTreeNode; 
     return rootTreeNode; 
   }
 
@@ -262,7 +270,7 @@ export default class ConstraintsCanvas extends React.Component {
                 removeWidgetNode={this.removeWidgetNode}
                 typed={typed}
                 item={item}
-                update={this.renderTree} />);
+                update={this.renderTreeAndCheckValidity} />);
     }
     return (<ConstraintsCanvasSVGWidget 
               key={shapeId} 
@@ -281,7 +289,7 @@ export default class ConstraintsCanvas extends React.Component {
               activeCanvasShape={activeCanvasShape}
               primarySelection={this.props.primarySelection}
               removeWidgetNode={this.removeWidgetNode} 
-              update={this.renderTree} />);
+              update={this.renderTreeAndCheckValidity} />);
   }
 
   getWidgetFeedbacks = (shape) => {
@@ -526,7 +534,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
+  ugetFeedback = (shapeId, lock, highlighted) => {
     // Find the widget with this shape ID in the constraints tree
     let treeNode = this.widgetTreeNodeMap[shapeId]; 
     let feedbackItems = undefined; 

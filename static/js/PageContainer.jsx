@@ -40,7 +40,8 @@ export default class PageContainer extends React.Component {
       activeDesignShape: undefined, 
       widgetsCollapsed: false, 
       activeDesignShape: undefined, 
-      primarySelection: undefined
+      primarySelection: undefined, 
+      updateSolutionValidity: false
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -76,8 +77,7 @@ export default class PageContainer extends React.Component {
     localStorage.setItem('solutions', solutionsJSON);
   }
 
-  // Update the addedShapes property on the constraints canvas to notify it to create new shapes
-  // for a shape of this type
+
   addShapeToConstraintsCanvas = (id, src, type, width, height) => {
     return () => {
       this.constraintsCanvasRef.current.addShapeToCanvas(id, src, type, width, height);
@@ -86,6 +86,23 @@ export default class PageContainer extends React.Component {
 
   clearShapesFromConstraintsCanvas = () => {
     this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
+  }
+
+  showWidgetFeedback = (shapeId, evt) => {
+    evt.stopPropagation();
+    this.constraintsCanvasRef.current.showWidgetFeedback(shapeId); 
+  }
+
+  getConstraintsCanvasShape = (shapeId) => {
+    return this.constraintsCanvasRef.current.getConstraintsCanvasShape(shapeId); 
+  }
+
+  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
+    this.constraintsCanvasRef.current.highlightWidgetFeedback(shapeId, lock, highlighted);
+  }
+
+  highlightAddedWidget = (shapeId, highlighted) => {
+    this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
   getDesignCanvas = (solution, id, zoomed=false, solutionID=undefined) => {
@@ -104,13 +121,14 @@ export default class PageContainer extends React.Component {
               solutionID={solutionID}
               primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
+              updateValidity={this.state.updateSolutionValidity}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
-              getRelativeDesigns={this.getRelativeDesigns}
+              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
 
@@ -126,13 +144,29 @@ export default class PageContainer extends React.Component {
               removed={solution.removed}
               zoomed={zoomed}
               invalidated={solution.invalidated}
+              updateValidity={this.state.updateSolutionValidity}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightWidgetFeedback={this.highlightWidgetFeedback}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
+              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
+  }
+
+
+  getMoreDesigns = () => {
+    // get more designs
+    // without changing any new constraints
+    let jsonShapes = this.getShapesJSON(); 
+
+    // Get JSON for already retrieved designs/saved/trashed
+    let prevSolutions = JSON.stringify(this.state.solutions);
+   
+   // Send an ajax request to the server 
+   // Solve for the new designs
+    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
   }
 
   checkSolutionValidity = (options={}) => {
@@ -156,7 +190,7 @@ export default class PageContainer extends React.Component {
 
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
-          this.updateSolutionValidity(requestParsed.solutions);
+          this.updateSolutionValidityFromRequest(requestParsed.solutions);
         });         
       }
     }
@@ -166,52 +200,7 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  getMoreDesigns = () => {
-    // get more designs
-    // without changing any new constraints
-    let jsonShapes = this.getShapesJSON(); 
-
-    // Get JSON for already retrieved designs/saved/trashed
-    let prevSolutions = JSON.stringify(this.state.solutions);
-   
-   // Send an ajax request to the server 
-   // Solve for the new designs
-    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
-  }
-
-  showWidgetFeedback = (shapeId, evt) => {
-    evt.stopPropagation();
-    this.constraintsCanvasRef.current.showWidgetFeedback(shapeId); 
-  }
-
-  getConstraintsCanvasShape = (shapeId) => {
-    return this.constraintsCanvasRef.current.getConstraintsCanvasShape(shapeId); 
-  }
-
-  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
-    this.constraintsCanvasRef.current.highlightWidgetFeedback(shapeId, lock, highlighted);
-  }
-
-  highlightAddedWidget = (shapeId, highlighted) => {
-    this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
-  }
-
-  updateConstraintsCanvas = () => {
-    // Notify the tree to re-render in response to the update
-    // from the FeedbackContainer    
-    this.constraintsCanvasRef.current.renderTree();
-
-    // Also update the activeCanvasShape to trigger the FeedbackContainer to re-render
-    // To update the state of the unlocked properties
-    this.setState({
-      activeCanvasShape: this.state.activeCanvasShape
-    }); 
-
-    // re-verify the constraints after feedback is applied
-    this.checkSolutionValidity();
-  }
-
-  updateSolutionValidity = (solutions) => {
+  updateSolutionValidityFromRequest = (solutions) => {
     // Update the state of each solution to display the updated valid/invalid state
     for(var i=0; i<solutions.length; i++) {
       let solution = solutions[i]; 
@@ -233,6 +222,29 @@ export default class PageContainer extends React.Component {
     // Update the state
     this.setState({
       solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  updateConstraintsCanvas = () => {
+    // Notify the tree to re-render in response to the update
+    // from the FeedbackContainer    
+    this.constraintsCanvasRef.current.renderTreeCacheUpdate();
+
+    // Also update the activeCanvasShape to trigger the FeedbackContainer to re-render
+    // To update the state of the unlocked properties
+    this.setState({
+      activeCanvasShape: this.state.activeCanvasShape
+    }); 
+
+    // Only check the validity of the lock and prevent values on the solutions
+    // This means that we do not need to make a request to the solver to check them 
+    this.checkSolutionValidityClient();
+  }
+
+  checkSolutionValidityClient = () => {
+    // Update the state
+    this.setState({
+      updateSolutionValidity: !this.state.updateSolutionValidity
     }, this.updateSolutionsCache); 
   }
 
@@ -394,24 +406,24 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  getRelativeDesigns = (elements, action) => {
-    // get more designs relative to a specific design
-    let jsonShapes = this.getShapesJSON(); 
+  // getRelativeDesigns = (elements, action) => {
+  //   // get more designs relative to a specific design
+  //   let jsonShapes = this.getShapesJSON(); 
 
-    // Get JSON for already retrieved designs/saved/trashed
-    let prevSolutions = JSON.stringify(this.state.solutions);
+  //   // Get JSON for already retrieved designs/saved/trashed
+  //   let prevSolutions = JSON.stringify(this.state.solutions);
    
-   // Send an ajax request to the server 
-   // Solve for the new designs
-    $.post("/solve", {
-      "elements": jsonShapes, 
-      "solutions": prevSolutions, 
-      "relative_designs": {
-        "relative_design": elements, 
-        "relative_action": action
-      }
-    }, this.parseSolutions, 'text');
-  }
+  //  // Send an ajax request to the server 
+  //  // Solve for the new designs
+  //   $.post("/solve", {
+  //     "elements": jsonShapes, 
+  //     "solutions": prevSolutions, 
+  //     "relative_designs": {
+  //       "relative_design": elements, 
+  //       "relative_action": action
+  //     }
+  //   }, this.parseSolutions, 'text');
+  // }
 
   readSVGsFromLocalStorage = () => {
     let svgWidgets = localStorage.getItem('svgWidgets'); 

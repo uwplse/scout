@@ -107,14 +107,12 @@
 }
 
 .rc-tree span.rc-tree-node-selected .widget-container.primary-selection {
-	border: 1px #FF83A8 dotted;
-	background-color: pink;
+	border: 4px #FF83A8 dotted;
     padding: 0.5em;
 }
 
 .widget-container.secondary-selection {
-	border: 1px darkblue dotted;
-	background-color: lightblue;    
+	border: 4px lightblue dotted;
 	padding: 0.5em;
 }
 
