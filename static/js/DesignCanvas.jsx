@@ -338,6 +338,13 @@ export default class DesignCanvas extends React.Component {
     });
   }
 
+  onCanvasClick = (evt) => {
+    // When the canvas node is clicked, display the widget feedback
+    evt.stopPropagation();
+
+    this.displayWidgetFeedback(this.state.canvasShape);
+  }
+
   render () {
     // The current design menu object for saving and trashing the designs 
     let saved = this.state.savedState == 1; 
@@ -380,7 +387,7 @@ export default class DesignCanvas extends React.Component {
             + (this.state.hovered ? "hovered " : " ")
             + (canvasIsPrimary ? "primary-selection " : " ")
             + (canvasIsSecondary ? "secondary-selection " : " ")}
-            onClick={this.displayWidgetFeedback.bind(this, this.state.canvasShape)}
+            onClick={this.onCanvasClick}
             onMouseEnter={this.highlightConflicts} 
             onMouseLeave={this.unhighlightConflicts}>
           {svgElements}
