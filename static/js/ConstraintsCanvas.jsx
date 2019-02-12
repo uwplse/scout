@@ -309,9 +309,9 @@ export default class ConstraintsCanvas extends React.Component {
       for(let i=0; i<shape.locks.length; i++) {
         let lock = shape.locks[i];
 
-        if(shape[lock] && shape[lock].length) {
-          for(let j=0; j<shape[lock].length; j++) {
-            let value = shape[lock][j]; 
+        if(shape["locked_values"][lock] && shape["locked_values"][lock].length) {
+          for(let j=0; j<shape["locked_values"][lock].length; j++) {
+            let value = shape["locked_values"][lock][j]; 
             let action = ConstraintActions.getAction("keep", shape);
             if(action){
               let highlighted = keepConflicts.filter(conflict => conflict.variable == lock).length > 0; 
@@ -330,9 +330,9 @@ export default class ConstraintsCanvas extends React.Component {
       for(let i=0; i<shape.prevents.length; i++) {
         let prevent = shape.prevents[i];
 
-        if(shape[prevent] && shape[prevent].length) {
-          for(let j=0; j<shape[prevent].length; j++) {
-            let value = shape[prevent][j];
+        if(shape["prevented_values"][prevent] && shape["prevented_values"][prevent].length) {
+          for(let j=0; j<shape["prevented_values"][prevent].length; j++) {
+            let value = shape["prevented_values"][prevent][j];
             let action = ConstraintActions.getAction("prevent", shape);
             if(action){
               let highlighted = preventConflicts.filter(conflict => conflict.variable == prevent).length > 0; 

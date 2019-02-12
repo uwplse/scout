@@ -112,7 +112,7 @@ export default class DesignCanvas extends React.Component {
       for(let j=0; j<constraintsShape.locks.length; j++) {
         let lock = constraintsShape.locks[j];
         let elementValue = element[lock];
-        let lockedValues = constraintsShape[lock]; 
+        let lockedValues = constraintsShape["locked_values"][lock]; 
         if(lockedValues && lockedValues.length) {
           let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
           if(!elementValueKept) {
@@ -131,7 +131,7 @@ export default class DesignCanvas extends React.Component {
       for(let j=0; j<constraintsShape.prevents.length; j++) {
         let prevent = constraintsShape.prevents[j];
         let elementValue = element[prevent];
-        let preventedValues = constraintsShape[prevent]; 
+        let preventedValues = constraintsShape["prevented_values"][prevent]; 
         if(preventedValues && preventedValues.length) {
           let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
           if(elementValuePrevented) {

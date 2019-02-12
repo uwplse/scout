@@ -83,31 +83,44 @@ ConstraintActions.defaultKeepConstraint = function keepConstraint(property, shap
 		shape["locks"] = []; 
 	} 
 
+	if(shape["locked_values"] == undefined) {
+		shape["locked_values"] = {}; 
+	}
+
 	if(shape["locks"].indexOf(property) == -1) {
 		shape["locks"].push(property); 
 	}
 
-	if(!shape[property]) {
-		shape[property] = []; 
+	if(!shape["locked_values"][property]) {
+		shape["locked_values"][property] = []; 
 	}
 
-	shape[property].push(value); 	
+	shape["locked_values"][property].push(value); 	
 }
 
 ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(property, shape, value) {
 	var index = shape["locks"].indexOf(property); 
 	if(index > -1) {
-		let valueIndex = shape[property].indexOf(value); 
-		if(valueIndex > -1) {
-			shape[property].splice(valueIndex,1);
-		}
+		if(shape["locked_values"][property]) {
+			let valueIndex = shape["locked_values"][property].indexOf(value); 
+			if(valueIndex > -1) {
+				shape["locked_values"][property].splice(valueIndex,1);
+			}
 
-		if(!shape[property].length) {
-			shape["locks"].splice(index, 1);
-		}	
+			if(!shape["locked_values"][property].length) {
+				delete shape["locked_values"][property]; 
 
-		if(!shape["locks"].length) {
-			delete shape["locks"];
+				// Also remove the lock for that property 
+				shape["locks"].splice(index, 1); 
+
+				if(!shape["locks"].length) {
+					delete shape["locks"]; 
+				}
+			}
+
+			if(_.isEmpty(shape["locked_values"])) {
+				delete shape["locked_values"]; 
+			}
 		}
 	}
 }
@@ -117,50 +130,47 @@ ConstraintActions.defaultPreventConstraint = function preventConstraint(property
 		shape["prevents"] = []; 
 	} 
 
+	if(shape["prevented_values"] == undefined) {
+		shape["prevented_values"] = {}; 
+	}
+
 	if(shape["prevents"].indexOf(property) == -1) {
 		shape["prevents"].push(property); 
 	}
 
-	if(!shape[property]) {
-		shape[property] = []; 
+	if(!shape["prevented_values"][property]) {
+		shape["prevented_values"][property] = []; 
 	}
 
-	shape[property].push(value); 	
+	shape["prevented_values"][property].push(value); 	
 }	
 
 ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(property, shape, value) {
 	var index = shape["prevents"].indexOf(property); 
 	if(index > -1) {
-		let valueIndex = shape[property].indexOf(value); 
-		if(valueIndex > -1) {
-			shape[property].splice(valueIndex,1);
-		}
+		if(shape["prevented_values"][property]) {
+			let valueIndex = shape["prevented_values"][property].indexOf(value); 
+			if(valueIndex > -1) {
+				shape["prevented_values"][property].splice(valueIndex,1);
+			}
 
-		if(!shape[property].length) {
-			shape["prevents"].splice(index, 1);
-		}	
+			if(!shape["prevented_values"][property].length) {
+				delete shape["prevented_values"][property]; 
 
-		if(!shape["prevents"].length) {
-			delete shape["prevents"];
+				// Also remove the lock for that property 
+				shape["prevents"].splice(index, 1); 
+
+				if(!shape["prevents"].length) {
+					delete shape["prevents"]; 
+				}
+			}
+
+			if(_.isEmpty(shape["prevented_values"])) {
+				delete shape["prevented_values"]; 
+			}
 		}
 	}
 }
-
-// ConstraintActions.undoSpatialKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-// 	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
-// 	constraintsCanvasShape["locks"].splice(index,1); 
-// 	if(!constraintsCanvasShape["locks"].length) {
-// 		delete constraintsCanvasShape["locks"]; 
-// 	}
-// }
-
-// ConstraintActions.undoSpatialPreventConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-// 	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
-// 	constraintsCanvasShape["prevents"].splice(index,1); 
-// 	if(!constraintsCanvasShape["prevents"].length) {
-// 		delete constraintsCanvasShape["prevents"]; 
-// 	}
-// }
 
 ConstraintActions.messages = {
 	"width": function getMessage(shape, value) {
