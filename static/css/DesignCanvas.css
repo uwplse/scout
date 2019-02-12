@@ -12,7 +12,7 @@
 
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
-	outline: 1px dashed #000000;
+	border: 4px #FF83A8 dotted;
 	z-index: 1000; 
 }
 
@@ -72,7 +72,7 @@
 }
 
 .design-canvas-widget:hover {
-	outline: 2px dashed #000000;	
+	border: 4px #FF83A8 dotted;
 	cursor: pointer;
 }
 

@@ -30,7 +30,7 @@ export default class DesignCanvas extends React.Component {
       conflicts: props.conflicts, // The conflicting constraints current if there are any
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
-      canvasShape: undefined, // The root level shape of the DesignCanvas
+      canvasShape: this.elements["canvas"], // The root level shape of the DesignCanvas
       hovered: false, 
       primarySelection: props.primarySelection,
       elements: [], 
@@ -42,7 +42,7 @@ export default class DesignCanvas extends React.Component {
     this.displayWidgetFeedback = props.displayWidgetFeedback; 
 
     // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
-    this.highlightWidgetFeedback = props.highlightWidgetFeedback; 
+    this.highlightFeedbackConflict = props.highlightFeedbackConflict; 
     this.highlightAddedWidget = props.highlightAddedWidget; 
 
     this.canvasWidth = 360; 
@@ -63,20 +63,22 @@ export default class DesignCanvas extends React.Component {
       removed: nextProps.removed, 
       conflicts: prevState.conflicts,
       primarySelection: nextProps.primarySelection, 
+      canvasShape: prevState.canvasShape
     }    
   }
 
   componentDidMount() {
-    this.initElements();
+    let elements = this.initElements();
+    this.updateValidity(elements);
   }
 
   componentDidUpdate(prevProps, prevState) {
     if(this.props.updateValidity != prevProps.updateValidity) {
-      this.updateValidity(); 
+      this.updateValidity(this.state.elements); 
     }
   }
 
-  updateValidity =() => {
+  updateValidity = (elements) => {
     let conflicts = []; 
     let valid = true;
 
@@ -86,8 +88,8 @@ export default class DesignCanvas extends React.Component {
       conflicts.push(...canvasConflicts);
     }
 
-    for(let i=0; i<this.state.elements.length; i++) {
-      let element = this.state.elements[i]; 
+    for(let i=0; i<elements.length; i++) {
+      let element = elements[i]; 
       let eltConflicts = this.getElementConflicts(element);
       if(eltConflicts.length) {
         conflicts.push(...eltConflicts);
@@ -99,6 +101,8 @@ export default class DesignCanvas extends React.Component {
       valid: valid, 
       conflicts: conflicts
     }); 
+
+    this.props.updateParentValidity(this.id, valid); 
   }
 
   getElementConflicts(element) {
@@ -106,26 +110,38 @@ export default class DesignCanvas extends React.Component {
     let constraintsShape = this.getConstraintsCanvasShape(element.name); 
     if(constraintsShape.locks && constraintsShape.locks.length) {
       for(let j=0; j<constraintsShape.locks.length; j++) {
-        let lock = constraintsShape.locks[j]; 
-        let value = constraintsShape[lock]; 
-        if(element[lock] != value) {
-          conflicts.push({
-            shape_id: constraintsShape.name, 
-            variable: lock
-          }); 
+        let lock = constraintsShape.locks[j];
+        let elementValue = element[lock];
+        let lockedValues = constraintsShape[lock]; 
+        if(lockedValues && lockedValues.length) {
+          let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
+          if(!elementValueKept) {
+            conflicts.push({
+              type: "lock",
+              shapeID: constraintsShape.name, 
+              variable: lock, 
+              value: elementValue
+            }); 
+          }
         }
       }
     }
 
     if(constraintsShape.prevents && constraintsShape.prevents.length) {
       for(let j=0; j<constraintsShape.prevents.length; j++) {
-        let prevent = constraintsShape.prevents[j]; 
-        let value = constraintsShape[prevent]; 
-        if(element[prevent] == value) {
-          conflicts.push({
-            shape_id: constraintsShape.name, 
-            variable: prevent
-          }); 
+        let prevent = constraintsShape.prevents[j];
+        let elementValue = element[prevent];
+        let preventedValues = constraintsShape[prevent]; 
+        if(preventedValues && preventedValues.length) {
+          let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
+          if(elementValuePrevented) {
+            conflicts.push({
+              type: "prevent",
+              shapeID: constraintsShape.name, 
+              variable: prevent, 
+              value: elementValue
+            }); 
+          }
         }
       }
     }
@@ -247,6 +263,8 @@ export default class DesignCanvas extends React.Component {
     this.setState({
       elements: elementsList
     }); 
+
+    return elementsList; 
   }
 
   performDesignCanvasMenuAction = (action) => {
@@ -296,8 +314,7 @@ export default class DesignCanvas extends React.Component {
       if(this.state.conflicts) {
         for(var i=0; i<this.state.conflicts.length; i++) {
           var conflict = this.state.conflicts[i];
-          var variable = conflict.variable;
-          this.highlightWidgetFeedback(conflict.shape_id, variable, true); 
+          this.highlightFeedbackConflict(conflict, true); 
         }
       }
 
@@ -319,9 +336,8 @@ export default class DesignCanvas extends React.Component {
     if(!this.state.valid) {
       if(this.state.conflicts) {
         for(var i=0; i<this.state.conflicts.length; i++) {
-          var conflict = this.state.conflicts[i];
-          var variable = conflict.variable; 
-          this.highlightWidgetFeedback(conflict.shape_id, variable, false); 
+          let conflict = this.state.conflicts[i]; 
+          this.highlightFeedbackConflict(conflict, false); 
         }
       }
 
@@ -367,7 +383,7 @@ export default class DesignCanvas extends React.Component {
 
 
     const canvasIsPrimary = this.props.primarySelection && this.props.primarySelection == this.state.canvasShape; 
-    const canvasIsSecondary = this.props.primarySelection && !canvasIsPrimary && this.props.primarySelection.name == this.state.canvasShape.name; 
+    const canvasIsSecondary = this.props.primarySelection && !canvasIsPrimary && this.state.canvasShape && this.props.primarySelection.name == this.state.canvasShape.name; 
 
     return  (      
       <div 

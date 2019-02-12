@@ -97,8 +97,8 @@ export default class PageContainer extends React.Component {
     return this.constraintsCanvasRef.current.getConstraintsCanvasShape(shapeId); 
   }
 
-  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
-    this.constraintsCanvasRef.current.highlightWidgetFeedback(shapeId, lock, highlighted);
+  highlightFeedbackConflict = (conflict, highlighted) => {
+    this.constraintsCanvasRef.current.highlightFeedbackConflict(conflict, highlighted);
   }
 
   highlightAddedWidget = (shapeId, highlighted) => {
@@ -122,9 +122,10 @@ export default class PageContainer extends React.Component {
               primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
               updateValidity={this.state.updateSolutionValidity}
+              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
-              highlightWidgetFeedback={this.highlightWidgetFeedback}
+              highlightFeedbackConflict={this.highlightFeedbackConflict}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
@@ -145,9 +146,10 @@ export default class PageContainer extends React.Component {
               zoomed={zoomed}
               invalidated={solution.invalidated}
               updateValidity={this.state.updateSolutionValidity}
+              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
-              highlightWidgetFeedback={this.highlightWidgetFeedback}
+              highlightFeedbackConflict={this.highlightFeedbackConflict}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
@@ -220,6 +222,18 @@ export default class PageContainer extends React.Component {
     }
 
     // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  updateValidityInPageContainer = (solutionID, valid) => {
+    let solution = this.solutionsMap[solutionID]; 
+    solution.valid = valid; 
+    if(valid) {
+      solution.invalidated = false;
+    }
+
     this.setState({
       solutions: this.state.solutions
     }, this.updateSolutionsCache); 
@@ -537,6 +551,7 @@ export default class PageContainer extends React.Component {
   }
 
   displayWidgetFeedback = (shape, feedbackCallbacks, constraintsCanvasShape=undefined) => {
+    console.log("displayWidgetFeedback");
     let canvasShape = undefined; 
     let designShape = undefined; 
 
@@ -583,7 +598,8 @@ export default class PageContainer extends React.Component {
 
   unsetPrimarySelection = () => {
     this.setState({
-      primarySelection: undefined
+      primarySelection: undefined, 
+      activeDesignShape: undefined
     });
 
     if(this.constraintsCanvasRef) {
@@ -672,6 +688,7 @@ export default class PageContainer extends React.Component {
             <FeedbackContainer 
               activeCanvasShape={this.state.activeCanvasShape}
               activeDesignShape={this.state.activeDesignShape}
+              primarySelection={this.state.primarySelection}
               feedbackCallbacks={this.state.feedbackCallbacks}
               updateConstraintsCanvas={this.updateConstraintsCanvas}
               checkSolutionValidity={this.checkSolutionValidity} />

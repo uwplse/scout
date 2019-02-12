@@ -97,15 +97,15 @@ export default class ConstraintsCanvas extends React.Component {
       this.updateSVGSourceMap(); 
     }
 
-    if(!this.props.primarySelection && prevProps.primarySelection) {
-      this.setState({
-        selectedElement: undefined, 
-        selectedTreeNodes: []
-      })
-    }
-
     if(this.props.activeDesignShape != undefined){
       if(prevProps.activeDesignShape != this.props.activeDesignShape) {
+        // Unset the values of the previously selected node; 
+        if(prevProps.activeDesignShape != undefined) {
+          let prevTreeNode = this.widgetTreeNodeMap[prevProps.activeDesignShape.name]; 
+          delete prevTreeNode.activeDesignShape; 
+          delete prevTreeNode.activeCanvasShape; 
+        }
+
         let widgetTreeNode = this.widgetTreeNodeMap[this.props.activeDesignShape.name]; 
 
         // Set the activeDesignShape so that this node will activate its feedback with 
@@ -299,36 +299,51 @@ export default class ConstraintsCanvas extends React.Component {
               update={this.renderTreeAndCheckValidity} />);
   }
 
-  getWidgetFeedbacks = (shape, highlightedFeedback=[]) => {
+  getWidgetFeedbacks = (shape, highlightedConflicts=[]) => {
+    let keepConflicts = highlightedConflicts.filter(conflict => conflict.type == "lock"); 
+    let preventConflicts = highlightedConflicts.filter(conflict => conflict.type == "prevent");
+
     // Restore feedback items for locks 
     let feedbackItems = []; 
     if(shape.locks && shape.locks.length) {
       for(let i=0; i<shape.locks.length; i++) {
         let lock = shape.locks[i];
-        let action = ConstraintActions.getAction("keep", shape);
-        if(action){
-          let highlighted = highlightedFeedback.indexOf(lock) > -1; 
-          let uniqueId = getUniqueID();
-          let message = action["do"].getFeedbackMessage(lock, shape);
-          let id = shape.name + "_" + uniqueId; 
-          let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, message, highlighted);
-          feedbackItems.push(widgetFeedback); 
-        } 
+
+        if(shape[lock] && shape[lock].length) {
+          for(let j=0; j<shape[lock].length; j++) {
+            let value = shape[lock][j]; 
+            let action = ConstraintActions.getAction("keep", shape);
+            if(action){
+              let highlighted = keepConflicts.filter(conflict => conflict.variable == lock).length > 0; 
+              let uniqueId = getUniqueID();
+              let message = action["do"].getFeedbackMessage(lock, shape, value);
+              let id = shape.name + "_" + uniqueId; 
+              let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, value, message, highlighted);
+              feedbackItems.push(widgetFeedback); 
+            } 
+          }
+        }
       }     
     } 
 
     if(shape.prevents && shape.prevents.length) {
       for(let i=0; i<shape.prevents.length; i++) {
         let prevent = shape.prevents[i];
-        let action = ConstraintActions.getAction("prevent", shape);
-        if(action){
-          let highlighted = highlightedFeedback.indexOf(prevent) > -1; 
-          let uniqueId = getUniqueID();
-          let message = action["do"].getFeedbackMessage(prevent, shape);
-          let id = shape.name + "_" + uniqueId; 
-          let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, message, highlighted);
-          feedbackItems.push(widgetFeedback); 
-        } 
+
+        if(shape[prevent] && shape[prevent].length) {
+          for(let j=0; j<shape[prevent].length; j++) {
+            let value = shape[prevent][j];
+            let action = ConstraintActions.getAction("prevent", shape);
+            if(action){
+              let highlighted = preventConflicts.filter(conflict => conflict.variable == prevent).length > 0; 
+              let uniqueId = getUniqueID();
+              let message = action["do"].getFeedbackMessage(prevent, shape, value);
+              let id = shape.name + "_" + uniqueId; 
+              let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, value, message, highlighted);
+              feedbackItems.push(widgetFeedback); 
+            } 
+          }
+        }
       }     
     } 
 
@@ -380,7 +395,7 @@ export default class ConstraintsCanvas extends React.Component {
     return newTreeNode; 
   }
 
-  getWidgetFeedback = (shapeID, shape, action, property, message, highlighted) => {
+  getWidgetFeedback = (shapeID, shape, action, property, value, message, highlighted) => {
     return (<WidgetFeedback 
               key={shapeID} 
               type="feedback"
@@ -388,6 +403,7 @@ export default class ConstraintsCanvas extends React.Component {
               shape={shape}
               action={action}
               property={property}
+              value={value}
               message={message} 
               highlighted={highlighted}
               update={this.updateConstraintsCanvas}/>); 
@@ -447,7 +463,9 @@ export default class ConstraintsCanvas extends React.Component {
 
   closeRightClickMenu = (evt) => {
     if(this.state.rightClickMenuShown) {
-      this.hideRightClickMenu();
+     this.setState({
+      rightClickMenuShown: false
+     }); 
     }
   }
 
@@ -524,13 +542,6 @@ export default class ConstraintsCanvas extends React.Component {
     let parentNode = this.getParentNodeForKey(node.key, this.state.treeData[0]); 
     return parentNode.shape; 
   }
- 
-  hideRightClickMenu = () => {
-    // Recheck consistency of the solutions after any of the things are set
-    this.setState({
-      rightClickMenuShown: false
-    }); 
-  }
 
   highlightAddedWidget = (shapeId, highlighted) => {
     let treeNode = this.widgetTreeNodeMap[shapeId];
@@ -543,19 +554,19 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
-    let treeNode = this.widgetTreeNodeMap[shapeId]; 
+  highlightFeedbackConflict = (conflict, highlighted) => {
+    let treeNode = this.widgetTreeNodeMap[conflict.shapeID]; 
     if(treeNode) {
-      if(!treeNode.highlightedFeedback) {
-        treeNode.highlightedFeedback = []; 
+      if(!treeNode.conflicts) {
+        treeNode.conflicts = []; 
       }
 
       if(highlighted) {
-        treeNode.highlightedFeedback.push(lock); 
+        treeNode.conflicts.push(conflict); 
       } else {
-        let index = treeNode.highlightedFeedback.indexOf(lock); 
+        let index = treeNode.conflicts.indexOf(conflict); 
         if(index > -1) {
-          treeNode.highlightedFeedback.splice(index, 1); 
+          treeNode.conflicts.splice(index, 1); 
         }
       }
     }
@@ -1325,6 +1336,12 @@ export default class ConstraintsCanvas extends React.Component {
     }, this.checkSolutionValidityAndUpdateCache);
   }
 
+  onClick = (evt) => {
+    // prevent the event from escaping the ConstraintsCanvas container
+    // so that the active selections will not be deactivated 
+    evt.stopPropagation();
+  }
+
   render () {
     // Gather the set of tree nodes
     const gatherTreeNodes = data => {
@@ -1355,8 +1372,8 @@ export default class ConstraintsCanvas extends React.Component {
           }
         }
 
-        let highlighedFeedbackItems = item.highlightedFeedback ? item.highlightedFeedback : []; 
-        let widgetFeedbacks = this.getWidgetFeedbacks(item.shape, highlighedFeedbackItems); 
+        let highlightedConflicts = item.conflicts ? item.conflicts : []; 
+        let widgetFeedbacks = this.getWidgetFeedbacks(item.shape, highlightedConflicts); 
         widgetOptions.feedback = widgetFeedbacks; 
         let widget = this.getWidget(item.shape, widgetSource, widgetOptions); 
         if (item.children && item.children.length) {
@@ -1394,14 +1411,16 @@ export default class ConstraintsCanvas extends React.Component {
           <div className="panel-heading"> 
             <h3 className="panel-title">Outline
             </h3>
-            <div className="btn-group header-button-group">
+            <div className="btn-group header-button-group"
+              onClick={this.onClick}>
               <button 
                 type="button" 
                 className="btn btn-default design-canvas-button" 
                 onClick={this.props.checkSolutionValidity.bind(this, {getDesigns: true})}>Generate Designs</button>
             </div>
           </div>
-          <div className="constraints-canvas-container panel-body">
+          <div className="constraints-canvas-container panel-body"
+            onClick={this.onClick}>
             <div className="constraints-canvas-tree-container"> 
               <div className="constraints-canvas-page-feedback">
                 {pageFeedbacks}

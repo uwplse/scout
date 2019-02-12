@@ -12,6 +12,7 @@ export default class WidgetFeedback extends React.Component {
     this.action = props.action; 
     this.type = props.type; 
     this.property = props.property; 
+    this.value = props.value;
     
     this.state = {
       highlighted: props.highlighted
@@ -28,7 +29,7 @@ export default class WidgetFeedback extends React.Component {
     // Prevent from reaching the selected node and unselecting it. 
     evt.stopPropagation(); 
 
-    this.action["undo"].updateConstraintsCanvasShape(this.property, this.shape, undefined);
+    this.action["undo"].updateConstraintsCanvasShape(this.property, this.shape, this.value);
 
     // Notify the ConstraintsCanvas to update its rendering
     this.props.update(); 

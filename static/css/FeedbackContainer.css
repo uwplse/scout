@@ -1,6 +1,12 @@
 .feedback-container {
 	min-width: 500px;
 	width: 500px;
+	display: flex;
+	flex-direction: column; 
+}
+
+.feedback-container-body {
+	flex: 1 1 0px;
 }
 
 .feedback-container .custom-switch {

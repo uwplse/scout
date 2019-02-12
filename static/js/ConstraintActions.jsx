@@ -58,16 +58,6 @@ ConstraintActions.y_positions = [...Array(ConstraintActions.canvas_height).keys(
 	return ((value % 4) == 0); 
 })
 
-
-
-
-
-
-
-
-
-
-
 ConstraintActions.getAction = function getAction(actionType, shape) {
 	if(shape.type == "canvas") {
 		let action = ConstraintActions.canvasConstraints[actionType]; 
@@ -97,17 +87,29 @@ ConstraintActions.defaultKeepConstraint = function keepConstraint(property, shap
 		shape["locks"].push(property); 
 	}
 
-	shape[property] = value; 	
-}
-
-ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(property, shape, value=undefined) {
-	var index = shape["locks"].indexOf(property); 
-	shape["locks"].splice(index,1); 
-	if(!shape["locks"].length) {
-		delete shape["locks"]; 
+	if(!shape[property]) {
+		shape[property] = []; 
 	}
 
-	delete shape[property]; 
+	shape[property].push(value); 	
+}
+
+ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(property, shape, value) {
+	var index = shape["locks"].indexOf(property); 
+	if(index > -1) {
+		let valueIndex = shape[property].indexOf(value); 
+		if(valueIndex > -1) {
+			shape[property].splice(valueIndex,1);
+		}
+
+		if(!shape[property].length) {
+			shape["locks"].splice(index, 1);
+		}	
+
+		if(!shape["locks"].length) {
+			delete shape["locks"];
+		}
+	}
 }
 
 ConstraintActions.defaultPreventConstraint = function preventConstraint(property, shape, value) {
@@ -119,93 +121,94 @@ ConstraintActions.defaultPreventConstraint = function preventConstraint(property
 		shape["prevents"].push(property); 
 	}
 
-	shape[property] = value; 	
-}
+	if(!shape[property]) {
+		shape[property] = []; 
+	}
 
-ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(property, shape, value=undefined) {
+	shape[property].push(value); 	
+}	
+
+ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(property, shape, value) {
 	var index = shape["prevents"].indexOf(property); 
-	shape["prevents"].splice(index,1); 
-	if(!shape["prevents"].length) {
-		delete shape["prevents"]; 
-	}
+	if(index > -1) {
+		let valueIndex = shape[property].indexOf(value); 
+		if(valueIndex > -1) {
+			shape[property].splice(valueIndex,1);
+		}
 
-	delete shape[property]; 
-}
+		if(!shape[property].length) {
+			shape["prevents"].splice(index, 1);
+		}	
 
-
-ConstraintActions.undoSpatialKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
-	constraintsCanvasShape["locks"].splice(index,1); 
-	if(!constraintsCanvasShape["locks"].length) {
-		delete constraintsCanvasShape["locks"]; 
-	}
-}
-
-ConstraintActions.undoSpatialPreventConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
-	constraintsCanvasShape["prevents"].splice(index,1); 
-	if(!constraintsCanvasShape["prevents"].length) {
-		delete constraintsCanvasShape["prevents"]; 
+		if(!shape["prevents"].length) {
+			delete shape["prevents"];
+		}
 	}
 }
+
+// ConstraintActions.undoSpatialKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
+// 	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
+// 	constraintsCanvasShape["locks"].splice(index,1); 
+// 	if(!constraintsCanvasShape["locks"].length) {
+// 		delete constraintsCanvasShape["locks"]; 
+// 	}
+// }
+
+// ConstraintActions.undoSpatialPreventConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
+// 	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
+// 	constraintsCanvasShape["prevents"].splice(index,1); 
+// 	if(!constraintsCanvasShape["prevents"].length) {
+// 		delete constraintsCanvasShape["prevents"]; 
+// 	}
+// }
 
 ConstraintActions.messages = {
-	"width": function getMessage(shape) {
-		let value = shape["width"];
+	"width": function getMessage(shape, value) {
 		return "width of " + value + "px."
 	}, 
-	"height": function getMessage(shape) {
-		let value = shape["height"];
+	"height": function getMessage(shape, value) {
 		return "height of " + value + "px."
 	}, 
-	"x": function getMessage(shape) {
-		let value = shape["x"];
+	"x": function getMessage(shape, value) {
 		return "x at location " + value + "px."
 	}, 
-	"y": function getMessage(shape) {
-		let value = shape["y"];
+	"y": function getMessage(shape, value) {
 		return "y at location " + value + "px."
 	},
-	"column": function getMessage(shape) {
-		let value = shape["column"];
+	"column": function getMessage(shape, value) {
 		return " in column " + value + ".";
 	}, 
-	"arrangement": function getMessage(shape) {
-		let value = shape["arrangement"];
+	"arrangement": function getMessage(shape, value) {
 		let labelValue = ConstraintActions.arrangements[value]; 
 		return " arrangement " + labelValue + "."; 
 	}, 
-	"padding": function getMessage(shape) {
-		let value = shape["padding"];
+	"padding": function getMessage(shape, value) {
 		return " padding of " + value + "px."; 
 	},
-	"margin": function getMessage(shape) {
-		let value = shape["margin"];
+	"margin": function getMessage(shape, value) {
 		return " margin of " + value + "px."; 
 	}, 
-	"baseline_grid": function getMessage(shape) {
-		let value = shape["baseline_grid"];
+	"baseline_grid": function getMessage(shape, value) {
 		return " baseline grid of " + value + "px."; 
 	}, 
-	"columns": function getMessage(shape) {
-		let value = shape["columns"];
+	"columns": function getMessage(shape, value) {
 		return " columns of " + value + ".";
 	}, 
-	"gutter_width": function getMessage(shape) {
-		let value = shape["gutter_width"];
+	"gutter_width": function getMessage(shape, value) {
 		return " gutter width of " + value + "px."; 
 	}, 
-	"column_width": function getMessage(shape) {
-		let value = shape["column_width"];
+	"column_width": function getMessage(shape, value) {
 		return " column width of " + value + "px."; 
 	}, 
-	"alignment": function getMessage(shape) {
+	"alignment": function getMessage(shape, value) {
 		// Generate the message based on the axis of alignment
-		let alignmentValue = ConstraintActions.verticalAlignments[shape["alignment"]];
-		let arrangementValue = ConstraintActions.arrangements[shape["arrangement"]]; 
-		if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
-			alignmentValue = ConstraintActions.horizontalAlignments[shape["alignment"]]; 
-		}
+		let alignmentValue = ConstraintActions.verticalAlignments[value];
+
+		// TODO -- Address 
+		// let arrangementValue = ConstraintActions.arrangements[shape["arrangement"]]; 
+		// if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+		// 	alignmentValue = ConstraintActions.horizontalAlignments[shape["alignment"]]; 
+		// }
 		return " alignment " + alignmentValue + "."; 
 	}
 }
@@ -214,17 +217,17 @@ ConstraintActions.defaultDoKeep = {
 	"updateConstraintsCanvasShape": function keepConstraint(property, shape, value) {
 		ConstraintActions.defaultKeepConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-		let message = ConstraintActions.messages[property](shape); 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
 		return "Keep " + message; 
 	}
 }
 
 ConstraintActions.defaultUndoKeep =  {
-	"updateConstraintsCanvasShape": function undoKeepConstraint(property, shape) {
-		ConstraintActions.defaultUndoKeepConstraint(property, shape);
+	"updateConstraintsCanvasShape": function undoKeepConstraint(property, shape, value) {
+		ConstraintActions.defaultUndoKeepConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
 		let message = ConstraintActions.messages[property](shape); 
 		return "Don't keep " + message; 
 	}
@@ -234,8 +237,8 @@ ConstraintActions.defaultDoPrevent = {
 	"updateConstraintsCanvasShape": function preventConstraint(property, shape, value) {
 		ConstraintActions.defaultPreventConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-		let message = ConstraintActions.messages[property](shape); 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
 		return "Prevent " + message; 
 	}
 } 
@@ -244,8 +247,8 @@ ConstraintActions.defaultUndoPrevent = {
 	"updateConstraintsCanvasShape": function undoPreventConstraint(property, shape, value) {
 		ConstraintActions.defaultUndoPreventConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-		let message = ConstraintActions.messages[property](shape); 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
 		return "Don't prevent " + message; 
 	}
 }
@@ -265,27 +268,11 @@ ConstraintActions.elementConstraints = {
 	"keep":  
 	{
 		"do": ConstraintActions.defaultDoKeep, 
-		"undo": {
-			"updateConstraintsCanvasShape": function undoKeepConstraint(property, constraintsCanvasShape, designCanvasShape) {
-				ConstraintActions.undoSpatialKeepConstraint(constraintsCanvasShape, designCanvasShape, property);
-			}, 
-			"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-				let message = ConstraintActions.messages[property](shape); 
-				return "Don't keep " + message; 
-			}
-		}, 
+		"undo": ConstraintActions.defaultUndoKeep
 	},
 	"prevent": {
 		"do": ConstraintActions.defaultDoPrevent, 
-		"undo": {
-			"updateConstraintsCanvasShape": function undoPreventConstraint(property, constraintsCanvasShape, designCanvasShape) {
-				ConstraintActions.undoSpatialPreventConstraint(constraintsCanvasShape, designCanvasShape, property);
-			}, 
-			"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-				let message = ConstraintActions.messages[property](shape); 
-				return "Don't prevent " + message; 
-			}
-		}
+		"undo": ConstraintActions.defaultUndoPrevent
 	}, 
 	"domains": {
 		"size": function(shape) {

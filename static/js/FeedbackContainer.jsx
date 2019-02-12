@@ -23,7 +23,8 @@ class FeedbackItem extends React.Component {
   componentDidMount() {
     // intialize the selector state based on the locked prevented values 
     let selectedShape = this.state.designShape ? this.state.designShape : this.state.canvasShape; 
-    let selected = FeedbackItem.getInitialSelected(selectedShape, this.state.property); 
+    let useDesignShape = this.state.designShape ? true : false; 
+    let selected = FeedbackItem.getInitialSelected(selectedShape, this.state.property, useDesignShape); 
     let locked = FeedbackItem.getInitialLocked(this.state.canvasShape, this.state.property); 
     let prevented = FeedbackItem.getInitialPrevented(this.state.canvasShape, this.state.property); 
     this.setState({
@@ -37,38 +38,52 @@ class FeedbackItem extends React.Component {
     let designShapeChanged = nextProps.designShape != prevState.designShape; 
     let canvasShapeChanged = nextProps.canvasShape != prevState.canvasShape; 
 
-    let selectedShape = nextProps.designShape ? nextProps.designShape : nextProps.canvasShape;  
+    let useDesignShape = nextProps.designShape ? true : false; 
+    let selectedShape = nextProps.designShape ? nextProps.designShape : nextProps.canvasShape; 
+    let selectedValue = (designShapeChanged || canvasShapeChanged  ? FeedbackItem.getInitialSelected(selectedShape, nextProps.property, useDesignShape) : prevState.selected); 
     return {
       canvasShape: nextProps.canvasShape,
       designShape: nextProps.designShape,  
       action: nextProps.action, 
       property: nextProps.property, 
-      selected: (designShapeChanged || canvasShapeChanged  ? FeedbackItem.getInitialSelected(selectedShape, nextProps.property) : prevState.selected),
-      locked: FeedbackItem.getInitialLocked(nextProps.canvasShape, nextProps.property), 
-      prevented: FeedbackItem.getInitialPrevented(nextProps.canvasShape, nextProps.property)
+      selected: selectedValue,
+      locked: FeedbackItem.getInitialLocked(nextProps.canvasShape, nextProps.property, selectedValue), 
+      prevented: FeedbackItem.getInitialPrevented(nextProps.canvasShape, nextProps.property, selectedValue)
     };     
   }
 
-  static getInitialPrevented(shape, property) {
+  static getInitialPrevented(shape, property, value) {
     if(shape.prevents && shape.prevents.length && shape.prevents.indexOf(property) > -1) {
-      return true;
+      if(shape[property] && shape[property].length && shape[property].indexOf(value) > -1) {
+        return true; 
+      }
     }
 
     return false;
   }
 
-  static getInitialLocked(shape, property) {
+  static getInitialLocked(shape, property, value) {
     if(shape.locks && shape.locks.length && shape.locks.indexOf(property) > -1) {
-      return true; 
+      if(shape[property] && shape[property].length && shape[property].indexOf(value) > -1) {
+        return true; 
+      }
     }
-  
+
     return false;
   }
 
-  static getInitialSelected(shape, property) {
-    let value = shape[property]; 
-    if(value != undefined) {
-      return value; 
+  static getInitialSelected(shape, property, useDesignShape) {
+    if(useDesignShape) {
+      let value = shape[property]; 
+      if(value != undefined) {
+        return value; 
+      }
+    }
+    else {
+      if(shape[property] && shape[property].length) {
+        // TODO : Return mult selectors? 
+        return shape[property][0]; 
+      }
     }
 
     return "Vary";
@@ -84,12 +99,12 @@ class FeedbackItem extends React.Component {
     let preventValue = this.state.prevented; 
     if(this.state.prevented) {
       // If the property was already "Kept", remove it and keep the Prevent instead
-      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape);
+      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected);
       preventValue = false;
     }
 
     if(this.state.locked){
-      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape);    
+      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected);    
     }
     else {
       this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected);     
@@ -108,12 +123,12 @@ class FeedbackItem extends React.Component {
     let lockedValue = this.state.locked; 
     if(this.state.locked) {
       // If the property was already "Kept", remove it and keep the Prevent instead
-      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape);
+      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected);
       lockedValue = false;
     }
 
     if(this.state.prevented) {
-      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape);
+      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected);
     } else {
       this.state.action['prevent']['do'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected); 
     }
@@ -498,19 +513,26 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems;
   }
 
+  onClick = (evt) => {
+    // prevent the event from escaping the FeedbackContaer
+    // so that the active selections will not be deactivated 
+    evt.stopPropagation();
+  }
+
   render () {
-    let treeFeedbackItems = this.state.activeCanvasShape ? this.getTreeFeedbackItems() : undefined; 
-    let elementFeedbackItems = this.state.activeCanvasShape ? this.getElementFeedbackItems() : undefined; 
-    let canvasChildItems = this.state.activeCanvasShape ? this.getCanvasChildFeedbackItems() : undefined; 
-    let groupFeedbackItems = this.state.activeCanvasShape ? this.getGroupFeedbackItems() : undefined; 
-    let canvasFeedbackItems = this.state.activeCanvasShape ? this.getCanvasFeedbackItems() : undefined; 
+    let treeFeedbackItems = this.state.activeCanvasShape && this.props.primarySelection ? this.getTreeFeedbackItems() : undefined; 
+    let elementFeedbackItems = this.state.activeCanvasShape && this.props.primarySelection ? this.getElementFeedbackItems() : undefined; 
+    let canvasChildItems = this.state.activeCanvasShape && this.props.primarySelection ? this.getCanvasChildFeedbackItems() : undefined; 
+    let groupFeedbackItems = this.state.activeCanvasShape && this.props.primarySelection ? this.getGroupFeedbackItems() : undefined; 
+    let canvasFeedbackItems = this.state.activeCanvasShape && this.props.primarySelection ? this.getCanvasFeedbackItems() : undefined; 
     return (
         <div className="panel panel-primary feedback-container">
           <div className="panel-heading"> 
             <h3 className="panel-title">Feedback
             </h3>
           </div>
-          <div tabIndex="1" className="panel-body"> 
+          <div tabIndex="1" className="panel-body feedback-container-body"
+            onClick={this.onClick}> 
             {treeFeedbackItems}
             {elementFeedbackItems && elementFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {elementFeedbackItems}
@@ -520,7 +542,7 @@ export default class FeedbackContainer extends React.Component {
             {groupFeedbackItems}
             {canvasFeedbackItems && canvasFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {canvasFeedbackItems}
-            {!this.props.activeCanvasShape ? 
+            {!this.props.activeCanvasShape || !this.props.primarySelection ? 
               (<div className="card card-body bg-light feedback-container-alert">
                 <span className="feedback-container-empty">Select an element in the Outline Panel or in a Design to see feedback options.</span>
               </div>) : undefined}
