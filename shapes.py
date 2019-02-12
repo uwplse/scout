@@ -123,13 +123,13 @@ class Shape(object):
 			
 			# values for locked variables
 			for lock in self.locks:
-				self.variable_values[lock] = element[lock]
+				self.variable_values[lock] = element["locked_values"][lock]
 
 		if "prevents" in element: 
 			self.prevents = element["prevents"]
 
 			for prev in self.prevents: 
-				self.variable_values[prev] = element[prev]
+				self.variable_values[prev] = element["prevented_values"][prev]
 
 		if "baseline" in element: 
 			self.has_baseline = True

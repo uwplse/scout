@@ -377,23 +377,41 @@ class ConstraintBuilder(object):
 		# Add constraints for all of the locked properties
 		if shape.locks is not None: 
 			for lock in shape.locks:
-				value = str(shape.variable_values[lock])
-				if shape.variables[lock].type == "String": 
-					value = "\"" + shape.variable_values[lock] + "\""
+				exprs = []
+				for value in shape.variable_values[lock]: 
+					value = str(value)
+					if shape.variables[lock].type == "String": 
+						value = "\"" + value + "\""
 
-				self.constraints += cb.assert_expr(cb.eq(shape.variables[lock].id, value),
-					"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock])) 
+					exprs.append(cb.eq(shape.variables[lock].id, value))
+
+				if len(exprs) > 1: 
+					self.constraints += cb.assert_expr(cb.or_expr(exprs),
+						"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock])) 				
+				elif len(exprs) == 1: 
+					expr = exprs[0] 
+					self.constraints += cb.assert_expr(expr,
+						"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock])) 	
 
 	def init_prevents(self, shape): 
 		# Add constraints for all of the locked properties
 		if shape.prevents is not None: 
 			for prevent in shape.prevents:
-				value = str(shape.variable_values[prevent])
-				if shape.variables[prevent].type == "String": 
-					value = "\"" + shape.variable_values[prevent] + "\""
+				exprs = []
+				for value in shape.variable_values[prevent]: 
+					value = str(value)
+					if shape.variables[prevent].type == "String": 
+						value = "\"" + value + "\""
 
-				self.constraints += cb.assert_expr(cb.neq(shape.variables[prevent].id, value),
-					"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.variable_values[prevent])) 
+					exprs.append(cb.neq(shape.variables[prevent].id, value))
+
+				if len(exprs) > 1: 
+					self.constraints += cb.assert_expr(cb.and_expr(exprs),
+						"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.variable_values[prevent])) 				
+				elif len(exprs) == 1: 
+					expr = exprs[0] 
+					self.constraints += cb.assert_expr(expr,
+						"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.variable_values[prevent])) 
 
 	def non_overlapping(self, container, spacing): 
 		child_shapes = container.children 
