@@ -12,27 +12,25 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.type = props.shape.type; 
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
+    this.alternate = props.shape.alternate; 
 
     // ID for querying element from the DOM
     this.elementId = "widget-container-" + this.id; 
 
     // Callback to notify the parent container to re-check the solution validity
-    this.checkSolutionValidity =  props.checkSolutionValidity; 
     this.displayRightClickMenu = props.displayRightClickMenu; 
+    this.displayWidgetFeedback = props.displayWidgetFeedback; 
+    this.checkSolutionValidity = props.checkSolutionValidit; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
-    this.displayLabelIndicator = props.displayLabelIndicator; 
-    this.createLabelsGroup = props.createLabelsGroup; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
+    this.getCurrentParentNode = props.getCurrentParentNode; 
     this.isContainer = props.isContainer; 
-
-    this.setOrder = this.setOrder.bind(this); 
-    this.setContainerOrder = this.setContainerOrder.bind(this); 
-    this.setLabel = this.setLabel.bind(this); 
-    this.setImportanceLevel = this.setImportanceLevel.bind(this); 
 
     // Timer for handling text change events
     this.timer = null;  
+
+    this.feedbackCallbacks = this.getFeedbackCallbacks(); 
 
     this.state = {
       height: this.element.orig_height,
@@ -41,14 +39,10 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       containerOrder: this.element.containerOrder, 
       importance: this.element.importance, 
       showLabels: this.element.labels ? true : false, 
-      labelPosition: {
-        x: 0, 
-        y: 0
-      }, 
       svgSource: props.source, 
       highlighted: props.highlighted, 
-      hasText: false, 
-      cursorPos: 0
+      cursorPos: 0, 
+      hovered: false
     }; 
   }
 
@@ -59,153 +53,109 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       order: prevState.order, 
       importance: prevState.importance, 
       showLabels: prevState.showLabels, 
-      labelPosition: prevState.labelPosition, 
       cursorPos: prevState.cursorPos,
       svgSource: nextProps.source, 
       containerOrder: prevState.containerOrder, 
-      highlighted: nextProps.highlighted
+      highlighted: nextProps.highlighted, 
+      hovered: prevState.hovered
     }    
   }
-  
+
   componentDidMount() {
-    // Set the initial value for the text label
-    this.setState({
-      hasText: true, 
-      labelPosition: this.computeLabelPosition()
-    }); 
+    if(this.props.activeCanvasShape) {
+        this.displayWidgetFeedback(this.props.activeCanvasShape, this.feedbackCallbacks);    
+    } 
   }
 
-  getHasText = () => {
-    let rootElement = document.getElementById(this.elementId); 
-    let editableText = rootElement.getElementsByTagName('text');
-    if(editableText[0]) {
-      return true;  
+  componentDidUpdate = (prevProps) => {
+    if(prevProps.activeDesignShape != this.props.activeDesignShape && 
+      this.props.activeDesignShape != undefined) {
+      // Display the widget with the proper callbacks
+      // Use the true flag to indicate to the PageContainer that 
+      // the widget has been selected from a DesignCanvas
+      this.displayWidgetFeedback(this.props.activeDesignShape, this.feedbackCallbacks, this.props.activeCanvasShape); 
+    }
+    else if(prevProps.activeCanvasShape != this.props.activeCanvasShape && 
+      this.props.activeCanvasShape != undefined) {
+      // Display the widget with the proper callbacks
+      console.log("display widget feedback");
+      this.displayWidgetFeedback(this.props.activeCanvasShape, this.feedbackCallbacks);    
+    }
+  }
+
+  getFeedbackCallbacks = () => {
+    let feedbackCallbacks = {}; 
+    if(this.type == "group") {
+      if(!this.alternate) {
+        feedbackCallbacks.setContainerOrder = this.setContainerOrder;  
+      }
+      
+      feedbackCallbacks.setOrder = this.setOrder; 
+      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
+      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
+      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings; 
+      feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
+    }
+    else if(this.type == "canvas") {
+      feedbackCallbacks.setContainerOrder = this.setContainerOrder
+    }
+    else {
+      feedbackCallbacks.setOrder = this.setOrder; 
+      feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
+      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings;
+      feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
+      feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
     }
 
-    return false;
+    return feedbackCallbacks; 
   }
 
-  adjustElementSize = (element, includeHeight=false) => {
-    let boundingRect = element.getBoundingClientRect(); 
+  setImportanceLevel = (level) => {
+    // Update the object
+    this.element.importance = level; 
 
-    // Set it on the element object
-    let widthRounded = Math.round(boundingRect.width); 
-    let heightRounded = Math.round(boundingRect.height);
-
-    // When height and width are updated by font size changes, update the element object. 
-    let height = this.state.height; 
-    if(includeHeight) {
-      height = heightRounded; 
-      this.element.height = heightRounded; 
-    }
-
-    this.element.width = widthRounded; 
     this.setState({
-      width: widthRounded, 
-      height: height
-    }); 
-
-    return boundingRect; 
+      importance: level
+    }, this.props.update);
   }
 
+  setOrder = (value) => {
+    this.element.order = value; 
 
-  setElementTyping = (typed) => {
-    this.element.typed = typed; 
+    this.setState({
+      order: value
+    }, this.props.update); 
+  }
+
+  setContainerOrder = (orderValue) => {
+    this.element.containerOrder = orderValue; 
+
+    this.setState({
+      containerOrder: orderValue
+    }, this.props.update); 
   }
 
   showContextMenu = (evt) => {
     evt.stopPropagation();
     evt.preventDefault();
 
-    if(this.type == "text") {
-      this.displayRightClickMenu(evt, this.id, {
-        setLabel: this.setLabel, 
-        setImportanceLevel: this.setImportanceLevel, 
-        setOrder: this.setOrder
+    this.displayRightClickMenu(evt, this.id); 
+  }
+
+  onMouseOver = () => {
+    if(this.type != "canvas") {
+      this.setState({
+        hovered: true
+      });
+    }
+  }
+
+  onMouseOut = () => {
+    if(this.type != "canvas") {
+      this.setState({
+        hovered: false
       }); 
     }
-    else if(this.type == "group"){
-      this.displayRightClickMenu(evt, this.id, {
-        setImportanceLevel: this.setImportanceLevel, 
-        setOrder: this.setOrder,
-        setContainerOrder: this.setContainerOrder
-      });     
-    }
-    else if(this.type == "canvas") {
-      this.displayRightClickMenu(evt, this.id, {
-        setContainerOrder: this.setContainerOrder
-      }); 
-    }
-    else {
-      this.displayRightClickMenu(evt, this.id, {
-        setImportanceLevel: this.setImportanceLevel, 
-        setOrder: this.setOrder
-      }); 
-    }
-  }
-
-  computeLabelPosition = () => {
-    let svgElement = document.getElementById(this.elementId); 
-    let svgBox = svgElement.getBoundingClientRect(); 
-
-    return {
-      x: (svgBox.width)/2, 
-      y: svgBox.height + 25
-    }; 
-  }
-
-  setImportanceLevel(evt, level) {
-    evt.stopPropagation(); 
-
-    // Update the object
-    this.element.importance = level; 
-
-    // Update the number of stars showing
-    this.setState({
-      importance: level, 
-    }); 
-
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();
-  }
-
-  setLabel(evt, shapeId) {
-    evt.stopPropagation(); 
-
-    // Save the labels relationship to the shape object 
-    this.element.labels = shapeId; 
-    this.setState({
-      showLabels: true 
-    }); 
-
-    this.createLabelsGroup(this.id, shapeId); 
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();
-  }
-
-  setOrder(evt, value) {
-    evt.stopPropagation(); 
-
-    this.element.order = value; 
-    this.setState({
-      order: value
-    });
-
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();      
-  }
-
-  setContainerOrder(evt, orderValue) {
-    evt.stopPropagation(); 
-
-    this.element.containerOrder = orderValue; 
-    this.element.test = "test"; 
-    this.setState({
-      containerOrder: orderValue
-    }); 
-
-    this.hideRightClickMenu();
-    this.checkSolutionValidity();
   }
 
   render () {
@@ -215,36 +165,38 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const importance = this.state.importance; 
     const showImportance = this.state.showImportance; 
     const showLabels = this.state.showLabels; 
-    const labelPosition = this.state.labelPosition; 
     const order = this.state.order;
     const ordered = this.state.containerOrder == "important"; 
-
-    // const orderOrdinal = Converter.toWordsOrdinal(order+1); 
-    // const orderLabel = orderOrdinal.charAt(0).toUpperCase() + orderOrdinal.slice(1);
     const orderLabel = order == 0 ? "First" : "Last"; 
-
-    const importanceLabel = importance == "most" ? "Emphasized" : (importance == "least" ? "Deemphasized" : ""); 
+    const importanceLabel = importance == "high" ? "Emphasized" : (importance == "low" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
-
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
 
-    const isEditable = this.state.hasText;
-    // const fontSize = (this.type == "text" ? { fontSize: this.state.fontSize } : {}); 
+    const isPrimary = this.props.primarySelection && this.props.primarySelection == this.props.shape; 
+    const isSecondary = this.props.primarySelection && !isPrimary && this.props.primarySelection.name == this.props.shape.name; 
     return (
       <div  
         onContextMenu={this.showContextMenu} 
-        suppressContentEditableWarning="true" 
-        // onInput={this.updateAndResizeText}
-        onBlur={this.updateTextLabel} 
+        onClick={this.onClick}
+        onMouseOver={this.onMouseOver}
+        onMouseOut={this.onMouseOut}
         id={this.elementId} 
-        className={"widget-container " + (highlighted ? "highlighted" : "")}>
+        className={"widget-container " 
+        + (highlighted ? "highlighted " : " ")
+        + (isPrimary ? "primary-selection " : " ")
+        + (isSecondary ? "secondary-selection" : "")}>
         <div className="widget-control-row"> 
-          <SVGInline 
-            //contentEditable={isEditable} 
-            className={"widget-control-" + this.type} 
-            svg={source} 
-            height={this.state.height + "px"} 
-            width={this.state.width + "px"} />
+           <div>
+           {source ? (<SVGInline 
+              className={"widget-control-" + this.type} 
+              svg={source} 
+              height={this.state.height + "px"} 
+              width={this.state.width + "px"} />) : undefined}
+            <span 
+              className="widget-control-remove-icon glyphicon glyphicon-remove"
+              style={{visibility: (this.state.hovered ? "" : "hidden")}}
+              onClick={this.props.removeWidgetNode.bind(this, this.props.id)}></span>
+           </div>
             <div 
               className={"widget-control-info " + ((importanceLabel.length || showOrder || this.isContainer) ? "" : "hidden")}>
               {this.isContainer ? 
@@ -255,6 +207,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
                 {importanceLabel}
               </span>
             </div>
+            {this.props.feedbackItems}
         </div>
       </div>); 
   }

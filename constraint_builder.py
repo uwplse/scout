@@ -4,8 +4,8 @@ import math
 import time
 import smtlib_builder as cb
 
-CANVAS_HEIGHT = 667
-CANVAS_WIDTH = 375
+CANVAS_HEIGHT = 640
+CANVAS_WIDTH = 360
 
 def abs(x):
 	return If(x>=0,x,-x)
@@ -95,13 +95,20 @@ class ConstraintBuilder(object):
 			self.constraints += cb.eq(shape.variables.baseline.id, 
 				cb.add(shape.variables.y.id, shape.orig_baseline), "baseine_" + shape.shape_id)
 
-	# def init_shape_bounds(self, shape):
-	# 	self.constraints += cb.assert_expr(cb.gte(shape.variables.x.id, "0"), "shape_" + shape.shape_id + "_x_gt_zero")
-	# 	self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.x.id, str(shape.computed_width())), 
-	# 		str(CANVAS_WIDTH)), "shape_" + shape.shape_id + "_right_lt_width")
-	# 	self.constraints += cb.assert_expr(cb.gte(shape.variables.y.id, "0"), "shape_" + shape.shape_id + "_y_gt_zero")
-	# 	self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.y.id, str(shape.computed_height())), 
-	# 		str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
+	def init_shape_alternate(self, shape): 
+		if shape.is_alternate: 
+			alternate = shape.variables.alternate.id
+			self.constraints += cb.assert_expr(cb.gte(alternate, "0"), "shape_" + shape.shape_id + "_alternate_gt_0")
+			self.constraints += cb.assert_expr(cb.lt(alternate, str(len(shape.variables.alternate.domain))),
+				"alternate_" + shape.shape_id + "_alternate_lt_domain" )
+
+	def init_shape_bounds(self, shape):
+		self.constraints += cb.assert_expr(cb.gte(shape.variables.x.id, "0"), "shape_" + shape.shape_id + "_x_gt_zero")
+		self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.x.id, str(shape.computed_width())), 
+			str(CANVAS_WIDTH)), "shape_" + shape.shape_id + "_right_lt_width")
+		self.constraints += cb.assert_expr(cb.gte(shape.variables.y.id, "0"), "shape_" + shape.shape_id + "_y_gt_zero")
+		self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.y.id, str(shape.computed_height())), 
+			str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
 
 	def init_canvas_constraints(self, canvas): 
 		canvas_x = canvas.variables.x
@@ -261,7 +268,7 @@ class ConstraintBuilder(object):
 			self.arrange_container(container, spacing)
 			self.align_container(container, spacing)
 			self.non_overlapping(container, spacing)
-			self.same_size_change(container)
+			# self.same_size_change(container)
 
 			if container.typed: 
 				# If this is a typed container, enforce all variables on child containers to be the same
@@ -515,9 +522,9 @@ class ConstraintBuilder(object):
 						size_eq = cb.eq(shape1.variables.size_factor.id, shape2.variables.size_factor.id)
 						size_equals.append(size_eq)
 
-		if len(size_equals):
-			self.constraints += cb.assert_expr(cb.and_expr(size_equals),
-				"container_" + container.shape_id + "_size_factor_children_equal")
+		# if len(size_equals):
+		# 	self.constraints += cb.assert_expr(cb.and_expr(size_equals),
+		# 		"container_" + container.shape_id + "_size_factor_children_equal")
 
 	def get_row_width(self, row, spacing):
 		width = ""

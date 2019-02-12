@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 67 18">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #2c3e50;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        font-size: 12px;
+        font-family: HelveticaNeue, Helvetica Neue;
+      }
+    </style>
+  </defs>
+  <g id="ItemWidget" transform="translate(-135 -160)">
+    <rect id="Rectangle_1" data-name="Rectangle 1" class="cls-1" width="67" height="18" rx="2" transform="translate(135 160)"/>
+    <text id="Item" class="cls-2" transform="translate(157 173)"><tspan x="0" y="0">Item</tspan></text>
+  </g>
+</svg>

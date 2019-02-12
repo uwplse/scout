@@ -7,8 +7,8 @@ import shapes as shape_objects
 from fractions import Fraction
 import time
 
-CANVAS_WIDTH = 375
-CANVAS_HEIGHT = 667
+CANVAS_WIDTH = 360
+CANVAS_HEIGHT = 640
 
 def get_row_column_values(num_siblings):
 	values = []
@@ -245,8 +245,14 @@ class Solution(object):
 						element["column"] = int(column)
 						element["canvas_child"] = True
 
+					if shape.is_alternate: 
+						alternate = model[variables[shape.variables.alternate.id]].as_string()
+						alt_value = int(alternate)
+						alt_value = shape.variables.alternate.domain[alt_value]
+						element["alternate"] = alt_value
+
 					# Only consider emphassis for leaf node elements
-					if shape.importance == "most": 
+					if shape.importance == "high": 
 						# Cost will be the distance from the maximum size
 						importance_change += (height - shape.orig_height)
 						importance_change += (width - shape.orig_width)
@@ -255,7 +261,7 @@ class Solution(object):
 
 						# Compute the distance of the shape from the center of the canvas
 						distance_cost += self.compute_distance_from_center(adj_x, adj_y, width, height)
-					elif shape.importance == "least": 
+					elif shape.importance == "low": 
 						# Used for computing importance cost
 						importance_change += (shape.orig_height - height)
 						importance_change += (shape.orig_width - width)

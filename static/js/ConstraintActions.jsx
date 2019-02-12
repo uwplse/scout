@@ -4,6 +4,37 @@
 // Global - Whitespace, Density 
 class ConstraintActions {}
 
+ConstraintActions.computeColumnWidths = function computeColumnWidths() {
+	let widths = [];
+	for(let i=0; i<ConstraintActions.margins.length; i++) {
+		for(let j=0; j<ConstraintActions.num_columns.length; j++) {
+			for(let k=0; k<ConstraintActions.gutter_widths.length; k++) {
+				let margin_value = ConstraintActions.margins[i]; 
+				let column_value = ConstraintActions.num_columns[j]; 
+				let gutter_width_value = ConstraintActions.gutter_widths[k]; 
+				let column_width = (ConstraintActions.canvas_width - (2*margin_value) - ((column_value-1)*gutter_width_value))/column_value; 
+				if(column_width - Math.round(column_width) == 0) {
+					widths.push(column_width); 
+				}
+			}
+		}
+	}
+
+	return _.uniq(widths).sort((a, b) => a - b); 
+}
+
+// Variables where the domains are encoded as integer values into the domain list
+// rather than string values, or real values (e.g., margins)
+ConstraintActions.index_domains = ["arrangement", "alignment"]
+
+ConstraintActions.canvas_width = 360; 
+ConstraintActions.canvas_height = 640; 
+
+ConstraintActions.grid_constant = 4; 
+ConstraintActions.min_height = 48; 
+ConstraintActions.min_width = 48; 
+ConstraintActions.max_height = 636; 
+ConstraintActions.max_width = 356;
 
 // Keep these here for now. Update when we have any more possible arrangement patterns
 ConstraintActions.horizontalArrangements = ["horizontal", "rows"];
@@ -11,9 +42,21 @@ ConstraintActions.verticalArrangements = ["vertical", "columns"];
 ConstraintActions.arrangments = ["horizontal", "vertical", "rows", "columns"]; 
 ConstraintActions.verticalAlignments = ["left", "center", "right"];
 ConstraintActions.horizontalAlignments = ["top", "center", "bottom"];
-
+ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40]; 
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
-ConstraintActions.justifications = ["top", "center", "bottom"];
+
+// Canvas variable domains 
+ConstraintActions.margins = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]; 
+ConstraintActions.num_columns = [2,3,4,6,12]; 
+ConstraintActions.gutter_widths = [4,8,16]
+ConstraintActions.baseline_grids = [4,8,16]
+ConstraintActions.column_widths = ConstraintActions.computeColumnWidths(); 
+
+// Element specific domains
+ConstraintActions.columns = [1,2,3,4,5,6,7,8,9,10,11,12]
+ConstraintActions.y_positions = [...Array(ConstraintActions.canvas_height).keys()].filter((value) => {
+	return ((value % 4) == 0); 
+})
 
 ConstraintActions.getAction = function getAction(actionType, shape) {
 	if(shape.type == "canvas") {
@@ -35,168 +78,177 @@ ConstraintActions.getAction = function getAction(actionType, shape) {
 	}
 }
 
-ConstraintActions.defaultKeepConstraint = function keepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-  	if(constraintsCanvasShape["locks"] == undefined) {
-		constraintsCanvasShape["locks"] = []; 
+ConstraintActions.defaultKeepConstraint = function keepConstraint(property, shape, value) {
+  	if(shape["locks"] == undefined) {
+		shape["locks"] = []; 
 	} 
 
-	if(constraintsCanvasShape["locks"].indexOf(constraintKey) == -1) {
-		constraintsCanvasShape["locks"].push(constraintKey); 
+	if(shape["locks"].indexOf(property) == -1) {
+		shape["locks"].push(property); 
 	}
 
-	// Also should the constraints canvas arrange itself in the way of the designs canvas?
-	// Update the constraint property on the object
-	constraintsCanvasShape[constraintKey] = designCanvasShape[constraintKey]; 	
-}
-
-ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
-	constraintsCanvasShape["locks"].splice(index,1); 
-	if(!constraintsCanvasShape["locks"].length) {
-		delete constraintsCanvasShape["locks"]; 
+	if(!shape[property]) {
+		shape[property] = []; 
 	}
 
-	delete constraintsCanvasShape[constraintKey]; 
+	shape[property].push(value); 	
 }
 
-ConstraintActions.defaultPreventConstraint = function preventConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-  	if(constraintsCanvasShape["prevents"] == undefined) {
-		constraintsCanvasShape["prevents"] = []; 
+ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(property, shape, value) {
+	var index = shape["locks"].indexOf(property); 
+	if(index > -1) {
+		let valueIndex = shape[property].indexOf(value); 
+		if(valueIndex > -1) {
+			shape[property].splice(valueIndex,1);
+		}
+
+		if(!shape[property].length) {
+			shape["locks"].splice(index, 1);
+		}	
+
+		if(!shape["locks"].length) {
+			delete shape["locks"];
+		}
+	}
+}
+
+ConstraintActions.defaultPreventConstraint = function preventConstraint(property, shape, value) {
+  	if(shape["prevents"] == undefined) {
+		shape["prevents"] = []; 
 	} 
 
-	if(constraintsCanvasShape["prevents"].indexOf(constraintKey) == -1) {
-		constraintsCanvasShape["prevents"].push(constraintKey); 
+	if(shape["prevents"].indexOf(property) == -1) {
+		shape["prevents"].push(property); 
 	}
 
-	// Also should the constraints canvas arrange itself in the way of the designs canvas?
-	// Update the constraint property on the object
-	constraintsCanvasShape[constraintKey] = designCanvasShape[constraintKey]; 	
-}
-
-ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
-	constraintsCanvasShape["prevents"].splice(index,1); 
-	if(!constraintsCanvasShape["prevents"].length) {
-		delete constraintsCanvasShape["prevents"]; 
+	if(!shape[property]) {
+		shape[property] = []; 
 	}
 
-	delete constraintsCanvasShape[constraintKey]; 
-}
+	shape[property].push(value); 	
+}	
 
+ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(property, shape, value) {
+	var index = shape["prevents"].indexOf(property); 
+	if(index > -1) {
+		let valueIndex = shape[property].indexOf(value); 
+		if(valueIndex > -1) {
+			shape[property].splice(valueIndex,1);
+		}
 
-ConstraintActions.undoSpatialKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
-	constraintsCanvasShape["locks"].splice(index,1); 
-	if(!constraintsCanvasShape["locks"].length) {
-		delete constraintsCanvasShape["locks"]; 
+		if(!shape[property].length) {
+			shape["prevents"].splice(index, 1);
+		}	
+
+		if(!shape["prevents"].length) {
+			delete shape["prevents"];
+		}
 	}
 }
 
-ConstraintActions.undoSpatialPreventConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
-	constraintsCanvasShape["prevents"].splice(index,1); 
-	if(!constraintsCanvasShape["prevents"].length) {
-		delete constraintsCanvasShape["prevents"]; 
-	}
-}
+// ConstraintActions.undoSpatialKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
+// 	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
+// 	constraintsCanvasShape["locks"].splice(index,1); 
+// 	if(!constraintsCanvasShape["locks"].length) {
+// 		delete constraintsCanvasShape["locks"]; 
+// 	}
+// }
+
+// ConstraintActions.undoSpatialPreventConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
+// 	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
+// 	constraintsCanvasShape["prevents"].splice(index,1); 
+// 	if(!constraintsCanvasShape["prevents"].length) {
+// 		delete constraintsCanvasShape["prevents"]; 
+// 	}
+// }
 
 ConstraintActions.messages = {
-	"width": function getMessage(shape) {
-		let value = shape["width"];
+	"width": function getMessage(shape, value) {
 		return "width of " + value + "px."
 	}, 
-	"height": function getMessage(shape) {
-		let value = shape["height"];
+	"height": function getMessage(shape, value) {
 		return "height of " + value + "px."
 	}, 
-	"x": function getMessage(shape) {
-		let value = shape["x"];
+	"x": function getMessage(shape, value) {
 		return "x at location " + value + "px."
 	}, 
-	"y": function getMessage(shape) {
-		let value = shape["y"];
+	"y": function getMessage(shape, value) {
 		return "y at location " + value + "px."
 	},
-	"column": function getMessage(shape) {
-		let value = shape["column"];
+	"column": function getMessage(shape, value) {
 		return " in column " + value + ".";
 	}, 
-	"arrangement": function getMessage(shape) {
-		let value = shape["arrangement"];
-		let arrangementValue = ConstraintActions.arrangements[value]; 
-		return " arrangement " + arrangementValue + "."; 
+	"arrangement": function getMessage(shape, value) {
+		let labelValue = ConstraintActions.arrangements[value]; 
+		return " arrangement " + labelValue + "."; 
 	}, 
-	"padding": function getMessage(shape) {
-		let value = shape["padding"];
+	"padding": function getMessage(shape, value) {
 		return " padding of " + value + "px."; 
 	},
-	"margin": function getMessage(shape) {
-		let value = shape["margin"];
+	"margin": function getMessage(shape, value) {
 		return " margin of " + value + "px."; 
 	}, 
-	"baseline_grid": function getMessage(shape) {
-		let value = shape["baseline_grid"];
+	"baseline_grid": function getMessage(shape, value) {
 		return " baseline grid of " + value + "px."; 
 	}, 
-	"columns": function getMessage(shape) {
-		let value = shape["columns"];
+	"columns": function getMessage(shape, value) {
 		return " columns of " + value + ".";
 	}, 
-	"gutter_width": function getMessage(shape) {
-		let value = shape["gutter_width"];
+	"gutter_width": function getMessage(shape, value) {
 		return " gutter width of " + value + "px."; 
 	}, 
-	"column_width": function getMessage(shape) {
-		let value = shape["column_width"];
+	"column_width": function getMessage(shape, value) {
 		return " column width of " + value + "px."; 
 	}, 
-	"alignment": function getMessage(shape) {
+	"alignment": function getMessage(shape, value) {
 		// Generate the message based on the axis of alignment
-		let alignmentValue = ConstraintActions.verticalAlignments[shape["alignment"]];
-		let arrangementValue = ConstraintActions.arrangments[shape["arrangement"]]; 
-		if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
-			alignmentValue = ConstraintActions.horizontalAlignments[shape["alignment"]]; 
-		}
+		let alignmentValue = ConstraintActions.verticalAlignments[value];
+
+		// TODO -- Address 
+		// let arrangementValue = ConstraintActions.arrangements[shape["arrangement"]]; 
+		// if(ConstraintActions.horizontalArrangements.indexOf(arrangementValue) > -1) {
+		// 	alignmentValue = ConstraintActions.horizontalAlignments[shape["alignment"]]; 
+		// }
 		return " alignment " + alignmentValue + "."; 
 	}
 }
 
 ConstraintActions.defaultDoKeep = {
-	"updateConstraintsCanvasShape": function keepConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultKeepConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function keepConstraint(property, shape, value) {
+		ConstraintActions.defaultKeepConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-		let message = ConstraintActions.messages[property](shape); 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
 		return "Keep " + message; 
 	}
 }
 
 ConstraintActions.defaultUndoKeep =  {
-	"updateConstraintsCanvasShape": function undoKeepConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultUndoKeepConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function undoKeepConstraint(property, shape, value) {
+		ConstraintActions.defaultUndoKeepConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
 		let message = ConstraintActions.messages[property](shape); 
 		return "Don't keep " + message; 
 	}
 } 
 
 ConstraintActions.defaultDoPrevent = {
-	"updateConstraintsCanvasShape": function preventConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultPreventConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function preventConstraint(property, shape, value) {
+		ConstraintActions.defaultPreventConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-		let message = ConstraintActions.messages[property](shape); 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
 		return "Prevent " + message; 
 	}
 } 
 
 ConstraintActions.defaultUndoPrevent = {
-	"updateConstraintsCanvasShape": function undoPreventConstraint(property, constraintsCanvasShape, designCanvasShape) {
-		ConstraintActions.defaultUndoPreventConstraint(constraintsCanvasShape, designCanvasShape, property);
+	"updateConstraintsCanvasShape": function undoPreventConstraint(property, shape, value) {
+		ConstraintActions.defaultUndoPreventConstraint(property, shape, value);
 	}, 
-	"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-		let message = ConstraintActions.messages[property](shape); 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
 		return "Don't prevent " + message; 
 	}
 }
@@ -216,47 +268,101 @@ ConstraintActions.elementConstraints = {
 	"keep":  
 	{
 		"do": ConstraintActions.defaultDoKeep, 
-		"undo": {
-			"updateConstraintsCanvasShape": function undoKeepConstraint(property, constraintsCanvasShape, designCanvasShape) {
-				ConstraintActions.undoSpatialKeepConstraint(constraintsCanvasShape, designCanvasShape, property);
-			}, 
-			"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-				let message = ConstraintActions.messages[property](shape); 
-				return "Don't keep " + message; 
-			}
-		}, 
+		"undo": ConstraintActions.defaultUndoKeep
 	},
 	"prevent": {
 		"do": ConstraintActions.defaultDoPrevent, 
-		"undo": {
-			"updateConstraintsCanvasShape": function undoPreventConstraint(property, constraintsCanvasShape, designCanvasShape) {
-				ConstraintActions.undoSpatialPreventConstraint(constraintsCanvasShape, designCanvasShape, property);
-			}, 
-			"getFeedbackMessage": function generateFeedbackMessage(property, shape) {
-				let message = ConstraintActions.messages[property](shape); 
-				return "Don't prevent " + message; 
+		"undo": ConstraintActions.defaultUndoPrevent
+	}, 
+	"domains": {
+		"size": function(shape) {
+			let heights = [];
+			let widths = []; 
+
+			let orig_height = shape.orig_height; 
+			let orig_width = shape.orig_width; 
+			let aspect_ratio = orig_width/orig_height; 
+
+			let height_diff = orig_height % ConstraintActions.grid_constant; 
+			let height = orig_height - height_diff; 
+			let width = Math.round(height * aspect_ratio); 
+
+			heights.push(height);
+			widths.push(width); 
+
+			let minimum_element_height = ConstraintActions.min_height > (orig_height / 2) ? ConstraintActions.min_height : (orig_height / 2); 
+			let minimum_element_width = ConstraintActions.min_width > (orig_width / 2) ? ConstraintActions.min_width : (orig_width / 2); 
+			let computed_height = height;
+			let computed_width = width; 
+
+			if(shape.importance != "high") {
+				while (computed_height > minimum_element_height && computed_width > minimum_element_width) {
+					computed_height -= ConstraintActions.grid_constant; 
+					computed_width = Math.round(computed_height * aspect_ratio); 
+
+					if(computed_height > minimum_element_height && computed_width > minimum_element_width) {
+						heights.push(computed_height);
+						widths.push(computed_width); 
+					}
+				}
 			}
-		}
-	}	
+
+			let maximum_element_height = ConstraintActions.max_height < (orig_height * 2) ? ConstraintActions.max_height : (orig_height * 2); 
+			let maximum_element_width = ConstraintActions.max_height < (orig_width * 2) ? ConstraintActions.max_height : (orig_width * 2); 
+			computed_height = height;
+			computed_width = width; 
+			if(shape.importance != "low") {
+				while (computed_height < maximum_element_height && computed_width < maximum_element_width) {
+					computed_height += ConstraintActions.grid_constant; 
+					computed_width = Math.round(computed_height * aspect_ratio); 
+
+					if(computed_height < maximum_element_height && computed_width < maximum_element_width) {
+						heights.push(computed_height);
+						widths.push(computed_width); 
+					}
+				}
+			}
+
+			return { "height" : heights, "width" : widths }
+		}, 
+		"x": [], 
+		"y": []
+	}
 }
 
 // These actions will only appear for direct children of the canvas container
 ConstraintActions.canvasChildConstraints = {
-	"values": ["column"],
+	"values": ["column", "y"],
 	"keep": ConstraintActions.defaultKeep, 
-	"prevent": ConstraintActions.defaultPrevent
+	"prevent": ConstraintActions.defaultPrevent, 
+	"domains": {
+		"column": ConstraintActions.columns, 
+		"y": ConstraintActions.y_positions
+	}
 }
 
 ConstraintActions.groupConstraints = {
 	"values": ["arrangement", "alignment", "padding"], 
 	"keep": ConstraintActions.defaultKeep, 
-	"prevent": ConstraintActions.defaultPrevent
+	"prevent": ConstraintActions.defaultPrevent, 
+	"domains": {
+		"arrangement": ConstraintActions.arrangments, 
+		"alignment": ConstraintActions.verticalAlignments, 
+		"padding": ConstraintActions.paddings
+	}
 }
 
 ConstraintActions.canvasConstraints = {
 	"values": ["margin", "baseline_grid", "columns", "gutter_width", "column_width"], 
 	"keep": ConstraintActions.defaultKeep, 
-	"prevent": ConstraintActions.defaultPrevent
+	"prevent": ConstraintActions.defaultPrevent, 
+	"domains": {
+		"margin": ConstraintActions.margins, 
+		"baseline_grid": ConstraintActions.baseline_grids, 
+		"columns": ConstraintActions.columns, 
+		"gutter_width": ConstraintActions.gutter_widths, 
+		"column_width": ConstraintActions.column_widths
+	}
 }
 
 export default ConstraintActions; 

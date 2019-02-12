@@ -19,6 +19,14 @@ body {
 	margin-right: 10px;
 }
 
+.scout-tagline {
+	margin-left: 1em;
+}
+
+.scout-tagline small {
+	color: lightgray;
+}
+
 .panel-title {
 	font-size: 20px;
 }
@@ -27,7 +35,14 @@ body {
 	background-color: white;
 }
 
+.btn, 
+.card.card-body {
+	font-size: 20px;
+}
 
+.card-emph  {
+	font-weight: bold;
+}
 
 /**
   Oversrides of bootstrap styles 
@@ -37,12 +52,8 @@ body {
 	border-radius: 0; 
 }
 
-.designs-area-container .btn {
-	font-size: 16px;
-}
-
 .panel-body {
-	padding: 5;
+	padding: 0;
 }
 
 .navbar, .navbar-header {

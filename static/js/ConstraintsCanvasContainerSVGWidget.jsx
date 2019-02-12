@@ -15,14 +15,20 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         id={this.props.id}
         source={this.props.source}
         isContainer={this.props.isContainer}
+        feedbackItems={this.props.feedbackItems}
+        typingAlerts={this.props.typingAlerts}
         highlighted={this.props.highlighted}
         typed={this.props.typed}
         item={this.props.item}
-        checkSolutionValidity={this.props.checkSolutionValidity} 
         displayRightClickMenu={this.props.displayRightClickMenu}
-        hideRightClickMenu={this.props.hideRightClickMenu}
-        createLabelsGroup={this.props.createLabelsGroup}
+        displayWidgetFeedback={this.props.displayWidgetFeedback}
         getCurrentShapeSiblings={this.props.getCurrentShapeSiblings}
-        getCurrentShapeIndex={this.props.getCurrentShapeIndex} />); 
+        getCurrentShapeIndex={this.props.getCurrentShapeIndex}
+        getCurrentParentNode={this.props.getCurrentParentNode}
+        activeDesignShape={this.props.activeDesignShape}
+        activeCanvasShape={this.props.activeCanvasShape}
+        primarySelection={this.props.primarySelection}
+        removeWidgetNode={this.props.removeWidgetNode}
+        update={this.props.update}  />); 
   }
 }

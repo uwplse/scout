@@ -51,7 +51,7 @@ export default class DesignMenu extends React.Component {
         style={{left: this.left, top: this.top, display: (this.props.hidden ? "none" : ""), 
         opacity: (this.props.visible ? 1 : 0)}} 
         className={"canvas-actions-container " + (menuItems.length ? "" : "hidden")}>
-        <div class="canvas-actions-menu-container">
+        <div className="canvas-actions-menu-container">
           <ul className="canvas-actions-menu">{menuItems}</ul>
           <div 
             className="canvas-actions-indicators" 

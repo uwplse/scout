@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 67 18">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #2c3e50;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        font-size: 12px;
+        font-family: HelveticaNeue, Helvetica Neue;
+      }
+    </style>
+  </defs>
+  <g id="RepeatGroupWidget" transform="translate(-136 -191)">
+    <rect id="Rectangle_2" data-name="Rectangle 2" class="cls-1" width="67" height="18" rx="2" transform="translate(136 191)"/>
+    <text id="Repeat" class="cls-2" transform="translate(151 204)"><tspan x="0" y="0">Repeat</tspan></text>
+  </g>
+</svg>

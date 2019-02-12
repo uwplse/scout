@@ -3,63 +3,6 @@ import React from "react";
 import ConstraintActions from "./ConstraintActions"; 
 import Converter from "number-to-words";
 
-class FontSizeMenuItem extends React.Component {
-  constructor(props) {
-  	super(props); 
-    this.value = props.value; 
-    this.onClick = props.onClick; 
-  }
-
-  render () {
-	  return <li onClick={this.onClick(this.value)}>
-            {this.value}
-          </li>; 
-  }
-}
-
-// class LabelMenuItem extends React.Component {
-//   constructor(props) {
-//     super(props); 
-//     this.shapeID = props.shapeID; 
-//     this.shapeLabel = props.shapeLabel; 
-//     this.onClick = props.onClick; 
-//   }
-
-//   render () {
-//     let self = this; 
-//     let label = "Make label for \"" + this.shapeLabel + "\"."; 
-//     return (<li>
-//                <a 
-//                 tabIndex="-1" 
-//                 href="#" 
-//                 onClick={function (evt) { self.onClick(evt, self.shapeID); }}>
-//                 {label}
-//                </a>
-//             </li>); 
-//   }
-// }
-
-// class RelativeMenuItem extends React.Component {
-//   constructor(props) {
-//     super(props); 
-//     this.shapeID = props.shapeID; 
-//     this.shapeLabel = props.shapeLabel; 
-//     this.onClick = props.onClick; 
-//   }
-
-//   render () {
-//     let label = "Make label for \"" + this.shapeLabel + "\"."; 
-//     return (<li>
-//                <a 
-//                 tabIndex="-1" 
-//                 href="#" 
-//                 onClick={this.onClick(this.shapeID)}>
-//                 {label}
-//                </a>
-//             </li>); 
-//   }
-// }
-
 class OrderMenuItem extends React.Component {
   constructor(props) {
     super(props); 
@@ -135,7 +78,6 @@ export default class ConstraintsCanvasMenu extends React.Component {
 
     // A method in constraints canvas to get sibling elements to the element launching this menu
     // It will return a set of lables to display as child menu items
-    this.getSiblingLabelItem = props.getSiblingLabelItem; 
     this.getBeforeAndAfterSiblings = props.getBeforeAndAfterSiblings; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex; 
@@ -169,16 +111,6 @@ export default class ConstraintsCanvasMenu extends React.Component {
       labelMenuShown: false, 
       orderMenuShown: false
     }
-  }
-
-  getFontSizeMenuItems = () => {
-    let menuItems = []; 
-    for(var i=0; i<this.fontSizes.length; i++) {
-      let size = this.fontSizes[i];
-      menuItems.push(<FontSizeMenuItem key={size} value={size} onClick={this.setFontSize} />);
-    }
-
-    return menuItems; 
   }
 
   getImportanceMenuItems = () => {

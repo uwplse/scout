@@ -1,4 +1,79 @@
 .feedback-container {
-	width: 400px;
-	min-width: 400px;
+	min-width: 500px;
+	width: 500px;
+	display: flex;
+	flex-direction: column; 
+}
+
+.feedback-container-body {
+	flex: 1 1 0px;
+}
+
+.feedback-container .custom-switch {
+	margin-left: 1em; 
+	margin-top: 1em;
+}
+
+.feedback-container-label {
+	margin-right: 1em;
+	margin-left: 1em;
+	font-size: 20px;
+	width: 175px;
+}
+
+.feedback-container-toggle {
+	margin: 1em; 
+	display: flex; 
+	flex-direction: row;
+	align-items: center;
+}
+
+.feedback-container-alert {
+	margin: 2em;
+	margin-top: 10em;
+}
+
+hr.feedback-container-separator {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border-top: 1px solid rgba(0,0,0,0.125);
+    height: 1;
+}
+
+.feedback-container-toggle .dropdown {
+	position: initial;
+	margin-right: 1em;
+}
+
+.feedback-container-locks {
+	display: flex; 
+	flex-direction: row;
+}
+
+.feedback-container-locks span {
+	padding-left: 0.5em;
+	cursor: pointer; 
+	font-size: 24px;
+}
+
+.feedback-container-locks span.locked {
+	color: black;
+}
+
+.feedback-container-locks span.unlocked {
+	color: lightgray;
+}
+
+.feedback-container-locks span.disabled {
+	cursor: default; 
+}
+
+.feedback-container-locks span.enabled:hover {
+	color: black;
+}
+
+.feedback-container .dropdown-menu.scrollable-menu {
+	height: auto;
+	max-height: 400px;
+	overflow-x: hidden;
 }

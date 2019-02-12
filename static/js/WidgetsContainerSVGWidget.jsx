@@ -17,32 +17,6 @@ export default class WidgetsContainerSVGWidget extends React.Component {
     this.initializeSizeAndType();
   }
 
-  containsNotText(node) {
-    // Parse the SVG to determine if it only contains a text node, then the type is "text"
-    // else the type will be "element". Only inferring two types for now as we don't need specialized
-    // rules in the solver for different element types other than "text"
-
-    // Find leaf nodes, if the leaf node is anything other than a text node, return false
-    // otherwise keep 
-    if(node.children && node.children.length) {
-      for(let i=0; i<node.children.length; i++) {
-        let result = this.containsNotText(node.children[i]); 
-        if(result) {
-          return result; 
-        }
-      }
-    }
-    else {
-      // Get the tagName of the element
-      let tagName = node.tagName; 
-      if(tagName != "text" && tagName != "title" && tagName != "tspan") {
-        return true; 
-      }
-    }
-
-    return false; 
-  }
-
   initializeSizeAndType = () => {
     let svgRoot = document.getElementById(this.state.selector); 
     if(svgRoot) { 
@@ -65,9 +39,8 @@ export default class WidgetsContainerSVGWidget extends React.Component {
         // Contains leaf level nodes other than text -> 'element'
         // Contains only text leaf level nodes -> 'text'
         if(this.state.type != "group") {
-          let containsNotText = this.containsNotText(element); 
-          let type = containsNotText ? 'element' : 'text'; 
-          console.log(type);
+          let type_attr = element.getAttribute("data-type"); 
+          let type = type_attr ? type_attr : "element"; 
           this.setState({
             type: type
           }); 

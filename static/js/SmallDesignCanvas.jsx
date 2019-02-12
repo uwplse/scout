@@ -39,11 +39,10 @@ class SmallDesignCanvas extends React.Component {
               saveDesignCanvas={this.props.saveDesignCanvas} 
               trashDesignCanvas={this.props.trashDesignCanvas}
               zoomInOnDesignCanvas={this.props.zoomInOnDesignCanvas}
-              getRelativeDesigns={this.props.getRelativeDesigns}
-              closeRightClickMenus={this.props.closeRightClickMenus} />
+              getRelativeDesigns={this.props.getRelativeDesigns}/>
       </div>)); 
   }
-}
+} 
 
 const designCanvasDragSource = {
   beginDrag(props) {

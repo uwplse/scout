@@ -2,19 +2,18 @@
 	position: relative;
 	border: 1px solid #c4c4c4;
 	cursor: pointer;
+	transition: all .1s ease-in-out;
+	background-color: white; 
 }
 
-/*.design-canvas .widget-control {
-	cursor: pointer;
-}*/
-
-/*.design-canvas .widget-control-leaf {
-	z-index: 500; 
-}*/
+.design-canvas:hover {
+	transform: scale(1.25) translate(0, 20px);
+}
 
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
-	outline: 1px dashed #000000;
+	border: 4px #FF83A8 dotted;
+	z-index: 1000; 
 }
 
 .design-canvas.hovered .SVGInline-svg {
@@ -24,6 +23,10 @@
 .design-body > .canvas-container {
 	display: inline-block;
 	margin: 25px;
+}
+
+.canvas-container {
+	background-color: white; 
 }
 
 .canvas-container .canvas-container-invalid {
@@ -66,4 +69,19 @@
 
 .design-canvas-button {
 	margin-left: 10px;
+}
+
+.design-canvas-widget:hover {
+	border: 4px #FF83A8 dotted;
+	cursor: pointer;
+}
+
+.design-canvas.primary-selection,
+.design-canvas-widget.primary-selection {
+	border: 4px #FF83A8 dotted;
+}
+
+.design-canvas.secondary-selection,
+.design-canvas-widget.secondary-selection {
+	border: 4px lightblue dotted;
 }

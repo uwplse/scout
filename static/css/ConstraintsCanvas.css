@@ -7,6 +7,7 @@
 .dropdown-menu {
 	padding-top: 0;
 	font-size: initial;
+	padding-bottom: 0;
 }
 
 .dropdown-menu .caret {
@@ -41,94 +42,78 @@
 	border-top: 1px solid lightgray;
 }
 
+.dropdown-menu > li.dropdown-disabled > a {
+	color: #a8a8a8;
+	cursor: default; 
+}
+
+.dropdown-menu > li.dropdown-disabled > a:focus, 
+.dropdown-menu > li.dropdown-disabled > a:hover {
+	background-color: white;
+}
+
 
 /* 
   Constraints canvas 
  */
-.constraints-canvas-container {
-	/* Needed when we do not have the virtualized grid enabled where it makes its own scrollbar */
-	overflow: auto;
-    height: calc(100% - 120px);
-/*    background-color: #414656;
-*/}
 
-.constraints-container {
-	width: 550px;
-	min-width: 550px;
+ .constraints-canvas-container {
+ 	display: flex; 
+ 	overflow: auto;
+ }
+
+ .constraints-canvas-tree-container {
+ 	min-width: 500px;
+ }
+
+ .constraints-canvas-alert {
+ 	margin: 2em;
+ 	margin-top: 4em;
+ }
+
+/** 
+  Widget feedback panel area 
+**/ 
+.widget-feedback-panel {
+	background-color: #f5f5f5;
+	border: 1px solid #ddd;
+	padding: 0.5em;
+	position: relative;
 }
 
-
-/* Custom theme for sortable tree. We could make a theme for the tree, but this is much easier to do for now! */ 
-.widgets-sortable-tree .rst__rowContents {
-	border: none;
-	box-shadow: none;
-	min-width: initial;
-	background-color: initial;
+.widget-feedback-panel span {
+	white-space: nowrap;
 }
-
-.widgets-sortable-tree .rst__row {
-	align-items: center;
-}
-
-.widgets-sortable-tree .rst__rowWrapper {
-	padding: 0px;
-}
-
-.widgets-sortable-tree .rst__moveHandle {
-	height: 44px;
-}
-
-.widgets-sortable-tree .rst__rowTitleWithSubtitle {
-    height: inherit; 
-}
-
-.widgets-sortable-tree .widgets-sortable-tree-remove {
-	background-color: initial;
-	color: #000000;
-}
-
-.widgets-sortable-tree .rst__rowTitle {
-	font-weight: normal;
-}
-
-.widgets-sortable-tree .rst__rowSubtitle {
-	font-size: 14px;
-}
-
-.widgets-sortable-tree .rst__lineFullVertical:after {
-	height: 100%;
-}
-
-.widgets-sortable-tree .rst__rowLabel {
-	padding-right: 5px;
-}
-
-.widgets-sortable-tree .rst__lineChildren:after {
-	height: calc(50%); 
-	background-color: #000000;
-}
-
-.widgets-sortable-tree-remove {
-	border: none;
-}
-
-.widgets-sortable-tree .rst__lineBlock:after,
-.widgets-sortable-tree .rst__lineBlock:before {
-	background-color: #000000;
-}
-
 
 /**
 	Other styles 
 **/
+
+.widget-container {
+	display: flex; 
+	flex-direction: row; 
+	align-items: center;
+	
+}
+
 .widget-container > .widget-control-importance {
 	margin-top: 5px;
 	display: flex;
 }
 
 .widget-container.highlighted {	
-	border: 2px dashed white;
-	padding: 4;
+	border: 2px dashed black;
+	padding: 0.5em;
+}
+
+.rc-tree span.rc-tree-node-selected .widget-container.primary-selection {
+	border: 4px #FF83A8 dotted;
+    padding: 0.5em;
+}
+
+.widget-container.secondary-selection {
+	border: 4px lightblue dotted;
+	padding: 0.5em;
 }
 
 .widget-control-group .widget-control {
@@ -182,38 +167,9 @@
 */
 }
 
-.widget-control-typing {
-	margin-top: 0.5em;
-	margin-bottom: 0.5em; 
-}
-
-.widget-control-typing span {
-	margin-left: 0.5em;
-	cursor: pointer;
-	color: blue;
-}
-
-.widget-control-typing span:hover {
-	text-decoration: underline;
-}
-
-.widget-stepper {
-	height: 25px; 
-}
-
-.widget-label {
-	height: 30px;
-}
-
-.widget-container > .widget-container-svg {
-	margin-right: 5px;
-	margin-left: 5px;
-}
-
-.containers-panel {
-	display: flex;
-    flex-direction: row;
-    justify-content: center;
+.widget-control-remove-icon {
+	transform: scale(2.0); 
+	margin-left: 1em;
 }
 
 .widget-container .badge {
@@ -229,6 +185,10 @@
     border: 1px solid #ddd;
     padding: 5px;
     border-radius: 2px;
+}
+
+.widget-feedback-container {
+	margin-top: 0.5em;
 }
 
 .widget-feedback-items.highlighted {

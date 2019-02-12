@@ -16,7 +16,7 @@ import uuidv4 from 'uuid/v4';
 import SVGInline from "react-svg-inline"; 
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
-import groupSVG from '../assets/illustrator/groupContainer.svg';
+import {getUniqueID} from './util'; 
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -32,11 +32,16 @@ export default class PageContainer extends React.Component {
       solutions: [],
       designsFound: -1, 
       showDesignsAlert: false, 
-      currentPallette: 'hollywood', 
       droppedFiles: [], 
       svgWidgets: [], 
       zoomedDesignCanvasID: undefined, 
-      activeDesignPanel: "designs" 
+      activeDesignPanel: "designs", 
+      activeCanvasShape: undefined, 
+      activeDesignShape: undefined, 
+      widgetsCollapsed: false, 
+      activeDesignShape: undefined, 
+      primarySelection: undefined, 
+      updateSolutionValidity: false
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -72,23 +77,7 @@ export default class PageContainer extends React.Component {
     localStorage.setItem('solutions', solutionsJSON);
   }
 
-  closeRightClickMenus = () => {
-    // Close all of the right click menus in response to a click on the PageContainer
-    if(this.constraintsCanvasRef) {
-      this.constraintsCanvasRef.current.closeRightClickMenu(); 
-    }
 
-    for(var i=0; i<this.state.solutions.length; i++) {
-      let canvasID = "design-canvas-" + this.state.solutions[i].id; 
-      let designCanvas = this.refs[canvasID]; 
-      if(designCanvas) {
-        designCanvas.hideMenu();
-      }
-    }
-  }
-
-  // Update the addedShapes property on the constraints canvas to notify it to create new shapes
-  // for a shape of this type
   addShapeToConstraintsCanvas = (id, src, type, width, height) => {
     return () => {
       this.constraintsCanvasRef.current.addShapeToCanvas(id, src, type, width, height);
@@ -99,7 +88,24 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
   }
 
-  getDesignCanvas = (solution, id, zoomed=false, linkedSolutionId=undefined) => {
+  showWidgetFeedback = (shapeId, evt) => {
+    evt.stopPropagation();
+    this.constraintsCanvasRef.current.showWidgetFeedback(shapeId); 
+  }
+
+  getConstraintsCanvasShape = (shapeId) => {
+    return this.constraintsCanvasRef.current.getConstraintsCanvasShape(shapeId); 
+  }
+
+  highlightFeedbackConflict = (conflict, highlighted) => {
+    this.constraintsCanvasRef.current.highlightFeedbackConflict(conflict, highlighted);
+  }
+
+  highlightAddedWidget = (shapeId, highlighted) => {
+    this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
+  }
+
+  getDesignCanvas = (solution, id, zoomed=false, solutionID=undefined) => {
     return (<DesignCanvas 
               key={id} 
               id={id} 
@@ -112,18 +118,19 @@ export default class PageContainer extends React.Component {
               added={solution.added}
               removed={solution.removed}
               zoomed={zoomed}
-              linkedSolutionId={linkedSolutionId}
+              solutionID={solutionID}
+              primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
+              updateValidity={this.state.updateSolutionValidity}
+              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
-              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               highlightAddedWidget={this.highlightAddedWidget}
-              highlightWidgetFeedback={this.highlightWidgetFeedback}
+              highlightFeedbackConflict={this.highlightFeedbackConflict}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
-              getRelativeDesigns={this.getRelativeDesigns}
-              closeRightClickMenus={this.closeRightClickMenus} />); 
+              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
+              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
 
   getSmallDesignCanvas = (solution, id, zoomed=false) => {
@@ -138,16 +145,30 @@ export default class PageContainer extends React.Component {
               removed={solution.removed}
               zoomed={zoomed}
               invalidated={solution.invalidated}
+              updateValidity={this.state.updateSolutionValidity}
+              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
-              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              updateConstraintsCanvas={this.updateConstraintsCanvasFromDesignCanvas}
               highlightAddedWidget={this.highlightAddedWidget}
-              highlightWidgetFeedback={this.highlightWidgetFeedback}
+              highlightFeedbackConflict={this.highlightFeedbackConflict}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
-              getRelativeDesigns={this.getRelativeDesigns}
-              closeRightClickMenus={this.closeRightClickMenus} />); 
+              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
+              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
+  }
+
+
+  getMoreDesigns = () => {
+    // get more designs
+    // without changing any new constraints
+    let jsonShapes = this.getShapesJSON(); 
+
+    // Get JSON for already retrieved designs/saved/trashed
+    let prevSolutions = JSON.stringify(this.state.solutions);
+   
+   // Send an ajax request to the server 
+   // Solve for the new designs
+    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
   }
 
   checkSolutionValidity = (options={}) => {
@@ -171,7 +192,7 @@ export default class PageContainer extends React.Component {
 
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
-          this.updateSolutionValidity(requestParsed.solutions);
+          this.updateSolutionValidityFromRequest(requestParsed.solutions);
         });         
       }
     }
@@ -181,70 +202,63 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  getMoreDesigns = () => {
-    // get more designs
-    // without changing any new constraints
-    let jsonShapes = this.getShapesJSON(); 
-
-    // Get JSON for already retrieved designs/saved/trashed
-    let prevSolutions = JSON.stringify(this.state.solutions);
-   
-   // Send an ajax request to the server 
-   // Solve for the new designs
-    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
-  }
-
-  getConstraintsCanvasShape = (shapeId) => {
-    return this.constraintsCanvasRef.current.getConstraintsCanvasShape(shapeId); 
-  }
-
-  highlightWidgetFeedback = (shapeId, lock, highlighted) => {
-    this.constraintsCanvasRef.current.highlightWidgetFeedback(shapeId, lock, highlighted);
-  }
-
-  highlightAddedWidget = (shapeId, highlighted) => {
-    this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
-  }
-
-  updateConstraintsCanvasFromDesignCanvas = (designCanvasShape, action, actionType, property) => {
-    // Retrieve the shape object in the constraints tree and apply teh updates
-    let constraintsCanvasShape = this.getConstraintsCanvasShape(designCanvasShape.name);
-    action[actionType].updateConstraintsCanvasShape(property, constraintsCanvasShape, designCanvasShape);
-
-    // Notify the constraints canvas to add or remove the widget feedback to the tree
-    this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, actionType, property);
-  }
-
-  updateConstraintsCanvas = (constraintsCanvasShape, action, property) => {
-    return () => {
-      action["undo"].updateConstraintsCanvasShape(property, constraintsCanvasShape, undefined);
-
-      // Notify the constraintss canvasa
-      this.constraintsCanvasRef.current.updateWidgetFeedbacks(constraintsCanvasShape, action, "undo", property);
-
-      // Check for the validity of current state of constriants, and update valid state of solutions
-      this.checkSolutionValidity();       
-    }
-  }
-
-  updateSolutionValidity = (solutions) => {
+  updateSolutionValidityFromRequest = (solutions) => {
     // Update the state of each solution to display the updated valid/invalid state
     for(var i=0; i<solutions.length; i++) {
       let solution = solutions[i]; 
       let designSolution = this.solutionsMap[solution.id]; 
-      designSolution.valid = solution.valid; 
-      designSolution.added = solution.added; 
-      designSolution.removed = solution.removed;
-      designSolution.conflicts = solution.conflicts; 
 
-      if(designSolution.valid) {
-        designSolution.invalidated = false;
+      // In case the design was already removed while the request was processing. 
+      if(designSolution) {
+        designSolution.valid = solution.valid; 
+        designSolution.added = solution.added; 
+        designSolution.removed = solution.removed;
+        designSolution.conflicts = solution.conflicts; 
+
+        if(designSolution.valid) {
+          designSolution.invalidated = false;
+        }
       }
     }
 
     // Update the state
     this.setState({
       solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  updateValidityInPageContainer = (solutionID, valid) => {
+    let solution = this.solutionsMap[solutionID]; 
+    solution.valid = valid; 
+    if(valid) {
+      solution.invalidated = false;
+    }
+
+    this.setState({
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  updateConstraintsCanvas = () => {
+    // Notify the tree to re-render in response to the update
+    // from the FeedbackContainer    
+    this.constraintsCanvasRef.current.renderTreeCacheUpdate();
+
+    // Also update the activeCanvasShape to trigger the FeedbackContainer to re-render
+    // To update the state of the unlocked properties
+    this.setState({
+      activeCanvasShape: this.state.activeCanvasShape
+    }); 
+
+    // Only check the validity of the lock and prevent values on the solutions
+    // This means that we do not need to make a request to the solver to check them 
+    this.checkSolutionValidityClient();
+  }
+
+  checkSolutionValidityClient = () => {
+    // Update the state
+    this.setState({
+      updateSolutionValidity: !this.state.updateSolutionValidity
     }, this.updateSolutionsCache); 
   }
 
@@ -406,58 +420,49 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  getSVGWidgetID = () => {
-    return '_' + Math.random().toString(36).substr(2, 9);
-  }
+  // getRelativeDesigns = (elements, action) => {
+  //   // get more designs relative to a specific design
+  //   let jsonShapes = this.getShapesJSON(); 
 
-  getRelativeDesigns = (elements, action) => {
-    // get more designs relative to a specific design
-    let jsonShapes = this.getShapesJSON(); 
-
-    // Get JSON for already retrieved designs/saved/trashed
-    let prevSolutions = JSON.stringify(this.state.solutions);
+  //   // Get JSON for already retrieved designs/saved/trashed
+  //   let prevSolutions = JSON.stringify(this.state.solutions);
    
-   // Send an ajax request to the server 
-   // Solve for the new designs
-    $.post("/solve", {
-      "elements": jsonShapes, 
-      "solutions": prevSolutions, 
-      "relative_designs": {
-        "relative_design": elements, 
-        "relative_action": action
-      }
-    }, this.parseSolutions, 'text');
-  }
+  //  // Send an ajax request to the server 
+  //  // Solve for the new designs
+  //   $.post("/solve", {
+  //     "elements": jsonShapes, 
+  //     "solutions": prevSolutions, 
+  //     "relative_designs": {
+  //       "relative_design": elements, 
+  //       "relative_action": action
+  //     }
+  //   }, this.parseSolutions, 'text');
+  // }
 
   readSVGsFromLocalStorage = () => {
     let svgWidgets = localStorage.getItem('svgWidgets'); 
     if(svgWidgets) {
       let svgWidgetsParsed = JSON.parse(svgWidgets); 
       if(svgWidgetsParsed && svgWidgetsParsed.length){
-        let groupID = _.uniqueId(); 
-        let group = {
-          id: groupID, 
-          svgData: groupSVG, 
-          type: "group", 
-          visible: true
-        }
-        this.state.svgWidgets.push(group);
         this.setState({
           svgWidgets: this.state.svgWidgets.concat(svgWidgetsParsed)
         });
       }
     }
+
+    let widgetsCollapsed = localStorage.getItem('widgetsCollapsed'); 
+    if(widgetsCollapsed && widgetsCollapsed == "true") {
+      this.setState({
+        widgetsCollapsed: true
+      }); 
+    }
   }
 
   readSVGIntoWidgetContainer = (e) => {
     let fileData = e.target.result; 
-    let widgetID = _.uniqueId(); 
     if(fileData) {
-      // Add widgets to the front of the list 
-      // So that they are rendered at the top of the container
-      // While the automatically added elements (group) appears at the bottom
       let svgItem = {
-        id: this.getSVGWidgetID(), 
+        id: getUniqueID(), 
         svgData: fileData, 
         visible: true
       }
@@ -481,20 +486,6 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  populateGroupNodeIntoWidgetContainer = () => {
-    // Add the group container into the widgets panel 
-    // It will just be automatically added in when the drop happens
-    let groupID = this.getSVGWidgetID(); 
-    this.setState({
-      svgWidgets: this.state.svgWidgets.concat({
-        id: groupID, 
-        svgData: groupSVG, 
-        type: "group", 
-        visible: true
-      }) 
-    }); 
-  }
-
   handleFileDrop = (item, monitor) => {
     if (monitor) {
       const item = monitor.getItem(); 
@@ -510,10 +501,6 @@ export default class PageContainer extends React.Component {
         reader.onload = this.readSVGIntoWidgetContainer; 
         reader.readAsText(file); 
       }
-
-      // Add the group container node into the widgets container
-      // It will be added automatically when the designer drops in the other SVG elementst
-      this.populateGroupNodeIntoWidgetContainer();
     }
   }
 
@@ -552,6 +539,72 @@ export default class PageContainer extends React.Component {
     this.setState({
       svgWidgets: this.state.svgWidgets
     });
+  }
+
+  toggleWidgetsPanel = () => {
+    let newState = !this.state.widgetsCollapsed; 
+    this.setState({
+      widgetsCollapsed: newState
+    }); 
+
+    localStorage.setItem('widgetsCollapsed', newState); 
+  }
+
+  displayWidgetFeedback = (shape, feedbackCallbacks, constraintsCanvasShape=undefined) => {
+    console.log("displayWidgetFeedback");
+    let canvasShape = undefined; 
+    let designShape = undefined; 
+
+    if(!constraintsCanvasShape) {
+      canvasShape = shape; 
+
+      this.setState({
+        primarySelection: canvasShape
+      }); 
+    }
+    else {
+      canvasShape = constraintsCanvasShape; 
+      designShape = shape; 
+
+      this.setState({
+        primarySelection: designShape
+      }); 
+    }
+
+    this.setState({
+      activeCanvasShape: canvasShape,
+      activeDesignShape: designShape,  
+      feedbackCallbacks: feedbackCallbacks
+    }); 
+  }
+
+  hideWidgetFeedback = () => {
+    this.setState({
+      activeDesignShape: undefined, 
+      activeCanvasShape: undefined, 
+      feedbackCallbacks: undefined, 
+      primarySelection: undefined
+    }); 
+  }
+
+  displayWidgetFeedbackFromDesignCanvas = (shape) => {
+    // Set this property to activate the corresponding element in the tree
+    // And display feedback based on this instance of the element in the design canvas
+    this.setState({
+      activeDesignShape: shape, 
+      primarySelection: shape
+    });
+  }
+
+  unsetPrimarySelection = () => {
+    this.setState({
+      primarySelection: undefined, 
+      activeDesignShape: undefined
+    });
+
+    if(this.constraintsCanvasRef) {
+      this.constraintsCanvasRef.current.closeRightClickMenu(); 
+    }
   }
 
   render () {
@@ -606,11 +659,12 @@ export default class PageContainer extends React.Component {
 
     return (
       <DragDropContextProvider backend={HTML5Backend}>
-        <div className="page-container" onClick={this.closeRightClickMenus} onContextMenu={this.closeRightClickMenus}>
+        <div className="page-container"
+          onClick={this.unsetPrimarySelection}>
           <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <div className="navbar-header">
               <SVGInline className="scout-logo" svg={pageLogo} />
-              <h1>Scout</h1>
+              <h1>Scout <span className="scout-tagline"><small>Exploring design layout alternatives</small></span></h1>
             </div>
           </nav>
           <div className="bottom">
@@ -619,12 +673,25 @@ export default class PageContainer extends React.Component {
                   onDrop={this.handleFileDrop} 
                   widgets={this.state.svgWidgets}
                   onClick={this.clearWidgetsContainer}
+                  widgetsCollapsed={this.state.widgetsCollapsed}
+                  toggleWidgetsPanel={this.toggleWidgetsPanel}
                   addShapeToConstraintsCanvas={this.addShapeToConstraintsCanvas} />
               </div>
             <ConstraintsCanvas ref={this.constraintsCanvasRef} 
               updateConstraintsCanvas={this.updateConstraintsCanvas} 
+              displayWidgetFeedback={this.displayWidgetFeedback}
+              hideWidgetFeedback={this.hideWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
+              activeDesignShape={this.state.activeDesignShape}
+              primarySelection={this.state.primarySelection}
               svgWidgets={this.state.svgWidgets} />
+            <FeedbackContainer 
+              activeCanvasShape={this.state.activeCanvasShape}
+              activeDesignShape={this.state.activeDesignShape}
+              primarySelection={this.state.primarySelection}
+              feedbackCallbacks={this.state.feedbackCallbacks}
+              updateConstraintsCanvas={this.updateConstraintsCanvas}
+              checkSolutionValidity={this.checkSolutionValidity} />
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
                 <h3 className="panel-title">Designs
@@ -692,25 +759,22 @@ export default class PageContainer extends React.Component {
               </div>  
               {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div className="alert alert-success">
-                    You currently have no designs under consideration. <br /><br />
-                    Click <strong>Generate Designs</strong> in the outline to see more. 
+                  <div className="card card-body bg-light">
+                    <span>You currently have no designs under consideration. Click <span className="card-emph">Generate Designs</span> in the outline to see more.</span>
                   </div>
                 </div>) : null
               }
               {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div className="alert alert-success">
-                    You currently have no saved designs. <br /><br />
-                    Click the star icon above a design in the <strong>Under Consideration</strong> panel to save a design. 
+                  <div className="card card-body bg-light">
+                    <span>You currently have no saved designs. Click the star icon above a design in the <span className="card-emph">Under Consideration</span> panel to save a design.</span>
                   </div>
                 </div>) : null
               }
               {(this.state.activeDesignPanel == "discarded" && discardedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
-                  <div className="alert alert-success">
-                    You currently have no discarded designs. <br /><br />
-                    Click the trash icon in the <strong>Under Consideration</strong> panel to discard any designs that you don't like. 
+                  <div className="card card-body bg-light">
+                    <span>You currently have no discarded designs. Click the trash icon in the <span className="card-emph">Under Consideration</span> panel to discard any designs that you don't like.</span>
                   </div>
                 </div>) : null
               }
