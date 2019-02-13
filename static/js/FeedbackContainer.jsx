@@ -393,13 +393,13 @@ export default class FeedbackContainer extends React.Component {
           let feedbackItem = {
             id: _.uniqueId(), 
             key: key, 
-            selectedValue: value
-          }; 
+            selectedValue: value                                    
+          };                                              
 
           feedbackItems.push(feedbackItem); 
         }
       }
-    }
+    } 
 
     // Display another selector for the Vary option 
     let feedbackItem = {

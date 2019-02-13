@@ -69,7 +69,11 @@ export default class DesignCanvas extends React.Component {
 
   componentDidMount() {
     let elements = this.initElements();
-    this.updateValidity(elements);
+
+    if(!this.props.zoomed) {
+      // Don't update the validity if the design canvas is in the zoom container
+      this.updateValidity(elements);
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
