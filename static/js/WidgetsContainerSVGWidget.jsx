@@ -39,7 +39,7 @@ export default class WidgetsContainerSVGWidget extends React.Component {
         // Contains leaf level nodes other than text -> 'element'
         // Contains only text leaf level nodes -> 'text'
         if(this.state.type != "group") {
-          let type_attr = element.getAttribute("data-type"); 
+          let type_attr = element.getAttribute("type"); 
           let type = type_attr ? type_attr : "element"; 
           this.setState({
             type: type

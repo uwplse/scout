@@ -108,6 +108,7 @@
 
 .rc-tree span.rc-tree-node-selected .widget-container.primary-selection {
 	outline: 4px #FF83A8 dotted;
+	border: none;
     padding: 0.5em;
 }
 

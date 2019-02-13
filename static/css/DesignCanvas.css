@@ -10,6 +10,14 @@
 	transform: scale(1.25) translate(0, 20px);
 }
 
+.zoomed-design-container .design-canvas:hover {
+	transform: none;
+}
+
+.zoomed-design-container .canvas-actions-container  {
+	display: none;
+}
+
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
 	outline: 4px #FF83A8 dotted;
