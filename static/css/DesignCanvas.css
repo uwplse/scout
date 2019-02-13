@@ -12,7 +12,7 @@
 
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered {
-	border: 4px #FF83A8 dotted;
+	outline: 4px #FF83A8 dotted;
 	z-index: 1000; 
 }
 
@@ -72,16 +72,16 @@
 }
 
 .design-canvas-widget:hover {
-	border: 4px #FF83A8 dotted;
+	outline: 4px #FF83A8 dotted;
 	cursor: pointer;
 }
 
 .design-canvas.primary-selection,
 .design-canvas-widget.primary-selection {
-	border: 4px #FF83A8 dotted;
+	outline: 4px #FF83A8 dotted;
 }
 
 .design-canvas.secondary-selection,
 .design-canvas-widget.secondary-selection {
-	border: 4px lightblue dotted;
+	outline: 4px lightblue dotted;
 }

@@ -1,3 +1,4 @@
+
 import React from "react";
 import 'rc-tree/assets/index.css';
 import '../css/ConstraintsCanvas.css'; 
@@ -1419,8 +1420,7 @@ export default class ConstraintsCanvas extends React.Component {
                 onClick={this.props.checkSolutionValidity.bind(this, {getDesigns: true})}>Generate Designs</button>
             </div>
           </div>
-          <div className="constraints-canvas-container panel-body"
-            onClick={this.onClick}>
+          <div className="constraints-canvas-container panel-body">
             <div className="constraints-canvas-tree-container"> 
               <div className="constraints-canvas-page-feedback">
                 {pageFeedbacks}
