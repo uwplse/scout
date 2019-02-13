@@ -223,6 +223,7 @@ class ContainerOrderFeedback extends React.Component {
     super(props); 
 
     this.state = {
+      linkedSiblings: props.siblings, 
       currentOrderValue: props.currentOrderValue
     }
   }
@@ -233,7 +234,7 @@ class ContainerOrderFeedback extends React.Component {
       currentOrderValue: newOrder
     }); 
 
-    this.props.onClick(newOrder);
+    this.props.onClick(newOrder, this.state.linkedSiblings);
   }
 
   render () {
@@ -298,10 +299,11 @@ class OrderFeedback extends React.Component {
 
 class ImportanceFeedback extends React.Component {
   constructor(props) {
-    super(props); 
+    super(props);
   
     this.state = {
-      importanceLevel: props.currentImportance
+      importanceLevel: props.currentImportance, 
+      linkedSiblings: props.siblings
     }; 
   }
 
@@ -310,7 +312,9 @@ class ImportanceFeedback extends React.Component {
       importanceLevel: newImportanceLevel
     }); 
 
-    this.props.onClick(newImportanceLevel); 
+    // If the shape has corresponding siblings, the importance should be 
+    // changed on them as well (Item Groups)
+    this.props.onClick(newImportanceLevel, this.state.linkedSiblings); 
   }
 
   render () {
@@ -431,7 +435,7 @@ export default class FeedbackContainer extends React.Component {
 
   static getGroupFeedbackItems(shape) {
     let feedbackItems = []
-    if(shape && shape.type == "group") {
+    if(shape && shape.type == "group" && !shape.alternate) {
       // Dropdown for each 
       for(let i=0; i<ConstraintActions.groupConstraints.values.length; i++) {
         let key = ConstraintActions.groupConstraints.values[i]; 
@@ -487,16 +491,22 @@ export default class FeedbackContainer extends React.Component {
     let shape = this.state.activeCanvasShape; 
     let callbacks = this.state.feedbackCallbacks; 
 
+    let linkedSiblings = []; 
+    if(shape.item) {
+      linkedSiblings = callbacks.getCurrentShapeSiblings(shape.name); 
+    }
+
     if(callbacks.setContainerOrder) {
       feedbackItems.push(
         <ContainerOrderFeedback 
+          siblings={linkedSiblings}
           currentOrderValue={shape.containerOrder}
           onClick={callbacks.setContainerOrder} />); 
     }
 
     if(callbacks.setOrder) {
       let shapeIndex = callbacks.getCurrentShapeIndex(shape.name); 
-      let siblings = callbacks.getCurrentShapeSiblings(shape.name);
+      let siblings = callbacks.getCurrentShapePrevNextSiblings(shape.name);
       let showOrderMenuItem = (!siblings.prev || !siblings.next);  
 
       if(showOrderMenuItem) {
@@ -505,10 +515,10 @@ export default class FeedbackContainer extends React.Component {
       }
     }
 
-
     if(callbacks.setImportanceLevel) {
         feedbackItems.push(
           <ImportanceFeedback
+            siblings={linkedSiblings}
             currentImportance={shape.importance}
             onClick={callbacks.setImportanceLevel} />); 
     }

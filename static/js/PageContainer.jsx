@@ -551,7 +551,6 @@ export default class PageContainer extends React.Component {
   }
 
   displayWidgetFeedback = (shape, feedbackCallbacks, constraintsCanvasShape=undefined) => {
-    console.log("displayWidgetFeedback");
     let canvasShape = undefined; 
     let designShape = undefined; 
 

@@ -210,6 +210,14 @@ export default class ConstraintsCanvas extends React.Component {
     }, this.updateShapeCache); 
   }
 
+  updateShapeCache = () => {
+    // Update the entry for the constraintShapesMap in the localStorage cache
+    // so we can repopulate the constraints tree on refresh 
+    let treeHierarchy = this.state.treeData; 
+    let treeHierarchyJSON = JSON.stringify(treeHierarchy); 
+    localStorage.setItem('shapeHierarchy', treeHierarchyJSON); 
+  }
+
   initRootNode = () => {
     // Create an object to represent the  top level canvas shape
     let canvas = {
@@ -234,13 +242,6 @@ export default class ConstraintsCanvas extends React.Component {
     return rootTreeNode; 
   }
 
-  updateShapeCache = () => {
-    // Update the entry for the constraintShapesMap in the localStorage cache
-    // so we can repopulate the constraints tree on refresh 
-    let treeHierarchy = this.state.treeData; 
-    let treeHierarchyJSON = JSON.stringify(treeHierarchy); 
-    localStorage.setItem('shapeHierarchy', treeHierarchyJSON); 
-  }
 
   getWidget = (shape, src, options={}) => {
     let shapeId = shape.name;
@@ -269,6 +270,7 @@ export default class ConstraintsCanvas extends React.Component {
                 typingAlerts={typingAlerts}
                 displayRightClickMenu={this.displayRightClickMenu}
                 displayWidgetFeedback={this.displayWidgetFeedback}
+                getCurrentShapePrevNextSiblings={this.getCurrentShapePrevNextSiblings}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 getCurrentParentNode={this.getCurrentParentNode}
@@ -290,6 +292,7 @@ export default class ConstraintsCanvas extends React.Component {
               highlighted={highlighted}
               displayRightClickMenu={this.displayRightClickMenu}
               displayWidgetFeedback={this.displayWidgetFeedback}
+              getCurrentShapePrevNextSiblings={this.getCurrentShapePrevNextSiblings}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
               getCurrentParentNode={this.getCurrentParentNode}
@@ -470,7 +473,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  findShapeSiblings = (shapeId, siblings, node) => {
+  findShapePrevNextSiblings = (shapeId, siblings, node) => {
     // Get the two neighboring siblings for a shape in the tree
     for(let i=0; i<node.length; i++) {
       let treeNode = node[i]; 
@@ -488,6 +491,23 @@ export default class ConstraintsCanvas extends React.Component {
       }
       else if(treeNode.children) {
         this.findShapeSiblings(shapeId, siblings, treeNode.children); 
+      }      
+    }
+  }
+
+
+  findShapeSiblings = (shapeId, siblings, node) => {
+    if(node.children && node.children.length) {
+      let filtered = node.children.filter((child) => child.key == shapeId); 
+      if(filtered.length) {
+        let sibs =  node.children.filter((child) => child.key != shapeId); 
+        let sibShapes = sibs.map((child) => {return child.shape;}); 
+        siblings.push(...sibShapes); 
+      }
+      else {
+        for(let i=0; i<node.children.length; i++) {
+          this.findShapeSiblings(shapeId, siblings, node.children[i]); 
+        }
       }      
     }
   }
@@ -511,7 +531,7 @@ export default class ConstraintsCanvas extends React.Component {
     return -1; 
   }
   
-  getCurrentShapeSiblings = (shapeId) => {
+  getCurrentShapePrevNextSiblings = (shapeId) => {
     // Go through tree data (recursive) and find the level of the element
     let siblings = {}; 
     let node = this.state.treeData; 
@@ -531,6 +551,14 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     return siblingItems; 
+  }
+  
+  getCurrentShapeSiblings = (shapeId) => {
+    // Go through tree data (recursive) and find the level of the element
+    let node = this.state.treeData[0]; 
+    let siblings = []; 
+    this.findShapeSiblings(shapeId, siblings, node);
+    return siblings; 
   }
 
   getCurrentShapeIndex = (shapeId) => {
@@ -637,10 +665,6 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  inferShapeType = () => {
-    return "button";
-  }
-
   createConstraintsCanvasShapeObject = (id, type, width, height, options={}) => {
     // Optional set of initial properties cna be passed in through the intial object
     let order = options.order ? options.order : -1; 
@@ -745,7 +769,6 @@ export default class ConstraintsCanvas extends React.Component {
       }
 
       newGroupNode.item = true;
-      newGroupNode.disabled = true; 
       newGroupNode.shape.item = true;
       newGroupNode.children = currGroup; 
       newChildren.push(newGroupNode); 
@@ -1318,18 +1341,18 @@ export default class ConstraintsCanvas extends React.Component {
 
     // If the node was dropped in a repeat group, we need to remove it as it will no longer match the pattern 
     if(droppedOnRepeatGroup) {
-      this.removeRepeatGroup(dropObj); 
+      this.removeRepeatGroup(dropObj.key); 
     }
 
     if(droppedOnItemGroup) {
       // Get the parent repeat group node 
       let parentRepeatGroup = this.getParentNodeForKey(dropObj.key, this.state.treeData[0]); 
-      this.removeRepeatGroup(parentRepeatGroup);
+      this.removeRepeatGroup(parentRepeatGroup.key);
     }
 
     if(droppedInItemGroup) {
       let parentRepeatGroup = this.getParentNodeForKey(parentDropNode.key, this.state.treeData[0]); 
-      this.removeRepeatGroup(parentRepeatGroup); 
+      this.removeRepeatGroup(parentRepeatGroup.key); 
     }
 
     this.setState({

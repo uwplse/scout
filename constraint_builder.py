@@ -771,12 +771,20 @@ class ConstraintBuilder(object):
 		container_size = str(container.computed_width()) if width_or_height == "width" else str(container.computed_height())
 		return cb.eq(container_size, size)
 
-	def split_children_into_groups(self, container):  
-		# I hate. this algorithm
+	def split_children_into_groups(self, container, extra_in_first):  
 		num_rows = container.num_rows_or_columns()
 		child_shapes = container.children
-		num_in_first = math.floor(len(child_shapes)/2)
-		num_in_second = math.ceil(len(child_shapes)/2)
+		
+		num_in_first = 0
+		num_in_second = 0
+		if extra_in_first: 
+			num_in_first = math.ceil(len(child_shapes)/2)
+			num_in_second = math.floor(len(child_shapes)/2) 
+		else: 
+			num_in_first = math.floor(len(child_shapes)/2) 
+			num_in_second = math.ceil(len(child_shapes)/2)
+
+
 		rows = []
 		num_in_row = 0
 		child_index = 0
@@ -900,42 +908,46 @@ class ConstraintBuilder(object):
 		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
 			"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
+		self.balanced_row_column_arrangement(is_rows, is_columns, container, spacing)
+
+
+	def row_column_layout(self, is_rows, is_columns, groups, container, spacing, id_str=""): 
+		row_column_constraints = []
+		row_column_constraints.append(cb.ite(is_rows, self.align_rows_or_columns(container, spacing, groups, "row", "y", "height", "x", "width"), "true"))
+		row_column_constraints.append(cb.ite(is_columns, self.align_rows_or_columns(container, spacing, groups, "column", "x", "width", "y", "height"), "true"))
+		row_column_constraints.append(cb.ite(is_rows, self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), "true"))
+		row_column_constraints.append(cb.ite(is_columns, self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), "true"))
+		row_column_constraints.append(cb.ite(is_rows, self.set_container_size_main_axis(container, spacing, groups, "height"), "true"))
+		row_column_constraints.append(cb.ite(is_columns, self.set_container_size_main_axis(container, spacing, groups, "width"), "true"))
+		row_column_constraints.append(cb.ite(is_rows, self.set_container_size_cross_axis(container, spacing, groups, "width"), "true"))
+		row_column_constraints.append(cb.ite(is_columns, self.set_container_size_cross_axis(container, spacing, groups, "height"), "true"))
+		return row_column_constraints
+
+	def balanced_row_column_arrangement(self, is_rows, is_columns, container, spacing): 
 		# Columns/Rows arrangement constraints
 		# Only apply if there are > 2 children elements
 		if len(container.children) > 2:
-			groups = self.split_children_into_groups(container)
-			self.constraints += cb.assert_expr(cb.ite(is_rows, 
-				self.align_rows_or_columns(container, spacing, groups, "row", "y", "height", "x", "width"), "true"), 
-				"container_" + container.shape_id + "_align_rows")
-			self.constraints += cb.assert_expr(cb.ite(is_columns, 
-				self.align_rows_or_columns(container, spacing, groups, "column", "x", "width", "y", "height"), "true"), 
-				"container_" + container.shape_id + "_align_columns")
-			self.constraints += cb.assert_expr(cb.ite(is_rows,
-				self.align_left_or_top(groups, spacing, "row", "x", "y", "height"), "true"),
-				"container_" + container.shape_id + "_align_rows_left")
-			self.constraints += cb.assert_expr(cb.ite(is_columns,
-				self.align_left_or_top(groups, spacing, "column", "y", "x", "width"), "true"),
-				"container_" + container.shape_id + "_align_columns_left")
+			num_children_even = len(container.children) % 2 == 0
+			if num_children_even: 
+				groups = self.split_children_into_groups(container)
+				constraints = self.row_column_layout(is_rows, is_columns, groups, container, spacing)
+				self.constraints += cb.assert_expr(cb.and_expr(constraints), "container_" + container.shape_id + "_rows_columns")
+			else: 
+				print("Rows and columns!!")
+				groups_one = self.split_children_into_groups(container, True)
+				const1 = self.row_column_layout(is_rows,  is_columns, groups_one, container, spacing, "1")
 
-			self.constraints += cb.assert_expr(cb.ite(is_rows,
-				self.set_container_size_main_axis(container, spacing, groups, "height"), "true"),
-				"container_" + container.shape_id + "_max_row_height")
-			self.constraints += cb.assert_expr(cb.ite(is_columns,
-				self.set_container_size_main_axis(container, spacing, groups, "width"), "true"),
-				"container_" + container.shape_id + "_max_row_width")
+				groups_two = self.split_children_into_groups(container, False) 
+				const2 = self.row_column_layout(is_rows,  is_columns, groups_two, container, spacing, "2")
 
-			self.constraints += cb.assert_expr(cb.ite(is_rows,
-				self.set_container_size_cross_axis(container, spacing, groups, "width"), "true"),
-				"container_" + container.shape_id + "_max_container_height_from_rows")
-			self.constraints += cb.assert_expr(cb.ite(is_columns,
-				self.set_container_size_cross_axis(container, spacing, groups, "height"), "true"),
-				"container_" + container.shape_id + "_max_container_width_from_columns")
+				self.constraints += cb.assert_expr(cb.or_expr([cb.and_expr(const1), cb.and_expr(const2)]), "container_" + container.shape_id + "_rows_columns")
 		else:
 			# Prevent columnns and rows variables if there are 2 children or less
 			self.constraints += cb.assert_expr(cb.neq(arrangement.id, str(rows_index)), 
 				"container_" + container.shape_id + "_arrangement_neq_rows")
 			self.constraints += cb.assert_expr(cb.neq(arrangement.id, str(columns_index)), 
 				"container_" + container.shape_id + "_arrangement_neq_columns")
+
 
 	def align_container(self, container, spacing):
 		alignment = container.variables.alignment
