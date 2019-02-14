@@ -158,7 +158,7 @@ class Shape(object):
 			domain = element["representations"] 
 			size_width = element["alternate_width"]
 			size_height = element["alternate_height"]
-			self.variables.alternate = sh.Variable(shape_id, "alternate", domain)
+			self.variables.alternate = sh.Variable(shape_id, "alternate", domain, var_type="String", index_domain=False)
 
 		if self.type == "leaf": 
 			size_domain = compute_size_domain(self.importance, size_width, size_height)
@@ -203,6 +203,7 @@ class ContainerShape(Shape):
 		self.variables.padding = sh.Variable(shape_id, "padding", 
 			PADDINGS, index_domain=False)
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
+		self.variables.extra_in_first = sh.Variable(shape_id, "extra_in_first", var_type="Bool")
 		self.variables.width = sh.Variable(shape_id, "width")
 		self.variables.height = sh.Variable(shape_id, "height")
 

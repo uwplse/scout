@@ -81,7 +81,7 @@ class ConstraintBuilder(object):
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
 				self.decl_constraints += cb.declare(variable.id, variable.type)
-				if variable.name != "baseline":
+				if variable.name != "baseline" and variable.name != "extra_in_first":
 					all_values.append(cb.eq(variable.id, 
 						str(variable.get_value_from_element(element))))
 
@@ -95,12 +95,15 @@ class ConstraintBuilder(object):
 			self.constraints += cb.eq(shape.variables.baseline.id, 
 				cb.add(shape.variables.y.id, shape.orig_baseline), "baseine_" + shape.shape_id)
 
-	def init_shape_alternate(self, shape): 
+	def init_shape_alternate(self, shape): 		
 		if shape.is_alternate: 
-			alternate = shape.variables.alternate.id
-			self.constraints += cb.assert_expr(cb.gte(alternate, "0"), "shape_" + shape.shape_id + "_alternate_gt_0")
-			self.constraints += cb.assert_expr(cb.lt(alternate, str(len(shape.variables.alternate.domain))),
-				"alternate_" + shape.shape_id + "_alternate_lt_domain" )
+			alternate_values = []
+			alternate = shape.variables.alternate
+			for alt_value in shape.variables.alternate.domain:
+				alternate_values.append(cb.eq(alternate.id, '"' + alt_value + '"'))
+
+			self.constraints += cb.assert_expr(cb.or_expr(alternate_values), "container_"
+				+ shape.shape_id + "_alternate_in_domain")
 
 	def init_shape_bounds(self, shape):
 		self.constraints += cb.assert_expr(cb.gte(shape.variables.x.id, "0"), "shape_" + shape.shape_id + "_x_gt_zero")
@@ -342,36 +345,38 @@ class ConstraintBuilder(object):
 		# The order of the elements within the groups should be uniform
 		for group in subgroups:
 			group_children = group.children
-			for i in range(0, len(group_children)-1):
-				child1 = group_children[i]
-				child2 = group_children[i+1]
-				child1_left = cb.lt(cb.add(child1.variables.x.id, str(child1.computed_width())), 
-					child2.variables.x.id)
-				child1_above = cb.lt(cb.add(child1.variables.y.id, str(child1.computed_height())), 
-				 	child2.variables.y.id)
-				child1_left_or_above = cb.or_expr([child1_left, child1_above])
-		
-				for j in range(0, len(child1.correspondingIDs)):
-					child1_corrID = child1.correspondingIDs[j]
-					child2_corrID = child2.correspondingIDs[j]
-					child1_corr_shape = shapes[child1_corrID]
-					child2_corr_shape = shapes[child2_corrID]
-		
-					child1_corr_left = cb.lt(cb.add(child1_corr_shape.variables.x.id, str(child1_corr_shape.computed_width())),
-						child2_corr_shape.variables.x.id)
-					child1_corr_above = cb.lt(cb.add(child1_corr_shape.variables.y.id, str(child1_corr_shape.computed_height())), 
-						child2_corr_shape.variables.y.id)
-					child1_corr_left_or_above = cb.or_expr([child1_corr_left, child1_corr_above])
+			for i in range(0, len(group_children)):
+				for j in range(0, len(group_children)): 
+					if i != j:
+						child1 = group_children[i]
+						child2 = group_children[j]
+						child1_left = cb.lt(cb.add(child1.variables.x.id, str(child1.computed_width())), 
+							child2.variables.x.id)
+						child1_above = cb.lt(cb.add(child1.variables.y.id, str(child1.computed_height())), 
+						 	child2.variables.y.id)
+						child1_left_or_above = cb.or_expr([child1_left, child1_above])
+				
+						for k in range(0, len(child1.correspondingIDs)):
+							child1_corrID = child1.correspondingIDs[k]
+							child2_corrID = child2.correspondingIDs[k]
+							child1_corr_shape = shapes[child1_corrID]
+							child2_corr_shape = shapes[child2_corrID]
+				
+							child1_corr_left = cb.lt(cb.add(child1_corr_shape.variables.x.id, str(child1_corr_shape.computed_width())),
+								child2_corr_shape.variables.x.id)
+							child1_corr_above = cb.lt(cb.add(child1_corr_shape.variables.y.id, str(child1_corr_shape.computed_height())), 
+								child2_corr_shape.variables.y.id)
+							child1_corr_left_or_above = cb.or_expr([child1_corr_left, child1_corr_above])
 
-					child2_corr_left = cb.lt(cb.add(child2_corr_shape.variables.x.id, str(child2_corr_shape.computed_width())),
-						child1_corr_shape.variables.x.id)
-					child2_corr_above = cb.lt(cb.add(child2_corr_shape.variables.y.id, str(child2_corr_shape.computed_height())), 
-						child1_corr_shape.variables.y.id)
-					child2_corr_left_or_above = cb.or_expr([child2_corr_left, child2_corr_above])
+							child2_corr_left = cb.lt(cb.add(child2_corr_shape.variables.x.id, str(child2_corr_shape.computed_width())),
+								child1_corr_shape.variables.x.id)
+							child2_corr_above = cb.lt(cb.add(child2_corr_shape.variables.y.id, str(child2_corr_shape.computed_height())), 
+								child1_corr_shape.variables.y.id)
+							child2_corr_left_or_above = cb.or_expr([child2_corr_left, child2_corr_above])
 
-					order_pair = cb.ite(child1_left_or_above, child1_corr_left_or_above, child2_corr_left_or_above)
-					self.constraints += cb.assert_expr(order_pair, 
-						"container_" + container.shape_id + "_group_" + group.shape_id + "_enforce_subgroup_order")
+							order_pair = cb.ite(child1_left_or_above, child1_corr_left_or_above, child2_corr_left_or_above)
+							self.constraints += cb.assert_expr(order_pair, 
+								"container_" + container.shape_id + "_group_" + group.shape_id + "_enforce_subgroup_order")
 
 	def init_locks(self, shape): 
 		# Add constraints for all of the locked properties
@@ -903,12 +908,12 @@ class ConstraintBuilder(object):
 		# Enforce that the padding used by the container is no taller or wider than the smallest width or height element
 		min_w_constraint = self.get_min_width_constraint(1,0,child_shapes)
 		min_h_constraint = self.get_min_height_constraint(1,0,child_shapes)
-		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"), 
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
 			"container_" + container.shape_id + "_padding_lt_shortest_child")
 		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
 			"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
-		self.balanced_row_column_arrangement(is_rows, is_columns, container, spacing)
+		self.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
 
 
 	def row_column_layout(self, is_rows, is_columns, groups, container, spacing, id_str=""): 
@@ -923,13 +928,16 @@ class ConstraintBuilder(object):
 		row_column_constraints.append(cb.ite(is_columns, self.set_container_size_cross_axis(container, spacing, groups, "height"), "true"))
 		return row_column_constraints
 
-	def balanced_row_column_arrangement(self, is_rows, is_columns, container, spacing): 
+	def balanced_row_column_arrangement(self, is_rows, is_columns, container, rows_index, columns_index, spacing):
 		# Columns/Rows arrangement constraints
 		# Only apply if there are > 2 children elements
+		arrangement = container.variables.arrangement
+		extra_in_first = container.variables.extra_in_first
+
 		if len(container.children) > 2:
 			num_children_even = len(container.children) % 2 == 0
 			if num_children_even: 
-				groups = self.split_children_into_groups(container)
+				groups = self.split_children_into_groups(container, True)
 				constraints = self.row_column_layout(is_rows, is_columns, groups, container, spacing)
 				self.constraints += cb.assert_expr(cb.and_expr(constraints), "container_" + container.shape_id + "_rows_columns")
 			else: 
@@ -940,7 +948,7 @@ class ConstraintBuilder(object):
 				groups_two = self.split_children_into_groups(container, False) 
 				const2 = self.row_column_layout(is_rows,  is_columns, groups_two, container, spacing, "2")
 
-				self.constraints += cb.assert_expr(cb.or_expr([cb.and_expr(const1), cb.and_expr(const2)]), "container_" + container.shape_id + "_rows_columns")
+				self.constraints += cb.assert_expr(cb.ite(extra_in_first.id, cb.and_expr(const1), cb.and_expr(const2)), "container_" + container.shape_id + "_rows_columns")
 		else:
 			# Prevent columnns and rows variables if there are 2 children or less
 			self.constraints += cb.assert_expr(cb.neq(arrangement.id, str(rows_index)), 

@@ -247,9 +247,7 @@ class Solution(object):
 
 					if shape.is_alternate: 
 						alternate = model[variables[shape.variables.alternate.id]].as_string()
-						alt_value = int(alternate)
-						alt_value = shape.variables.alternate.domain[alt_value]
-						element["alternate"] = alt_value
+						element["alternate"] = alternate
 
 					# Only consider emphassis for leaf node elements
 					if shape.importance == "high": 
