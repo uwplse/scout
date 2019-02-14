@@ -48,8 +48,6 @@ export default class PageContainer extends React.Component {
     this.solutionsMap = {};
 
     this.constraintsCanvasRef = React.createRef();
-
-    this.prevTime = undefined; 
   }
 
   componentDidMount = () => {
@@ -157,8 +155,40 @@ export default class PageContainer extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
 
+  parseSolutions = (requestData) => {
+    let resultsParsed = JSON.parse(requestData); 
+    let solutions = resultsParsed.solutions;
+    if(solutions) {
+      let designCanvasList = this.state.mainDesignCanvases; 
+      for(let i=0; i<solutions.length; i++) {
+        let solution = solutions[i]; 
+        solution.new = true; 
+        this.solutionsMap[solution.id] = solution; 
+      }
 
-  getMoreDesigns = () => {
+      let designsFound = solutions.length;
+
+      // Go through previous solutions and see which ones need to be invalidated
+      for(let i=0; i<this.state.solutions.length; i++) {
+        let designSolution = this.state.solutions[i]; 
+        
+        // Invalidate the solution which means it should be moved into the right side panel 
+        designSolution.invalidated = !designSolution.valid;
+
+        // Mark old solutions as not new
+        designSolution.new = false;
+      }
+
+      this.setState({
+        designsFound: designsFound,
+        solutions: solutions.concat(this.state.solutions), 
+        showDesignsAlert: true, 
+        activeDesignPanel: "designs"
+      }, this.updateSolutionsCache);      
+    }
+  }
+
+  getMoreDesigns = (callback) => {
     // get more designs
     // without changing any new constraints
     let jsonShapes = this.getShapesJSON(); 
@@ -168,19 +198,17 @@ export default class PageContainer extends React.Component {
    
    // Send an ajax request to the server 
    // Solve for the new designs
-    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
+    let self = this;
+    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, 
+      function processDesigns(requestData) {
+        self.parseSolutions(requestData); 
+        if(callback){
+          callback(); 
+        }
+      }, 'text');
   }
 
   checkSolutionValidity = (options={}) => {
-    let currTime = Date.now()
-    console.log(currTime); 
-    if(this.prevTime) {
-      let diff = currTime - this.prevTime; 
-      console.log(diff/1000); 
-    }
-
-    this.prevTime = currTime; 
-
     let getDesigns = options.getDesigns ? true : false; 
     if(!getDesigns) {
       // Only check for validity of the current solutions
@@ -193,12 +221,16 @@ export default class PageContainer extends React.Component {
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
           this.updateSolutionValidityFromRequest(requestParsed.solutions);
+
+          if(options.callback) {
+            options.callback();
+          }
         });         
       }
     }
     else {
       // Get design solutions for the current set of constraints
-      this.getMoreDesigns();
+      this.getMoreDesigns(options.callback);
     }
   }
 
@@ -385,39 +417,6 @@ export default class PageContainer extends React.Component {
     // Get all of the shapes on the canvas into a collection 
     let shapeObjects = this.constraintsCanvasRef.current.getShapeHierarchy();
     return JSON.stringify(shapeObjects); 
-  }
-
-  parseSolutions = (requestData) => {
-    let resultsParsed = JSON.parse(requestData); 
-    let solutions = resultsParsed.solutions;
-    if(solutions) {
-      let designCanvasList = this.state.mainDesignCanvases; 
-      for(let i=0; i<solutions.length; i++) {
-        let solution = solutions[i]; 
-        solution.new = true; 
-        this.solutionsMap[solution.id] = solution; 
-      }
-
-      let designsFound = solutions.length;
-
-      // Go through previous solutions and see which ones need to be invalidated
-      for(let i=0; i<this.state.solutions.length; i++) {
-        let designSolution = this.state.solutions[i]; 
-        
-        // Invalidate the solution which means it should be moved into the right side panel 
-        designSolution.invalidated = !designSolution.valid;
-
-        // Mark old solutions as not new
-        designSolution.new = false;
-      }
-
-      this.setState({
-        designsFound: designsFound,
-        solutions: solutions.concat(this.state.solutions), 
-        showDesignsAlert: true, 
-        activeDesignPanel: "designs"
-      }, this.updateSolutionsCache);      
-    }
   }
 
   // getRelativeDesigns = (elements, action) => {

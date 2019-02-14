@@ -54,6 +54,7 @@ export default class ConstraintsCanvas extends React.Component {
     this.defaultNodeWidth = 173;
 
     this.state = { 
+      loading: false, 
       treeData: [], 
       expandedTreeNodes: ["canvas"],
       selectedTreeNodes: [], 
@@ -1366,6 +1367,21 @@ export default class ConstraintsCanvas extends React.Component {
     evt.stopPropagation();
   }
 
+  designsReturned = () => {
+    this.setState({
+      loading: false
+    }); 
+  }
+
+  requestDesigns = () => {
+    this.setState({
+      loading: true
+    }); 
+
+    // Pass in a callback so we can udpate the loading indicator when the designs are returned
+    this.props.checkSolutionValidity({getDesigns: true, callback: this.designsReturned}); 
+  }
+
   render () {
     // Gather the set of tree nodes
     const gatherTreeNodes = data => {
@@ -1440,7 +1456,10 @@ export default class ConstraintsCanvas extends React.Component {
               <button 
                 type="button" 
                 className="btn btn-default design-canvas-button" 
-                onClick={this.props.checkSolutionValidity.bind(this, {getDesigns: true})}>Generate Designs</button>
+                onClick={this.requestDesigns}>Generate Designs</button>
+              {this.state.loading ? (<div class="spinner-border text-light constraints-container-spinner" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                      </div>) : null}
             </div>
           </div>
           <div className="constraints-canvas-container panel-body">

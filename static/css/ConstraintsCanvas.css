@@ -57,6 +57,10 @@
   Constraints canvas 
  */
 
+ .constraints-container-spinner {
+ 	margin-left: 1em;
+ }
+
  .constraints-canvas-container {
  	display: flex; 
  	overflow: auto;
