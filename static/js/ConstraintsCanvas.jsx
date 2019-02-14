@@ -415,7 +415,10 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   getConstraintsCanvasShape = (shapeID) => {
-    return this.widgetTreeNodeMap[shapeID].shape; 
+    let node = this.widgetTreeNodeMap[shapeID]; 
+    if(node) {
+      return node.shape; 
+    }
   }
 
   displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
@@ -1478,7 +1481,6 @@ export default class ConstraintsCanvas extends React.Component {
                     showLine={false}
                     multiple={true}
                     showIcon={true}
-                    autoExpandParent={true}
                     defaultExpandParent={true}
                     selectedKeys={this.state.selectedTreeNodes}
                     defaultExpandedKeys={["canvas"]}

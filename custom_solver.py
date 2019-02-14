@@ -8,8 +8,6 @@ import logging
 import solver_helpers as sh
 
 NUM_SOLUTIONS = 10
-NUM_DIFFERENT = 5
-SOLVER_WAIT = 0.2
 
 class CustomSolver(object):
 	def __init__(self, elements, previous_solutions, relative_designs=""): 

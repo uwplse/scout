@@ -179,9 +179,10 @@ export default class PageContainer extends React.Component {
         designSolution.new = false;
       }
 
+      this.state.solutions.push(...solutions); 
       this.setState({
         designsFound: designsFound,
-        solutions: solutions.concat(this.state.solutions), 
+        solutions: this.state.solutions,  
         showDesignsAlert: true, 
         activeDesignPanel: "designs"
       }, this.updateSolutionsCache);      

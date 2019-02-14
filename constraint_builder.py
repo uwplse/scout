@@ -714,12 +714,12 @@ class ConstraintBuilder(object):
 				self.constraints += cb.assert_expr(cb.eq(child.variables.x.id, child_x_position),
 												   "child_" + child.shape_id + "_x_position_left_column")
 
-				right_columns_spacing = cb.mult(column_width.id, child_right_column.id)
-				right_gutter_spacing = cb.mult(gutter_width.id, cb.sub(child_right_column.id, "1"))
-				child_right_position = cb.add(right_columns_spacing, cb.add(right_gutter_spacing, margin.id))
+				# right_columns_spacing = cb.mult(column_width.id, child_right_column.id)
+				# right_gutter_spacing = cb.mult(gutter_width.id, cb.sub(child_right_column.id, "1"))
+				# child_right_position = cb.add(right_columns_spacing, cb.add(right_gutter_spacing, margin.id))
 
-				self.constraints += cb.assert_expr(cb.eq(cb.add(child.variables.x.id, child.variables.width.id), child_right_position),
-												   "child_" + child.shape_id + "_right_position_right_column")
+				# self.constraints += cb.assert_expr(cb.eq(cb.add(child.variables.x.id, child.variables.width.id), child_right_position),
+				# 								   "child_" + child.shape_id + "_right_position_right_column")
 
 
 	def align_rows_or_columns(self, container, padding, rows, column_or_row,

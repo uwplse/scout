@@ -111,7 +111,7 @@ export default class DesignCanvas extends React.Component {
   getElementConflicts(element) {
     let conflicts = [];
     let constraintsShape = this.getConstraintsCanvasShape(element.name); 
-    if(constraintsShape.locks && constraintsShape.locks.length) {
+    if(constraintsShape && constraintsShape.locks && constraintsShape.locks.length) {
       for(let j=0; j<constraintsShape.locks.length; j++) {
         let lock = constraintsShape.locks[j];
         let elementValue = element[lock];
@@ -130,7 +130,7 @@ export default class DesignCanvas extends React.Component {
       }
     }
 
-    if(constraintsShape.prevents && constraintsShape.prevents.length) {
+    if(constraintsShape && constraintsShape.prevents && constraintsShape.prevents.length) {
       for(let j=0; j<constraintsShape.prevents.length; j++) {
         let prevent = constraintsShape.prevents[j];
         let elementValue = element[prevent];

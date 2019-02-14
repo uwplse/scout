@@ -29,7 +29,9 @@ class FeedbackItem extends React.Component {
     let selectedValue = this.state.selected; 
     if(this.state.selected == "Vary" && useDesignShape) {
       selectedValue = FeedbackItem.getDesignSelected(this.state.designShape, this.state.property); 
-      this.props.setSelectedValue(this.props.id, selectedValue); 
+      if(selectedValue != "Vary") {
+        this.props.setSelectedValue(this.props.id, selectedValue); 
+      }
     }
 
     let locked = FeedbackItem.getInitialLocked(this.state.canvasShape, this.state.property, selectedValue); 
