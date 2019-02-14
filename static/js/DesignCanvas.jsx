@@ -56,7 +56,7 @@ export default class DesignCanvas extends React.Component {
     return {
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState,
-      valid: nextProps.valid && prevState.valid, 
+      valid: nextProps.valid, 
       new: nextProps.new, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
@@ -102,7 +102,6 @@ export default class DesignCanvas extends React.Component {
     }
 
     this.setState({
-      valid: valid, 
       conflicts: conflicts
     }); 
 

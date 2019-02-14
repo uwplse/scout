@@ -675,26 +675,52 @@ class ConstraintBuilder(object):
 		if len(child_shapes): 
 			for child_index in range(0, len(child_shapes)): 
 				child = child_shapes[child_index]
-				child_column = child.variables.column
+				
+				child_left_column = child.variables.left_column
+				child_right_column = child.variables.right_column 
+
 				# Enforce the child column domain values
-				column_values = []
-				for col_value in child_column.domain: 
-					col_eq = cb.eq(child_column.id, str(col_value))
-					column_values.append(col_eq)
-				self.constraints += cb.assert_expr(cb.or_expr(column_values),
-					"shape_" + child.shape_id + "_layout_column_value")
+				left_column_values = []
+				for col_value in child_left_column.domain: 
+					col_eq = cb.eq(child_left_column.id, str(col_value))
+					left_column_values.append(col_eq)
+				self.constraints += cb.assert_expr(cb.or_expr(left_column_values),
+					"shape_" + child.shape_id + "_left_layout_column_value")
+
+				right_column_values = []
+				for col_value in child_right_column.domain: 
+					col_eq = cb.eq(child_right_column.id, str(col_value))
+					right_column_values.append(col_eq)
+				self.constraints += cb.assert_expr(cb.or_expr(right_column_values),
+					"shape_" + child.shape_id + "_right_layout_column_value")
 
 				# Enforce that the child column value is less than the canvas column amount
-				column_lt_parent = cb.lt(child_column.id, layout_columns.id)
-				self.constraints += cb.assert_expr(column_lt_parent, "child_" + child.shape_id + "_column_lt_layout_columns")
+				left_column_lt_parent = cb.lt(child_left_column.id, layout_columns.id)
+				self.constraints += cb.assert_expr(left_column_lt_parent, "child_" + child.shape_id + "_left_column_lt_layout_columns")
+
+				right_column_lt_parent = cb.lt(child_right_column.id, layout_columns.id)
+				self.constraints += cb.assert_expr(right_column_lt_parent, "child_" + child.shape_id + "_right_column_lt_layout_columns")
+
+				# Left column should be less than or equal to right column 
+				left_column_lt_right = cb.lte(child_left_column.id, child_right_column.id)
+				self.constraints += cb.assert_expr(left_column_lt_right, "child_" + child.shape_id + "_left_column_lt_right_column")
 
 				# Enforce that the x position of the child falls to the left edge of a column 
-				columns_mult = cb.sub(child_column.id, "1")
-				columns_spacing = cb.mult(column_width.id, columns_mult)
-				gutter_spacing = cb.mult(gutter_width.id, columns_mult)
-				child_x_position = cb.add(columns_spacing, cb.add(gutter_spacing, margin.id))
+				left_column_mult = cb.sub(child_left_column.id, "1")
+				left_columns_spacing = cb.mult(column_width.id, left_column_mult)
+				left_gutter_spacing = cb.mult(gutter_width.id, left_column_mult)
+				child_x_position = cb.add(left_columns_spacing, cb.add(left_gutter_spacing, margin.id))
+
 				self.constraints += cb.assert_expr(cb.eq(child.variables.x.id, child_x_position),
-												   "child_" + child.shape_id + "_x_position_column")
+												   "child_" + child.shape_id + "_x_position_left_column")
+
+				right_columns_spacing = cb.mult(column_width.id, child_right_column.id)
+				right_gutter_spacing = cb.mult(gutter_width.id, cb.sub(child_right_column.id, "1"))
+				child_right_position = cb.add(right_columns_spacing, cb.add(right_gutter_spacing, margin.id))
+
+				self.constraints += cb.assert_expr(cb.eq(cb.add(child.variables.x.id, child.variables.width.id), child_right_position),
+												   "child_" + child.shape_id + "_right_position_right_column")
+
 
 	def align_rows_or_columns(self, container, padding, rows, column_or_row,
 							  aligned_axis, aligned_axis_size, layout_axis, layout_axis_size):

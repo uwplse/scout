@@ -53,7 +53,9 @@ ConstraintActions.baseline_grids = [4,8,16]
 ConstraintActions.column_widths = ConstraintActions.computeColumnWidths(); 
 
 // Element specific domains
-ConstraintActions.columns = [1,2,3,4,5,6,7,8,9,10,11,12]
+ConstraintActions.left_columns = [1,2,3,4,5,6,7,8,9,10,11,12]; 
+ConstraintActions.right_columns = [1,2,3,4,5,6,7,8,9,10,11,12]; 
+
 ConstraintActions.y_positions = [...Array(ConstraintActions.canvas_height).keys()].filter((value) => {
 	return ((value % 4) == 0); 
 })
@@ -185,8 +187,11 @@ ConstraintActions.messages = {
 	"y": function getMessage(shape, value) {
 		return "y at location " + value + "px."
 	},
-	"column": function getMessage(shape, value) {
-		return " in column " + value + ".";
+	"left_column": function getMessage(shape, value) {
+		return " left aligned to column " + value + ".";
+	}, 
+	"right_column": function getMessage(shape, value) {
+		return " right aligned to column " + value + ".";
 	}, 
 	"arrangement": function getMessage(shape, value) {
 		let labelValue = ConstraintActions.arrangements[value]; 
@@ -204,6 +209,7 @@ ConstraintActions.messages = {
 	"columns": function getMessage(shape, value) {
 		return " columns of " + value + ".";
 	}, 
+
 	"gutter_width": function getMessage(shape, value) {
 		return " gutter width of " + value + "px."; 
 	}, 
@@ -342,11 +348,12 @@ ConstraintActions.elementConstraints = {
 
 // These actions will only appear for direct children of the canvas container
 ConstraintActions.canvasChildConstraints = {
-	"values": ["column", "y"],
+	"values": ["left_column", "right_column", "y"],
 	"keep": ConstraintActions.defaultKeep, 
 	"prevent": ConstraintActions.defaultPrevent, 
 	"domains": {
-		"column": ConstraintActions.columns, 
+		"left_column": ConstraintActions.left_columns, 
+		"right_column": ConstraintActions.right_columns, 
 		"y": ConstraintActions.y_positions
 	}
 }
@@ -369,7 +376,7 @@ ConstraintActions.canvasConstraints = {
 	"domains": {
 		"margin": ConstraintActions.margins, 
 		"baseline_grid": ConstraintActions.baseline_grids, 
-		"columns": ConstraintActions.columns, 
+		"columns": ConstraintActions.num_columns, 
 		"gutter_width": ConstraintActions.gutter_widths, 
 		"column_width": ConstraintActions.column_widths
 	}

@@ -173,12 +173,15 @@ class Shape(object):
 			# Add the column variable if the element is at the root of the canvas. 
 			# The canvas will use this variable to place it in its correct column 
 			self.has_columns = True
-			self.variables.column = sh.Variable(shape_id, "column", COLUMNS, index_domain=False)
+			self.variables.left_column = sh.Variable(shape_id, "left_column", COLUMNS, index_domain=False)
+			self.variables.right_column = sh.Variable(shape_id, "right_column", COLUMNS, index_domain=False)
 
 			# The y position should have a computed domain so they can be part of the variable search 
 			# Elements at the root level of the canvas will be aligned by the baseline grid and columns
 			y_domain = compute_y_domain()
 			self.variables.y = sh.Variable(shape_id, "y", y_domain, index_domain=False)
+
+
 
 	def computed_width(self): 
 		if self.type == "canvas": 

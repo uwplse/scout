@@ -214,8 +214,11 @@ class Solution(object):
 					element["padding"] = int(padding)
 
 					if shape.has_columns:
-						column = model[variables[shape.variables.column.id]].as_string()
-						element["column"] = int(column)
+						left_column = model[variables[shape.variables.left_column.id]].as_string()
+						element["left_column"] = int(left_column)
+
+						right_column = model[variables[shape.variables.right_column.id]].as_string()
+						element["right_column"] = int(right_column)
 						element["canvas_child"] = True
 
 				elif shape.type == "canvas": 
@@ -241,8 +244,12 @@ class Solution(object):
 					element["size_factor"] = size_factor
 
 					if shape.has_columns:
-						column = model[variables[shape.variables.column.id]].as_string()
-						element["column"] = int(column)
+						left_column = model[variables[shape.variables.left_column.id]].as_string()
+						element["left_column"] = int(left_column)
+						
+						right_column = model[variables[shape.variables.right_column.id]].as_string()
+						element["right_column"] = int(right_column)
+
 						element["canvas_child"] = True
 
 					if shape.is_alternate: 

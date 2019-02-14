@@ -203,7 +203,8 @@ class Solver(object):
 				last.append(shape.variables.baseline_grid)
 			elif shape.type == "leaf": 
 				if shape.at_root: 
-					last.append(shape.variables.column)
+					last.append(shape.variables.left_column)
+					last.append(shape.variables.right_column)
 					last.append(shape.variables.y)
 
 				if shape.is_alternate: 
@@ -213,7 +214,8 @@ class Solver(object):
 
 			if shape.at_root: 
 				last.append(shape.variables.y)
-				last.append(shape.variables.column)
+				last.append(shape.variables.left_column)
+				last.append(shape.variables.right_column)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
