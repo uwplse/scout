@@ -497,20 +497,22 @@ export default class FeedbackContainer extends React.Component {
     if(callbacks && callbacks.getCurrentParentNode) {
       let parentNode = callbacks.getCurrentParentNode(shape.name); 
       let isCanvasChild = parentNode.type == "canvas"; 
+      let isAlternateChild = parentNode.alternate; // For alternate group children, we won't let the position be fixed on the sub elements. 
+      if(!isAlternateChild) {
+        // Dropdown for each 
+        for(let i=0; i<ConstraintActions.elementConstraints.values.length; i++) {
+          let key = ConstraintActions.elementConstraints.values[i]; 
+          let items = FeedbackContainer.getFeedbackItemsFromShape(shape, key);
 
-      // Dropdown for each 
-      for(let i=0; i<ConstraintActions.elementConstraints.values.length; i++) {
-        let key = ConstraintActions.elementConstraints.values[i]; 
-        let items = FeedbackContainer.getFeedbackItemsFromShape(shape, key);
-
-        for(let j=0; j<items.length; j++) {
-          let item = items[j]; 
-          let pushItem = (item.key == "x" || item.key == "y") && isCanvasChild ? false : true; 
-          if(pushItem) {
-            feedbackItems.push(item); 
+          for(let j=0; j<items.length; j++) {
+            let item = items[j]; 
+            let pushItem = (item.key == "x" || item.key == "y") && isCanvasChild ? false : true; 
+            if(pushItem) {
+              feedbackItems.push(item); 
+            }
           }
-        }
-      } 
+        } 
+      }
     }
 
     return feedbackItems;
@@ -570,7 +572,8 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
-  getFeedbackItem = (id, key, value, action, linkedShapes=[]) => {          
+  getFeedbackItem = (id, key, value, action, linkedShapes=[]) => {    
+    let itemKey = _.uniqueId();     
     return <FeedbackItem onClick={this.props.onClick} 
               action={action}
               canvasShape={this.state.activeCanvasShape} 
@@ -583,7 +586,7 @@ export default class FeedbackContainer extends React.Component {
               update={this.props.updateConstraintsCanvas}
               selected={value}
               id={id}
-              key={key + "_" + value} />;  
+              key={itemKey} />;  
   }
 
   onClick = (evt) => {
