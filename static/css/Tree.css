@@ -57,7 +57,7 @@
 }
 
 .rc-tree span.rc-tree-node-selected .widget-container {
-    outline: 4px lightblue dotted;
+    outline: 4px lightblue solid;
     background-color: white;    
     padding: 0.5em;
 }

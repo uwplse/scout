@@ -18,11 +18,6 @@
 	display: none;
 }
 
-.design-canvas.hovered, 
-.design-canvas.hovered .design-canvas-hovered {
-	outline: 4px #FF83A8 dotted;
-	z-index: 1000; 
-}
 
 .design-canvas.hovered .SVGInline-svg {
 	cursor: pointer; 
@@ -79,17 +74,34 @@
 	margin-left: 10px;
 }
 
-.design-canvas-widget:hover {
-	outline: 4px #FF83A8 dotted;
+.design-canvas-widget:hover, 
+.design-canvas-widget.secondary-selection:hover {
+	outline: 4px #FF83A8 solid;
 	cursor: pointer;
+}
+
+.design-canvas.hovered, 
+.design-canvas.hovered .design-canvas-hovered, 
+.design-canvas.hovered.secondary-selection {
+	outline: 4px #FF83A8 solid;
+	z-index: 1000; 
 }
 
 .design-canvas.primary-selection,
 .design-canvas-widget.primary-selection {
-	outline: 4px #FF83A8 dotted;
+	outline: 4px #FF83A8 solid;
+}
+
+.design-canvas.secondary-selection.new-design,
+.design-canvas-widget.secondary-selection.new-design {
+	outline: 4px lightblue solid;
 }
 
 .design-canvas.secondary-selection,
 .design-canvas-widget.secondary-selection {
-	outline: 4px lightblue dotted;
+	outline: 4px lightblue solid;
+}
+
+.design-canvas.new-design {
+	outline: 4px #18BC9C solid; 
 }

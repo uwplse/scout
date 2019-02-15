@@ -400,8 +400,7 @@ export default class DesignCanvas extends React.Component {
           showZoom={!this.props.zoomed}
           visible={menuVisible}
           hidden={saved || trashed || invalidated}
-          menuAction={this.performDesignCanvasMenuAction}
-          new={this.state.new} />
+          menuAction={this.performDesignCanvasMenuAction}/>
         <div id={"design-canvas-" + this.id}
            style={{
             height: (this.canvasHeight * scalingFactor) + "px", 
@@ -409,7 +408,8 @@ export default class DesignCanvas extends React.Component {
             className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered " : " ")
             + (canvasIsPrimary ? "primary-selection " : " ")
-            + (canvasIsSecondary ? "secondary-selection " : " ")}
+            + (canvasIsSecondary ? "secondary-selection " : " ")
+            + (this.state.new ? "new-design" : "")}
             onClick={this.onCanvasClick}
             onMouseEnter={this.highlightConflicts} 
             onMouseLeave={this.unhighlightConflicts}>

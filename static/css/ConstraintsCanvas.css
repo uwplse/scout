@@ -111,13 +111,13 @@
 }
 
 .rc-tree span.rc-tree-node-selected .widget-container.primary-selection {
-	outline: 4px #FF83A8 dotted;
+	outline: 4px #FF83A8 solid;
 	border: none;
     padding: 0.5em;
 }
 
 .widget-container.secondary-selection {
-	outline: 4px lightblue dotted;
+	outline: 4px lightblue solid;
 	padding: 0.5em;
 }
 
