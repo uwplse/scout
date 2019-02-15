@@ -17,6 +17,9 @@ import SVGInline from "react-svg-inline";
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
 import {getUniqueID} from './util'; 
+import domtoimage from 'dom-to-image'; 
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -606,6 +609,32 @@ export default class PageContainer extends React.Component {
     }
   }
 
+
+  exportSavedDesigns = () => {
+    var zip = new JSZip();
+
+    let savedSolutions = this.state.solutions.filter((solution) => { return solution.saved; }); 
+    let promises = []; 
+    for(let i=0; i<savedSolutions.length; i++) {
+      let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
+      promises.push(domtoimage.toPng(document.getElementById(solutionDesignID))
+      .then(function (imgData) {
+          /* do something */
+          let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
+          zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
+      })); 
+    }
+
+    Promise.all(promises)
+    .then(() => {
+      zip.generateAsync({type:"blob"})
+      .then(function(content) {
+          // see FileSaver.js
+          saveAs(content, "exported_from_scout.zip");
+      });
+    }); 
+  }
+
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
@@ -752,7 +781,9 @@ export default class PageContainer extends React.Component {
                   </div>
                   {this.state.activeDesignPanel == "saved" ? (<div 
                     className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button">Export Saved Designs</button>
+                    <button type="button" 
+                      onClick={this.exportSavedDesigns}
+                      className="btn btn-default design-canvas-button">Export Saved Designs</button>
                   </div>) : null}
                 </div>
               </div>  

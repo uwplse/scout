@@ -157,6 +157,10 @@ export default class DesignCanvas extends React.Component {
       return 1.5; 
     }
 
+    if(this.state.savedState == 1) {
+      return 1.0; 
+    }
+
     // Return the amount of scaling to use depending on the state of this DesignCanvas
     if(this.state.savedState == 1 || this.state.savedState == -1 || this.state.invalidated) {
       return 0.5; 

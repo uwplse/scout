@@ -7,6 +7,9 @@ import ReactDOM from 'react-dom';
 import Tree, { TreeNode } from 'rc-tree';
 import pageLogo from '../../wireframes/accounts/pie_chart.svg';
 import SVGInline from "react-svg-inline"
+import domtoimage from 'dom-to-image'; 
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 export default class Importer extends React.Component {
   state = {
@@ -54,6 +57,10 @@ export default class Importer extends React.Component {
     // });
     info.event.stopPropagation();
     info.event.preventDefault();
+  }
+
+  componentDidUpdate(prevProps) {
+    this.getImageOfNode();
   }
 
   onDrop = (info) => {
@@ -133,21 +140,6 @@ export default class Importer extends React.Component {
             svg={pageLogo} 
             height={"116px"} 
             width={"116px"} />
-             <div className="widget-feedback-container">
-                    <div className="widget-feedback">
-                      <ul className={"widget-feedback-items"}>
-                        <li className="widget-feedback-items-list"> 
-                          <span className="widget-feedback-items-label">
-                          {"Keep arrangement vertical"}
-                          </span>
-                          <button 
-                            className={"widget-feedback-items-remove "}>
-                            <span className="glyphicon glyphicon-minus" aria-hidden="true"></span>
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
             </div>);
   }
 
@@ -158,27 +150,42 @@ export default class Importer extends React.Component {
     // Determine if the newly selected ID is a sibling of the selectedd
     // If it is not a sibling, unselect 
 
-    // Use selectedKeys to set initially selectedx
+    // Use selectedKeys to set initially selected
+  }
+
+  getImageOfNode = () => {
+    domtoimage.toPng(document.getElementById('tree-node'))
+    .then(function (imgData) {
+        /* do something */
+        let imData = imgData.replace('data:image/png;base64,', ''); 
+
+        var zip = new JSZip();
+        zip.file("treeNode.png", imData, {base64: true});
+        zip.generateAsync({type:"blob"})
+        .then(function(content) {
+            // see FileSaver.js
+            saveAs(content, "example.zip");
+        });
+    });
   }
 
   render() {
-
-
-
     const nodeIconSVG = this.nodeIcon();
-    const loop = data => {
-      return data.map((item) => {
-        if (item.children && item.children.length) {
-          return <TreeNode key={item.key} icon={nodeIconSVG} title={""}>{loop(item.children)}</TreeNode>;
-        }
-        return <TreeNode key={item.key} icon={nodeIconSVG} title={""} />;
-      });
-    };
+    // const loop = data => {
+    //   return data.map((item) => {
+    //     if (item.children && item.children.length) {
+    //       return <TreeNode key={item.key} icon={nodeIconSVG} title={""}>{loop(item.children)}</TreeNode>;
+    //     }
+    //     return <TreeNode key={item.key} icon={nodeIconSVG} title={""} />;
+    //   });
+    // };
+
+    let treeNode = <TreeNode key={"treeNodeKey"} icon={nodeIconSVG} title={""} />;
 
     return (<div className="draggable-demo">
       <h2>draggable</h2>
       <p>drag a node into another node</p>
-      <div className="draggable-container">
+      <div className="draggable-container" id="tree-node">
         <Tree
           draggable={true}
           selectable={true}
@@ -190,7 +197,7 @@ export default class Importer extends React.Component {
           onDragEnter={this.onDragEnter}
           onDrop={this.onDrop}
         >
-          {loop(this.state.gData)}
+          {treeNode}
         </Tree>
       </div>
     </div>);

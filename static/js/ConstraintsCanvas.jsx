@@ -422,6 +422,14 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
+    // Expand the corresponding parent node
+    let parentNode = this.getCurrentParentNode(shape.name); 
+    if(parentNode) {
+      this.setState({
+        expandedTreeNodes: this.state.expandedTreeNodes.concat(parentNode.key)
+      }); 
+    }
+
     // Call the PageContainer method to open the feedback panel 
     this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
   }
@@ -1127,7 +1135,6 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   onExpand = (expandedKeys) => {
-    console.log('onExpand', arguments);
     this.setState({
       expandedTreeNodes: expandedKeys
     });
@@ -1482,6 +1489,7 @@ export default class ConstraintsCanvas extends React.Component {
                     multiple={true}
                     showIcon={true}
                     defaultExpandParent={true}
+                    expandedKeys={this.state.expandedTreeNodes}
                     selectedKeys={this.state.selectedTreeNodes}
                     defaultExpandedKeys={["canvas"]}
                     onSelect={this.onSelected}
