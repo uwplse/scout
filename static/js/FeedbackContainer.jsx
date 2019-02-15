@@ -27,13 +27,6 @@ class FeedbackItem extends React.Component {
     let useDesignShape = this.state.designShape ? true : false; 
 
     let selectedValue = this.state.selected; 
-    if(this.state.selected == "Vary" && useDesignShape) {
-      selectedValue = FeedbackItem.getDesignSelected(this.state.designShape, this.state.property); 
-      if(selectedValue != "Vary") {
-        this.props.setSelectedValue(this.props.id, selectedValue); 
-      }
-    }
-
     let locked = FeedbackItem.getInitialLocked(this.state.canvasShape, this.state.property, selectedValue); 
     let prevented = FeedbackItem.getInitialPrevented(this.state.canvasShape, this.state.property, selectedValue); 
     this.setState({
@@ -82,15 +75,6 @@ class FeedbackItem extends React.Component {
     }
 
     return false;
-  }
-
-  static getDesignSelected(shape, property) {
-    let value = shape[property]; 
-    if(value != undefined) {
-      return value; 
-    }
-
-    return "Vary";
   }
 
   onSelected = (newValue) => {
@@ -392,24 +376,52 @@ export default class FeedbackContainer extends React.Component {
     let canvasShapeChanged = nextProps.activeCanvasShape != prevState.activeCanvasShape; 
     let designShapeChanged = nextProps.activeDesignShape != prevState.activeDesignShape; 
     let initializeFeedback = canvasShapeChanged || designShapeChanged; 
+    let newGroupFeedback = FeedbackContainer.getGroupFeedbackItems(nextProps.activeCanvasShape, nextProps.activeDesignShape, nextProps.feedbackCallbacks); 
+    let newCanvasChildFeedback = FeedbackContainer.getCanvasChildFeedbackItems(nextProps.activeCanvasShape,  nextProps.activeDesignShape, nextProps.feedbackCallbacks);
+    let newElementFeedback = FeedbackContainer.getElementFeedbackItems(nextProps.activeCanvasShape,  nextProps.activeDesignShape, nextProps.feedbackCallbacks);
+    let newCanvasFeedback = FeedbackContainer.getCanvasFeedbackItems(nextProps.activeCanvasShape,  nextProps.activeDesignShape);  
     return {
       activeCanvasShape: nextProps.activeCanvasShape, 
       activeDesignShape: nextProps.activeDesignShape, 
       feedbackCallbacks: nextProps.feedbackCallbacks, 
-      groupFeedbackItems:  initializeFeedback ? FeedbackContainer.getGroupFeedbackItems(nextProps.activeCanvasShape, nextProps.feedbackCallbacks) : prevState.groupFeedbackItems, 
-      canvasChildFeedbackItems: initializeFeedback ? FeedbackContainer.getCanvasChildFeedbackItems(nextProps.activeCanvasShape, nextProps.feedbackCallbacks) : prevState.canvasChildFeedbackItems,
-      elementFeedbackItems: initializeFeedback ? FeedbackContainer.getElementFeedbackItems(nextProps.activeCanvasShape, nextProps.feedbackCallbacks) : prevState.elementFeedbackItems,
-      canvasFeedbackItems: initializeFeedback ? FeedbackContainer.getCanvasFeedbackItems(nextProps.activeCanvasShape) : prevState.canvasFeedbackItems,
+      groupFeedbackItems:  initializeFeedback || newGroupFeedback.length != prevState.groupFeedbackItems.length ? newGroupFeedback : prevState.groupFeedbackItems, 
+      canvasChildFeedbackItems: initializeFeedback  || newCanvasChildFeedback.length != prevState.canvasChildFeedbackItems.length ? newCanvasChildFeedback : prevState.canvasChildFeedbackItems,
+      elementFeedbackItems: initializeFeedback || newElementFeedback.length != prevState.elementFeedbackItems.length ? newElementFeedback : prevState.elementFeedbackItems,
+      canvasFeedbackItems: initializeFeedback || newCanvasFeedback.length != prevState.canvasFeedbackItems.length ? newCanvasFeedback : prevState.canvasFeedbackItems,
       feedbackItemMap: prevState.feedbackItemMap
     };     
   }
 
-  static getFeedbackItemsFromShape(shape, key, linkedShapes=[]) {
+  static getDesignSelected(shape, property) {
+    let value = shape[property]; 
+    if(value != undefined) {
+      return value; 
+    }
+
+    return "Vary";
+  }
+
+  static getFeedbackItemsFromShape(canvasShape, designShape, key, linkedShapes=[]) {
     let feedbackItems = []; 
-    if(shape.locks && shape.locks.length) {
-      let lockedIndex = shape.locks.indexOf(key); 
+
+    // Display another selector for the Vary option 
+    let selectedValue = "Vary";
+    let useDesignShape = false;
+    let addVaryOption = true; 
+    if(designShape) {
+      useDesignShape = true;
+      selectedValue = FeedbackContainer.getDesignSelected(designShape, key); 
+    }
+
+    if(canvasShape.locks && canvasShape.locks.length) {
+      let lockedIndex = canvasShape.locks.indexOf(key); 
       if(lockedIndex > -1) {
-        let lockedValues = shape["locked_values"][key]; 
+        let lockedValues = canvasShape["locked_values"][key]; 
+
+        if(useDesignShape && lockedValues.indexOf(selectedValue) > -1) {
+          addVaryOption = false;
+        }
+
         for(let k=0; k<lockedValues.length; k++) {
           let value = lockedValues[k]; 
           let feedbackItem = {
@@ -423,10 +435,15 @@ export default class FeedbackContainer extends React.Component {
       }
     }
 
-    if(shape.prevents && shape.prevents.length) {
-      let preventedIndex = shape.prevents.indexOf(key); 
+    if(canvasShape.prevents && canvasShape.prevents.length) {
+      let preventedIndex = canvasShape.prevents.indexOf(key); 
       if(preventedIndex > -1) {
-        let preventedValues = shape["prevented_values"][key]; 
+        let preventedValues = canvasShape["prevented_values"][key]; 
+
+        if(useDesignShape && preventedValues.indexOf(selectedValue) > -1) {
+          addVaryOption = false;
+        }
+
         for(let k=0; k<preventedValues.length; k++) {
           let value = preventedValues[k]; 
           let feedbackItem = {
@@ -441,27 +458,29 @@ export default class FeedbackContainer extends React.Component {
       }
     } 
 
-    // Display another selector for the Vary option 
-    let feedbackItem = {
-      id: _.uniqueId(), 
-      key: key, 
-      selectedValue: "Vary", 
-      linkedShapes: linkedShapes
-    }; 
+    if(addVaryOption) {
+      let feedbackItem = {
+        id: _.uniqueId(), 
+        key: key, 
+        selectedValue: selectedValue, 
+        linkedShapes: linkedShapes
+      }; 
 
-    feedbackItems.push(feedbackItem); 
+      feedbackItems.push(feedbackItem); 
+    }
+
     return feedbackItems; 
   }
 
-  static getCanvasChildFeedbackItems(shape, callbacks) {
+  static getCanvasChildFeedbackItems(canvasShape, designShape, callbacks) {
     let feedbackItems = []; 
     if(callbacks && callbacks.getCurrentParentNode) {
-      let parentNode = callbacks.getCurrentParentNode(shape.name); 
+      let parentNode = callbacks.getCurrentParentNode(canvasShape.name); 
       let isCanvasChild = parentNode.type == "canvas"; 
       if(isCanvasChild){    // Dropdown for each 
         for(let i=0; i<ConstraintActions.canvasChildConstraints.values.length; i++) {
           let key = ConstraintActions.canvasChildConstraints.values[i]; 
-          let items = FeedbackContainer.getFeedbackItemsFromShape(shape, key); 
+          let items = FeedbackContainer.getFeedbackItemsFromShape(canvasShape, designShape, key); 
           feedbackItems.push(...items);
         }
       }
@@ -470,22 +489,22 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
-  static getGroupFeedbackItems(shape, callbacks) {
+  static getGroupFeedbackItems(canvasShape, designShape, callbacks) {
     let feedbackItems = []
-    if(shape && shape.type == "group" && !shape.alternate) {
+    if(canvasShape && canvasShape.type == "group" && !canvasShape.alternate) {
       let linkedSiblings = []
       if(callbacks && callbacks.getCurrentShapeSiblings) {
-        if(shape.item) {
+        if(canvasShape.item) {
           // Gets the siblings of this shape so that we 
           // can also apply the feedback to them
-          linkedSiblings = callbacks.getCurrentShapeSiblings(shape.name); 
+          linkedSiblings = callbacks.getCurrentShapeSiblings(canvasShape.name); 
         }
       }
 
       // Dropdown for each 
       for(let i=0; i<ConstraintActions.groupConstraints.values.length; i++) {
         let key = ConstraintActions.groupConstraints.values[i]; 
-        let items = FeedbackContainer.getFeedbackItemsFromShape(shape, key, linkedSiblings); 
+        let items = FeedbackContainer.getFeedbackItemsFromShape(canvasShape, designShape, key, linkedSiblings); 
         feedbackItems.push(...items);
       }      
     }
@@ -493,18 +512,18 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems;
   }
 
-  static getElementFeedbackItems(shape, callbacks) {
+  static getElementFeedbackItems(canvasShape, designShape, callbacks) {
     let feedbackItems = []; 
 
     if(callbacks && callbacks.getCurrentParentNode) {
-      let parentNode = callbacks.getCurrentParentNode(shape.name); 
+      let parentNode = callbacks.getCurrentParentNode(canvasShape.name); 
       let isCanvasChild = parentNode.type == "canvas"; 
       let isAlternateChild = parentNode.alternate; // For alternate group children, we won't let the position be fixed on the sub elements. 
       if(!isAlternateChild) {
         // Dropdown for each 
         for(let i=0; i<ConstraintActions.elementConstraints.values.length; i++) {
           let key = ConstraintActions.elementConstraints.values[i]; 
-          let items = FeedbackContainer.getFeedbackItemsFromShape(shape, key);
+          let items = FeedbackContainer.getFeedbackItemsFromShape(canvasShape, designShape, key);
 
           for(let j=0; j<items.length; j++) {
             let item = items[j]; 
@@ -520,13 +539,13 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems;
   }
 
-  static getCanvasFeedbackItems(shape) {
+  static getCanvasFeedbackItems(canvasShape, designShape) {
     let feedbackItems = []; 
-    if(shape && shape.type == "canvas") {
+    if(canvasShape && canvasShape.type == "canvas") {
       // Dropdown for each 
       for(let i=0; i<ConstraintActions.canvasConstraints.values.length; i++) {
         let key = ConstraintActions.canvasConstraints.values[i]; 
-        let items = FeedbackContainer.getFeedbackItemsFromShape(shape, key); 
+        let items = FeedbackContainer.getFeedbackItemsFromShape(canvasShape, designShape, key); 
         feedbackItems.push(...items);
       }   
     }
@@ -610,10 +629,10 @@ export default class FeedbackContainer extends React.Component {
   }
 
   reininitializeFeedbackItems = () => {
-    let groupFeedbackItems = FeedbackContainer.getGroupFeedbackItems(this.state.activeCanvasShape, this.state.feedbackCallbacks); 
-    let canvasChildFeedbackItems = FeedbackContainer.getCanvasChildFeedbackItems(this.state.activeCanvasShape, this.state.feedbackCallbacks);
-    let elementFeedbackItems = FeedbackContainer.getElementFeedbackItems(this.state.activeCanvasShape, this.state.feedbackCallbacks);
-    let canvasFeedbackItems = FeedbackContainer.getCanvasFeedbackItems(this.state.activeCanvasShape); 
+    let groupFeedbackItems = FeedbackContainer.getGroupFeedbackItems(this.state.activeCanvasShape, this.state.activeDesignShape, this.state.feedbackCallbacks); 
+    let canvasChildFeedbackItems = FeedbackContainer.getCanvasChildFeedbackItems(this.state.activeCanvasShape, this.state.activeDesignShape, this.state.feedbackCallbacks);
+    let elementFeedbackItems = FeedbackContainer.getElementFeedbackItems(this.state.activeCanvasShape, this.state.activeDesignShape, this.state.feedbackCallbacks);
+    let canvasFeedbackItems = FeedbackContainer.getCanvasFeedbackItems(this.state.activeCanvasShape, this.state.activeDesignShape); 
     this.setState({
       groupFeedbackItems: groupFeedbackItems, 
       canvasChildFeedbackItems: canvasChildFeedbackItems, 
