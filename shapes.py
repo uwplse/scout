@@ -63,16 +63,16 @@ def compute_size_domain(importance, width, height):
 	minimum_element_width = MIN_WIDTH if MIN_WIDTH > (orig_width/2)  else (orig_width/2)
 	shrink_factor_id = 0
 
-	while computed_height > minimum_element_height and computed_width > minimum_element_width: 
-		if importance != "high": 
-			shrink_factor_id -= 1
+	if importance != "high": 
+		while computed_height > minimum_element_height and computed_width > minimum_element_width: 
+				shrink_factor_id -= 1
 
-			computed_height -= GRID_CONSTANT
-			computed_width = computed_height * aspect_ratio
-			computed_width = int(round(computed_width, 0))
+				computed_height -= GRID_CONSTANT
+				computed_width = computed_height * aspect_ratio
+				computed_width = int(round(computed_width, 0))
 
-			if computed_height >= minimum_element_height and computed_width >= minimum_element_width: 
-				domain.append([computed_width, computed_height, shrink_factor_id])
+				if computed_height >= minimum_element_height and computed_width >= minimum_element_width: 
+					domain.append([computed_width, computed_height, shrink_factor_id])
 
 	computed_width = orig_width
 	computed_height = orig_height
@@ -80,16 +80,16 @@ def compute_size_domain(importance, width, height):
 
 	maximum_element_height = MAX_HEIGHT if MAX_HEIGHT < (orig_height * 2) else (orig_height * 2)
 	maximum_element_width = MAX_WIDTH if MAX_WIDTH < (orig_width * 2) else (orig_width * 2)
-	while computed_width < maximum_element_width and computed_height < maximum_element_height: 
-		if importance != "low": 
-			increase_factor_id += 1
+	if importance != "low": 
+		while computed_width < maximum_element_width and computed_height < maximum_element_height: 
+				increase_factor_id += 1
 
-			computed_height += GRID_CONSTANT
-			computed_width = computed_height * aspect_ratio
-			computed_width = int(round(computed_width, 0))
+				computed_height += GRID_CONSTANT
+				computed_width = computed_height * aspect_ratio
+				computed_width = int(round(computed_width, 0))
 
-			if computed_width <= maximum_element_width and computed_height <= maximum_element_height: 
-				domain.append([computed_width, computed_height, increase_factor_id])
+				if computed_width <= maximum_element_width and computed_height <= maximum_element_height: 
+					domain.append([computed_width, computed_height, increase_factor_id])
 
 	return domain
 

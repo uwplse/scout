@@ -339,6 +339,9 @@ ConstraintActions.elementConstraints = {
 				}
 			}
 
+			heights.sort(function(a, b){return a-b});
+			widths.sort(function(a, b){return a-b}); 
+
 			return { "height" : heights, "width" : widths }
 		}, 
 		"x": [], 

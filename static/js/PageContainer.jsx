@@ -711,7 +711,7 @@ export default class PageContainer extends React.Component {
           <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <div className="navbar-header">
               <SVGInline className="scout-logo" svg={pageLogo} />
-              <h1>Scout <span className="scout-tagline"><small>Exploring design layout alternatives</small></span></h1>
+              <h1>Scout <span className="scout-tagline"><small>Exploring wireframe layout alternatives.</small></span></h1>
             </div>
           </nav>
           <div className="bottom">
