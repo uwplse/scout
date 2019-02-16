@@ -32,7 +32,7 @@ export default class WidgetFeedback extends React.Component {
     this.action["undo"].updateConstraintsCanvasShape(this.property, this.shape, this.value);
 
     // Notify the ConstraintsCanvas to update its rendering
-    this.props.update(); 
+    this.props.update(this.shape); 
   }
 
   render () {

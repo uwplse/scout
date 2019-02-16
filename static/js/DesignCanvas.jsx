@@ -27,7 +27,6 @@ export default class DesignCanvas extends React.Component {
       valid: props.valid, 
       new: props.new, 
       invalidated: props.invalidated, 
-      conflicts: props.conflicts, // The conflicting constraints current if there are any
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
       canvasShape: this.elements["canvas"], // The root level shape of the DesignCanvas
@@ -66,99 +65,14 @@ export default class DesignCanvas extends React.Component {
       canvasShape: prevState.canvasShape
     }    
   }
-
+  
   componentDidMount() {
-    let elements = this.initElements();
-
-    if(!this.props.zoomed) {
-      // Don't update the validity if the design canvas is in the zoom container
-      this.updateValidity(elements);
-    }
+    this.initElements();
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if(this.props.updateValidity != prevProps.updateValidity) {
-      this.updateValidity(this.state.elements); 
-    }
-  }
-
-  updateValidity = (elements) => {
-    let conflicts = []; 
-    let valid = true;
-
-    let canvasConflicts = this.getElementConflicts(this.state.canvasShape); 
-    if(canvasConflicts.length) {
-      valid = false; 
-      conflicts.push(...canvasConflicts);
-    }
-
-    for(let i=0; i<elements.length; i++) {
-      let element = elements[i]; 
-      let eltConflicts = this.getElementConflicts(element);
-      if(eltConflicts.length) {
-        conflicts.push(...eltConflicts);
-        valid = false;
-      }
-    }
-
-    this.setState({
-      conflicts: conflicts
-    }); 
-
-    this.props.updateParentValidity(this.id, valid); 
-  }
-
-  getElementConflicts(element) {
-    let conflicts = [];
-    let constraintsShape = this.getConstraintsCanvasShape(element.name); 
-    if(constraintsShape && constraintsShape.locks && constraintsShape.locks.length) {
-      for(let j=0; j<constraintsShape.locks.length; j++) {
-        let lock = constraintsShape.locks[j];
-        let elementValue = element[lock];
-        let lockedValues = constraintsShape["locked_values"][lock]; 
-        if(lockedValues && lockedValues.length) {
-          let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
-          if(!elementValueKept) {
-            conflicts.push({
-              type: "lock",
-              shapeID: constraintsShape.name, 
-              variable: lock, 
-              value: elementValue
-            }); 
-          }
-        }
-      }
-    }
-
-    if(constraintsShape && constraintsShape.prevents && constraintsShape.prevents.length) {
-      for(let j=0; j<constraintsShape.prevents.length; j++) {
-        let prevent = constraintsShape.prevents[j];
-        let elementValue = element[prevent];
-        let preventedValues = constraintsShape["prevented_values"][prevent]; 
-        if(preventedValues && preventedValues.length) {
-          let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
-          if(elementValuePrevented) {
-            conflicts.push({
-              type: "prevent",
-              shapeID: constraintsShape.name, 
-              variable: prevent, 
-              value: elementValue
-            }); 
-          }
-        }
-      }
-    }
-
-    return conflicts;
-  }
- 
   getScalingFactor = () => {
     if(this.props.zoomed) {
       return 1.5; 
-    }
-
-    if(this.state.savedState == 1) {
-      return 1.0; 
     }
 
     // Return the amount of scaling to use depending on the state of this DesignCanvas
@@ -270,8 +184,6 @@ export default class DesignCanvas extends React.Component {
     this.setState({
       elements: elementsList
     }); 
-
-    return elementsList; 
   }
 
   performDesignCanvasMenuAction = (action) => {
@@ -317,10 +229,10 @@ export default class DesignCanvas extends React.Component {
 
     // Trigger constraint highlighting if the solution is not current valid
     // Do not trigger constraint highlighting if the solution is in the zoom container
-    if(!this.state.valid && !this.props.zoomed) {
-      if(this.state.conflicts) {
-        for(var i=0; i<this.state.conflicts.length; i++) {
-          var conflict = this.state.conflicts[i];
+    if((!this.state.valid || this.props.conflicts.length) && !this.props.zoomed) {
+      if(this.props.conflicts) {
+        for(var i=0; i<this.props.conflicts.length; i++) {
+          var conflict = this.props.conflicts[i];
           this.highlightFeedbackConflict(conflict, true); 
         }
       }
@@ -340,10 +252,10 @@ export default class DesignCanvas extends React.Component {
 
   unhighlightConflicts = (e) => {
     // Trigger constraint highlighting if the solution is not current valid
-    if(!this.state.valid) {
-      if(this.state.conflicts) {
-        for(var i=0; i<this.state.conflicts.length; i++) {
-          let conflict = this.state.conflicts[i]; 
+    if(!this.state.valid || this.props.conflicts.length) {
+      if(this.props.conflicts) {
+        for(var i=0; i<this.props.conflicts.length; i++) {
+          let conflict = this.props.conflicts[i]; 
           this.highlightFeedbackConflict(conflict, false); 
         }
       }
@@ -373,7 +285,8 @@ export default class DesignCanvas extends React.Component {
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
     let valid = this.state.valid; 
-    let menuVisible = !saved && !trashed && valid && !this.state.hovered; 
+    let hasConflicts = this.props.conflicts.length; 
+    let menuVisible = !this.state.hovered; 
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.getScalingFactor();      
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
@@ -381,25 +294,23 @@ export default class DesignCanvas extends React.Component {
 
     // Show invalid designs indicators? 
     // Don't show it for the saved designs that are in the saved area. 
-    let showInvalidIndicatorLines = (!this.state.valid) && (!saved)
+    let showInvalidIndicatorLines = (!this.state.valid || this.props.conflicts.length) && (!saved)
 
     // Process the elements list
     const svgElements = this.state.elements.map((element) => {
         return this.createSVGElement(element);
     });
 
-
     const canvasIsPrimary = this.props.primarySelection && this.props.primarySelection == this.state.canvasShape; 
     const canvasIsSecondary = this.props.primarySelection && !canvasIsPrimary && this.state.canvasShape && this.props.primarySelection.name == this.state.canvasShape.name; 
 
     return  (      
       <div 
-           className={"canvas-container " + " " + ((!this.state.valid && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
+           className={"canvas-container " + " " + (((!this.state.valid || this.props.conflicts.length) && !inMainCanvas) ? "canvas-container-invalid-scaled" : "")} 
            id={"canvas-box-" + this.id}>
         <DesignMenu 
           showZoom={!this.props.zoomed}
           visible={menuVisible}
-          hidden={saved || trashed || invalidated}
           menuAction={this.performDesignCanvasMenuAction}/>
         <div id={"design-canvas-" + this.id}
            style={{

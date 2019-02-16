@@ -288,5 +288,6 @@ class Solution(object):
 		sln["cost"] = cost
 		sln["valid"] = True
 		sln["saved"] = 0
+		sln["conflicts"] = []
 
 		return sln

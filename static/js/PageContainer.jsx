@@ -44,7 +44,6 @@ export default class PageContainer extends React.Component {
       widgetsCollapsed: false, 
       activeDesignShape: undefined, 
       primarySelection: undefined, 
-      updateSolutionValidity: false, 
       solutionsFound: true
     };   
 
@@ -123,8 +122,6 @@ export default class PageContainer extends React.Component {
               solutionID={solutionID}
               primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
-              updateValidity={this.state.updateSolutionValidity}
-              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightFeedbackConflict={this.highlightFeedbackConflict}
@@ -147,8 +144,6 @@ export default class PageContainer extends React.Component {
               removed={solution.removed}
               zoomed={zoomed}
               invalidated={solution.invalidated}
-              updateValidity={this.state.updateSolutionValidity}
-              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightFeedbackConflict={this.highlightFeedbackConflict}
@@ -264,7 +259,7 @@ export default class PageContainer extends React.Component {
         designSolution.removed = solution.removed;
         designSolution.conflicts = solution.conflicts; 
 
-        if(designSolution.valid) {
+        if(designSolution.valid && !solutions.conflicts) {
           designSolution.invalidated = false;
         }
       }
@@ -276,19 +271,7 @@ export default class PageContainer extends React.Component {
     }, this.updateSolutionsCache); 
   }
 
-  updateValidityInPageContainer = (solutionID, valid) => {
-    let solution = this.solutionsMap[solutionID]; 
-    solution.valid = valid; 
-    if(valid) {
-      solution.invalidated = false;
-    }
-
-    this.setState({
-      solutions: this.state.solutions
-    }, this.updateSolutionsCache); 
-  }
-
-  updateConstraintsCanvas = () => {
+  updateConstraintsCanvas = (shape) => {
     // Notify the tree to re-render in response to the update
     // from the FeedbackContainer    
     this.constraintsCanvasRef.current.renderTreeCacheUpdate();
@@ -301,13 +284,60 @@ export default class PageContainer extends React.Component {
 
     // Only check the validity of the lock and prevent values on the solutions
     // This means that we do not need to make a request to the solver to check them 
-    this.checkSolutionValidityClient();
+    this.checkSolutionValidityClient(shape);
   }
 
-  checkSolutionValidityClient = () => {
+  checkSolutionValidityClient = (shape) => {
+    for(let i=0; i < this.state.solutions.length; i++) {
+      let solution = this.state.solutions[i]; 
+      let shapeId = shape.name; 
+      let element = solution.elements[shapeId]; 
+
+      let conflicts = [];
+      if(shape.locks && shape.locks.length) {
+        for(let j=0; j<shape.locks.length; j++) {
+          let lock = shape.locks[j];
+          let elementValue = element[lock];
+          let lockedValues = shape["locked_values"][lock]; 
+          if(lockedValues && lockedValues.length) {
+            let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
+            if(!elementValueKept) {
+              conflicts.push({
+                type: "lock",
+                shapeID: shape.name, 
+                variable: lock, 
+                value: elementValue
+              }); 
+            }
+          }
+        }
+      }
+
+      if(shape.prevents && shape.prevents.length) {
+        for(let j=0; j<shape.prevents.length; j++) {
+          let prevent = shape.prevents[j];
+          let elementValue = element[prevent];
+          let preventedValues = shape["prevented_values"][prevent]; 
+          if(preventedValues && preventedValues.length) {
+            let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
+            if(elementValuePrevented) {
+              conflicts.push({
+                type: "prevent",
+                shapeID: shape.name, 
+                variable: prevent, 
+                value: elementValue
+              }); 
+            }
+          }
+        }
+      }
+
+      solution.conflicts = conflicts; 
+    }
+
     // Update the state
     this.setState({
-      updateSolutionValidity: !this.state.updateSolutionValidity
+      solutions: this.state.solutions
     }, this.updateSolutionsCache); 
   }
 
@@ -370,7 +400,7 @@ export default class PageContainer extends React.Component {
       let designSolution = this.state.solutions[i]; 
       
       // Invalidate the solution which means it should be moved into the right side panel 
-      designSolution.invalidated = !designSolution.valid; 
+      designSolution.invalidated = (!designSolution.valid || designSolution.conflicts.length); 
     }
 
     // Update the state
@@ -383,7 +413,7 @@ export default class PageContainer extends React.Component {
     for(let i=0; i<this.state.solutions.length; i++) {
       let designSolution = this.state.solutions[i]; 
       
-      if(designSolution.saved == 0 && (designSolution.valid || !designSolution.invalidated)) {
+      if(designSolution.saved == 0) {
         designSolution.saved = -1; 
       }
     }

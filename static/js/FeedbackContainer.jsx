@@ -117,7 +117,7 @@ class FeedbackItem extends React.Component {
     });
 
     // Notify the ConstraintsCanvas tree of the update
-    this.props.update();
+    this.props.update(this.state.canvasShape);
     this.props.locksUpdated();
   }
 
@@ -156,7 +156,7 @@ class FeedbackItem extends React.Component {
     });
 
     // Notify the ConstraintsCanvas tree of the update
-    this.props.update();
+    this.props.update(this.state.canvasShape);
     this.props.preventsUpdated();
   }
 
@@ -669,6 +669,10 @@ export default class FeedbackContainer extends React.Component {
       action.keep = ConstraintActions.groupConstraints['keep']; 
       action.prevent = ConstraintActions.groupConstraints['prevent'];
       action.domain = ConstraintActions.groupConstraints.domains[item.key];
+
+      if(typeof action.domain == "function") {
+        action.domain = action.domain(this.state.activeCanvasShape); 
+      }
 
       let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.linkedShapes); 
 
