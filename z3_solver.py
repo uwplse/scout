@@ -307,7 +307,6 @@ class Solver(object):
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
 			result = self.solver.check()
-			# constraints = self.solver.sexpr()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -444,7 +443,6 @@ class Solver(object):
 				print("Solution could not be found.")
 
 		return solution
-
 
 	def print_solution(self):
 		print("------------Solution------------")

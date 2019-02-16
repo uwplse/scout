@@ -57,3 +57,7 @@
 	position: fixed; 
 	z-index: 4; 
 }
+
+.design-canvas-alert {
+	margin: 2em;
+}

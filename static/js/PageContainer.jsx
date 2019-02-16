@@ -44,7 +44,8 @@ export default class PageContainer extends React.Component {
       widgetsCollapsed: false, 
       activeDesignShape: undefined, 
       primarySelection: undefined, 
-      updateSolutionValidity: false
+      updateSolutionValidity: false, 
+      solutionsFound: true
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
@@ -159,36 +160,48 @@ export default class PageContainer extends React.Component {
   }
 
   parseSolutions = (requestData) => {
-    let resultsParsed = JSON.parse(requestData); 
-    let solutions = resultsParsed.solutions;
-    if(solutions) {
-      let designCanvasList = this.state.mainDesignCanvases; 
-      for(let i=0; i<solutions.length; i++) {
-        let solution = solutions[i]; 
-        solution.new = true; 
-        this.solutionsMap[solution.id] = solution; 
+    if(requestData && requestData.length) {
+      let resultsParsed = JSON.parse(requestData); 
+      let solutions = resultsParsed.solutions;
+      if(solutions.length) {
+        let designCanvasList = this.state.mainDesignCanvases; 
+        for(let i=0; i<solutions.length; i++) {
+          let solution = solutions[i]; 
+          solution.new = true; 
+          this.solutionsMap[solution.id] = solution; 
+        }
+
+        let designsFound = solutions.length;
+
+        // Go through previous solutions and see which ones need to be invalidated
+        for(let i=0; i<this.state.solutions.length; i++) {
+          let designSolution = this.state.solutions[i]; 
+          
+          // Invalidate the solution which means it should be moved into the right side panel 
+          designSolution.invalidated = !designSolution.valid;
+
+          // Mark old solutions as not new
+          designSolution.new = false;
+        }
+
+        this.state.solutions.push(...solutions); 
+        this.setState({
+          designsFound: designsFound,
+          solutions: this.state.solutions,  
+          showDesignsAlert: true, 
+          activeDesignPanel: "designs", 
+          solutionsFound: true
+        }, this.updateSolutionsCache);      
+      } else {
+        this.setState({
+          solutionsFound: false
+        }); 
       }
-
-      let designsFound = solutions.length;
-
-      // Go through previous solutions and see which ones need to be invalidated
-      for(let i=0; i<this.state.solutions.length; i++) {
-        let designSolution = this.state.solutions[i]; 
-        
-        // Invalidate the solution which means it should be moved into the right side panel 
-        designSolution.invalidated = !designSolution.valid;
-
-        // Mark old solutions as not new
-        designSolution.new = false;
-      }
-
-      this.state.solutions.push(...solutions); 
+    }
+    else {
       this.setState({
-        designsFound: designsFound,
-        solutions: this.state.solutions,  
-        showDesignsAlert: true, 
-        activeDesignPanel: "designs"
-      }, this.updateSolutionsCache);      
+        solutionsFound: false
+      }); 
     }
   }
 
@@ -635,6 +648,12 @@ export default class PageContainer extends React.Component {
     }); 
   }
 
+  closeNoSolutionsAlert = () => {
+    this.setState({
+      solutionsFound: true
+    });
+  }
+
   render () {
     const self = this;
     const designsFound = this.state.designsFound; 
@@ -787,6 +806,15 @@ export default class PageContainer extends React.Component {
                   </div>) : null}
                 </div>
               </div>  
+              {(!this.state.solutionsFound ? (
+                <div class="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
+                  <strong>Sorry!</strong> Scout was not able to find any more layouts for your wireframes. <br /> <br />
+                  <span>Adjust your constraints in the Outline panel to help Scout find more layouts.</span>
+                  <button type="button" class="close" aria-label="Close"
+                    onClick={this.closeNoSolutionsAlert}>
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>) : undefined)}
               {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">
