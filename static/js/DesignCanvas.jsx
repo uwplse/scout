@@ -11,17 +11,16 @@ export default class DesignCanvas extends React.Component {
   	super(props);
 
   	// Object shapes to be drawn onto the canvas
-  	this.elements = props.elements; 
   	this.id = props.id; 
   	this.elementDict = {}; 
 
     // The original solution shapes from the solver
     // Should remain by later feedback constraints
     this.originalElements = props.originalElements; 
-    this.renders = 0; 
 
   	this.state = {
       childSVGs: [],
+      elements: props.elements, 
       designMenu: undefined, // The design saving options menu with trash and star icons
       savedState: props.savedState, 
       valid: props.valid, 
@@ -29,10 +28,10 @@ export default class DesignCanvas extends React.Component {
       invalidated: props.invalidated, 
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
-      canvasShape: this.elements["canvas"], // The root level shape of the DesignCanvas
+      canvasShape: props.elements["canvas"], // The root level shape of the DesignCanvas
       hovered: false, 
-      primarySelection: props.primarySelection,
-      elements: [], 
+      primarySelection: props.primarySelection, 
+      elementsList: []
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -52,6 +51,7 @@ export default class DesignCanvas extends React.Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
+    let elementsChanged = nextProps.elements != prevState.elements; 
     return {
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState,
@@ -62,12 +62,19 @@ export default class DesignCanvas extends React.Component {
       removed: nextProps.removed, 
       conflicts: prevState.conflicts,
       primarySelection: nextProps.primarySelection, 
-      canvasShape: prevState.canvasShape
+      canvasShape: prevState.canvasShape, 
+      elements: prevState.elements
     }    
   }
   
   componentDidMount() {
     this.initElements();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if(prevProps.elements != this.props.elements) {
+      this.initElements(); 
+    }
   }
 
   getScalingFactor = () => {
@@ -144,16 +151,16 @@ export default class DesignCanvas extends React.Component {
   initElements = () => {
     // Initialize the canvas and page elements first 
     // so they are at the top of the dom hierarchy
-    let canvas = this.elements["canvas"]; 
+    let canvas = this.props.elements["canvas"]; 
     this.createSVGElement(canvas); 
     this.setState({
       canvasShape: canvas
     });
 
     let elementsList = []; 
-    for(let elementID in this.elements) {
-      if(this.elements.hasOwnProperty(elementID)) {
-        let element = this.elements[elementID];
+    for(let elementID in this.props.elements) {
+      if(this.state.elements.hasOwnProperty(elementID)) {
+        let element = this.props.elements[elementID];
         if(element.type != "canvas") {
           elementsList.push(element); 
         }
@@ -182,7 +189,7 @@ export default class DesignCanvas extends React.Component {
     }); 
 
     this.setState({
-      elements: elementsList
+      elementsList: elementsList
     }); 
   }
 
@@ -297,7 +304,7 @@ export default class DesignCanvas extends React.Component {
     let showInvalidIndicatorLines = (!this.state.valid || this.props.conflicts.length) && (!saved)
 
     // Process the elements list
-    const svgElements = this.state.elements.map((element) => {
+    const svgElements = this.state.elementsList.map((element) => {
         return this.createSVGElement(element);
     });
 

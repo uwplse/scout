@@ -48,7 +48,7 @@ def solve():
 		# 	relative_designs = json.loads(relative_designs_json)
 
 		try: 
-			solutions = get_solution_from_custom_solver(elements_json, solutions_json)
+			solutions = get_solutions(elements_json, solutions_json)
 			if solutions is not None: 
 				# Output dictionary 
 				output = dict()
@@ -76,8 +76,7 @@ def check():
 
 		# Will return the status of whether the current set of constraints is valid
 		# and also update the valid state of each of the previous solutions
-		results = check_solution_exists_and_validate_previous_solutions(elements_json,
-																		solutions_json)
+		results = check_solution_validity(elements_json, solutions_json)
 
 		sys.stdout.flush()
 
@@ -89,7 +88,48 @@ def check():
 	sys.stdout.flush()
 	return ""
 
-def check_solution_exists_and_validate_previous_solutions(elements, solutions):
+@app.route('/reflow', methods=['POST','GET'])
+def reflow(): 
+	print("reflowing!")
+	sys.stdout.flush()
+
+	form_data = request.form
+
+	if "changed_element_id" in form_data:
+		changed_element_id = form_data["changed_element_id"]
+		changed_property = form_data["changed_property"]
+		changed_value = form_data["changed_value"]
+		keep_or_prevent = form_data['keep_or_prevent']
+		solutions = form_data["solutions"]
+		elements = form_data["elements"]
+
+		# Will return the status of whether the current set of constraints is valid
+		# and also update the valid state of each of the previous solutions
+		results = repair_solution_validity(elements, solutions, changed_element_id, 
+			changed_property, changed_value, keep_or_prevent)
+
+		sys.stdout.flush()
+
+		output = dict() 
+		# Return a new set of soltuions
+		output["solutions"] = results
+		return json.dumps(output).encode('utf-8')
+	sys.stdout.flush()
+
+def repair_solution_validity(elements, solutions, changed_element_id, changed_property, changed_value, keep_or_prevent):
+	# Wait until a context becomes available before proceeding
+	try: 
+		print("Creating solver instance.")
+		solver = custom_solver.CustomSolver(elements, solutions)
+		
+		print("Checking constraints.")
+		repair_results = solver.reflow(changed_element_id, changed_property, changed_value, keep_or_prevent)
+		return repair_results
+	except Exception as e: 
+		print(e)
+		print('Exception in creating solver instance.')
+
+def check_solution_validity(elements, solutions):
 	# Wait until a context becomes available before proceeding
 	try: 
 		print("Creating solver instance.")
@@ -102,7 +142,7 @@ def check_solution_exists_and_validate_previous_solutions(elements, solutions):
 		print(e)
 		print('Exception in creating solver instance.')
 
-def get_solution_from_custom_solver(elements, solutions, relative_designs=""):
+def get_solutions(elements, solutions, relative_designs=""):
 	time_start = time.time()
 	print("Creating solver instance.")
 	solver = custom_solver.CustomSolver(elements, solutions, 

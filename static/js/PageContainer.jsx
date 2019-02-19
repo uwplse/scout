@@ -271,7 +271,24 @@ export default class PageContainer extends React.Component {
     }, this.updateSolutionsCache); 
   }
 
-  updateConstraintsCanvas = (shape) => {
+  reflowSolutions = (solutions) => {
+    if(solutions) {
+      for(var i=0; i<solutions.length; i++) {
+        let solution = solutions[i]; 
+        let designSolution = this.solutionsMap[solution.id]; 
+
+        designSolution.conflicts = solution.conflicts; 
+        designSolution.elements = solution.elements; 
+      }
+    }
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+  }
+
+  updateConstraintsCanvas = (shape, property, value, keepOrPrevent="") => {
     // Notify the tree to re-render in response to the update
     // from the FeedbackContainer    
     this.constraintsCanvasRef.current.renderTreeCacheUpdate();
@@ -284,10 +301,29 @@ export default class PageContainer extends React.Component {
 
     // Only check the validity of the lock and prevent values on the solutions
     // This means that we do not need to make a request to the solver to check them 
-    this.checkSolutionValidityClient(shape);
+    let invalidSolutions = this.checkSolutionValidityClient(shape);
+
+    if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
+      invalidSolutions = JSON.stringify(invalidSolutions);
+      let jsonShapes = this.getShapesJSON(); 
+      let callVariables = {
+        "elements": jsonShapes, 
+        "solutions": invalidSolutions, 
+        "changed_element_id": shape.name, 
+        "changed_property": property, 
+        "changed_value": value, 
+        "keep_or_prevent": keepOrPrevent
+      }; 
+
+      $.post("/reflow", callVariables, (requestData) => {
+        let requestParsed = JSON.parse(requestData); 
+        this.reflowSolutions(requestParsed.solutions);
+      }); 
+    }
   }
 
   checkSolutionValidityClient = (shape) => {
+    let invalidSolutions = []; 
     for(let i=0; i < this.state.solutions.length; i++) {
       let solution = this.state.solutions[i]; 
       let shapeId = shape.name; 
@@ -332,6 +368,10 @@ export default class PageContainer extends React.Component {
         }
       }
 
+      if(conflicts.length) {
+        invalidSolutions.push(solution);
+      }
+
       solution.conflicts = conflicts; 
     }
 
@@ -339,6 +379,8 @@ export default class PageContainer extends React.Component {
     this.setState({
       solutions: this.state.solutions
     }, this.updateSolutionsCache); 
+
+    return invalidSolutions; 
   }
 
   saveDesignCanvas = (designCanvasID) => {

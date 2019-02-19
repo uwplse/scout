@@ -15,26 +15,6 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.timer = null;
 
     this.uniqueID = _.uniqueId();
-
-    this.state = {
-      height: props.height,
-      width: props.width, 
-      left: props.left, 
-      top: props.top, 
-      scaling: props.scaling, 
-      primarySelection: props.primarySelection
-    }
-  }
-
-  static getDerivedStateFromProps(nextProps, prevState) {
-    return {
-      height: prevState.height,
-      width: prevState.width, 
-      left: prevState.left, 
-      top: prevState.top, 
-      scaling: nextProps.scaling, 
-      primarySelection: nextProps.primarySelection
-    }
   }
 
   onClick = (evt) => {
@@ -46,14 +26,14 @@ export default class DesignCanvasSVGWidget extends React.Component {
 
   render () {
     const source = this.svgSource; 
-    const height = this.state.height; 
-    const width = this.state.width; 
-    const left = this.state.left; 
-    const top = this.state.top;
+    const height = this.props.height; 
+    const width = this.props.width; 
+    const left = this.props.left; 
+    const top = this.props.top;
     
     let isContainer = (this.type == "group" || this.type == "labelGroup" || this.type == "canvas"); 
-    const isPrimary = this.state.primarySelection && this.state.primarySelection == this.props.shape; 
-    const isSecondary = this.state.primarySelection && !isPrimary && this.state.primarySelection.name == this.props.shape.name; 
+    const isPrimary = this.props.primarySelection && this.props.primarySelection == this.props.shape;
+    const isSecondary = this.props.primarySelection && !isPrimary && this.props.primarySelection.name == this.props.shape.name; 
 
     return (
       <div 
@@ -66,8 +46,8 @@ export default class DesignCanvasSVGWidget extends React.Component {
         <SVGInline 
           className={"widget-control-" + this.type} 
           svg={source} 
-          height={this.state.height + "px"} 
-          width={this.state.width + "px"} />
+          height={this.props.height + "px"} 
+          width={this.props.width + "px"} />
       </div>); 
   }
 }

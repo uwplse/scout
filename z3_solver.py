@@ -10,6 +10,51 @@ import solver_helpers as sh
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+
+RELAX_PROPERTIES = {
+	"arrangement": ["x", "y", "width", "height", "left_column", "padding"],
+	"padding": ["x", "y", "width", "height", "left_column"],
+	"alignment": [],
+	"width": ["x", "height", "size_factor", "arrangement", "padding"],
+	"height": ["y", "width", "size_factor", "arrangement", "padding"], 
+	"y": ["y", "height", "width", "size_factor", "arrangement",  "padding"], 
+	"x": ["x", "height", "width", "size_factor", "arrangement", "padding"], 
+	"left_column": ["x", "y", "height", "width", "size_factor", "arrangement", "padding"], 
+	"baseline_grid": [], 
+	"margin": [], 
+	"columns": ["column_width", "gutter_width"], 
+	"column_width": ["columns", "gutter_width"], 
+	"gutter_width": ["columns", "column_width"]
+}
+
+CHILDREN_RELAX_PROPERTIES = {
+	"arrangement": ["x", "y", "width", "height", "size_factor", "padding"], 
+	"padding": ["x", "y", "width", "height", "size_factor", "padding"],
+	"left_column": ["x", "y", "width", "height", "size_factor", "padding"],
+	"alignment": ["x", "y"],
+	"height": ["height", "width", "size_factor"],
+	"width": ["width", "height", "size_factor"], 
+	"x": ["x", "y"], 
+	"y": ["x", "y"], 
+	"baseline_grid": ["y", "height", "width", "size_factor", "x", 
+		"left_column", "arrangement", "padding"], 
+	"margin": ["y", "x", "left_column","height", "width", "size_factor", "padding", "arrangement"], 
+	"columns": ["x", "left_column", "y", "height", "width", "size_factor", "padding", "arrangement"], 
+	"column_width": ["x", "left_column", "height", "width", "size_factor", "y", "padding", "arrangement"], 
+	"gutter_width": ["x", "left_column", "height", "width", "size_factor", "y", "padding", "arrangement"]
+}
+
+CANVAS_RELAX_PROPERTIES = {
+	"padding": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
+	"arrangement": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
+	"y": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
+	"left_column": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"],
+	"column_width": ["margin"], 
+	"gutter_width": ["margin"], 
+	"margin": ["columns","gutter_width", "column_width"], 
+	"height": ["baseline_grid", "margin", "columns", "gutter_width", "column_width"]
+}
+
 class OverrideSolver(object):
 	def __init__(self, solver):
 		self.solver = solver
@@ -45,6 +90,7 @@ class Solver(object):
 		self.relative_search = False
 		self.shapes, self.root = self.build_shape_hierarchy()
 		self.root = self.root[0]
+		self.invalid_solutions = 0
 
 		self.variables = self.init_variables()
 		self.output_variables = self.init_output_variables()
@@ -323,7 +369,7 @@ class Solver(object):
 				# Keep the solution & convert to json
 				# self.print_solution()
 				time_start = time.time()
-				sln = state.convert_to_json(self.shapes, model, self.solver_ctx)
+				sln = state.convert_to_json(self.shapes, model)
 				time_end = time.time()
 				logging.debug("Time in converting solution to json: " + str(time_end-time_start))
 				self.restore_state()
@@ -398,6 +444,194 @@ class Solver(object):
 				shapes_added.append(shapeID)
 
 		return shapes_added, shapes_removed
+	
+	def relax_shape_properties(self, solution, changed_element_id, changed_property, changed_value, relaxed_property_values):
+		element = solution["elements"][changed_element_id]
+
+		relaxed_property_values[changed_element_id] = dict()
+
+		# Relax the changed property first and keep the old value to restore later
+		relaxed_property_values[changed_element_id][changed_property] = element[changed_property]
+
+		# Change the value for this property on the element to the kept value. 
+		element[changed_property] = changed_value
+
+		properties_to_relax = RELAX_PROPERTIES[changed_property]
+		for i in range(0, len(properties_to_relax)): 
+			property_to_relax = properties_to_relax[i]
+			if property_to_relax in element: 
+				relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
+				element[property_to_relax] = None
+
+		self.relax_child_properties(solution, changed_element_id, changed_property, relaxed_property_values)
+
+		return relaxed_property_values
+
+	def relax_child_properties(self, solution, element_id, changed_property, relaxed_property_values): 
+		# Relax child properties 
+		element_shape = self.shapes[element_id]
+		if hasattr(element_shape, 'children') and len(element_shape.children):
+			for child in element_shape.children:
+				solution_element = solution["elements"][child.shape_id]
+				child_properties_to_relax = CHILDREN_RELAX_PROPERTIES[changed_property]
+				relaxed_property_values[child.shape_id] = dict()
+				for i in range(0, len(child_properties_to_relax)): 
+					property_to_relax = child_properties_to_relax[i]
+					if property_to_relax in solution_element:
+						relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
+						solution_element[property_to_relax] = None
+				self.relax_child_properties(solution, child.shape_id, changed_property, relaxed_property_values)
+
+
+	def restore_relaxed_properties(self, solution, element_id, relaxed_property_values): 
+		solution_element = solution["elements"][element_id]
+		relaxed_values = relaxed_property_values[element_id]
+		for key,relaxed_value in relaxed_values.items(): 
+			solution_element[key] = relaxed_value
+
+		# Restore child prperty values
+		self.restore_child_relaxed_properties(solution, element_id, relaxed_property_values)
+
+	def restore_child_relaxed_properties(self, solution, element_id, relaxed_property_values): 
+		# Relax child properties 
+		element_shape = self.shapes[element_id]
+		if hasattr(element_shape, 'children') and len(element_shape.children):
+			for child in element_shape.children: 
+				solution_element = solution["elements"][child.shape_id]
+
+				relaxed_values = relaxed_property_values[child.shape_id]
+				for key,relaxed_value in relaxed_values.items(): 
+					solution_element[key] = relaxed_value
+			self.restore_child_relaxed_properties(solution, child.shape_id, relaxed_property_values)
+
+	def get_variable_to_relax(self, solution, changed_element_id, changed_property, relaxed_property_values): 
+		element = solution["elements"][changed_element_id]
+		properties_to_relax = RELAX_PROPERTIES[changed_property]
+		for i in range(0, len(properties_to_relax)): 
+			property_to_relax = properties_to_relax[i]
+			if property_to_relax in element and property_to_relax not in relaxed_property_values[changed_element_id]: 
+				relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
+				return True
+		result = self.get_child_variable_to_relax(solution, changed_element_id, changed_property, relaxed_property_values)
+		if result: 
+			return result
+
+		#Then start to relax the canvas properties
+		canvas_element = solution["elements"]["canvas"]
+		canvas_properties_to_relax = CANVAS_RELAX_PROPERTIES[changed_property]
+		if "canvas" not in relaxed_property_values: 
+			relaxed_property_values["canvas"] = dict()
+
+		for i in range(0, len(canvas_properties_to_relax)): 
+			canvas_property_to_relax = canvas_properties_to_relax[i]
+			if canvas_property_to_relax not in relaxed_property_values["canvas"]: 
+				relaxed_property_values["canvas"][canvas_property_to_relax] = canvas_element[canvas_property_to_relax]
+				return True
+
+		return False
+
+	def get_child_variable_to_relax(self, solution, element_id, changed_property, relaxed_property_values): 
+		# Relax child properties 
+		element_shape = self.shapes[element_id]
+		if hasattr(element_shape, 'children') and len(element_shape.children):
+			for child in element_shape.children:
+				solution_element = solution["elements"][child.shape_id]
+				child_properties_to_relax = CHILDREN_RELAX_PROPERTIES[changed_property]
+
+				if child.shape_id not in relaxed_property_values: 
+					relaxed_property_values[child.shape_id] = dict()
+	
+				for i in range(0, len(child_properties_to_relax)): 
+					property_to_relax = child_properties_to_relax[i]
+					if property_to_relax in solution_element and property_to_relax not in relaxed_property_values[child.shape_id]:
+						relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
+						return True
+
+			for child in element_shape.children: 
+				result = self.get_child_variable_to_relax(solution, child.shape_id, changed_property, relaxed_property_values)
+				if result: 
+					return result 
+		return False
+
+	def repair_solution(self, solution, changed_element_id, changed_property, changed_value, keep_or_prevent): 
+		# Remove all of the non-relaxed varibles from the unassigned variables. 
+		relaxed_property_values = dict() 
+		relaxed_property_values[changed_element_id] = dict()
+
+		repaired_solution = None
+		more_variables_to_relax = True
+		print("Begin repair")
+		while more_variables_to_relax and repaired_solution is None: 
+			# Remove variables from unassigned that should be assigned
+			more_variables_to_relax = self.get_variable_to_relax(solution, changed_element_id, changed_property, relaxed_property_values)
+			print(relaxed_property_values)
+
+			variables_unassigned = []
+			variables_assigned = []
+			for variable in self.unassigned: 
+				if keep_or_prevent == "keep": 
+					if variable.shape_id in relaxed_property_values and variable.name in relaxed_property_values[variable.shape_id]:
+						variables_unassigned.append(variable)
+					else: 
+						variables_assigned.append(variable)
+				else: 
+					# Prevent the value from being assigned
+					# And unassign the variable
+					if variable.shape_id == changed_element_id and variable.name == changed_property  \
+						or (variable.shape_id in relaxed_property_values and variable.name in relaxed_property_values[variable.shape_id]): 
+						variables_unassigned.append(variable)
+					else: 
+						variables_assigned.append(variable)
+
+
+			self.unassigned = variables_unassigned
+			state = sh.Solution()
+
+			for assigned_variable in variables_assigned: 
+				self.solver.push()
+				state.add_assigned_variable(assigned_variable)
+				
+				value_to_assign = changed_value
+				
+				if assigned_variable.shape_id == changed_element_id and assigned_variable.name == changed_property: 
+					value_to_assign = changed_value
+				else: 
+					value_to_assign = solution["elements"][assigned_variable.shape_id][assigned_variable.name]
+
+				if assigned_variable.index_domain: 
+					assigned_variable.assigned = value_to_assign
+				else: 
+					if assigned_variable.type != "String": 
+						value_to_assign = int(value_to_assign)
+
+					in_domain_index = assigned_variable.domain.index(value_to_assign)
+					assigned_variable.assigned = in_domain_index
+				self.encode_assigned_variable(assigned_variable)
+
+			# Try to find a repaired soluition
+			repaired_solution = self.branch_and_bound(state)
+
+			if repaired_solution is None: 
+				for variable in self.variables: 
+					variable.assigned = None
+		
+				self.unassigned = copy.copy(self.variables)
+
+				# Restore the stack context for the solver
+				for i in range(0, len(variables_assigned)):
+					self.solver.pop()
+
+		if repaired_solution:
+			print("Able to repair this solution. ")
+
+			# udpate the ID so it links back to the right solution in the client
+			repaired_solution["id"] = solution["id"]
+			solution = repaired_solution
+			solution["conflicts"] = []
+			solution["valid"] = []
+			solution["new"] = False;
+	
+		return solution
 
 	def check_validity(self, solution):
 		# Look for any shapes that have been removed or added in this solution
@@ -433,12 +667,12 @@ class Solver(object):
 
 				print("Solution could be found.")
 			else:
-				# Get the unsat core for each solution
-				unsat_core = self.solver.unsat_core()
+				# # Get the unsat core for each solution
+				# unsat_core = self.solver.unsat_core()
 
-				# Parse the output message to send identifiers to highlight the conflicting constraints
-				conflicts = sh.parse_unsat_core(unsat_core)
-				solution["conflicts"] = conflicts
+				# # Parse the output message to send identifiers to highlight the conflicting constraints
+				# conflicts = sh.parse_unsat_core(unsat_core)
+				# solution["conflicts"] = conflicts
 				
 				print("Solution could not be found.")
 

@@ -82,8 +82,10 @@ class ConstraintBuilder(object):
 				variable = variables[variable_key]
 				self.decl_constraints += cb.declare(variable.id, variable.type)
 				if variable.name != "baseline" and variable.name != "extra_in_first":
-					all_values.append(cb.eq(variable.id, 
-						str(variable.get_value_from_element(element))))
+					variable_value = variable.get_value_from_element(element)
+					if variable_value != None: 
+						all_values.append(cb.eq(variable.id, 
+							str(variable_value)))
 
 		# Return the constraints so they can be loaded in after the intial initialization of the base constraints
 		declarations = self.get_solution_variable_declarations(shapes, elements)
@@ -698,12 +700,12 @@ class ConstraintBuilder(object):
 				left_column_lt_parent = cb.lt(child_left_column.id, layout_columns.id)
 				self.constraints += cb.assert_expr(left_column_lt_parent, "child_" + child.shape_id + "_left_column_lt_layout_columns")
 
-				right_column_lt_parent = cb.lt(child_right_column.id, layout_columns.id)
-				self.constraints += cb.assert_expr(right_column_lt_parent, "child_" + child.shape_id + "_right_column_lt_layout_columns")
+				# right_column_lt_parent = cb.lt(child_right_column.id, layout_columns.id)
+				# self.constraints += cb.assert_expr(right_column_lt_parent, "child_" + child.shape_id + "_right_column_lt_layout_columns")
 
-				# Left column should be less than or equal to right column 
-				left_column_lt_right = cb.lte(child_left_column.id, child_right_column.id)
-				self.constraints += cb.assert_expr(left_column_lt_right, "child_" + child.shape_id + "_left_column_lt_right_column")
+				# # Left column should be less than or equal to right column 
+				# left_column_lt_right = cb.lte(child_left_column.id, child_right_column.id)
+				# self.constraints += cb.assert_expr(left_column_lt_right, "child_" + child.shape_id + "_left_column_lt_right_column")
 
 				# Enforce that the x position of the child falls to the left edge of a column 
 				left_column_mult = cb.sub(child_left_column.id, "1")
