@@ -43,7 +43,6 @@ class CustomSolver(object):
 		logging.debug("number of solutions found: " + str(len(self.solutions)))
 
 		if len(self.solutions):
-			print(self.solutions)
 			self.solutions.sort(key=lambda s: s["cost"])
 			print("lowest cost: " + str(self.solutions[0]["cost"]))
 			print("highest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))

@@ -47,6 +47,7 @@ CHILDREN_RELAX_PROPERTIES = {
 CANVAS_RELAX_PROPERTIES = {
 	"padding": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
 	"arrangement": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
+	"alignment": ["baseline_grid"],
 	"y": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
 	"left_column": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"],
 	"column_width": ["margin"], 

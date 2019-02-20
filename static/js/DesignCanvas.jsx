@@ -82,8 +82,12 @@ export default class DesignCanvas extends React.Component {
       return 1.5; 
     }
 
+    if(this.state.savedState == 1) {
+      return 1.0; 
+    }
+
     // Return the amount of scaling to use depending on the state of this DesignCanvas
-    if(this.state.savedState == 1 || this.state.savedState == -1 || this.state.invalidated) {
+    if(this.state.savedState == -1 || this.state.invalidated) {
       return 0.5; 
     } 
     
@@ -173,19 +177,34 @@ export default class DesignCanvas extends React.Component {
       let a_y = a.y; 
       let a_width = a.width;
       let a_height = a.height; 
+      let a_type = a.type; 
 
       let b_x = b.x; 
       let b_y = b.y; 
       let b_width = b.width; 
-      let b_height = b.height; 
+      let b_height = b.height;
+      let b_type = b.type;  
 
       // Sort by containment
-      if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
-        // Sort b first if b contains a so it appears higher in the DOM hierarchy
+      if(a_type == "group" && b_type != "group") {
+        // Groups should be always sorted after elements
+        return -1; 
+      }
+      else if(a_type != "group" && b_type == "group") {
         return 1; 
       }
+      else if(a_type == "group" && b_type == "group") {
+        if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
+          // Sort b first if b contains a so it appears higher in the DOM hierarchy
+          // then sort by boundigng box
+          return -1; 
+        }
+        else if(b_x >= a_x && b_y >= a_y && (b_y+b_height <= a_y+a_height) && (b_x+b_width <= a_x+a_width)) {
+          return -1; 
+        }
+      }
 
-      return -1; 
+      return 0; 
     }); 
 
     this.setState({
