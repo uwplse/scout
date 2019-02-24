@@ -262,16 +262,18 @@ class Solution(object):
 						element["canvas_child"] = True
 
 				elif shape.type == "canvas": 
-					margin = model[variables[shape.variables.margin.id]].as_string()
-					baseline_grid = model[variables[shape.variables.baseline_grid.id]].as_string()
-					gutter_width = model[variables[shape.variables.gutter_width.id]].as_string()
-					column_width = model[variables[shape.variables.column_width.id]].as_string()
-					columns = model[variables[shape.variables.columns.id]].as_string()
-					element["margin"] = int(margin)
-					element["baseline_grid"] = int(baseline_grid)
-					element["columns"] = int(columns)
-					element["column_width"] = int(column_width)
-					element["gutter_width"] = int(gutter_width)
+					margin = int(model[variables[shape.variables.margin.id]].as_string())
+					baseline_grid = int(model[variables[shape.variables.baseline_grid.id]].as_string())
+					gutter_width = int(model[variables[shape.variables.gutter_width.id]].as_string())
+					column_width = int(model[variables[shape.variables.column_width.id]].as_string())
+					columns = int(model[variables[shape.variables.columns.id]].as_string())
+
+					element["margin"] = margin
+					element["baseline_grid"] = baseline_grid
+					element["columns"] = columns
+					element["column_width"] = column_width
+					element["gutter_width"] = gutter_width
+					element["grid_layout"] = [margin, columns, gutter_width, column_width]
 				elif shape.type == "leaf": 
 					height = model[variables[shape.computed_height()]].as_string()
 					width = model[variables[shape.computed_width()]].as_string()
@@ -282,6 +284,7 @@ class Solution(object):
 					element["width"] = width
 					element["height"] = height
 					element["size_factor"] = size_factor
+					element["size_combo"] = [width, height, size_factor]
 
 					if shape.has_columns:
 						left_column = model[variables[shape.variables.left_column.id]].as_string()

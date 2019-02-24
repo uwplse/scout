@@ -12,50 +12,53 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 RELAX_PROPERTIES = {
-	"arrangement": ["x", "y", "width", "height", "left_column", "padding"],
-	"padding": ["x", "y", "width", "height", "left_column"],
+	"arrangement": [["x", "y", "width", "height", "left_column"], ["padding"]],
+	"padding": [["x", "y", "width", "height", "left_column"], ["arrangement"]],
 	"alignment": [],
-	"width": ["x", "height", "size_factor", "arrangement", "padding"],
-	"height": ["y", "width", "size_factor", "arrangement", "padding"], 
-	"y": ["y", "height", "width", "size_factor", "arrangement",  "padding"], 
-	"x": ["x", "height", "width", "size_factor", "arrangement", "padding"], 
-	"left_column": ["x", "y", "height", "width", "size_factor", "arrangement", "padding"], 
+	"width": [["x", "height", "size_factor"], ["arrangement"], ["padding"]],
+	"height": [["y", "width", "size_factor"], ["arrangement"], ["padding"]], 
+	"y": [["height", "width", "size_factor"], ["arrangement"], ["padding"]], 
+	"x": [["height", "width", "size_factor"], ["arrangement"], ["padding"]], 
+	"left_column": [["x", "y"], ["size_combo"], ["arrangement"], ["padding"]], 
 	"baseline_grid": [], 
-	"margin": [], 
-	"columns": ["column_width", "gutter_width"], 
-	"column_width": ["columns", "gutter_width"], 
-	"gutter_width": ["columns", "column_width"]
+	"margin": [["grid_layout"]], 
+	"columns": [["grid_layout"]], 
+	"column_width": [["grid_layout"]], 
+	"gutter_width": [["grid_layout"]]
 }
 
 CHILDREN_RELAX_PROPERTIES = {
-	"arrangement": ["x", "y", "width", "height", "size_factor", "padding"], 
-	"padding": ["x", "y", "width", "height", "size_factor", "padding"],
-	"left_column": ["x", "y", "width", "height", "size_factor", "padding"],
-	"alignment": ["x", "y"],
-	"height": ["height", "width", "size_factor"],
-	"width": ["width", "height", "size_factor"], 
-	"x": ["x", "y"], 
-	"y": ["x", "y"], 
-	"baseline_grid": ["y", "height", "width", "size_factor", "x", 
-		"left_column", "arrangement", "padding"], 
-	"margin": ["y", "x", "left_column","height", "width", "size_factor", "padding", "arrangement"], 
-	"columns": ["x", "left_column", "y", "height", "width", "size_factor", "padding", "arrangement"], 
-	"column_width": ["x", "left_column", "height", "width", "size_factor", "y", "padding", "arrangement"], 
-	"gutter_width": ["x", "left_column", "height", "width", "size_factor", "y", "padding", "arrangement"]
+	"arrangement": [["x", "y"], ["size_combo"], ["padding", "arrangement"]], 
+	"padding": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
+	"left_column": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
+	"alignment": [["x", "y"]],
+	"height": [["size_combo"]],
+	"width": [["size_combo"]], 
+	"x": [["x", "y"]], 
+	"y": [["x", "y"]], 
+	"baseline_grid": [["y", "left_column"], ["size_factor"], ["x"], 
+		["arrangement", "padding"]], 
+	"margin": [["y", "x", "left_column"], ["size_combo"], ["padding", "arrangement"]],
+	"columns": [["x", "left_column", "y"], ["size_combo"], ["padding", "arrangement"]], 
+	"column_width": [["x", "left_column"], ["size_combo"], ["y"], ["padding", "arrangement"]], 
+	"gutter_width": [["x", "left_column"], ["size_combo"], ["y"], ["padding", "arrangement"]]
 }
 
 CANVAS_RELAX_PROPERTIES = {
-	"padding": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
-	"arrangement": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
-	"alignment": ["baseline_grid"],
-	"y": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"], 
-	"left_column": ["margin", "column_width", "gutter_width", "columns", "baseline_grid"],
-	"column_width": ["margin"], 
-	"gutter_width": ["margin"], 
-	"margin": ["columns","gutter_width", "column_width"], 
-	"height": ["baseline_grid", "margin", "columns", "gutter_width", "column_width"], 
-	"width": ["baseline_grid", "margin", "columns", "gutter_width", "column_width"]
+	"padding": [["grid_layout"], ["baseline_grid"]], 
+	"arrangement": [["grid_layout"], ["baseline_grid"]], 
+	"alignment": [["baseline_grid"], ["grid_layout"]],
+	"y": [["grid_layout"], ["baseline_grid"]], 
+	"left_column": [["grid_layout"], ["baseline_grid"]],
+	"column_width": [["grid_layout"], ["baseline_grid"]], 
+	"gutter_width": [["grid_layout"], ["baseline_grid"]], 
+	"margin": [["grid_layout"], ["baseline_grid"]], 
+	"height": [["baseline_grid"], ["grid_layout"]], 
+	"width": [["grid_layout"], ["baseline_grid"]]
 }
+
+LAYOUT_GRID_PROPERTIES = ["margin", "columns", "column_width", "gutter_width"]
+SIZE_PROPERTIES = ["width", "height", "size_factor"]
 
 class OverrideSolver(object):
 	def __init__(self, solver):
@@ -239,8 +242,6 @@ class Solver(object):
 		last = []
 		first = []
 		variables = []
-		layout_grid_variables = ["margin", "columns", "gutter_width", "column_width"]
-		size_variables = ["width", "height", "size_factor"]
 
 		for shape in self.shapes.values():
 			variables_to_search = shape.search_variables
@@ -263,7 +264,7 @@ class Solver(object):
 					elif lock == "height" or lock == "width":						
 						if "size_combo" in keys:
 							if len(locked_values) > 1: 
-								locked_index = size_variables.index(lock)
+								locked_index = SIZE_PROPERTIES.index(lock)
 
 								size_combo_domain = shape.variables["size_combo"].domain
 								pruned_size = [val for val in size_combo_domain if val[locked_index] in locked_values]
@@ -289,8 +290,8 @@ class Solver(object):
 				for prevent in shape.prevents: 
 					prevented_values = shape.variable_values[prevent]
 
-					if prevent in layout_grid_variables: 
-						prev_index = layout_grid_variables.index(prevent)
+					if prevent in LAYOUT_GRID_PROPERTIES:
+						prev_index = LAYOUT_GRID_PROPERTIES.index(prevent)
 
 						grid_domain = shape.variables["grid_layout"].domain
 						pruned_grid_layout = [val for val in grid_domain if val[prev_index] not in prevented_values]
@@ -312,8 +313,8 @@ class Solver(object):
 							grid_layout_var_index = keys.index("grid_layout")
 							filtered_keys.append(grid_layout_var_index)
 
-					elif prevent in size_variables: 
-						prev_index = size_variables.index(prevent)
+					elif prevent in SIZE_PROPERTIES:
+						prev_index = SIZE_PROPERTIES.index(prevent)
 
 						size_combo_domain = shape.variables["size_combo"].domain
 						pruned_size_combos = [val for val in size_combo_domain if val[prev_index] not in prevented_values]
@@ -631,10 +632,15 @@ class Solver(object):
 		element = solution["elements"][changed_element_id]
 		properties_to_relax = RELAX_PROPERTIES[changed_property]
 		for i in range(0, len(properties_to_relax)): 
-			property_to_relax = properties_to_relax[i]
-			if property_to_relax in element and property_to_relax not in relaxed_property_values[changed_element_id]: 
-				relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
+			property_group_to_relax = properties_to_relax[i]
+			relaxed = False
+			for property_to_relax in property_group_to_relax: 
+				if property_to_relax in element and property_to_relax not in relaxed_property_values[changed_element_id]: 
+					relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
+					relaxed = True
+			if relaxed: 
 				return True
+
 		result = self.get_child_variable_to_relax(solution, changed_element_id, changed_property, relaxed_property_values)
 		if result: 
 			return result
@@ -646,9 +652,14 @@ class Solver(object):
 			relaxed_property_values["canvas"] = dict()
 
 		for i in range(0, len(canvas_properties_to_relax)): 
-			canvas_property_to_relax = canvas_properties_to_relax[i]
-			if canvas_property_to_relax not in relaxed_property_values["canvas"]: 
-				relaxed_property_values["canvas"][canvas_property_to_relax] = canvas_element[canvas_property_to_relax]
+			canvas_property_group_to_relax = canvas_properties_to_relax[i]
+			relaxed = False
+			for canvas_property_to_relax in canvas_property_group_to_relax: 
+				if canvas_property_to_relax not in relaxed_property_values["canvas"]: 
+					relaxed_property_values["canvas"][canvas_property_to_relax] = canvas_element[canvas_property_to_relax]
+					relaxed = True
+
+			if relaxed: 
 				return True
 
 		return False
@@ -665,9 +676,13 @@ class Solver(object):
 					relaxed_property_values[child.shape_id] = dict()
 	
 				for i in range(0, len(child_properties_to_relax)): 
-					property_to_relax = child_properties_to_relax[i]
-					if property_to_relax in solution_element and property_to_relax not in relaxed_property_values[child.shape_id]:
-						relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
+					property_group_to_relax = child_properties_to_relax[i]
+					relaxed = False
+					for property_to_relax in property_group_to_relax: 
+						if property_to_relax in solution_element and property_to_relax not in relaxed_property_values[child.shape_id]:
+							relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
+							relaxed = True
+					if relaxed: 
 						return True
 
 			for child in element_shape.children: 
@@ -719,7 +734,14 @@ class Solver(object):
 				if assigned_variable.shape_id == changed_element_id and assigned_variable.name == changed_property: 
 					value_to_assign = changed_value
 				else: 
-					value_to_assign = solution["elements"][assigned_variable.shape_id][assigned_variable.name]
+					if assigned_variable.name == "size_combo":
+						domain_value = solution["elements"][assigned_variable.shape_id]["size_combo"]
+						value_to_assign = assigned_variable.domain.index(domain_value)
+					elif assigned_variable.name == "grid_layout": 
+						domain_value = solution["elements"][assigned_variable.shape_id]["grid_layout"]
+						value_to_assign = assigned_variable.domain.index(domain_value)
+					else: 
+						value_to_assign = solution["elements"][assigned_variable.shape_id][assigned_variable.name]
 
 				if assigned_variable.index_domain: 
 					assigned_variable.assigned = value_to_assign
