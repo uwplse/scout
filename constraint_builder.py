@@ -71,6 +71,7 @@ class ConstraintBuilder(object):
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
 		all_values = []
+		ignored = ["baseilne", "extra_in_first", "size_combo", "grid_layout"]
 		for elementID in elements:
 			element = elements[elementID]
 
@@ -81,7 +82,7 @@ class ConstraintBuilder(object):
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
 				self.decl_constraints += cb.declare(variable.id, variable.type)
-				if variable.name != "baseline" and variable.name != "extra_in_first":
+				if variable.name not in ignored:
 					variable_value = variable.get_value_from_element(element)
 					if variable_value != None: 
 						all_values.append(cb.eq(variable.id, 

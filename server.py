@@ -96,23 +96,23 @@ def reflow():
 	form_data = request.form
 
 	if "changed_element_id" in form_data:
-		changed_element_id = form_data["changed_element_id"]
-		changed_property = form_data["changed_property"]
-		changed_value = form_data["changed_value"]
-		keep_or_prevent = form_data['keep_or_prevent']
+		# changed_element_id = form_data["changed_element_id"]
+		# changed_property = form_data["changed_property"]
+		# changed_value = form_data["changed_value"]
+		# keep_or_prevent = form_data['keep_or_prevent']
 		solutions = form_data["solutions"]
-		elements = form_data["elements"]
+		# elements = form_data["elements"]
 
-		# Will return the status of whether the current set of constraints is valid
-		# and also update the valid state of each of the previous solutions
-		results = repair_solution_validity(elements, solutions, changed_element_id, 
-			changed_property, changed_value, keep_or_prevent)
+		# # Will return the status of whether the current set of constraints is valid
+		# # and also update the valid state of each of the previous solutions
+		# results = repair_solution_validity(elements, solutions, changed_element_id, 
+		# 	changed_property, changed_value, keep_or_prevent)
 
-		sys.stdout.flush()
+		# sys.stdout.flush()
 
 		output = dict() 
 		# Return a new set of soltuions
-		output["solutions"] = results
+		output["solutions"] = solutions
 		return json.dumps(output).encode('utf-8')
 	sys.stdout.flush()
 

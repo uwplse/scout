@@ -53,7 +53,8 @@ CANVAS_RELAX_PROPERTIES = {
 	"column_width": ["margin"], 
 	"gutter_width": ["margin"], 
 	"margin": ["columns","gutter_width", "column_width"], 
-	"height": ["baseline_grid", "margin", "columns", "gutter_width", "column_width"]
+	"height": ["baseline_grid", "margin", "columns", "gutter_width", "column_width"], 
+	"width": ["baseline_grid", "margin", "columns", "gutter_width", "column_width"]
 }
 
 class OverrideSolver(object):
@@ -238,37 +239,115 @@ class Solver(object):
 		last = []
 		first = []
 		variables = []
+		layout_grid_variables = ["margin", "columns", "gutter_width", "column_width"]
+		size_variables = ["width", "height", "size_factor"]
 
 		for shape in self.shapes.values():
-			if shape.type == "container": 
-				first.append(shape.variables.arrangement)
-				last.append(shape.variables.alignment)
-				last.append(shape.variables.padding)			
-			elif shape.type == "canvas":
-				last.append(shape.variables.margin)
-				last.append(shape.variables.columns)
-				last.append(shape.variables.baseline_grid)
-			elif shape.type == "leaf": 
-				if shape.at_root: 
-					last.append(shape.variables.left_column)
-					last.append(shape.variables.right_column)
-					last.append(shape.variables.y)
+			variables_to_search = shape.search_variables
+			keys = [var.name for var in variables_to_search]
+			filtered_keys = []
 
-				if shape.is_alternate: 
-					last.append(shape.variables.alternate)
+			if shape.locks is not None:
+				for lock in shape.locks:
+					locked_values = shape.variable_values[lock]
+					if lock in keys:
+						if len(locked_values) > 1: 
+							# Prune the variable domain but still assign it
+							variable = shape.variables[lock]
+							domain_values = variable.domain 
+							pruned_domain_values = locked_values
+							variable.domain = pruned_domain_values
+						else: 
+							lock_index = keys.index(lock)
+							filtered_keys.append(lock_index)
+					elif lock == "height" or lock == "width":						
+						if "size_combo" in keys:
+							if len(locked_values) > 1: 
+								locked_index = size_variables.index(lock)
 
-				last.append(shape.variables.size_factor)
+								size_combo_domain = shape.variables["size_combo"].domain
+								pruned_size = [val for val in size_combo_domain if val[locked_index] in locked_values]
+								if len(pruned_size) > 1: 
+									shape.variables["size_combo"].domain = pruned_size
 
-			if shape.at_root: 
-				last.append(shape.variables.y)
-				last.append(shape.variables.left_column)
-				last.append(shape.variables.right_column)
+									width_domain = [val[0] for val in pruned_size]
+									shape.variables["width"].domain = width_domain
 
-		# More important variables are in first. putting them at the end of the list , they will get assigned first
-		variables.extend(last)
-		variables.extend(first)
+									height_domain = [val[1] for val in pruned_size]
+									shape.variables["height"].domain = height_domain
+
+									size_factor_domain = [val[0] for val in pruned_size]
+									shape.variables["size_factor"].domain = size_factor_domain
+								else: 
+									size_combo_var_index = keys.index("size_combo")
+									filtered_keys.append(size_combo_var_index)
+							else: 
+								size_index = keys.index("size_combo")
+								filtered_keys.append(size_index)
+
+			if shape.prevents is not None: 
+				for prevent in shape.prevents: 
+					prevented_values = shape.variable_values[prevent]
+
+					if prevent in layout_grid_variables: 
+						prev_index = layout_grid_variables.index(prevent)
+
+						grid_domain = shape.variables["grid_layout"].domain
+						pruned_grid_layout = [val for val in grid_domain if val[prev_index] not in prevented_values]
+						if len(pruned_grid_layout) > 1: 
+							shape.variables["grid_layout"].domain = pruned_grid_layout
+
+							marg_domain = [val[0] for val in pruned_grid_layout]
+							shape.variables["margin"].domain = marg_domain
+
+							cols_domain = [val[1] for val in pruned_grid_layout]
+							shape.variables["columns"].domain = cols_domain
+
+							gutter_width_domain = [val[2] for val in pruned_grid_layout]
+							shape.variables["gutter_width"].domain = gutter_width_domain
+
+							col_width_domain = [val[3] for val in pruned_grid_layout]
+							shape.variables["column_width"].domain = col_width_domain
+						else: 
+							grid_layout_var_index = keys.index("grid_layout")
+							filtered_keys.append(grid_layout_var_index)
+
+					elif prevent in size_variables: 
+						prev_index = size_variables.index(prevent)
+
+						size_combo_domain = shape.variables["size_combo"].domain
+						pruned_size_combos = [val for val in size_combo_domain if val[prev_index] not in prevented_values]
+						if len(pruned_size_combos) > 1: 
+							shape.variables["size_combo"].domain = pruned_size_combos
+
+							width_domain = [val[0] for val in pruned_size_combos]
+							shape.variables["width"].domain = width_domain
+
+							height_domain = [val[1] for val in pruned_size_combos]
+							shape.variables["height"].domain = height_domain
+
+							size_factor_domain = [val[2] for val in pruned_size_combos]
+							shape.variables["size_factor"].domain = size_factor_domain
+						else: 
+							size_var_index = keys.index("size_combo")
+							filtered_keys.append(size_var_index)
+					else: 
+						# Prune these values form the variables domain 
+						variable = shape.variables[prevent]
+						domain_values = variable.domain
+						pruned_domain_values = [val for val in domain_values if val not in prevented_values]
+						variable.domain = pruned_domain_values
+
+
+			# Remove filtered key indexes
+			filtered_keys = list(set(filtered_keys)) #Ensure Unique
+			keys = [k for i,k in enumerate(keys) if i not in filtered_keys]
+
+			vars_to_search = [var for var in variables_to_search if var.name in keys]
+			variables.extend(vars_to_search)
 
 		# Later: Justification and alignment
+		print(variables)
 		return variables
 
 	def compute_search_space(self):
@@ -315,7 +394,50 @@ class Solver(object):
 
 	def encode_assigned_variable(self, variable):
 		constraints = smt.declare(variable.id, variable.type)
-		if variable.index_domain:
+		if variable.name == "grid_layout":
+			assigned_value = variable.domain[variable.assigned]
+
+			marg_var = self.shapes[variable.shape_id].variables.margin
+			constraints += smt.declare(marg_var.id, marg_var.type)
+			marg = smt.eq(marg_var.id, str(assigned_value[0]))
+
+			cols_var = self.shapes[variable.shape_id].variables.columns
+			constraints += smt.declare(cols_var.id, cols_var.type)
+			cols = smt.eq(cols_var.id, str(assigned_value[1]))
+
+			gutter_width_var = self.shapes[variable.shape_id].variables.gutter_width
+			constraints += smt.declare(gutter_width_var.id, gutter_width_var.type)
+			gutter_width = smt.eq(gutter_width_var.id, str(assigned_value[2]))
+			
+			col_width_var = self.shapes[variable.shape_id].variables.column_width
+			constraints += smt.declare(col_width_var.id, col_width_var.type)
+			col_width = smt.eq(col_width_var.id, str(assigned_value[3]))
+			and_expr = smt.and_expr([marg, cols, gutter_width, col_width])
+			constraints += smt.assert_expr(and_expr, 
+				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
+			self.override_solver.load_constraints(constraints)
+
+		elif variable.name == "size_combo":
+			assigned_value = variable.domain[variable.assigned]
+			width_var = self.shapes[variable.shape_id].variables.width 
+			constraints += smt.declare(width_var.id, width_var.type)
+			width = smt.eq(width_var.id, str(assigned_value[0]))
+
+			height_var = self.shapes[variable.shape_id].variables.height
+			constraints += smt.declare(height_var.id, height_var.type)
+			height = smt.eq(height_var.id, str(assigned_value[1]))
+
+			size_factor = self.shapes[variable.shape_id].variables.size_factor
+			constraints += smt.declare(size_factor.id, size_factor.type)
+			size_fact = smt.eq(size_factor.id, str(assigned_value[2]))
+
+			and_expr = smt.and_expr([width, height, size_fact])
+
+			constraints += smt.assert_expr(and_expr, 
+				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
+			self.override_solver.load_constraints(constraints)
+
+		elif variable.index_domain:
 			constraints += smt.assert_expr(smt.eq(variable.id, str(variable.assigned)),
 				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
 			self.override_solver.load_constraints(constraints)

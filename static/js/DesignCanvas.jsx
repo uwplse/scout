@@ -177,23 +177,23 @@ export default class DesignCanvas extends React.Component {
       let a_y = a.y; 
       let a_width = a.width;
       let a_height = a.height; 
-      let a_type = a.type; 
+      let a_is_group = a.type == "group" && !a.alternate; 
 
       let b_x = b.x; 
       let b_y = b.y; 
       let b_width = b.width; 
       let b_height = b.height;
-      let b_type = b.type;  
+      let b_is_group = b.type == "group" && !b.alternate; 
 
       // Sort by containment
-      if(a_type == "group" && b_type != "group") {
+      if(a_is_group && !b_is_group) {
         // Groups should be always sorted after elements
         return -1; 
       }
-      else if(a_type != "group" && b_type == "group") {
+      else if(!a_is_group && b_is_group) {
         return 1; 
       }
-      else if(a_type == "group" && b_type == "group") {
+      else if(a_is_group && b_is_group) {
         if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
           // Sort b first if b contains a so it appears higher in the DOM hierarchy
           // then sort by boundigng box

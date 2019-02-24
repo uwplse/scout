@@ -702,12 +702,18 @@ export default class PageContainer extends React.Component {
     let promises = []; 
     for(let i=0; i<savedSolutions.length; i++) {
       let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
-      promises.push(domtoimage.toPng(document.getElementById(solutionDesignID))
-      .then(function (imgData) {
-          /* do something */
-          let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
-          zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
-      })); 
+      let solution = document.getElementById(solutionDesignID); 
+      if(solution) {
+        promises.push(domtoimage.toPng(solution)
+        .then(function (imgData) {
+            /* do something */
+            let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
+            zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
+
+            let solutionJSON = JSON.stringify(savedSolutions[i]); 
+            zip.file(solutionDesignID + ".json", solutionJSON); 
+        })); 
+      }
     }
 
     Promise.all(promises)
