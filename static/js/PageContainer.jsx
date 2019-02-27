@@ -800,19 +800,7 @@ export default class PageContainer extends React.Component {
             return self.getDesignCanvas(solution, solution.id); 
           }
         });
-
-    // const invalidatedCanvases = this.state.solutions
-    //   .filter((solution) => { 
-    //     return solution.invalidated == true; 
-    //   })
-    //   .map((solution) => {
-    //     if(solution.invalidated == true) {
-    //       return self.getDesignCanvas(solution, solution.id); 
-    //     }
-    //   }); 
-
-    // const discardedCanvases = trashedCanvases.concat(invalidatedCanvases);
-
+      
     // Get the zoomed design canvas, if there is one set
     let zoomedDesignCanvas = this.state.zoomedDesignCanvasID ? this.getZoomedDesignCanvas() : undefined; 
 
