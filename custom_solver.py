@@ -43,7 +43,6 @@ class CustomSolver(object):
 		logging.debug("number of solutions found: " + str(len(self.solutions)))
 
 		if len(self.solutions):
-			print(self.solutions)
 			self.solutions.sort(key=lambda s: s["cost"])
 			print("lowest cost: " + str(self.solutions[0]["cost"]))
 			print("highest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))
@@ -60,6 +59,15 @@ class CustomSolver(object):
 
 		return self.solutions
 
+	def reflow(self, changed_element_id, changed_property, changed_value, keep_or_prevent):
+		# Branch and bound get one solution at a time
+		time_start = time.time()
+		self.reflow_solutions(changed_element_id, changed_property, changed_value, keep_or_prevent)
+		time_end = time.time()
+		logging.debug('Total time reflowing solutionss: ' + str(time_end-time_start))
+
+		return self.solutions
+
 	def run_check(self, z3_context, elements_json, solution, results, i):
 		elements = json.loads(elements_json)
 
@@ -72,6 +80,59 @@ class CustomSolver(object):
 		logging.debug("Time to check validity of solution " + str(i) + ": " + str(time_end-time_start))
 
 		results[i] = solution
+
+	def run_reflow(self, z3_context, elements, solution, changed_element_id, 
+		changed_property, changed_value, keep_or_prevent, results, i):
+		elements = json.loads(elements)
+
+		# Construct the solver instance
+		solver = z3_solver.Solver(z3_context, elements) 
+
+		time_start = time.time()
+		repaired_solution = solver.repair_solution(solution, changed_element_id, changed_property, changed_value, keep_or_prevent)
+		time_end = time.time()
+		logging.debug("Time to check validity of solution " + str(i) + ": " + str(time_end-time_start))
+
+		results[i] = repaired_solution
+
+	def reflow_solutions(self, changed_element_id, changed_property, changed_value, keep_or_prevent): 
+		manager = multiprocessing.Manager()
+		results = manager.dict()
+		jobs = []
+
+		solutions = json.loads(self.previous_solutions)
+		num_previous = len(solutions)
+
+		i = 0 
+		while i < num_previous: 
+			logging.debug("Launching reflow solution: " + str(i))
+			
+			solution = solutions[i]
+			z3_context = z3.Context()
+			p = multiprocessing.Process(target=self.run_reflow, 
+				args=(z3_context, self.elements, solution, changed_element_id, changed_property, 
+					changed_value, keep_or_prevent, results, solution['id']))
+
+			jobs.append(p)
+			p.start()
+			i += 1
+
+		logging.debug("Number of processes: " + str(len(jobs)))
+		for proc in jobs: 
+			proc.join()
+
+		print("number of solutions: ")
+		print(str(len(solutions)))
+		for solution in solutions: 
+			sln_id = solution['id']
+			results_sln = results[sln_id]
+
+			if solution['valid']:
+				# Copy the repaired elements into the solution if a solution could be found
+				solution['elements'] = results_sln['elements']
+				solution['conflicts'] = results_sln['conflicts']
+
+		self.solutions = solutions
 
 	def check_validity_of_solutions(self): 
 		manager = multiprocessing.Manager()

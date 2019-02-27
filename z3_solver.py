@@ -8,7 +8,65 @@ import shapes as shape_classes
 import smtlib_builder as smt
 import solver_helpers as sh
 import logging
+import numpy as np
+z3.set_param(
+         'smt.arith.random_initial_value', True,
+         'smt.random_seed', np.random.randint(0, 655350),
+         'sat.phase', 'random',
+         'sat.random_seed', np.random.randint(0, 655350))
 logging.basicConfig(level=logging.DEBUG)
+
+RANDOM_SEEDS=100000
+CANVAS_WIDTH = 360
+
+RELAX_PROPERTIES = {
+	"arrangement": [["x", "y", "width", "height", "left_column"], ["padding"]],
+	"padding": [["x", "y", "width", "height", "left_column"], ["arrangement"]],
+	"alignment": [],
+	"width": [["x", "height", "size_factor"], ["arrangement"], ["padding"]],
+	"height": [["y", "width", "size_factor"], ["arrangement"], ["padding"]], 
+	"y": [["height", "width", "size_factor"], ["arrangement"], ["padding"]], 
+	"x": [["height", "width", "size_factor"], ["arrangement"], ["padding"]], 
+	"left_column": [["x", "y"], ["size_combo"], ["arrangement"], ["padding"]], 
+	"baseline_grid": [], 
+	"margin": [["grid_layout"]], 
+	"columns": [["grid_layout"]], 
+	"column_width": [["grid_layout"]], 
+	"gutter_width": [["grid_layout"]]
+}
+
+CHILDREN_RELAX_PROPERTIES = {
+	"arrangement": [["x", "y"], ["size_combo"], ["padding", "arrangement"]], 
+	"padding": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
+	"left_column": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
+	"alignment": [["x", "y"]],
+	"height": [["size_combo"]],
+	"width": [["size_combo"]], 
+	"x": [["x", "y"]], 
+	"y": [["x", "y"]], 
+	"baseline_grid": [["y", "left_column"], ["size_factor"], ["x"], 
+		["arrangement", "padding"]], 
+	"margin": [["y", "x", "left_column"], ["size_combo"], ["padding", "arrangement"]],
+	"columns": [["x", "left_column", "y"], ["size_combo"], ["padding", "arrangement"]], 
+	"column_width": [["x", "left_column"], ["size_combo"], ["y"], ["padding", "arrangement"]], 
+	"gutter_width": [["x", "left_column"], ["size_combo"], ["y"], ["padding", "arrangement"]]
+}
+
+CANVAS_RELAX_PROPERTIES = {
+	"padding": [["grid_layout"], ["baseline_grid"]], 
+	"arrangement": [["grid_layout"], ["baseline_grid"]], 
+	"alignment": [["baseline_grid"], ["grid_layout"]],
+	"y": [["grid_layout"], ["baseline_grid"]], 
+	"left_column": [["grid_layout"], ["baseline_grid"]],
+	"column_width": [["grid_layout"], ["baseline_grid"]], 
+	"gutter_width": [["grid_layout"], ["baseline_grid"]], 
+	"margin": [["grid_layout"], ["baseline_grid"]], 
+	"height": [["baseline_grid"], ["grid_layout"]], 
+	"width": [["grid_layout"], ["baseline_grid"]]
+}
+
+LAYOUT_GRID_PROPERTIES = ["margin", "columns", "column_width", "gutter_width"]
+SIZE_PROPERTIES = ["width", "height", "size_factor"]
 
 class OverrideSolver(object):
 	def __init__(self, solver):
@@ -45,8 +103,22 @@ class Solver(object):
 		self.relative_search = False
 		self.shapes, self.root = self.build_shape_hierarchy()
 		self.root = self.root[0]
+		self.invalid_solutions = 0
 
 		self.variables = self.init_variables()
+
+		# For debugging how large the search space is
+		size = self.compute_search_space()
+		logging.debug("Total search space size: " + str(size))
+		sys.stdout.flush()
+		start_time = time.time()
+
+		# Prunes 
+		# time_start = time.time()
+		# self.prune_domain_values()
+		# time_end = time.time()
+		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
+
 		self.output_variables = self.init_output_variables()
 		self.variables_different = Int('VariablesDifferent')
 
@@ -78,12 +150,6 @@ class Solver(object):
 		end_time = time.time()
 		logging.debug("Time taken to encode previous solutions: " + str(end_time-start_time))
 
-		# For debugging how large the search space isd
-		size = self.compute_search_space()
-		logging.debug("Total search space size: " + str(size))
-		sys.stdout.flush()
-		start_time = time.time()
-
 		self.unassigned = copy.copy(self.variables)
 
 		time_start = time.time()
@@ -113,10 +179,10 @@ class Solver(object):
 		# Get the set of previous solutions that have the same set of shapes as the current outline
 		solutions_to_prevent = []
 		for solution in self.previous_solutions: 
-			elements = []
+			elements = solution["elements"]
 			shapes_added, shapes_removed = self.check_added_or_removed_shapes(elements)
 			if not len(shapes_added) and not len(shapes_removed): 
-				solutions_to_prevent.append()
+				solutions_to_prevent.append(solution)
 		return solutions_to_prevent
 
 	def init_constraints(self):
@@ -187,39 +253,198 @@ class Solver(object):
 
 		return shape_hierarchy
 
+	def prune_domain_values(self): 
+		reduction = 4
+		# Randomly select a subset of the search space to search to find a 
+		# design in this iteration. For performance. 
+		# Prune based on variable values selected intelligently 
+		canvas_shape = self.shapes["canvas"]
+
+		# Select a baseline grid, and prune child variable domain values for size
+		# BAsed on the baseline grid chosen. 
+		baseline_grid = canvas_shape.variables.baseline_grid
+		selected_grid = random.choice(baseline_grid.domain)
+		canvas_shape.variables.baseline_grid.domain = [selected_grid]
+
+		for shape in self.shapes.values(): 
+			if shape.type == "leaf": # Only prune for leaf node shapes as groups size is a function of the child layout
+				height = shape.variables.height
+				width = shape.variables.width 
+				size_factor = shape.variables.size_factor
+				size_combo = shape.variables.size_combo
+
+				size_combos = [val for val in size_combo.domain if val[1] % selected_grid == 0]
+				if len(size_combos) > 0:
+					size_combo.domain = size_combos
+					height.domain = [val[1] for val in size_combos]
+					width.domain = [val[0] for val in size_combos]
+					size_factor.domain = [val[2] for val in size_combos]
+
+				# Prune the y-coordinate values 
+				y = shape.variables.y
+				y_values = [val for val in y.domain if val % selected_grid == 0]
+				y.domain = y_values
+
+			if shape.is_alternate: 
+				alternate = shape.variables.alternate 
+				alternate_subset = random.sample(alternate.domain, 1)
+				alternate.domain = alternate_subset
+			#
+			# if shape.is_container and not shape.type == "canvas":
+			# 	# Prune the alignment values
+			# 	padding = shape.variables.padding
+			# 	num_to_select = int(len(padding.domain)/reduction)
+			# 	padding_subset = random.sample(padding.domain, num_to_select)
+			# 	padding.domain = padding_subset
+
+		# Narrow down the set of column/gutter/column width/margin combinations
+		layout_grid = canvas_shape.variables.grid_layout
+		margin = canvas_shape.variables.margin
+		columns = canvas_shape.variables.columns
+		gutter_width = canvas_shape.variables.gutter_width
+		column_width = canvas_shape.variables.column_width
+
+		# num_to_select = int(len(layout_grid.domain)/reduction)
+		layout_grid_subset = random.sample(layout_grid.domain, 1)
+		layout_grid.domain = layout_grid_subset
+		margin.domain = [x[0] for x in layout_grid_subset]
+		columns.domain = [x[1] for x in layout_grid_subset]
+		gutter_width.domain = [x[2] for x in layout_grid_subset]
+		column_width.domain = [x[3] for x in layout_grid_subset]
+
+		# Prune column values based on the selected values 
+		max_cols = max(columns.domain)
+		for shape in self.shapes.values(): 
+			if shape.at_root: # It should have the column variable if it is on the root of the canvas
+				left_column = shape.variables.left_column
+				left_column_pruned = [val for val in left_column.domain if val < max_cols]
+				left_column.domain = left_column_pruned
+
+			if shape.type == "leaf": 
+				selected_margin = layout_grid_subset[0][0]
+				margin_size = selected_margin * 2 
+				max_width = CANVAS_WIDTH - margin_size
+				size_combos = shape.variables.size_combo
+				size_combos_subset = [val for val in size_combos.domain if val[0] <= max_width]
+				shape.variables.size_combo.domain = size_combos_subset
+				shape.variables.width.domain = [val[0] for val in size_combos_subset]
+				shape.variables.height.domain = [val[1] for val in size_combos_subset]
+				shape.variables.size_factor.domain = [val[2] for val in size_combos_subset]
+
+		# For debugging how large the search space isd
+		size = self.compute_search_space()
+		logging.debug("Total search space size after pruning the domains: " + str(size))
+		sys.stdout.flush()
+
+
 	def init_variables(self):
 		last = []
 		first = []
 		variables = []
 
 		for shape in self.shapes.values():
-			if shape.type == "container": 
-				first.append(shape.variables.arrangement)
-				last.append(shape.variables.alignment)
-				last.append(shape.variables.padding)			
-			elif shape.type == "canvas":
-				last.append(shape.variables.margin)
-				last.append(shape.variables.columns)
-				last.append(shape.variables.baseline_grid)
-			elif shape.type == "leaf": 
-				if shape.at_root: 
-					last.append(shape.variables.left_column)
-					last.append(shape.variables.right_column)
-					last.append(shape.variables.y)
+			variables_to_search = shape.search_variables
+			keys = [var.name for var in variables_to_search]
+			filtered_keys = []
 
-				if shape.is_alternate: 
-					last.append(shape.variables.alternate)
+			if shape.locks is not None:
+				for lock in shape.locks:
+					locked_values = shape.keep_values[lock]
+					if lock in keys:
+						if len(locked_values) > 1: 
+							# Prune the variable domain but still assign it
+							variable = shape.variables[lock]
+							domain_values = variable.domain 
+							pruned_domain_values = locked_values
+							variable.domain = pruned_domain_values
+						else: 
+							lock_index = keys.index(lock)
+							filtered_keys.append(lock_index)
+					elif lock == "height" or lock == "width":						
+						if "size_combo" in keys:
+							if len(locked_values) > 1: 
+								locked_index = SIZE_PROPERTIES.index(lock)
 
-				last.append(shape.variables.size_factor)
+								size_combo_domain = shape.variables["size_combo"].domain
+								pruned_size = [val for val in size_combo_domain if val[locked_index] in locked_values]
+								if len(pruned_size) > 1: 
+									shape.variables["size_combo"].domain = pruned_size
 
-			if shape.at_root: 
-				last.append(shape.variables.y)
-				last.append(shape.variables.left_column)
-				last.append(shape.variables.right_column)
+									width_domain = [val[0] for val in pruned_size]
+									shape.variables["width"].domain = width_domain
 
-		# More important variables are in first. putting them at the end of the list , they will get assigned first
-		variables.extend(last)
-		variables.extend(first)
+									height_domain = [val[1] for val in pruned_size]
+									shape.variables["height"].domain = height_domain
+
+									size_factor_domain = [val[0] for val in pruned_size]
+									shape.variables["size_factor"].domain = size_factor_domain
+								else: 
+									size_combo_var_index = keys.index("size_combo")
+									filtered_keys.append(size_combo_var_index)
+							else: 
+								size_index = keys.index("size_combo")
+								filtered_keys.append(size_index)
+
+			if shape.prevents is not None: 
+				for prevent in shape.prevents: 
+					prevented_values = shape.prevent_values[prevent]
+
+					if prevent in LAYOUT_GRID_PROPERTIES:
+						prev_index = LAYOUT_GRID_PROPERTIES.index(prevent)
+
+						grid_domain = shape.variables["grid_layout"].domain
+						pruned_grid_layout = [val for val in grid_domain if val[prev_index] not in prevented_values]
+						if len(pruned_grid_layout) > 1: 
+							shape.variables["grid_layout"].domain = pruned_grid_layout
+
+							marg_domain = [val[0] for val in pruned_grid_layout]
+							shape.variables["margin"].domain = marg_domain
+
+							cols_domain = [val[1] for val in pruned_grid_layout]
+							shape.variables["columns"].domain = cols_domain
+
+							gutter_width_domain = [val[2] for val in pruned_grid_layout]
+							shape.variables["gutter_width"].domain = gutter_width_domain
+
+							col_width_domain = [val[3] for val in pruned_grid_layout]
+							shape.variables["column_width"].domain = col_width_domain
+						else: 
+							grid_layout_var_index = keys.index("grid_layout")
+							filtered_keys.append(grid_layout_var_index)
+
+					elif prevent in SIZE_PROPERTIES:
+						prev_index = SIZE_PROPERTIES.index(prevent)
+
+						size_combo_domain = shape.variables["size_combo"].domain
+						pruned_size_combos = [val for val in size_combo_domain if val[prev_index] not in prevented_values]
+						if len(pruned_size_combos) > 1: 
+							shape.variables["size_combo"].domain = pruned_size_combos
+
+							width_domain = [val[0] for val in pruned_size_combos]
+							shape.variables["width"].domain = width_domain
+
+							height_domain = [val[1] for val in pruned_size_combos]
+							shape.variables["height"].domain = height_domain
+
+							size_factor_domain = [val[2] for val in pruned_size_combos]
+							shape.variables["size_factor"].domain = size_factor_domain
+						else: 
+							size_var_index = keys.index("size_combo")
+							filtered_keys.append(size_var_index)
+					else: 
+						# Prune these values form the variables domain 
+						variable = shape.variables[prevent]
+						domain_values = variable.domain
+						pruned_domain_values = [val for val in domain_values if val not in prevented_values]
+						variable.domain = pruned_domain_values
+
+
+			# Remove filtered key indexes
+			filtered_keys = list(set(filtered_keys)) #Ensure Unique
+			keys = [k for i,k in enumerate(keys) if i not in filtered_keys]
+
+			vars_to_search = [var for var in variables_to_search if var.name in keys]
+			variables.extend(vars_to_search)
 
 		# Later: Justification and alignment
 		return variables
@@ -268,7 +493,50 @@ class Solver(object):
 
 	def encode_assigned_variable(self, variable):
 		constraints = smt.declare(variable.id, variable.type)
-		if variable.index_domain:
+		if variable.name == "grid_layout":
+			assigned_value = variable.domain[variable.assigned]
+
+			marg_var = self.shapes[variable.shape_id].variables.margin
+			constraints += smt.declare(marg_var.id, marg_var.type)
+			marg = smt.eq(marg_var.id, str(assigned_value[0]))
+
+			cols_var = self.shapes[variable.shape_id].variables.columns
+			constraints += smt.declare(cols_var.id, cols_var.type)
+			cols = smt.eq(cols_var.id, str(assigned_value[1]))
+
+			gutter_width_var = self.shapes[variable.shape_id].variables.gutter_width
+			constraints += smt.declare(gutter_width_var.id, gutter_width_var.type)
+			gutter_width = smt.eq(gutter_width_var.id, str(assigned_value[2]))
+			
+			col_width_var = self.shapes[variable.shape_id].variables.column_width
+			constraints += smt.declare(col_width_var.id, col_width_var.type)
+			col_width = smt.eq(col_width_var.id, str(assigned_value[3]))
+			and_expr = smt.and_expr([marg, cols, gutter_width, col_width])
+			constraints += smt.assert_expr(and_expr, 
+				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
+			self.override_solver.load_constraints(constraints)
+
+		elif variable.name == "size_combo":
+			assigned_value = variable.domain[variable.assigned]
+			width_var = self.shapes[variable.shape_id].variables.width 
+			constraints += smt.declare(width_var.id, width_var.type)
+			width = smt.eq(width_var.id, str(assigned_value[0]))
+
+			height_var = self.shapes[variable.shape_id].variables.height
+			constraints += smt.declare(height_var.id, height_var.type)
+			height = smt.eq(height_var.id, str(assigned_value[1]))
+
+			size_factor = self.shapes[variable.shape_id].variables.size_factor
+			constraints += smt.declare(size_factor.id, size_factor.type)
+			size_fact = smt.eq(size_factor.id, str(assigned_value[2]))
+
+			and_expr = smt.and_expr([width, height, size_fact])
+
+			constraints += smt.assert_expr(and_expr, 
+				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
+			self.override_solver.load_constraints(constraints)
+
+		elif variable.index_domain:
 			constraints += smt.assert_expr(smt.eq(variable.id, str(variable.assigned)),
 				"variable_" + variable.id + "_assigned_to_" + str(variable.assigned))
 			self.override_solver.load_constraints(constraints)
@@ -303,6 +571,42 @@ class Solver(object):
 		constraints = decl_constraints + constraints
 		self.override_solver.load_constraints(constraints)
 
+	# Computes the number of variables that are different than the previous solution
+	def num_variables_different(self):
+		vars_diff = 0
+		for var_i in range(0, len(self.variables)): 
+			variable = self.variables[var_i]
+			vars_diff += If(variable.z3 != self.previous_solution[var_i], 1, 0)
+		return vars_diff
+
+	def z3_solve(self): 
+		# random_seed = random.randint(1,RANDOM_SEEDS)
+		random_seed = np.random.randint(0, 655350)
+		random_seed2 = np.random.randint(0, 655350)
+		z3.set_param(
+			 'auto_config', False,
+	         'smt.arith.random_initial_value', True,
+	         'smt.random_seed', random_seed,
+	         'sat.phase', 'random',
+	         'sat.random_seed', random_seed2)
+		solutions = []
+		num_solutions = 1
+		slns_found = 0
+		while slns_found < num_solutions: 
+			self.solver.push()
+
+			result = self.solver.check()
+			if str(result) == 'sat':
+				solution = sh.Solution()
+				model = self.solver.model()
+				sln = solution.convert_to_json(self.shapes, model)
+				solutions.append(sln)
+
+				self.encode_previous_solution_from_model(model, sln['id'])
+
+			slns_found += 1
+		return solutions
+
 	def branch_and_bound(self, state):
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
@@ -323,13 +627,13 @@ class Solver(object):
 				# Keep the solution & convert to json
 				# self.print_solution()
 				time_start = time.time()
-				sln = state.convert_to_json(self.shapes, model, self.solver_ctx)
+				sln = state.convert_to_json(self.shapes, model)
 				time_end = time.time()
 				logging.debug("Time in converting solution to json: " + str(time_end-time_start))
 				self.restore_state()
 
 				# Encode the previous solution outputs into the model so we don't produce it again in the next iteration
-				self.encode_previous_solution_from_model(model, sln["id"])
+				# self.encode_previous_solution_from_model(model, sln["id"])
 				return sln
 			else:
 				self.invalid_solutions += 1
@@ -398,6 +702,215 @@ class Solver(object):
 				shapes_added.append(shapeID)
 
 		return shapes_added, shapes_removed
+	
+	def relax_shape_properties(self, solution, changed_element_id, changed_property, changed_value, relaxed_property_values):
+		element = solution["elements"][changed_element_id]
+
+		relaxed_property_values[changed_element_id] = dict()
+
+		# Relax the changed property first and keep the old value to restore later
+		relaxed_property_values[changed_element_id][changed_property] = element[changed_property]
+
+		# Change the value for this property on the element to the kept value. 
+		element[changed_property] = changed_value
+
+		properties_to_relax = RELAX_PROPERTIES[changed_property]
+		for i in range(0, len(properties_to_relax)): 
+			property_to_relax = properties_to_relax[i]
+			if property_to_relax in element: 
+				relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
+				element[property_to_relax] = None
+
+		self.relax_child_properties(solution, changed_element_id, changed_property, relaxed_property_values)
+
+		return relaxed_property_values
+
+	def relax_child_properties(self, solution, element_id, changed_property, relaxed_property_values): 
+		# Relax child properties 
+		element_shape = self.shapes[element_id]
+		if hasattr(element_shape, 'children') and len(element_shape.children):
+			for child in element_shape.children:
+				solution_element = solution["elements"][child.shape_id]
+				child_properties_to_relax = CHILDREN_RELAX_PROPERTIES[changed_property]
+				relaxed_property_values[child.shape_id] = dict()
+				for i in range(0, len(child_properties_to_relax)): 
+					property_to_relax = child_properties_to_relax[i]
+					if property_to_relax in solution_element:
+						relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
+						solution_element[property_to_relax] = None
+				self.relax_child_properties(solution, child.shape_id, changed_property, relaxed_property_values)
+
+
+	def restore_relaxed_properties(self, solution, element_id, relaxed_property_values): 
+		solution_element = solution["elements"][element_id]
+		relaxed_values = relaxed_property_values[element_id]
+		for key,relaxed_value in relaxed_values.items(): 
+			solution_element[key] = relaxed_value
+
+		# Restore child prperty values
+		self.restore_child_relaxed_properties(solution, element_id, relaxed_property_values)
+
+	def restore_child_relaxed_properties(self, solution, element_id, relaxed_property_values): 
+		# Relax child properties 
+		element_shape = self.shapes[element_id]
+		if hasattr(element_shape, 'children') and len(element_shape.children):
+			for child in element_shape.children: 
+				solution_element = solution["elements"][child.shape_id]
+
+				relaxed_values = relaxed_property_values[child.shape_id]
+				for key,relaxed_value in relaxed_values.items(): 
+					solution_element[key] = relaxed_value
+			self.restore_child_relaxed_properties(solution, child.shape_id, relaxed_property_values)
+
+	def get_variable_to_relax(self, solution, changed_element_id, changed_property, relaxed_property_values): 
+		element = solution["elements"][changed_element_id]
+		properties_to_relax = RELAX_PROPERTIES[changed_property]
+		for i in range(0, len(properties_to_relax)): 
+			property_group_to_relax = properties_to_relax[i]
+			relaxed = False
+			for property_to_relax in property_group_to_relax: 
+				if property_to_relax in element and property_to_relax not in relaxed_property_values[changed_element_id]: 
+					relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
+					relaxed = True
+			if relaxed: 
+				return True
+
+		result = self.get_child_variable_to_relax(solution, changed_element_id, changed_property, relaxed_property_values)
+		if result: 
+			return result
+
+		#Then start to relax the canvas properties
+		canvas_element = solution["elements"]["canvas"]
+		canvas_properties_to_relax = CANVAS_RELAX_PROPERTIES[changed_property]
+		if "canvas" not in relaxed_property_values: 
+			relaxed_property_values["canvas"] = dict()
+
+		for i in range(0, len(canvas_properties_to_relax)): 
+			canvas_property_group_to_relax = canvas_properties_to_relax[i]
+			relaxed = False
+			for canvas_property_to_relax in canvas_property_group_to_relax: 
+				if canvas_property_to_relax not in relaxed_property_values["canvas"]: 
+					relaxed_property_values["canvas"][canvas_property_to_relax] = canvas_element[canvas_property_to_relax]
+					relaxed = True
+
+			if relaxed: 
+				return True
+
+		return False
+
+	def get_child_variable_to_relax(self, solution, element_id, changed_property, relaxed_property_values): 
+		# Relax child properties 
+		element_shape = self.shapes[element_id]
+		if hasattr(element_shape, 'children') and len(element_shape.children):
+			for child in element_shape.children:
+				solution_element = solution["elements"][child.shape_id]
+				child_properties_to_relax = CHILDREN_RELAX_PROPERTIES[changed_property]
+
+				if child.shape_id not in relaxed_property_values: 
+					relaxed_property_values[child.shape_id] = dict()
+	
+				for i in range(0, len(child_properties_to_relax)): 
+					property_group_to_relax = child_properties_to_relax[i]
+					relaxed = False
+					for property_to_relax in property_group_to_relax: 
+						if property_to_relax in solution_element and property_to_relax not in relaxed_property_values[child.shape_id]:
+							relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
+							relaxed = True
+					if relaxed: 
+						return True
+
+			for child in element_shape.children: 
+				result = self.get_child_variable_to_relax(solution, child.shape_id, changed_property, relaxed_property_values)
+				if result: 
+					return result 
+		return False
+
+	def repair_solution(self, solution, changed_element_id, changed_property, changed_value, keep_or_prevent): 
+		# Remove all of the non-relaxed varibles from the unassigned variables. 
+		relaxed_property_values = dict() 
+		relaxed_property_values[changed_element_id] = dict()
+
+		repaired_solution = None
+		more_variables_to_relax = True
+		print("Begin repair")
+		while more_variables_to_relax and repaired_solution is None: 
+			# Remove variables from unassigned that should be assigned
+			more_variables_to_relax = self.get_variable_to_relax(solution, changed_element_id, changed_property, relaxed_property_values)
+			print(relaxed_property_values)
+
+			variables_unassigned = []
+			variables_assigned = []
+			for variable in self.unassigned: 
+				if keep_or_prevent == "keep": 
+					if variable.shape_id in relaxed_property_values and variable.name in relaxed_property_values[variable.shape_id]:
+						variables_unassigned.append(variable)
+					else: 
+						variables_assigned.append(variable)
+				else: 
+					# Prevent the value from being assigned
+					# And unassign the variable
+					if variable.shape_id == changed_element_id and variable.name == changed_property  \
+						or (variable.shape_id in relaxed_property_values and variable.name in relaxed_property_values[variable.shape_id]): 
+						variables_unassigned.append(variable)
+					else: 
+						variables_assigned.append(variable)
+
+
+			self.unassigned = variables_unassigned
+			state = sh.Solution()
+
+			for assigned_variable in variables_assigned: 
+				self.solver.push()
+				state.add_assigned_variable(assigned_variable)
+				
+				value_to_assign = changed_value
+				
+				if assigned_variable.shape_id == changed_element_id and assigned_variable.name == changed_property: 
+					value_to_assign = changed_value
+				else: 
+					if assigned_variable.name == "size_combo":
+						domain_value = solution["elements"][assigned_variable.shape_id]["size_combo"]
+						value_to_assign = assigned_variable.domain.index(domain_value)
+					elif assigned_variable.name == "grid_layout": 
+						domain_value = solution["elements"][assigned_variable.shape_id]["grid_layout"]
+						value_to_assign = assigned_variable.domain.index(domain_value)
+					else: 
+						value_to_assign = solution["elements"][assigned_variable.shape_id][assigned_variable.name]
+
+				if assigned_variable.index_domain: 
+					assigned_variable.assigned = value_to_assign
+				else: 
+					if assigned_variable.type != "String": 
+						value_to_assign = int(value_to_assign)
+
+					in_domain_index = assigned_variable.domain.index(value_to_assign)
+					assigned_variable.assigned = in_domain_index
+				self.encode_assigned_variable(assigned_variable)
+
+			# Try to find a repaired soluition
+			repaired_solution = self.branch_and_bound(state)
+
+			if repaired_solution is None: 
+				for variable in self.variables: 
+					variable.assigned = None
+		
+				self.unassigned = copy.copy(self.variables)
+
+				# Restore the stack context for the solver
+				for i in range(0, len(variables_assigned)):
+					self.solver.pop()
+
+		if repaired_solution:
+			print("Able to repair this solution. ")
+
+			# udpate the ID so it links back to the right solution in the client
+			repaired_solution["id"] = solution["id"]
+			solution = repaired_solution
+			solution["conflicts"] = []
+			solution["valid"] = []
+			solution["new"] = False;
+	
+		return solution
 
 	def check_validity(self, solution):
 		# Look for any shapes that have been removed or added in this solution
@@ -433,12 +946,12 @@ class Solver(object):
 
 				print("Solution could be found.")
 			else:
-				# Get the unsat core for each solution
-				unsat_core = self.solver.unsat_core()
+				# # Get the unsat core for each solution
+				# unsat_core = self.solver.unsat_core()
 
-				# Parse the output message to send identifiers to highlight the conflicting constraints
-				conflicts = sh.parse_unsat_core(unsat_core)
-				solution["conflicts"] = conflicts
+				# # Parse the output message to send identifiers to highlight the conflicting constraints
+				# conflicts = sh.parse_unsat_core(unsat_core)
+				# solution["conflicts"] = conflicts
 				
 				print("Solution could not be found.")
 

@@ -83,6 +83,7 @@ class FeedbackItem extends React.Component {
 
   onLocked = () => {
     let preventValue = this.state.prevented; 
+    let keepOrPrevent = ""; 
     if(this.state.prevented) {
       // If the property was already "Kept", remove it and keep the Prevent instead
       this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected);
@@ -103,6 +104,9 @@ class FeedbackItem extends React.Component {
       }   
     }
     else {
+      // Notify the PageContainer that a keep was performed so it can reflow the invalid solutions
+      keepOrPrevent = "keep"; 
+
       this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected); 
 
       // If there are any linkedShapes, we should also update their feedback as well 
@@ -117,12 +121,14 @@ class FeedbackItem extends React.Component {
     });
 
     // Notify the ConstraintsCanvas tree of the update
-    this.props.update();
+    this.props.update(this.state.canvasShape, this.state.property, this.state.selected, keepOrPrevent);
     this.props.locksUpdated();
   }
 
   onPrevented = () => {
     let lockedValue = this.state.locked; 
+    let keepOrPrevent = ""; 
+
     if(this.state.locked) {
       // If the property was already "Kept", remove it and keep the Prevent instead
       this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected);
@@ -142,6 +148,8 @@ class FeedbackItem extends React.Component {
         this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], this.state.selected);      
       }
     } else {
+      keepOrPrevent = "prevent"; 
+
       this.state.action['prevent']['do'].updateConstraintsCanvasShape(this.state.property, this.state.canvasShape, this.state.selected); 
 
       // If there are any linkedShapes, we should also update their feedback as well 
@@ -156,7 +164,7 @@ class FeedbackItem extends React.Component {
     });
 
     // Notify the ConstraintsCanvas tree of the update
-    this.props.update();
+    this.props.update(this.state.canvasShape, this.state.property, this.state.selected, keepOrPrevent);
     this.props.preventsUpdated();
   }
 
@@ -669,6 +677,10 @@ export default class FeedbackContainer extends React.Component {
       action.keep = ConstraintActions.groupConstraints['keep']; 
       action.prevent = ConstraintActions.groupConstraints['prevent'];
       action.domain = ConstraintActions.groupConstraints.domains[item.key];
+
+      if(typeof action.domain == "function") {
+        action.domain = action.domain(this.state.activeCanvasShape); 
+      }
 
       let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.linkedShapes); 
 

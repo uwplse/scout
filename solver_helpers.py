@@ -61,6 +61,45 @@ def parse_variables_from_model(model):
 		variables[var.name()] = var()
 	return variables
 
+def repair_solution_from_model(shapes, model, solution, relaxed_element_properties): 
+	model_variables = parse_variables_from_model(model)
+
+	for element_key,properties in relaxed_element_properties.items():
+		element = solution["elements"][element_key]
+
+		shape = shapes[element_key]
+
+		variables = shape.variables.toDict()
+		for variable_key in variables.keys(): 
+			variable = variables[variable_key]		
+			if variable.name in properties: 
+				variable_value = model[model_variables[variable.id]].as_string()
+				variable_value = int(variable_value)
+				element[variable.name] = variable_value		
+
+		# Also copy the x,y positions of the child elements recursively, as they don't need to 
+		# explictily be relaxed
+		if shape.children and len(shape.children): 
+			repair_child_xy_values(model_variables, model, solution, shape)
+	return solution
+
+def repair_child_xy_values(model_variables, model, solution, shape): 
+	for child in shape.children:  
+		x_variable = child.variables.x.id
+		y_variable = child.variables.y.id 
+
+		x_value = model[model_variables[x_variable]].as_string()
+		y_value = model[model_variables[y_variable]].as_string()
+
+		x_value = int(x_value)
+		y_value = int(y_value)
+
+		solution["elements"][child.shape_id]["x"] = x_value
+		solution["elements"][child.shape_id]["y"] = y_value
+
+		if hasattr(child, "children") and len(child.children):
+			repair_child_xy_values(model_variables, model, solution, shape)
+
 class Variable(object):
 	def __init__(self, shape_id, name, domain=[], index_domain=True, var_type="Int"):
 		self.shape_id = shape_id
@@ -164,9 +203,10 @@ class Solution(object):
 		y_dist = int(abs(y_dist - center_y))
 
 		distance = math.sqrt(x_dist^2 + y_dist^2)
-		return distance
+		return distance		
 
-	def convert_to_json(self, shapes, model, context):
+
+	def convert_to_json(self, shapes, model):
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
 		new_elements = dict()
@@ -222,16 +262,18 @@ class Solution(object):
 						element["canvas_child"] = True
 
 				elif shape.type == "canvas": 
-					margin = model[variables[shape.variables.margin.id]].as_string()
-					baseline_grid = model[variables[shape.variables.baseline_grid.id]].as_string()
-					gutter_width = model[variables[shape.variables.gutter_width.id]].as_string()
-					column_width = model[variables[shape.variables.column_width.id]].as_string()
-					columns = model[variables[shape.variables.columns.id]].as_string()
-					element["margin"] = int(margin)
-					element["baseline_grid"] = int(baseline_grid)
-					element["columns"] = int(columns)
-					element["column_width"] = int(column_width)
-					element["gutter_width"] = int(gutter_width)
+					margin = int(model[variables[shape.variables.margin.id]].as_string())
+					baseline_grid = int(model[variables[shape.variables.baseline_grid.id]].as_string())
+					gutter_width = int(model[variables[shape.variables.gutter_width.id]].as_string())
+					column_width = int(model[variables[shape.variables.column_width.id]].as_string())
+					columns = int(model[variables[shape.variables.columns.id]].as_string())
+
+					element["margin"] = margin
+					element["baseline_grid"] = baseline_grid
+					element["columns"] = columns
+					element["column_width"] = column_width
+					element["gutter_width"] = gutter_width
+					element["grid_layout"] = [margin, columns, gutter_width, column_width]
 				elif shape.type == "leaf": 
 					height = model[variables[shape.computed_height()]].as_string()
 					width = model[variables[shape.computed_width()]].as_string()
@@ -242,6 +284,7 @@ class Solution(object):
 					element["width"] = width
 					element["height"] = height
 					element["size_factor"] = size_factor
+					element["size_combo"] = [width, height, size_factor]
 
 					if shape.has_columns:
 						left_column = model[variables[shape.variables.left_column.id]].as_string()
@@ -288,5 +331,6 @@ class Solution(object):
 		sln["cost"] = cost
 		sln["valid"] = True
 		sln["saved"] = 0
+		sln["conflicts"] = []
 
 		return sln

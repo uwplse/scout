@@ -64,9 +64,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   }
 
   componentDidMount() {
-    if(this.props.activeCanvasShape) {
-        this.displayWidgetFeedback(this.props.activeCanvasShape, this.feedbackCallbacks);    
+    if(this.props.activeCanvasShape && this.props.activeDesignShape) {
+        this.displayWidgetFeedback(this.props.activeDesignShape, this.feedbackCallbacks, this.props.activeCanvasShape);    
     } 
+    else if(this.props.activeCanvasShape) {
+      this.displayWidgetFeedback(this.props.activeCanvasShape, this.feedbackCallbacks); 
+    }
   }
 
   componentDidUpdate = (prevProps) => {

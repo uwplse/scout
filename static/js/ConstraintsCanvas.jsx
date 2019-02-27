@@ -116,12 +116,20 @@ export default class ConstraintsCanvas extends React.Component {
         widgetTreeNode.activeDesignShape = this.props.activeDesignShape; 
         widgetTreeNode.activeCanvasShape = widgetTreeNode.shape; 
 
+        let parentNode = this.getCurrentParentNode(widgetTreeNode.shape.name); 
+        let expandedNodes = this.state.expandedTreeNodes; 
+        if(parentNode) {
+          let parentTreeNode = this.widgetTreeNodeMap[parentNode.name]; 
+          expandedNodes.push(parentTreeNode.key); 
+        }
+
         // When the widget becomes active from a DesignCanvas, we should select the corresponding shape in the 
         // ConstraintsCanvas tree. 
         this.setState({
           treeData: this.state.treeData, 
           selectedTreeNodes: [this.props.activeDesignShape.name], 
-          selectedElement: this.props.activeDesignShape.name
+          selectedElement: this.props.activeDesignShape.name, 
+          expandedTreeNodes: expandedNodes
         });
       } 
     }
@@ -423,12 +431,12 @@ export default class ConstraintsCanvas extends React.Component {
 
   displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
     // Expand the corresponding parent node
-    let parentNode = this.getCurrentParentNode(shape.name); 
-    if(parentNode) {
-      this.setState({
-        expandedTreeNodes: this.state.expandedTreeNodes.concat(parentNode.key)
-      }); 
-    }
+    // let parentNode = this.getCurrentParentNode(shape.name); 
+    // if(parentNode) {
+    //   this.setState({
+    //     expandedTreeNodes: this.state.expandedTreeNodes.concat(parentNode.key)
+    //   }); 
+    // }
 
     // Call the PageContainer method to open the feedback panel 
     this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
@@ -1489,6 +1497,7 @@ export default class ConstraintsCanvas extends React.Component {
                     multiple={true}
                     showIcon={true}
                     defaultExpandParent={true}
+                    defaultExpandAll={true}
                     expandedKeys={this.state.expandedTreeNodes}
                     selectedKeys={this.state.selectedTreeNodes}
                     defaultExpandedKeys={["canvas"]}

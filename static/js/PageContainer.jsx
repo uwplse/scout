@@ -44,7 +44,6 @@ export default class PageContainer extends React.Component {
       widgetsCollapsed: false, 
       activeDesignShape: undefined, 
       primarySelection: undefined, 
-      updateSolutionValidity: false, 
       solutionsFound: true
     };   
 
@@ -123,14 +122,13 @@ export default class PageContainer extends React.Component {
               solutionID={solutionID}
               primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
-              updateValidity={this.state.updateSolutionValidity}
-              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightFeedbackConflict={this.highlightFeedbackConflict}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
+              considerDesignCanvas={this.considerDesignCanvas}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
               displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
@@ -147,8 +145,6 @@ export default class PageContainer extends React.Component {
               removed={solution.removed}
               zoomed={zoomed}
               invalidated={solution.invalidated}
-              updateValidity={this.state.updateSolutionValidity}
-              updateParentValidity={this.updateValidityInPageContainer}
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightFeedbackConflict={this.highlightFeedbackConflict}
@@ -176,9 +172,18 @@ export default class PageContainer extends React.Component {
         // Go through previous solutions and see which ones need to be invalidated
         for(let i=0; i<this.state.solutions.length; i++) {
           let designSolution = this.state.solutions[i]; 
-          
-          // Invalidate the solution which means it should be moved into the right side panel 
-          designSolution.invalidated = !designSolution.valid;
+
+          let invalidated = false; 
+          if(designSolution.valid) {
+            if(designSolution.conflicts && designSolution.conflicts.length && designSolution.invalidated) {
+              invalidated = true; 
+            }
+          }
+          else {
+            invalidated = true;
+          }
+
+          designSolution.invalidated = invalidated; 
 
           // Mark old solutions as not new
           designSolution.new = false;
@@ -264,7 +269,7 @@ export default class PageContainer extends React.Component {
         designSolution.removed = solution.removed;
         designSolution.conflicts = solution.conflicts; 
 
-        if(designSolution.valid) {
+        if(designSolution.valid && !solutions.conflicts) {
           designSolution.invalidated = false;
         }
       }
@@ -276,19 +281,24 @@ export default class PageContainer extends React.Component {
     }, this.updateSolutionsCache); 
   }
 
-  updateValidityInPageContainer = (solutionID, valid) => {
-    let solution = this.solutionsMap[solutionID]; 
-    solution.valid = valid; 
-    if(valid) {
-      solution.invalidated = false;
+  reflowSolutions = (solutions) => {
+    if(solutions) {
+      for(var i=0; i<solutions.length; i++) {
+        let solution = solutions[i]; 
+        let designSolution = this.solutionsMap[solution.id]; 
+
+        designSolution.conflicts = solution.conflicts; 
+        designSolution.elements = solution.elements; 
+      }
     }
 
+    // Update the state
     this.setState({
       solutions: this.state.solutions
     }, this.updateSolutionsCache); 
   }
 
-  updateConstraintsCanvas = () => {
+  updateConstraintsCanvas = (shape, property, value, keepOrPrevent="") => {
     // Notify the tree to re-render in response to the update
     // from the FeedbackContainer    
     this.constraintsCanvasRef.current.renderTreeCacheUpdate();
@@ -301,13 +311,109 @@ export default class PageContainer extends React.Component {
 
     // Only check the validity of the lock and prevent values on the solutions
     // This means that we do not need to make a request to the solver to check them 
-    this.checkSolutionValidityClient();
+    let invalidSolutions = this.checkSolutionValidityClient(shape);
+
+    // if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
+    //   invalidSolutions = JSON.stringify(invalidSolutions);
+    //   let jsonShapes = this.getShapesJSON(); 
+    //   let callVariables = {
+    //     "elements": jsonShapes, 
+    //     "solutions": invalidSolutions, 
+    //     "changed_element_id": shape.name, 
+    //     "changed_property": property, 
+    //     "changed_value": value, 
+    //     "keep_or_prevent": keepOrPrevent
+    //   }; 
+
+    //   $.post("/reflow", callVariables, (requestData) => {
+    //     let requestParsed = JSON.parse(requestData); 
+    //     this.reflowSolutions(requestParsed.solutions);
+    //   }); 
+    // }
   }
 
-  checkSolutionValidityClient = () => {
+  checkSolutionValidityClient = (shape) => {
+    let invalidSolutions = []; 
+    for(let i=0; i < this.state.solutions.length; i++) {
+      let solution = this.state.solutions[i]; 
+      let shapeId = shape.name; 
+      let element = solution.elements[shapeId]; 
+
+      let conflicts = solution.conflicts; 
+      let keepConflicts = []; 
+      if(shape.locks && shape.locks.length) {
+        for(let j=0; j<shape.locks.length; j++) {
+          let lock = shape.locks[j];
+          let elementValue = element[lock];
+          let lockedValues = shape["locked_values"][lock]; 
+          if(lockedValues && lockedValues.length) {
+            let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
+            if(!elementValueKept) {
+              keepConflicts.push({
+                type: "lock",
+                shapeID: shape.name, 
+                variable: lock, 
+                value: elementValue
+              }); 
+            }
+          }
+        }
+      }
+
+      let preventConflicts = []; 
+      if(shape.prevents && shape.prevents.length) {
+        for(let j=0; j<shape.prevents.length; j++) {
+          let prevent = shape.prevents[j];
+          let elementValue = element[prevent];
+          let preventedValues = shape["prevented_values"][prevent]; 
+          if(preventedValues && preventedValues.length) {
+            let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
+            if(elementValuePrevented) {
+              preventConflicts.push({
+                type: "prevent",
+                shapeID: shape.name, 
+                variable: prevent, 
+                value: elementValue
+              }); 
+            }
+          }
+        }
+      }
+
+      // Remove previous conflicts corresponding to this shape 
+      let previousConflicts = conflicts.filter(conflict => conflict.shapeID != shape.name); 
+      if(keepConflicts.length) {
+        previousConflicts.push(...keepConflicts); 
+      }
+
+      if(preventConflicts.length) {
+        previousConflicts.push(...preventConflicts); 
+      }
+      solution.conflicts = previousConflicts; 
+
+      if(conflicts.length) {
+        invalidSolutions.push(solution);
+      }
+    }
+
     // Update the state
     this.setState({
-      updateSolutionValidity: !this.state.updateSolutionValidity
+      solutions: this.state.solutions
+    }, this.updateSolutionsCache); 
+
+    return invalidSolutions; 
+  }
+
+  considerDesignCanvas = (designCanvasID) => {
+    // Retrieve the solution corresponding to the design canvas ID
+    let solution = this.solutionsMap[designCanvasID]; 
+    solution.saved = 0;  
+    solution.invalidated = 0; 
+
+    // Update the state
+    this.setState({
+      solutions: this.state.solutions, 
+      zoomedDesignCanvasID: undefined
     }, this.updateSolutionsCache); 
   }
 
@@ -370,7 +476,7 @@ export default class PageContainer extends React.Component {
       let designSolution = this.state.solutions[i]; 
       
       // Invalidate the solution which means it should be moved into the right side panel 
-      designSolution.invalidated = !designSolution.valid; 
+      designSolution.invalidated = (!designSolution.valid || designSolution.conflicts.length); 
     }
 
     // Update the state
@@ -383,7 +489,7 @@ export default class PageContainer extends React.Component {
     for(let i=0; i<this.state.solutions.length; i++) {
       let designSolution = this.state.solutions[i]; 
       
-      if(designSolution.saved == 0 && (designSolution.valid || !designSolution.invalidated)) {
+      if(designSolution.saved == 0) {
         designSolution.saved = -1; 
       }
     }
@@ -630,12 +736,18 @@ export default class PageContainer extends React.Component {
     let promises = []; 
     for(let i=0; i<savedSolutions.length; i++) {
       let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
-      promises.push(domtoimage.toPng(document.getElementById(solutionDesignID))
-      .then(function (imgData) {
-          /* do something */
-          let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
-          zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
-      })); 
+      let solution = document.getElementById(solutionDesignID); 
+      if(solution) {
+        promises.push(domtoimage.toPng(solution)
+        .then(function (imgData) {
+            /* do something */
+            let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
+            zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
+
+            let solutionJSON = JSON.stringify(savedSolutions[i]); 
+            zip.file(solutionDesignID + ".json", solutionJSON); 
+        })); 
+      }
     }
 
     Promise.all(promises)
@@ -681,26 +793,14 @@ export default class PageContainer extends React.Component {
         return self.getDesignCanvas(solution, solution.id); 
       }); 
 
-    const trashedCanvases = this.state.solutions
-      .filter((solution) => { return solution.saved == -1; })
+    const discardedCanvases = this.state.solutions
+      .filter((solution) => { return solution.saved == -1 || solution.invalidated; })
       .map((solution) => {
-          if(solution.saved == -1) {
+          if(solution.saved == -1 || solution.invalidated) {
             return self.getDesignCanvas(solution, solution.id); 
           }
         });
-
-    const invalidatedCanvases = this.state.solutions
-      .filter((solution) => { 
-        return solution.invalidated == true; 
-      })
-      .map((solution) => {
-        if(solution.invalidated == true) {
-          return self.getDesignCanvas(solution, solution.id); 
-        }
-      }); 
-
-    const discardedCanvases = trashedCanvases.concat(invalidatedCanvases);
-
+      
     // Get the zoomed design canvas, if there is one set
     let zoomedDesignCanvas = this.state.zoomedDesignCanvasID ? this.getZoomedDesignCanvas() : undefined; 
 

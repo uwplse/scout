@@ -40,9 +40,11 @@ ConstraintActions.max_width = 356;
 ConstraintActions.horizontalArrangements = ["horizontal", "rows"];
 ConstraintActions.verticalArrangements = ["vertical", "columns"];
 ConstraintActions.arrangments = ["horizontal", "vertical", "rows", "columns"]; 
-ConstraintActions.verticalAlignments = ["left", "center", "right"];
-ConstraintActions.horizontalAlignments = ["top", "center", "bottom"];
-ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40]; 
+ConstraintActions.verticalAlignments = ["left", "x-center", "right"];
+ConstraintActions.horizontalAlignments = ["top", "y-center", "bottom"];
+
+ConstraintActions.alignments = ["Top-Left", "Center", "Bottom-Right"]; 
+ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]; 
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
 
 // Canvas variable domains 
@@ -324,7 +326,7 @@ ConstraintActions.elementConstraints = {
 			}
 
 			let maximum_element_height = ConstraintActions.max_height < (orig_height * 2) ? ConstraintActions.max_height : (orig_height * 2); 
-			let maximum_element_width = ConstraintActions.max_height < (orig_width * 2) ? ConstraintActions.max_height : (orig_width * 2); 
+			let maximum_element_width = ConstraintActions.max_width < (orig_width * 2) ? ConstraintActions.max_width : (orig_width * 2); 
 			computed_height = height;
 			computed_width = width; 
 			if(shape.importance != "low") {
@@ -367,7 +369,7 @@ ConstraintActions.groupConstraints = {
 	"prevent": ConstraintActions.defaultPrevent, 
 	"domains": {
 		"arrangement": ConstraintActions.arrangments, 
-		"alignment": ConstraintActions.verticalAlignments, 
+		"alignment": ConstraintActions.alignments, 
 		"padding": ConstraintActions.paddings
 	}
 }

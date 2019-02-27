@@ -52,6 +52,8 @@ class ConstraintBuilder(object):
 
 	def get_previous_solution_constraints_from_elements(self, shapes, elements, solutionID):
 		all_values = []
+		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout"]
+
 		for elementID in elements:
 			element = elements[elementID]
 
@@ -61,9 +63,10 @@ class ConstraintBuilder(object):
 			if shape.type == "leaf":
 				for variable_key in variables.keys(): 
 					variable = variables[variable_key]
-					variable_value = variable.get_value_from_element(element)
-					all_values.append(cb.eq(variable.id, 
-						str(variable_value)))
+					if variable.name not in ignored:
+						variable_value = variable.get_value_from_element(element)
+						all_values.append(cb.eq(variable.id,
+							str(variable_value)))
 
 		# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
 		self.constraints += cb.assert_expr(cb.not_expr(cb.and_expr(all_values)), 
@@ -71,6 +74,7 @@ class ConstraintBuilder(object):
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
 		all_values = []
+		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout"]
 		for elementID in elements:
 			element = elements[elementID]
 
@@ -81,9 +85,11 @@ class ConstraintBuilder(object):
 			for variable_key in variables.keys(): 
 				variable = variables[variable_key]
 				self.decl_constraints += cb.declare(variable.id, variable.type)
-				if variable.name != "baseline" and variable.name != "extra_in_first":
-					all_values.append(cb.eq(variable.id, 
-						str(variable.get_value_from_element(element))))
+				if variable.name not in ignored:
+					variable_value = variable.get_value_from_element(element)
+					if variable_value != None: 
+						all_values.append(cb.eq(variable.id, 
+							str(variable_value)))
 
 		# Return the constraints so they can be loaded in after the intial initialization of the base constraints
 		declarations = self.get_solution_variable_declarations(shapes, elements)
@@ -197,15 +203,18 @@ class ConstraintBuilder(object):
 				cb.eq(column_width.id, str(column_width_value)), cb.eq(margin.id, str(marg_value))])
 			grid_values.append(and_all)
 
-		self.constraints += cb.assert_expr(cb.or_expr(grid_values),
-			"canvas_layout_grid_variables_in_domain")
+		const = cb.or_expr(grid_values) if len(grid_values) > 1 else grid_values[0]
+
+		self.constraints += cb.assert_expr(const, "canvas_layout_grid_variables_in_domain")
 
 	def init_baseline_grid(self, canvas): 
 		grid = canvas.variables.baseline_grid
 		grid_values = []
 		for grid_value in grid.domain:
 			grid_values.append(cb.eq(grid.id, str(grid_value)))
-		self.constraints += cb.assert_expr(cb.or_expr(grid_values), "canvas_baseline_grid_in_domain")
+
+		const = cb.or_expr(grid_values) if len(grid_values) > 1 else grid_values[0]
+		self.constraints += cb.assert_expr(const, "canvas_baseline_grid_in_domain")
 
 	def init_container_constraints(self, container, shapes):
 		arrangement = container.variables.arrangement.id
@@ -286,8 +295,9 @@ class ConstraintBuilder(object):
 			factor = cb.eq(shape.variables.size_factor.id, str(size_factors[i]))
 			size_combos.append(cb.and_expr([height, width, factor]))
 
-		self.constraints += cb.assert_expr(cb.or_expr(size_combos), 
-			"shape_" + shape.shape_id + "_size_domains")
+		const = cb.or_expr(size_combos) if len(size_combos) > 1 else size_combos[0]
+
+		self.constraints += cb.assert_expr(const, "shape_" + shape.shape_id + "_size_domains")
 
 	def init_repeat_group(self, container, shapes): 
 		subgroups = container.children
@@ -383,7 +393,7 @@ class ConstraintBuilder(object):
 		if shape.locks is not None: 
 			for lock in shape.locks:
 				exprs = []
-				for value in shape.variable_values[lock]: 
+				for value in shape.keep_values[lock]: 
 					value = str(value)
 					if shape.variables[lock].type == "String": 
 						value = "\"" + value + "\""
@@ -392,18 +402,18 @@ class ConstraintBuilder(object):
 
 				if len(exprs) > 1: 
 					self.constraints += cb.assert_expr(cb.or_expr(exprs),
-						"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock])) 				
+						"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.keep_values[lock])) 				
 				elif len(exprs) == 1: 
 					expr = exprs[0] 
 					self.constraints += cb.assert_expr(expr,
-						"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.variable_values[lock])) 	
+						"lock_" + shape.shape_id + "_" + shape.variables[lock].name + "_" + str(shape.keep_values[lock])) 	
 
 	def init_prevents(self, shape): 
 		# Add constraints for all of the locked properties
 		if shape.prevents is not None: 
 			for prevent in shape.prevents:
 				exprs = []
-				for value in shape.variable_values[prevent]: 
+				for value in shape.prevent_values[prevent]: 
 					value = str(value)
 					if shape.variables[prevent].type == "String": 
 						value = "\"" + value + "\""
@@ -412,11 +422,11 @@ class ConstraintBuilder(object):
 
 				if len(exprs) > 1: 
 					self.constraints += cb.assert_expr(cb.and_expr(exprs),
-						"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.variable_values[prevent])) 				
+						"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.prevent_values[prevent])) 				
 				elif len(exprs) == 1: 
 					expr = exprs[0] 
 					self.constraints += cb.assert_expr(expr,
-						"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.variable_values[prevent])) 
+						"prevent_" + shape.shape_id + "_" + shape.variables[prevent].name + "_" + str(shape.prevent_values[prevent])) 
 
 	def non_overlapping(self, container, spacing): 
 		child_shapes = container.children 
@@ -698,12 +708,12 @@ class ConstraintBuilder(object):
 				left_column_lt_parent = cb.lt(child_left_column.id, layout_columns.id)
 				self.constraints += cb.assert_expr(left_column_lt_parent, "child_" + child.shape_id + "_left_column_lt_layout_columns")
 
-				right_column_lt_parent = cb.lt(child_right_column.id, layout_columns.id)
-				self.constraints += cb.assert_expr(right_column_lt_parent, "child_" + child.shape_id + "_right_column_lt_layout_columns")
+				# right_column_lt_parent = cb.lt(child_right_column.id, layout_columns.id)
+				# self.constraints += cb.assert_expr(right_column_lt_parent, "child_" + child.shape_id + "_right_column_lt_layout_columns")
 
-				# Left column should be less than or equal to right column 
-				left_column_lt_right = cb.lte(child_left_column.id, child_right_column.id)
-				self.constraints += cb.assert_expr(left_column_lt_right, "child_" + child.shape_id + "_left_column_lt_right_column")
+				# # Left column should be less than or equal to right column 
+				# left_column_lt_right = cb.lte(child_left_column.id, child_right_column.id)
+				# self.constraints += cb.assert_expr(left_column_lt_right, "child_" + child.shape_id + "_left_column_lt_right_column")
 
 				# Enforce that the x position of the child falls to the left edge of a column 
 				left_column_mult = cb.sub(child_left_column.id, "1")
@@ -932,12 +942,12 @@ class ConstraintBuilder(object):
 			"container_" + container.shape_id + "_max_height_horizontal")
 
 		# Enforce that the padding used by the container is no taller or wider than the smallest width or height element
-		min_w_constraint = self.get_min_width_constraint(1,0,child_shapes)
-		min_h_constraint = self.get_min_height_constraint(1,0,child_shapes)
-		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
-			"container_" + container.shape_id + "_padding_lt_shortest_child")
-		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
-			"container_" + container.shape_id + "_padding_lt_thinnest_child")
+		# min_w_constraint = self.get_min_width_constraint(1,0,child_shapes)
+		# min_h_constraint = self.get_min_height_constraint(1,0,child_shapes)
+		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
+		# 	"container_" + container.shape_id + "_padding_lt_shortest_child")
+		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
+		# 	"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
 		self.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
 

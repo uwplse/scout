@@ -14,12 +14,14 @@ MIN_HEIGHT = 48
 GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
-LAYOUT_COLUMNS = [2,3,4,6,12]
+LAYOUT_COLUMNS = [2,3,4,6]
 GUTTERS = [4,8,16] # TODO can introduce a variable value for these at some point
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
-MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
-PADDINGS = [4,8,12,16,20,24,28,32,36,40]
+# MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
+MARGINS = [4,8,12,16,20,24,28,32,36,40]
+# PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
+PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
 
 def compute_y_domain(): 
 	y_values = range(0, CANVAS_HEIGHT)
@@ -59,8 +61,10 @@ def compute_size_domain(importance, width, height):
 	computed_width = orig_width
 
 	# Don't reduce height greater than half from the original 
-	minimum_element_height = MIN_HEIGHT if MIN_HEIGHT > (orig_height/2) else (orig_height/2)
-	minimum_element_width = MIN_WIDTH if MIN_WIDTH > (orig_width/2)  else (orig_width/2)
+	# minimum_element_height = MIN_HEIGHT if MIN_HEIGHT > (orig_height/2) else (orig_height/2)
+	# minimum_element_width = MIN_WIDTH if MIN_WIDTH > (orig_width/2)  else (orig_width/2)
+	minimum_element_height = MIN_HEIGHT
+	minimum_element_width = MIN_WIDTH
 	shrink_factor_id = 0
 
 	if importance != "high": 
@@ -78,8 +82,10 @@ def compute_size_domain(importance, width, height):
 	computed_height = orig_height
 	increase_factor_id = 0
 
-	maximum_element_height = MAX_HEIGHT if MAX_HEIGHT < (orig_height * 2) else (orig_height * 2)
-	maximum_element_width = MAX_WIDTH if MAX_WIDTH < (orig_width * 2) else (orig_width * 2)
+	# maximum_element_height = MAX_HEIGHT if MAX_HEIGHT < (orig_height * 2) else (orig_height * 2)
+	# maximum_element_width = MAX_WIDTH if MAX_WIDTH < (orig_width * 2) else (orig_width * 2)
+	maximum_element_height = MAX_HEIGHT
+	maximum_element_width = MAX_WIDTH
 	if importance != "low": 
 		while computed_width < maximum_element_width and computed_height < maximum_element_height: 
 				increase_factor_id += 1
@@ -111,11 +117,13 @@ class Shape(object):
 		self.order = -1
 		self.importance = "normal"
 		self.correspondingIDs = []
-		self.variable_values = dict()
+		self.prevent_values = dict()
+		self.keep_values = dict()
 		self.has_columns = False
 		self.is_container = False
 		self.at_root = at_root
 		self.is_alternate = False
+		self.search_variables = []
 		
 		self.orig_width = element["orig_width"]
 		self.orig_height = element["orig_height"]
@@ -125,13 +133,13 @@ class Shape(object):
 			
 			# values for locked variables
 			for lock in self.locks:
-				self.variable_values[lock] = element["locked_values"][lock]
+				self.keep_values[lock] = element["locked_values"][lock]
 
 		if "prevents" in element: 
 			self.prevents = element["prevents"]
 
 			for prev in self.prevents: 
-				self.variable_values[prev] = element["prevented_values"][prev]
+				self.prevent_values[prev] = element["prevented_values"][prev]
 
 		if "baseline" in element: 
 			self.has_baseline = True
@@ -159,6 +167,7 @@ class Shape(object):
 			size_width = element["alternate_width"]
 			size_height = element["alternate_height"]
 			self.variables.alternate = sh.Variable(shape_id, "alternate", domain, var_type="String", index_domain=False)
+			self.search_variables.append(self.variables.alternate)
 
 		if self.type == "leaf": 
 			size_domain = compute_size_domain(self.importance, size_width, size_height)
@@ -169,19 +178,24 @@ class Shape(object):
 			self.variables.size_factor = sh.Variable(shape_id, "size_factor",
 				[x[2] for x in size_domain], index_domain=False)
 
+			self.variables.size_combo = sh.Variable(shape_id, "size_combo", 
+				size_domain)
+			self.search_variables.append(self.variables.size_combo)
+
 		if at_root:
 			# Add the column variable if the element is at the root of the canvas. 
 			# The canvas will use this variable to place it in its correct column 
 			self.has_columns = True
 			self.variables.left_column = sh.Variable(shape_id, "left_column", COLUMNS, index_domain=False)
 			self.variables.right_column = sh.Variable(shape_id, "right_column", COLUMNS, index_domain=False)
+			self.search_variables.append(self.variables.left_column)
+			self.search_variables.append(self.variables.right_column)
 
 			# The y position should have a computed domain so they can be part of the variable search 
 			# Elements at the root level of the canvas will be aligned by the baseline grid and columns
 			y_domain = compute_y_domain()
 			self.variables.y = sh.Variable(shape_id, "y", y_domain, index_domain=False)
-
-
+			self.search_variables.append(self.variables.y)
 
 	def computed_width(self): 
 		if self.type == "canvas": 
@@ -206,6 +220,10 @@ class ContainerShape(Shape):
 		self.variables.padding = sh.Variable(shape_id, "padding", 
 			PADDINGS, index_domain=False)
 		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
+		self.search_variables.append(self.variables.alignment)
+		self.search_variables.append(self.variables.arrangement)
+		self.search_variables.append(self.variables.padding)
+
 		self.variables.extra_in_first = sh.Variable(shape_id, "extra_in_first", var_type="Bool")
 		self.variables.width = sh.Variable(shape_id, "width")
 		self.variables.height = sh.Variable(shape_id, "height")
@@ -236,16 +254,22 @@ class CanvasShape(Shape):
 		self.children = []
 
 		self.variables.baseline_grid = sh.Variable("canvas", "baseline_grid", BASELINE_GRIDS, index_domain=False)
+		self.search_variables.append(self.variables.baseline_grid)
 
 		layout_grid_domains = compute_layout_grid_domains()
 		marg_domain = [x[0] for x in layout_grid_domains]
 		cols_domain = [x[1] for x in layout_grid_domains]
 		gutter_domain = [x[2] for x in layout_grid_domains]
 		col_width_domain = [x[3] for x in layout_grid_domains]
+		self.variables.grid_layout = sh.Variable("canvas", "grid_layout", layout_grid_domains)
+		self.search_variables.append(self.variables.grid_layout)
+
 		self.variables.margin = sh.Variable("canvas", "margin", marg_domain, index_domain=False)
 		self.variables.columns = sh.Variable("canvas", "columns", cols_domain, index_domain=False)
 		self.variables.gutter_width = sh.Variable("canvas", "gutter_width", gutter_domain, index_domain=False) # TODO: What should the domain be? 
 		self.variables.column_width = sh.Variable("canvas", "column_width", col_width_domain, index_domain=False)
+
+
 		self.min_spacing = str(GRID_CONSTANT)
 		self.is_container = True
 
