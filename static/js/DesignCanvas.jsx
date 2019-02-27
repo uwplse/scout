@@ -221,7 +221,11 @@ export default class DesignCanvas extends React.Component {
       designId = this.props.solutionID; 
     }
 
-    if(action == "save") {
+    if(action == "consider") {
+      this.props.considerDesignCanvas(designId);
+      this.state.savedState = 0; 
+    }
+    else if(action == "save") {
       this.props.saveDesignCanvas(designId);
       this.state.savedState = 1; 
     }
@@ -248,7 +252,7 @@ export default class DesignCanvas extends React.Component {
     let saved = this.state.savedState == 1; 
     let trashed = this.state.savedState == -1; 
     let invalidated = this.state.invalidated; 
-    if(saved || trashed || invalidated) {
+    if(saved) {
       // Return if the canvas is currently in the saved, trashed areas or is an invalidated design 
       return; 
     }
@@ -316,6 +320,8 @@ export default class DesignCanvas extends React.Component {
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.getScalingFactor();      
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
+    let hideTrash = (this.state.savedState == -1 || this.state.invalidated); 
+    let showConsider = ((this.state.savedState == -1 || this.state.invalidated) || this.state.savedState == 1); 
     let childSVGs = this.state.childSVGs; 
 
     // Show invalid designs indicators? 
@@ -336,6 +342,8 @@ export default class DesignCanvas extends React.Component {
            id={"canvas-box-" + this.id}>
         <DesignMenu 
           showZoom={!this.props.zoomed}
+          showTrash={!hideTrash}
+          showConsider={showConsider}
           visible={menuVisible}
           menuAction={this.performDesignCanvasMenuAction}/>
         <div id={"design-canvas-" + this.id}

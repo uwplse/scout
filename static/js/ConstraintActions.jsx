@@ -44,7 +44,7 @@ ConstraintActions.verticalAlignments = ["left", "x-center", "right"];
 ConstraintActions.horizontalAlignments = ["top", "y-center", "bottom"];
 
 ConstraintActions.alignments = ["Top-Left", "Center", "Bottom-Right"]; 
-ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40]; 
+ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]; 
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
 
 // Canvas variable domains 

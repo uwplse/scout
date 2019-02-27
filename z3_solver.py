@@ -8,8 +8,16 @@ import shapes as shape_classes
 import smtlib_builder as smt
 import solver_helpers as sh
 import logging
+import numpy as np
+z3.set_param(
+         'smt.arith.random_initial_value', True,
+         'smt.random_seed', np.random.randint(0, 655350),
+         'sat.phase', 'random',
+         'sat.random_seed', np.random.randint(0, 655350))
 logging.basicConfig(level=logging.DEBUG)
 
+RANDOM_SEEDS=100000
+CANVAS_WIDTH = 360
 
 RELAX_PROPERTIES = {
 	"arrangement": [["x", "y", "width", "height", "left_column"], ["padding"]],
@@ -98,6 +106,19 @@ class Solver(object):
 		self.invalid_solutions = 0
 
 		self.variables = self.init_variables()
+
+		# For debugging how large the search space is
+		size = self.compute_search_space()
+		logging.debug("Total search space size: " + str(size))
+		sys.stdout.flush()
+		start_time = time.time()
+
+		# Prunes 
+		time_start = time.time()
+		self.prune_domain_values()
+		time_end = time.time()
+		logging.debug("Time for domain pruning: " + str(time_end-time_start))
+
 		self.output_variables = self.init_output_variables()
 		self.variables_different = Int('VariablesDifferent')
 
@@ -129,12 +150,6 @@ class Solver(object):
 		end_time = time.time()
 		logging.debug("Time taken to encode previous solutions: " + str(end_time-start_time))
 
-		# For debugging how large the search space isd
-		size = self.compute_search_space()
-		logging.debug("Total search space size: " + str(size))
-		sys.stdout.flush()
-		start_time = time.time()
-
 		self.unassigned = copy.copy(self.variables)
 
 		time_start = time.time()
@@ -164,10 +179,10 @@ class Solver(object):
 		# Get the set of previous solutions that have the same set of shapes as the current outline
 		solutions_to_prevent = []
 		for solution in self.previous_solutions: 
-			elements = []
+			elements = solution["elements"]
 			shapes_added, shapes_removed = self.check_added_or_removed_shapes(elements)
 			if not len(shapes_added) and not len(shapes_removed): 
-				solutions_to_prevent.append()
+				solutions_to_prevent.append(solution)
 		return solutions_to_prevent
 
 	def init_constraints(self):
@@ -238,6 +253,90 @@ class Solver(object):
 
 		return shape_hierarchy
 
+	def prune_domain_values(self): 
+		reduction = 4
+		# Randomly select a subset of the search space to search to find a 
+		# design in this iteration. For performance. 
+		# Prune based on variable values selected intelligently 
+		canvas_shape = self.shapes["canvas"]
+
+		# Select a baseline grid, and prune child variable domain values for size
+		# BAsed on the baseline grid chosen. 
+		baseline_grid = canvas_shape.variables.baseline_grid
+		selected_grid = random.choice(baseline_grid.domain)
+		canvas_shape.variables.baseline_grid.domain = [selected_grid]
+
+		for shape in self.shapes.values(): 
+			if shape.type == "leaf": # Only prune for leaf node shapes as groups size is a function of the child layout
+				height = shape.variables.height
+				width = shape.variables.width 
+				size_factor = shape.variables.size_factor
+				size_combo = shape.variables.size_combo
+
+				size_combos = [val for val in size_combo.domain if val[1] % selected_grid == 0]
+				if len(size_combos) > 0:
+					size_combo.domain = size_combos
+					height.domain = [val[1] for val in size_combos]
+					width.domain = [val[0] for val in size_combos]
+					size_factor.domain = [val[2] for val in size_combos]
+
+				# Prune the y-coordinate values 
+				y = shape.variables.y
+				y_values = [val for val in y.domain if val % selected_grid == 0]
+				y.domain = y_values
+
+			if shape.is_alternate: 
+				alternate = shape.variables.alternate 
+				alternate_subset = random.sample(alternate.domain, 1)
+				alternate.domain = alternate_subset
+			#
+			# if shape.is_container and not shape.type == "canvas":
+			# 	# Prune the alignment values
+			# 	padding = shape.variables.padding
+			# 	num_to_select = int(len(padding.domain)/reduction)
+			# 	padding_subset = random.sample(padding.domain, num_to_select)
+			# 	padding.domain = padding_subset
+
+		# Narrow down the set of column/gutter/column width/margin combinations
+		layout_grid = canvas_shape.variables.grid_layout
+		margin = canvas_shape.variables.margin
+		columns = canvas_shape.variables.columns
+		gutter_width = canvas_shape.variables.gutter_width
+		column_width = canvas_shape.variables.column_width
+
+		# num_to_select = int(len(layout_grid.domain)/reduction)
+		layout_grid_subset = random.sample(layout_grid.domain, 1)
+		layout_grid.domain = layout_grid_subset
+		margin.domain = [x[0] for x in layout_grid_subset]
+		columns.domain = [x[1] for x in layout_grid_subset]
+		gutter_width.domain = [x[2] for x in layout_grid_subset]
+		column_width.domain = [x[3] for x in layout_grid_subset]
+
+		# Prune column values based on the selected values 
+		max_cols = max(columns.domain)
+		for shape in self.shapes.values(): 
+			if shape.at_root: # It should have the column variable if it is on the root of the canvas
+				left_column = shape.variables.left_column
+				left_column_pruned = [val for val in left_column.domain if val < max_cols]
+				left_column.domain = left_column_pruned
+
+			if shape.type == "leaf": 
+				selected_margin = layout_grid_subset[0][0]
+				margin_size = selected_margin * 2 
+				max_width = CANVAS_WIDTH - margin_size
+				size_combos = shape.variables.size_combo
+				size_combos_subset = [val for val in size_combos.domain if val[0] <= max_width]
+				shape.variables.size_combo.domain = size_combos_subset
+				shape.variables.width.domain = [val[0] for val in size_combos_subset]
+				shape.variables.height.domain = [val[1] for val in size_combos_subset]
+				shape.variables.size_factor.domain = [val[2] for val in size_combos_subset]
+
+		# For debugging how large the search space isd
+		size = self.compute_search_space()
+		logging.debug("Total search space size after pruning the domains: " + str(size))
+		sys.stdout.flush()
+
+
 	def init_variables(self):
 		last = []
 		first = []
@@ -250,7 +349,7 @@ class Solver(object):
 
 			if shape.locks is not None:
 				for lock in shape.locks:
-					locked_values = shape.variable_values[lock]
+					locked_values = shape.keep_values[lock]
 					if lock in keys:
 						if len(locked_values) > 1: 
 							# Prune the variable domain but still assign it
@@ -288,7 +387,7 @@ class Solver(object):
 
 			if shape.prevents is not None: 
 				for prevent in shape.prevents: 
-					prevented_values = shape.variable_values[prevent]
+					prevented_values = shape.prevent_values[prevent]
 
 					if prevent in LAYOUT_GRID_PROPERTIES:
 						prev_index = LAYOUT_GRID_PROPERTIES.index(prevent)
@@ -348,7 +447,6 @@ class Solver(object):
 			variables.extend(vars_to_search)
 
 		# Later: Justification and alignment
-		print(variables)
 		return variables
 
 	def compute_search_space(self):
@@ -473,6 +571,42 @@ class Solver(object):
 		constraints = decl_constraints + constraints
 		self.override_solver.load_constraints(constraints)
 
+	# Computes the number of variables that are different than the previous solution
+	def num_variables_different(self):
+		vars_diff = 0
+		for var_i in range(0, len(self.variables)): 
+			variable = self.variables[var_i]
+			vars_diff += If(variable.z3 != self.previous_solution[var_i], 1, 0)
+		return vars_diff
+
+	def z3_solve(self): 
+		# random_seed = random.randint(1,RANDOM_SEEDS)
+		random_seed = np.random.randint(0, 655350)
+		random_seed2 = np.random.randint(0, 655350)
+		z3.set_param(
+			 'auto_config', False,
+	         'smt.arith.random_initial_value', True,
+	         'smt.random_seed', random_seed,
+	         'sat.phase', 'random',
+	         'sat.random_seed', random_seed2)
+		solutions = []
+		num_solutions = 1
+		slns_found = 0
+		while slns_found < num_solutions: 
+			self.solver.push()
+
+			result = self.solver.check()
+			if str(result) == 'sat':
+				solution = sh.Solution()
+				model = self.solver.model()
+				sln = solution.convert_to_json(self.shapes, model)
+				solutions.append(sln)
+
+				self.encode_previous_solution_from_model(model, sln['id'])
+
+			slns_found += 1
+		return solutions
+
 	def branch_and_bound(self, state):
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
@@ -499,7 +633,7 @@ class Solver(object):
 				self.restore_state()
 
 				# Encode the previous solution outputs into the model so we don't produce it again in the next iteration
-				self.encode_previous_solution_from_model(model, sln["id"])
+				# self.encode_previous_solution_from_model(model, sln["id"])
 				return sln
 			else:
 				self.invalid_solutions += 1

@@ -14,12 +14,14 @@ MIN_HEIGHT = 48
 GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
-LAYOUT_COLUMNS = [2,3,4,6,12]
+LAYOUT_COLUMNS = [2,3,4,6]
 GUTTERS = [4,8,16] # TODO can introduce a variable value for these at some point
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
-MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
-PADDINGS = [4,8,12,16,20,24,28,32,36,40]
+# MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
+MARGINS = [4,8,12,16,20,24,28,32,36,40]
+# PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
+PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
 
 def compute_y_domain(): 
 	y_values = range(0, CANVAS_HEIGHT)
@@ -115,7 +117,8 @@ class Shape(object):
 		self.order = -1
 		self.importance = "normal"
 		self.correspondingIDs = []
-		self.variable_values = dict()
+		self.prevent_values = dict()
+		self.keep_values = dict()
 		self.has_columns = False
 		self.is_container = False
 		self.at_root = at_root
@@ -130,13 +133,13 @@ class Shape(object):
 			
 			# values for locked variables
 			for lock in self.locks:
-				self.variable_values[lock] = element["locked_values"][lock]
+				self.keep_values[lock] = element["locked_values"][lock]
 
 		if "prevents" in element: 
 			self.prevents = element["prevents"]
 
 			for prev in self.prevents: 
-				self.variable_values[prev] = element["prevented_values"][prev]
+				self.prevent_values[prev] = element["prevented_values"][prev]
 
 		if "baseline" in element: 
 			self.has_baseline = True
@@ -193,9 +196,6 @@ class Shape(object):
 			y_domain = compute_y_domain()
 			self.variables.y = sh.Variable(shape_id, "y", y_domain, index_domain=False)
 			self.search_variables.append(self.variables.y)
-
-
-
 
 	def computed_width(self): 
 		if self.type == "canvas": 
