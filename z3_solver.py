@@ -114,10 +114,10 @@ class Solver(object):
 		start_time = time.time()
 
 		# Prunes 
-		time_start = time.time()
-		self.prune_domain_values()
-		time_end = time.time()
-		logging.debug("Time for domain pruning: " + str(time_end-time_start))
+		# time_start = time.time()
+		# self.prune_domain_values()
+		# time_end = time.time()
+		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
 
 		self.output_variables = self.init_output_variables()
 		self.variables_different = Int('VariablesDifferent')
