@@ -57,6 +57,10 @@
   Constraints canvas 
  */
 
+ .constraints-container-spinner {
+ 	margin-left: 1em;
+ }
+
  .constraints-canvas-container {
  	display: flex; 
  	overflow: auto;
@@ -102,17 +106,18 @@
 }
 
 .widget-container.highlighted {	
-	border: 2px dashed black;
+	outline: 2px dashed black;
 	padding: 0.5em;
 }
 
 .rc-tree span.rc-tree-node-selected .widget-container.primary-selection {
-	border: 4px #FF83A8 dotted;
+	outline: 4px #FF83A8 solid;
+	border: none;
     padding: 0.5em;
 }
 
 .widget-container.secondary-selection {
-	border: 4px lightblue dotted;
+	outline: 4px lightblue solid;
 	padding: 0.5em;
 }
 

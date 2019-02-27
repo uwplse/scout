@@ -56,7 +56,7 @@ export default class DesignCanvas extends React.Component {
     return {
       designMenu: prevState.designMenu, 
       savedState: prevState.savedState,
-      valid: nextProps.valid && prevState.valid, 
+      valid: nextProps.valid, 
       new: nextProps.new, 
       invalidated: nextProps.invalidated, 
       added: nextProps.added, 
@@ -69,7 +69,11 @@ export default class DesignCanvas extends React.Component {
 
   componentDidMount() {
     let elements = this.initElements();
-    this.updateValidity(elements);
+
+    if(!this.props.zoomed) {
+      // Don't update the validity if the design canvas is in the zoom container
+      this.updateValidity(elements);
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -98,7 +102,6 @@ export default class DesignCanvas extends React.Component {
     }
 
     this.setState({
-      valid: valid, 
       conflicts: conflicts
     }); 
 
@@ -108,11 +111,11 @@ export default class DesignCanvas extends React.Component {
   getElementConflicts(element) {
     let conflicts = [];
     let constraintsShape = this.getConstraintsCanvasShape(element.name); 
-    if(constraintsShape.locks && constraintsShape.locks.length) {
+    if(constraintsShape && constraintsShape.locks && constraintsShape.locks.length) {
       for(let j=0; j<constraintsShape.locks.length; j++) {
         let lock = constraintsShape.locks[j];
         let elementValue = element[lock];
-        let lockedValues = constraintsShape[lock]; 
+        let lockedValues = constraintsShape["locked_values"][lock]; 
         if(lockedValues && lockedValues.length) {
           let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
           if(!elementValueKept) {
@@ -127,11 +130,11 @@ export default class DesignCanvas extends React.Component {
       }
     }
 
-    if(constraintsShape.prevents && constraintsShape.prevents.length) {
+    if(constraintsShape && constraintsShape.prevents && constraintsShape.prevents.length) {
       for(let j=0; j<constraintsShape.prevents.length; j++) {
         let prevent = constraintsShape.prevents[j];
         let elementValue = element[prevent];
-        let preventedValues = constraintsShape[prevent]; 
+        let preventedValues = constraintsShape["prevented_values"][prevent]; 
         if(preventedValues && preventedValues.length) {
           let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
           if(elementValuePrevented) {
@@ -152,6 +155,10 @@ export default class DesignCanvas extends React.Component {
   getScalingFactor = () => {
     if(this.props.zoomed) {
       return 1.5; 
+    }
+
+    if(this.state.savedState == 1) {
+      return 1.0; 
     }
 
     // Return the amount of scaling to use depending on the state of this DesignCanvas
@@ -393,8 +400,7 @@ export default class DesignCanvas extends React.Component {
           showZoom={!this.props.zoomed}
           visible={menuVisible}
           hidden={saved || trashed || invalidated}
-          menuAction={this.performDesignCanvasMenuAction}
-          new={this.state.new} />
+          menuAction={this.performDesignCanvasMenuAction}/>
         <div id={"design-canvas-" + this.id}
            style={{
             height: (this.canvasHeight * scalingFactor) + "px", 
@@ -402,7 +408,8 @@ export default class DesignCanvas extends React.Component {
             className={"design-canvas " + (showInvalidIndicatorLines ? "canvas-container-invalid " : " ") 
             + (this.state.hovered ? "hovered " : " ")
             + (canvasIsPrimary ? "primary-selection " : " ")
-            + (canvasIsSecondary ? "secondary-selection " : " ")}
+            + (canvasIsSecondary ? "secondary-selection " : " ")
+            + (this.state.new ? "new-design" : "")}
             onClick={this.onCanvasClick}
             onMouseEnter={this.highlightConflicts} 
             onMouseLeave={this.unhighlightConflicts}>

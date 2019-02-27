@@ -11,7 +11,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   	super(props); 
     this.type = props.shape.type; 
     this.id = props.id; 
-    this.element = props.shape; // constraints shape object
     this.alternate = props.shape.alternate; 
 
     // ID for querying element from the DOM
@@ -23,6 +22,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.checkSolutionValidity = props.checkSolutionValidit; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
+    this.getCurrentShapePrevNextSiblings = props.getCurrentShapePrevNextSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
     this.getCurrentParentNode = props.getCurrentParentNode; 
     this.isContainer = props.isContainer; 
@@ -33,12 +33,13 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.feedbackCallbacks = this.getFeedbackCallbacks(); 
 
     this.state = {
-      height: this.element.orig_height,
-      width: this.element.orig_width,
-      order: this.element.order,  
-      containerOrder: this.element.containerOrder, 
-      importance: this.element.importance, 
-      showLabels: this.element.labels ? true : false, 
+      height: props.shape.orig_height,
+      width: props.shape.orig_width,
+      order: props.shape.order,  
+      element: props.shape, 
+      containerOrder: props.shape.containerOrder, 
+      importance: props.shape.importance, 
+      showLabels: props.shape.labels ? true : false, 
       svgSource: props.source, 
       highlighted: props.highlighted, 
       cursorPos: 0, 
@@ -50,12 +51,13 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     return {
       height: prevState.height,  
       width: prevState.width, 
-      order: prevState.order, 
-      importance: prevState.importance, 
+      order: nextProps.shape.order, 
+      element: nextProps.shape, 
+      importance: nextProps.shape.importance, 
       showLabels: prevState.showLabels, 
       cursorPos: prevState.cursorPos,
       svgSource: nextProps.source, 
-      containerOrder: prevState.containerOrder, 
+      containerOrder: nextProps.shape.containerOrder, 
       highlighted: nextProps.highlighted, 
       hovered: prevState.hovered
     }    
@@ -94,6 +96,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
       feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
       feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings; 
+      feedbackCallbacks.getCurrentShapePrevNextSiblings = this.getCurrentShapePrevNextSiblings; 
       feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
     }
     else if(this.type == "canvas") {
@@ -102,7 +105,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     else {
       feedbackCallbacks.setOrder = this.setOrder; 
       feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
-      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings;
+      feedbackCallbacks.getCurrentShapePrevNextSiblings = this.getCurrentShapePrevNextSiblings;
       feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
       feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
     }
@@ -110,9 +113,15 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     return feedbackCallbacks; 
   }
 
-  setImportanceLevel = (level) => {
+  setImportanceLevel = (level, linkedSiblings=[]) => {
     // Update the object
-    this.element.importance = level; 
+    this.state.element.importance = level; 
+
+    // Update importance on linked siblings (Item Groups)
+    for(let i=0; i<linkedSiblings.length; i++){
+      let linkedSibling = linkedSiblings[i]; 
+      linkedSibling.importance = level; 
+    }
 
     this.setState({
       importance: level
@@ -120,15 +129,21 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   }
 
   setOrder = (value) => {
-    this.element.order = value; 
+    this.state.element.order = value; 
 
     this.setState({
       order: value
     }, this.props.update); 
   }
 
-  setContainerOrder = (orderValue) => {
-    this.element.containerOrder = orderValue; 
+  setContainerOrder = (orderValue, linkedSiblings=[]) => {
+    this.state.element.containerOrder = orderValue; 
+
+    // Update importance on linked siblings (Item Groups)
+    for(let i=0; i<linkedSiblings.length; i++){
+      let linkedSibling = linkedSiblings[i]; 
+      linkedSibling.containerOrder = orderValue; 
+    }
 
     this.setState({
       containerOrder: orderValue

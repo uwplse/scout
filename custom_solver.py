@@ -8,8 +8,6 @@ import logging
 import solver_helpers as sh
 
 NUM_SOLUTIONS = 10
-NUM_DIFFERENT = 5
-SOLVER_WAIT = 0.2
 
 class CustomSolver(object):
 	def __init__(self, elements, previous_solutions, relative_designs=""): 
@@ -45,6 +43,7 @@ class CustomSolver(object):
 		logging.debug("number of solutions found: " + str(len(self.solutions)))
 
 		if len(self.solutions):
+			print(self.solutions)
 			self.solutions.sort(key=lambda s: s["cost"])
 			print("lowest cost: " + str(self.solutions[0]["cost"]))
 			print("highest cost: " + str(self.solutions[len(self.solutions)-1]["cost"]))
@@ -133,9 +132,18 @@ class CustomSolver(object):
 
 		logging.debug("Number of processes: " + str(len(jobs)))
 		for proc in jobs:
-			proc.join()
+			print("End after 30s timeout.")
+			proc.join(30)
+
+		for proc in jobs: 
+			if proc.is_alive(): 
+				# If the thread times out afto 30 seconds, terminate it. 
+				print("Solving process timed out")
+				proc.terminate()
 
 		slns = results.values()
+		slns = [sln for sln in slns if sln is not None]
+
 		print("Number of solutions: "  + str(len(slns)))
 		self.solutions = slns
 

@@ -203,7 +203,8 @@ class Solver(object):
 				last.append(shape.variables.baseline_grid)
 			elif shape.type == "leaf": 
 				if shape.at_root: 
-					last.append(shape.variables.column)
+					last.append(shape.variables.left_column)
+					last.append(shape.variables.right_column)
 					last.append(shape.variables.y)
 
 				if shape.is_alternate: 
@@ -213,7 +214,8 @@ class Solver(object):
 
 			if shape.at_root: 
 				last.append(shape.variables.y)
-				last.append(shape.variables.column)
+				last.append(shape.variables.left_column)
+				last.append(shape.variables.right_column)
 
 		# More important variables are in first. putting them at the end of the list , they will get assigned first
 		variables.extend(last)
@@ -305,7 +307,6 @@ class Solver(object):
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
 			result = self.solver.check()
-			# constraints = self.solver.sexpr()
 			self.z3_calls += 1
 			time_z3_end = time.time()
 			time_z3_total = time_z3_end - time_z3_start
@@ -442,7 +443,6 @@ class Solver(object):
 				print("Solution could not be found.")
 
 		return solution
-
 
 	def print_solution(self):
 		print("------------Solution------------")

@@ -17,6 +17,9 @@ import SVGInline from "react-svg-inline";
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
 import {getUniqueID} from './util'; 
+import domtoimage from 'dom-to-image'; 
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 export default class PageContainer extends React.Component {
   constructor(props) {
@@ -41,15 +44,14 @@ export default class PageContainer extends React.Component {
       widgetsCollapsed: false, 
       activeDesignShape: undefined, 
       primarySelection: undefined, 
-      updateSolutionValidity: false
+      updateSolutionValidity: false, 
+      solutionsFound: true
     };   
 
     // Dictionaries for being able to retrieve a design canvas by ID more efficiently
     this.solutionsMap = {};
 
     this.constraintsCanvasRef = React.createRef();
-
-    this.prevTime = undefined; 
   }
 
   componentDidMount = () => {
@@ -157,8 +159,53 @@ export default class PageContainer extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
   }
 
+  parseSolutions = (requestData) => {
+    if(requestData && requestData.length) {
+      let resultsParsed = JSON.parse(requestData); 
+      let solutions = resultsParsed.solutions;
+      if(solutions.length) {
+        let designCanvasList = this.state.mainDesignCanvases; 
+        for(let i=0; i<solutions.length; i++) {
+          let solution = solutions[i]; 
+          solution.new = true; 
+          this.solutionsMap[solution.id] = solution; 
+        }
 
-  getMoreDesigns = () => {
+        let designsFound = solutions.length;
+
+        // Go through previous solutions and see which ones need to be invalidated
+        for(let i=0; i<this.state.solutions.length; i++) {
+          let designSolution = this.state.solutions[i]; 
+          
+          // Invalidate the solution which means it should be moved into the right side panel 
+          designSolution.invalidated = !designSolution.valid;
+
+          // Mark old solutions as not new
+          designSolution.new = false;
+        }
+
+        this.state.solutions.push(...solutions); 
+        this.setState({
+          designsFound: designsFound,
+          solutions: this.state.solutions,  
+          showDesignsAlert: true, 
+          activeDesignPanel: "designs", 
+          solutionsFound: true
+        }, this.updateSolutionsCache);      
+      } else {
+        this.setState({
+          solutionsFound: false
+        }); 
+      }
+    }
+    else {
+      this.setState({
+        solutionsFound: false
+      }); 
+    }
+  }
+
+  getMoreDesigns = (callback) => {
     // get more designs
     // without changing any new constraints
     let jsonShapes = this.getShapesJSON(); 
@@ -168,19 +215,17 @@ export default class PageContainer extends React.Component {
    
    // Send an ajax request to the server 
    // Solve for the new designs
-    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, this.parseSolutions, 'text');
+    let self = this;
+    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, 
+      function processDesigns(requestData) {
+        self.parseSolutions(requestData); 
+        if(callback){
+          callback(); 
+        }
+      }, 'text');
   }
 
   checkSolutionValidity = (options={}) => {
-    let currTime = Date.now()
-    console.log(currTime); 
-    if(this.prevTime) {
-      let diff = currTime - this.prevTime; 
-      console.log(diff/1000); 
-    }
-
-    this.prevTime = currTime; 
-
     let getDesigns = options.getDesigns ? true : false; 
     if(!getDesigns) {
       // Only check for validity of the current solutions
@@ -193,12 +238,16 @@ export default class PageContainer extends React.Component {
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
           this.updateSolutionValidityFromRequest(requestParsed.solutions);
+
+          if(options.callback) {
+            options.callback();
+          }
         });         
       }
     }
     else {
       // Get design solutions for the current set of constraints
-      this.getMoreDesigns();
+      this.getMoreDesigns(options.callback);
     }
   }
 
@@ -387,39 +436,6 @@ export default class PageContainer extends React.Component {
     return JSON.stringify(shapeObjects); 
   }
 
-  parseSolutions = (requestData) => {
-    let resultsParsed = JSON.parse(requestData); 
-    let solutions = resultsParsed.solutions;
-    if(solutions) {
-      let designCanvasList = this.state.mainDesignCanvases; 
-      for(let i=0; i<solutions.length; i++) {
-        let solution = solutions[i]; 
-        solution.new = true; 
-        this.solutionsMap[solution.id] = solution; 
-      }
-
-      let designsFound = solutions.length;
-
-      // Go through previous solutions and see which ones need to be invalidated
-      for(let i=0; i<this.state.solutions.length; i++) {
-        let designSolution = this.state.solutions[i]; 
-        
-        // Invalidate the solution which means it should be moved into the right side panel 
-        designSolution.invalidated = !designSolution.valid;
-
-        // Mark old solutions as not new
-        designSolution.new = false;
-      }
-
-      this.setState({
-        designsFound: designsFound,
-        solutions: solutions.concat(this.state.solutions), 
-        showDesignsAlert: true, 
-        activeDesignPanel: "designs"
-      }, this.updateSolutionsCache);      
-    }
-  }
-
   // getRelativeDesigns = (elements, action) => {
   //   // get more designs relative to a specific design
   //   let jsonShapes = this.getShapesJSON(); 
@@ -551,7 +567,6 @@ export default class PageContainer extends React.Component {
   }
 
   displayWidgetFeedback = (shape, feedbackCallbacks, constraintsCanvasShape=undefined) => {
-    console.log("displayWidgetFeedback");
     let canvasShape = undefined; 
     let designShape = undefined; 
 
@@ -605,6 +620,38 @@ export default class PageContainer extends React.Component {
     if(this.constraintsCanvasRef) {
       this.constraintsCanvasRef.current.closeRightClickMenu(); 
     }
+  }
+
+
+  exportSavedDesigns = () => {
+    var zip = new JSZip();
+
+    let savedSolutions = this.state.solutions.filter((solution) => { return solution.saved; }); 
+    let promises = []; 
+    for(let i=0; i<savedSolutions.length; i++) {
+      let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
+      promises.push(domtoimage.toPng(document.getElementById(solutionDesignID))
+      .then(function (imgData) {
+          /* do something */
+          let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
+          zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
+      })); 
+    }
+
+    Promise.all(promises)
+    .then(() => {
+      zip.generateAsync({type:"blob"})
+      .then(function(content) {
+          // see FileSaver.js
+          saveAs(content, "exported_from_scout.zip");
+      });
+    }); 
+  }
+
+  closeNoSolutionsAlert = () => {
+    this.setState({
+      solutionsFound: true
+    });
   }
 
   render () {
@@ -664,7 +711,7 @@ export default class PageContainer extends React.Component {
           <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <div className="navbar-header">
               <SVGInline className="scout-logo" svg={pageLogo} />
-              <h1>Scout <span className="scout-tagline"><small>Exploring design layout alternatives</small></span></h1>
+              <h1>Scout <span className="scout-tagline"><small>Exploring wireframe layout alternatives.</small></span></h1>
             </div>
           </nav>
           <div className="bottom">
@@ -751,12 +798,23 @@ export default class PageContainer extends React.Component {
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearAllDesigns}>Clear All Designs</button>
                   </div>
-                  <div 
+                  {this.state.activeDesignPanel == "saved" ? (<div 
                     className="btn-group header-button-group">
-                    <button type="button" className="btn btn-default design-canvas-button">Export Saved Designs</button>
-                  </div>
+                    <button type="button" 
+                      onClick={this.exportSavedDesigns}
+                      className="btn btn-default design-canvas-button">Export Saved Designs</button>
+                  </div>) : null}
                 </div>
               </div>  
+              {(!this.state.solutionsFound ? (
+                <div class="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
+                  <strong>Sorry!</strong> Scout was not able to find any more layouts for your wireframes. <br /> <br />
+                  <span>Adjust your constraints in the Outline panel to help Scout find more layouts.</span>
+                  <button type="button" class="close" aria-label="Close"
+                    onClick={this.closeNoSolutionsAlert}>
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>) : undefined)}
               {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">

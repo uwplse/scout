@@ -53,7 +53,9 @@ ConstraintActions.baseline_grids = [4,8,16]
 ConstraintActions.column_widths = ConstraintActions.computeColumnWidths(); 
 
 // Element specific domains
-ConstraintActions.columns = [1,2,3,4,5,6,7,8,9,10,11,12]
+ConstraintActions.left_columns = [1,2,3,4,5,6,7,8,9,10,11,12]; 
+ConstraintActions.right_columns = [1,2,3,4,5,6,7,8,9,10,11,12]; 
+
 ConstraintActions.y_positions = [...Array(ConstraintActions.canvas_height).keys()].filter((value) => {
 	return ((value % 4) == 0); 
 })
@@ -83,31 +85,44 @@ ConstraintActions.defaultKeepConstraint = function keepConstraint(property, shap
 		shape["locks"] = []; 
 	} 
 
+	if(shape["locked_values"] == undefined) {
+		shape["locked_values"] = {}; 
+	}
+
 	if(shape["locks"].indexOf(property) == -1) {
 		shape["locks"].push(property); 
 	}
 
-	if(!shape[property]) {
-		shape[property] = []; 
+	if(!shape["locked_values"][property]) {
+		shape["locked_values"][property] = []; 
 	}
 
-	shape[property].push(value); 	
+	shape["locked_values"][property].push(value); 	
 }
 
 ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(property, shape, value) {
 	var index = shape["locks"].indexOf(property); 
 	if(index > -1) {
-		let valueIndex = shape[property].indexOf(value); 
-		if(valueIndex > -1) {
-			shape[property].splice(valueIndex,1);
-		}
+		if(shape["locked_values"][property]) {
+			let valueIndex = shape["locked_values"][property].indexOf(value); 
+			if(valueIndex > -1) {
+				shape["locked_values"][property].splice(valueIndex,1);
+			}
 
-		if(!shape[property].length) {
-			shape["locks"].splice(index, 1);
-		}	
+			if(!shape["locked_values"][property].length) {
+				delete shape["locked_values"][property]; 
 
-		if(!shape["locks"].length) {
-			delete shape["locks"];
+				// Also remove the lock for that property 
+				shape["locks"].splice(index, 1); 
+
+				if(!shape["locks"].length) {
+					delete shape["locks"]; 
+				}
+			}
+
+			if(_.isEmpty(shape["locked_values"])) {
+				delete shape["locked_values"]; 
+			}
 		}
 	}
 }
@@ -117,50 +132,47 @@ ConstraintActions.defaultPreventConstraint = function preventConstraint(property
 		shape["prevents"] = []; 
 	} 
 
+	if(shape["prevented_values"] == undefined) {
+		shape["prevented_values"] = {}; 
+	}
+
 	if(shape["prevents"].indexOf(property) == -1) {
 		shape["prevents"].push(property); 
 	}
 
-	if(!shape[property]) {
-		shape[property] = []; 
+	if(!shape["prevented_values"][property]) {
+		shape["prevented_values"][property] = []; 
 	}
 
-	shape[property].push(value); 	
+	shape["prevented_values"][property].push(value); 	
 }	
 
 ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(property, shape, value) {
 	var index = shape["prevents"].indexOf(property); 
 	if(index > -1) {
-		let valueIndex = shape[property].indexOf(value); 
-		if(valueIndex > -1) {
-			shape[property].splice(valueIndex,1);
-		}
+		if(shape["prevented_values"][property]) {
+			let valueIndex = shape["prevented_values"][property].indexOf(value); 
+			if(valueIndex > -1) {
+				shape["prevented_values"][property].splice(valueIndex,1);
+			}
 
-		if(!shape[property].length) {
-			shape["prevents"].splice(index, 1);
-		}	
+			if(!shape["prevented_values"][property].length) {
+				delete shape["prevented_values"][property]; 
 
-		if(!shape["prevents"].length) {
-			delete shape["prevents"];
+				// Also remove the lock for that property 
+				shape["prevents"].splice(index, 1); 
+
+				if(!shape["prevents"].length) {
+					delete shape["prevents"]; 
+				}
+			}
+
+			if(_.isEmpty(shape["prevented_values"])) {
+				delete shape["prevented_values"]; 
+			}
 		}
 	}
 }
-
-// ConstraintActions.undoSpatialKeepConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-// 	var index = constraintsCanvasShape["locks"].indexOf(constraintKey); 
-// 	constraintsCanvasShape["locks"].splice(index,1); 
-// 	if(!constraintsCanvasShape["locks"].length) {
-// 		delete constraintsCanvasShape["locks"]; 
-// 	}
-// }
-
-// ConstraintActions.undoSpatialPreventConstraint = function undoKeepConstraint(constraintsCanvasShape, designCanvasShape, constraintKey) {
-// 	var index = constraintsCanvasShape["prevents"].indexOf(constraintKey); 
-// 	constraintsCanvasShape["prevents"].splice(index,1); 
-// 	if(!constraintsCanvasShape["prevents"].length) {
-// 		delete constraintsCanvasShape["prevents"]; 
-// 	}
-// }
 
 ConstraintActions.messages = {
 	"width": function getMessage(shape, value) {
@@ -175,8 +187,11 @@ ConstraintActions.messages = {
 	"y": function getMessage(shape, value) {
 		return "y at location " + value + "px."
 	},
-	"column": function getMessage(shape, value) {
-		return " in column " + value + ".";
+	"left_column": function getMessage(shape, value) {
+		return " left aligned to column " + value + ".";
+	}, 
+	"right_column": function getMessage(shape, value) {
+		return " right aligned to column " + value + ".";
 	}, 
 	"arrangement": function getMessage(shape, value) {
 		let labelValue = ConstraintActions.arrangements[value]; 
@@ -194,6 +209,7 @@ ConstraintActions.messages = {
 	"columns": function getMessage(shape, value) {
 		return " columns of " + value + ".";
 	}, 
+
 	"gutter_width": function getMessage(shape, value) {
 		return " gutter width of " + value + "px."; 
 	}, 
@@ -323,6 +339,9 @@ ConstraintActions.elementConstraints = {
 				}
 			}
 
+			heights.sort(function(a, b){return a-b});
+			widths.sort(function(a, b){return a-b}); 
+
 			return { "height" : heights, "width" : widths }
 		}, 
 		"x": [], 
@@ -332,11 +351,12 @@ ConstraintActions.elementConstraints = {
 
 // These actions will only appear for direct children of the canvas container
 ConstraintActions.canvasChildConstraints = {
-	"values": ["column", "y"],
+	"values": ["left_column", "right_column", "y"],
 	"keep": ConstraintActions.defaultKeep, 
 	"prevent": ConstraintActions.defaultPrevent, 
 	"domains": {
-		"column": ConstraintActions.columns, 
+		"left_column": ConstraintActions.left_columns, 
+		"right_column": ConstraintActions.right_columns, 
 		"y": ConstraintActions.y_positions
 	}
 }
@@ -359,7 +379,7 @@ ConstraintActions.canvasConstraints = {
 	"domains": {
 		"margin": ConstraintActions.margins, 
 		"baseline_grid": ConstraintActions.baseline_grids, 
-		"columns": ConstraintActions.columns, 
+		"columns": ConstraintActions.num_columns, 
 		"gutter_width": ConstraintActions.gutter_widths, 
 		"column_width": ConstraintActions.column_widths
 	}

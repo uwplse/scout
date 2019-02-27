@@ -49,15 +49,17 @@ def solve():
 
 		try: 
 			solutions = get_solution_from_custom_solver(elements_json, solutions_json)
-
-			# Output dictionary 
-			output = dict()
-			output["solutions"] = solutions
-			return json.dumps(output).encode('utf-8')
+			if solutions is not None: 
+				# Output dictionary 
+				output = dict()
+				output["solutions"] = solutions
+				return json.dumps(output).encode('utf-8')
+			else: 
+				return ""
 		except Exception as e: 
-			print("Exception in creating solver")
+			print("Exception in getting solutions from solver.")
 			print(e)
-			return "'"
+			return ""
 	sys.stdout.flush()
 	return ""
 
