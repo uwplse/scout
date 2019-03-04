@@ -4,6 +4,7 @@ import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
 import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
+import Exporter from "./Exporter"; 
 import FeedbackContainer from "./FeedbackContainer"; 
 import WidgetsContainer from "./WidgetsContainer"; 
 import DesignCanvas from './DesignCanvas';
@@ -17,8 +18,6 @@ import SVGInline from "react-svg-inline";
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
 import {getUniqueID} from './util'; 
-import domtoimage from 'dom-to-image'; 
-import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 export default class PageContainer extends React.Component {
@@ -421,6 +420,7 @@ export default class PageContainer extends React.Component {
     // Retrieve the solution corresponding to the design canvas ID
     let solution = this.solutionsMap[designCanvasID]; 
     solution.saved = 1;  
+    solution.invalidated = 0
 
     // Update the state
     // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
@@ -728,36 +728,18 @@ export default class PageContainer extends React.Component {
     }
   }
 
-
   exportSavedDesigns = () => {
-    var zip = new JSZip();
-
+    let exporter = new Exporter(); 
     let savedSolutions = this.state.solutions.filter((solution) => { return solution.saved; }); 
-    let promises = []; 
     for(let i=0; i<savedSolutions.length; i++) {
       let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
-      let solution = document.getElementById(solutionDesignID); 
-      if(solution) {
-        promises.push(domtoimage.toPng(solution)
-        .then(function (imgData) {
-            /* do something */
-            let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
-            zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
-
-            let solutionJSON = JSON.stringify(savedSolutions[i]); 
-            zip.file(solutionDesignID + ".json", solutionJSON); 
-        })); 
-      }
+      let solutionNode = document.getElementById(solutionDesignID); 
+      if(solutionNode) {
+        exporter.addDesignToExports(savedSolutions[i], solutionNode); 
+      } 
     }
 
-    Promise.all(promises)
-    .then(() => {
-      zip.generateAsync({type:"blob"})
-      .then(function(content) {
-          // see FileSaver.js
-          saveAs(content, "exported_from_scout.zip");
-      });
-    }); 
+    exporter.exportDesigns(); 
   }
 
   closeNoSolutionsAlert = () => {

@@ -5,11 +5,14 @@ import smtlib_builder as smt
 
 label_types = ["text"]
 
+
+TOUCH_TARGETS = ["button", "field"]
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
 MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
 MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
+MIN_WIDTH_TOUCH_TARGET = 120
 MIN_HEIGHT = 48
 GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
@@ -43,7 +46,47 @@ def compute_layout_grid_domains():
 
 	return domain
 
-def compute_size_domain(importance, width, height): 
+
+def compute_size_domain_touch_target(importance, width, height): 
+	# For touch targets, the calcuated sizes should only 
+	# increase/decrease the width (buttons, fields) 
+	# (Does not apply to a text area)
+	domain = []
+	factor_id = 0
+
+	# First, round the values down to a mult of the grid constant
+	height_diff = height % GRID_CONSTANT
+	orig_height = height -  height_diff
+	orig_width = width
+
+	domain.append([orig_width, orig_height, factor_id])
+
+	computed_width = orig_width
+	minimum_element_width = MIN_WIDTH_TOUCH_TARGET
+	shrink_factor_id = 0
+
+	if importance != "high": 
+		while computed_width > minimum_element_width: 
+				shrink_factor_id -= 1
+
+				computed_width -= GRID_CONSTANT
+				if computed_width >= minimum_element_width: 
+					domain.append([computed_width, orig_height, shrink_factor_id])
+
+	computed_width = orig_width
+	increase_factor_id = 0
+	maximum_element_width = MAX_WIDTH
+	if importance != "low": 
+		while computed_width < maximum_element_width: 
+				increase_factor_id += 1
+
+				computed_width += GRID_CONSTANT
+				if computed_width <= maximum_element_width: 
+					domain.append([computed_width, orig_height, increase_factor_id])
+
+	return domain	
+
+def compute_size_domain_maintain_aspect_ratio(importance, width, height): 
 	domain = []
 	factor_id = 0
 	aspect_ratio = width/height
@@ -103,7 +146,7 @@ def compute_size_domain(importance, width, height):
 class Shape(object):
 	def __init__(self, solver_ctx, shape_id, element, shape_type, num_siblings, at_root=False): 
 		self.shape_id = shape_id
-		self.shape_type = element["type"]
+		self.semantic_type = element["type"]
 		self.element = element
 		self.typed = False
 		self.has_baseline = False
@@ -170,7 +213,12 @@ class Shape(object):
 			self.search_variables.append(self.variables.alternate)
 
 		if self.type == "leaf": 
-			size_domain = compute_size_domain(self.importance, size_width, size_height)
+			size_domain = []
+			if self.semantic_type in TOUCH_TARGETS: 
+				size_domain = compute_size_domain_touch_target(self.importance, size_width, size_height)
+			else: 
+				size_domain = compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height)
+				
 			self.variables.height = sh.Variable(shape_id, "height", 
 				[x[1] for x in size_domain], index_domain=False)
 			self.variables.width = sh.Variable(shape_id, "width", 

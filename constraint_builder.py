@@ -553,7 +553,7 @@ class ConstraintBuilder(object):
 					shape2 = child_shapes[j]
 					# Shapes must increase or decrease inside a group by the same amount
 					# If they are the same shape type. 
-					if shape1.type == "leaf" and shape2.type == "leaf" and shape1.shape_type == shape2.shape_type:
+					if shape1.type == "leaf" and shape2.type == "leaf" and shape1.semantic_type == shape2.semantic_type:
 						size_eq = cb.eq(shape1.variables.size_factor.id, shape2.variables.size_factor.id)
 						size_equals.append(size_eq)
 

@@ -215,6 +215,7 @@ class FeedbackItem extends React.Component {
     let label = locked ? "" : "Vary"; 
     let propertyLabel = this.getPropertyLabel(); 
     let lockDisabled = this.state.selected == "Vary"; 
+    let preventDisabled = this.state.selected == "Vary" || domain.length == 1; // If there is only one potential value left in the domain, do not allow preventing that value. 
     let menuItems = domain.map((key) => {
                     let labelValue = this.toUpperCase(key); 
                     let domainValue = this.getDomainValue(key);
@@ -237,8 +238,8 @@ class FeedbackItem extends React.Component {
               <div className="feedback-container-locks">
                 <span className={"glyphicon glyphicon-lock " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
                   onClick={(!lockDisabled ? this.onLocked : undefined)}></span>
-                <span className={"glyphicon glyphicon-remove " + (prevented ? "locked " : "unlocked ") + (lockDisabled ? "disabled" : "enabled")}
-                  onClick={(!lockDisabled ? this.onPrevented : undefined)}></span>
+                <span className={"glyphicon glyphicon-remove " + (prevented ? "locked " : "unlocked ") + (preventDisabled ? "disabled" : "enabled")}
+                  onClick={(!preventDisabled ? this.onPrevented : undefined)}></span>
               </div> 
             </div>);
   }
@@ -665,6 +666,10 @@ export default class FeedbackContainer extends React.Component {
       action.keep = ConstraintActions.canvasConstraints['keep']; 
       action.prevent = ConstraintActions.canvasConstraints['prevent'];
       action.domain = ConstraintActions.canvasConstraints.domains[item.key];
+
+      if(typeof action.domain == "function") {
+        action.domain = action.domain(this.state.activeCanvasShape); 
+      }
 
       let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action); 
 
