@@ -284,6 +284,9 @@ class ContainerShape(Shape):
 				self.container_order = element["containerOrder"]
 			self.container_type = element["type"]
 
+		if self.at_root: 
+			self.variables.outside_padding = sh.Variable(shape_id, "outside_padding")
+
 	def add_child(self, child): 
 		self.children.append(child)
 

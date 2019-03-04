@@ -31,7 +31,8 @@ export default class DesignCanvas extends React.Component {
       canvasShape: props.elements["canvas"], // The root level shape of the DesignCanvas
       hovered: false, 
       primarySelection: props.primarySelection, 
-      elementsList: []
+      elementsList: [], 
+      scale: DesignCanvas.getScale(props.zoomed, props.savedState, props.invalidated)
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -45,9 +46,6 @@ export default class DesignCanvas extends React.Component {
 
     this.canvasWidth = 360; 
     this.canvasHeight = 640; 
-
-    // Original scaling factor
-    this.scalingFactor = this.getScalingFactor();
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -63,8 +61,25 @@ export default class DesignCanvas extends React.Component {
       conflicts: prevState.conflicts,
       primarySelection: nextProps.primarySelection, 
       canvasShape: prevState.canvasShape, 
-      elements: prevState.elements
+      elements: prevState.elements, 
+      scale: DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated)
     }    
+  }
+
+  static getScale(zoomed, saved, invalidated) {
+    if(zoomed) {
+      return 1.5; 
+    }
+
+    if(saved == 1) {
+      return 1.0; 
+    }
+
+    if(saved == -1 || invalidated) {
+      return 0.5; 
+    } 
+    
+    return 0.5;
   }
   
   componentDidMount() {
@@ -75,23 +90,6 @@ export default class DesignCanvas extends React.Component {
     if(prevProps.elements != this.props.elements) {
       this.initElements(); 
     }
-  }
-
-  getScalingFactor = () => {
-    if(this.props.zoomed) {
-      return 1.5; 
-    }
-
-    if(this.state.savedState == 1) {
-      return 1.0; 
-    }
-
-    // Return the amount of scaling to use depending on the state of this DesignCanvas
-    if(this.state.savedState == -1 || this.state.invalidated) {
-      return 0.5; 
-    } 
-    
-    return 0.5;
   }
 
   getDesignCanvasWidget = (shape, svgSource, width, height, left, top) => {
@@ -106,7 +104,7 @@ export default class DesignCanvas extends React.Component {
             height={height}
             left={left}
             top={top}
-            scaling={this.scalingFactor}
+            scale={this.state.scale}
             inMainCanvas={inMainCanvas}
             primarySelection={this.state.primarySelection}
             displayWidgetFeedback={this.displayWidgetFeedback}/>); 
@@ -142,10 +140,10 @@ export default class DesignCanvas extends React.Component {
         padding = 5;
       }
 
-      let computedHeight = (shape.height * this.scalingFactor + (padding * 2));
-      let computedWidth = (shape.width * this.scalingFactor + (padding * 2)); 
-      let computedLeft = ((shape.x * this.scalingFactor) - padding); 
-      let computedTop = ((shape.y * this.scalingFactor) - padding);
+      let computedHeight = (shape.height * this.state.scale + (padding * 2));
+      let computedWidth = (shape.width *  this.state.scale + (padding * 2)); 
+      let computedLeft = ((shape.x * this.state.scale) - padding); 
+      let computedTop = ((shape.y * this.state.scale) - padding);
 
       let designCanvasWidget = this.getDesignCanvasWidget(shape, svgSource, computedWidth, computedHeight, computedLeft, computedTop);
       return designCanvasWidget; 
@@ -318,7 +316,7 @@ export default class DesignCanvas extends React.Component {
     let hasConflicts = this.props.conflicts.length; 
     let menuVisible = !this.state.hovered; 
     let invalidated = this.state.invalidated; 
-    let scalingFactor = this.getScalingFactor();      
+    let scalingFactor = this.state.scale;     
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     let hideTrash = (this.state.savedState == -1 || this.state.invalidated); 
     let showConsider = ((this.state.savedState == -1 || this.state.invalidated) || this.state.savedState == 1); 
