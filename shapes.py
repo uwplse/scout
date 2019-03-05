@@ -13,7 +13,7 @@ MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
 MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
 MIN_WIDTH_TOUCH_TARGET = 120
-MIN_HEIGHT = 48
+MIN_HEIGHT_ASPECT_RATIO = 24
 GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
@@ -46,11 +46,73 @@ def compute_layout_grid_domains():
 
 	return domain
 
+def compute_size_domain_touch_target_at_root(importance, width, height, layout_grids): 
+	# For touch targets, the calcuated sizes should only 
+	# increase/decrease the width (buttons, fields) 
+	domain = []
+	factor_id = 0
+
+	# First, round the values down to a mult of the grid constant
+	height_diff = height % GRID_CONSTANT
+	orig_height = height -  height_diff
+	orig_width = width 
+
+	for grid in layout_grids: 
+		margin = grid[0]
+		columns = grid[1]
+		gutter_width = grid[2]
+		column_width = grid[3] 
+
+		num_columns = 1
+		while num_columns <= columns: 
+			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
+			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH: 
+				if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
+					hw_values = [width_value, orig_height]
+					if hw_values not in domain:
+						domain.append([width_value, orig_height])
+						factor_id += 1
+			num_columns += 1
+
+	domain_with_factor = []
+	for i in range(0, len(domain)): 
+		domain_with_factor.append([domain[i][0], domain[i][1], i])
+	return domain_with_factor
+
+def compute_size_domain_aspect_ratio_at_root(importance, width, height, layout_grids):
+	# For touch targets, the calcuated sizes should only
+	# increase/decrease the width (buttons, fields)
+	domain = []
+	factor_id = 0
+	aspect_ratio = height/width
+
+	for grid in layout_grids:
+		margin = grid[0]
+		columns = grid[1]
+		gutter_width = grid[2]
+		column_width = grid[3]
+
+		num_columns = 1
+		while num_columns <= columns:
+			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
+			height_value = int(width_value * aspect_ratio)
+			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH \
+					and height_value >= MIN_HEIGHT_ASPECT_RATIO and height_value <= MAX_HEIGHT:
+				if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
+					hw_values = [width_value, height_value]
+					if hw_values not in domain:
+						domain.append(hw_values)
+						factor_id += 1
+			num_columns += 1
+
+	domain_with_factor = []
+	for i in range(0, len(domain)):
+		domain_with_factor.append([domain[i][0], domain[i][1], i])
+	return domain_with_factor
 
 def compute_size_domain_touch_target(importance, width, height): 
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
-	# (Does not apply to a text area)
 	domain = []
 	factor_id = 0
 
@@ -106,7 +168,7 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height):
 	# Don't reduce height greater than half from the original 
 	# minimum_element_height = MIN_HEIGHT if MIN_HEIGHT > (orig_height/2) else (orig_height/2)
 	# minimum_element_width = MIN_WIDTH if MIN_WIDTH > (orig_width/2)  else (orig_width/2)
-	minimum_element_height = MIN_HEIGHT
+	minimum_element_height = MIN_HEIGHT_ASPECT_RATIO
 	minimum_element_width = MIN_WIDTH
 	shrink_factor_id = 0
 
@@ -214,10 +276,19 @@ class Shape(object):
 
 		if self.type == "leaf": 
 			size_domain = []
-			if self.semantic_type in TOUCH_TARGETS: 
-				size_domain = compute_size_domain_touch_target(self.importance, size_width, size_height)
+			if self.at_root:
+				layout_grid_domains = compute_layout_grid_domains()
+				if self.semantic_type in TOUCH_TARGETS: 
+					size_domain = compute_size_domain_touch_target_at_root(self.importance, size_width, size_height,
+																		   layout_grid_domains)
+				else: 
+					size_domain = compute_size_domain_aspect_ratio_at_root(self.importance, size_width, size_height,
+																		   layout_grid_domains)
 			else: 
-				size_domain = compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height)
+				if self.semantic_type in TOUCH_TARGETS:
+					size_domain = compute_size_domain_touch_target(self.importance, size_width, size_height)
+				else: 
+					size_domain = compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height)
 				
 			self.variables.height = sh.Variable(shape_id, "height", 
 				[x[1] for x in size_domain], index_domain=False)

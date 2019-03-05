@@ -181,9 +181,9 @@ class ConstraintBuilder(object):
 					"canvas_child_" + child.shape_id + "_y_position_mult_baseline_grid") 
 
 				# Enforce that the child height is a multiple of the baseline grid variable
-				child_height = child.variables.height
-				self.constraints += cb.assert_expr(cb.eq(cb.mod(child_height.id, canvas_baseline_grid.id), "0"), 
-					"canvas_child_" + child.shape_id + "_height_mult_baseline_grid")
+				# child_height = child.variables.height
+				# self.constraints += cb.assert_expr(cb.eq(cb.mod(child_height.id, canvas_baseline_grid.id), "0"), 
+				# 	"canvas_child_" + child.shape_id + "_height_mult_baseline_grid")
 
 	def init_layout_grid(self, canvas): 
 		columns = canvas.variables.columns
@@ -705,10 +705,10 @@ class ConstraintBuilder(object):
 					"shape_" + child.shape_id + "_right_layout_column_value")
 
 				# Enforce that the child column value is less than the canvas column amount
-				left_column_lt_parent = cb.lt(child_left_column.id, layout_columns.id)
+				left_column_lt_parent = cb.lte(child_left_column.id, layout_columns.id)
 				self.constraints += cb.assert_expr(left_column_lt_parent, "child_" + child.shape_id + "_left_column_lt_layout_columns")
 
-				right_column_lt_parent = cb.lt(child_right_column.id, layout_columns.id)
+				right_column_lt_parent = cb.lte(child_right_column.id, layout_columns.id)
 				self.constraints += cb.assert_expr(right_column_lt_parent, "child_" + child.shape_id + "_right_column_lt_layout_columns")
 
 				# Left column should be less than or equal to right column 

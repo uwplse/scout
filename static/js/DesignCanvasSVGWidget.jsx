@@ -25,9 +25,12 @@ export default class DesignCanvasSVGWidget extends React.Component {
   }
 
   replaceViewBox = (svgSource) => {
-    let factor = 1/this.props.scale; 
-    let newViewBox = "viewBox=\"0 0 " + (this.props.width * factor) + " " + (this.props.height * factor) + "\""; 
-    let newSvg = svgSource.replace(/viewBox="[a-zA-Z0-9_\s]+"/, newViewBox); 
+    let newSvg = svgSource; 
+    if(this.type != "text") {
+      let factor = 1/this.props.scale; 
+      let newViewBox = "viewBox=\"0 0 " + (this.props.width * factor) + " " + (this.props.height * factor) + "\""; 
+      newSvg = svgSource.replace(/viewBox="[a-zA-Z0-9_\s]+"/, newViewBox); 
+    }
     return newSvg; 
   }
 
