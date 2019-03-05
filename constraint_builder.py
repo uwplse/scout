@@ -74,7 +74,7 @@ class ConstraintBuilder(object):
 
 	def init_solution_constraints(self, shapes, elements, solutionID):
 		all_values = []
-		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout"]
+		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout", "outside_padding"]
 		for elementID in elements:
 			element = elements[elementID]
 

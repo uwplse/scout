@@ -119,7 +119,9 @@ def compute_size_domain_touch_target(importance, width, height):
 	# First, round the values down to a mult of the grid constant
 	height_diff = height % GRID_CONSTANT
 	orig_height = height -  height_diff
-	orig_width = width
+	
+	width_diff = width % GRID_CONSTANT
+	orig_width = width - width_diff
 
 	domain.append([orig_width, orig_height, factor_id])
 

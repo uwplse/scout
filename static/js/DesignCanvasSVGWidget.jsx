@@ -2,6 +2,8 @@ import React from "react";
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
 
+const TOUCH_TARGETS = ["button", "field"]; 
+
 export default class DesignCanvasSVGWidget extends React.Component {
 
   constructor(props) {
@@ -26,7 +28,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
 
   replaceViewBox = (svgSource) => {
     let newSvg = svgSource; 
-    if(this.type != "text") {
+    if(TOUCH_TARGETS.indexOf(this.type) > -1) {
       let factor = 1/this.props.scale; 
       let newViewBox = "viewBox=\"0 0 " + (this.props.width * factor) + " " + (this.props.height * factor) + "\""; 
       newSvg = svgSource.replace(/viewBox="[a-zA-Z0-9_\s]+"/, newViewBox); 

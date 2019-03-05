@@ -1475,8 +1475,8 @@ export default class ConstraintsCanvas extends React.Component {
                 type="button" 
                 className="btn btn-default design-canvas-button" 
                 onClick={this.requestDesigns}>Generate Designs</button>
-              {this.state.loading ? (<div class="spinner-border text-light constraints-container-spinner" role="status">
-                                        <span class="sr-only">Loading...</span>
+              {this.state.loading ? (<div className="spinner-border text-light constraints-container-spinner" role="status">
+                                        <span className="sr-only">Loading...</span>
                                       </div>) : null}
             </div>
           </div>

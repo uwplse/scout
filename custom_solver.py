@@ -32,6 +32,8 @@ class CustomSolver(object):
 		time_end = time.time()
 		logging.debug("Time in z3 " + str(i) + ": " + str(solver.time_z3))
 		logging.debug("Time to generate a solution " + str(i) + ": " + str(time_end-time_start))
+		if solution is None: 
+			logging.debug("----No solution found---")
 		results[i] = solution
 
 	def solve(self):
@@ -194,7 +196,7 @@ class CustomSolver(object):
 		logging.debug("Number of processes: " + str(len(jobs)))
 		for proc in jobs:
 			print("End after 30s timeout.")
-			proc.join(30)
+			proc.join(1000000)
 
 		for proc in jobs: 
 			if proc.is_alive(): 

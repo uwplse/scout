@@ -340,7 +340,7 @@ export default class PageContainer extends React.Component {
 
       let conflicts = solution.conflicts; 
       let keepConflicts = []; 
-      if(shape.locks && shape.locks.length) {
+      if(shape.locks && shape.locks.length && element) {
         for(let j=0; j<shape.locks.length; j++) {
           let lock = shape.locks[j];
           let elementValue = element[lock];
@@ -360,7 +360,7 @@ export default class PageContainer extends React.Component {
       }
 
       let preventConflicts = []; 
-      if(shape.prevents && shape.prevents.length) {
+      if(shape.prevents && shape.prevents.length && element) {
         for(let j=0; j<shape.prevents.length; j++) {
           let prevent = shape.prevents[j];
           let elementValue = element[prevent];
@@ -889,10 +889,10 @@ export default class PageContainer extends React.Component {
                 </div>
               </div>  
               {(!this.state.solutionsFound ? (
-                <div class="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
+                <div className="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
                   <strong>Sorry!</strong> Scout was not able to find any more layouts for your wireframes. <br /> <br />
                   <span>Adjust your constraints in the Outline panel to help Scout find more layouts.</span>
-                  <button type="button" class="close" aria-label="Close"
+                  <button type="button" className="close" aria-label="Close"
                     onClick={this.closeNoSolutionsAlert}>
                     <span aria-hidden="true">&times;</span>
                   </button>
