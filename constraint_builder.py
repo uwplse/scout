@@ -352,6 +352,14 @@ class ConstraintBuilder(object):
 															 child_corr_shape.variables.size_factor.id),
 						"repeat_group_child_" + child.shape_id + "_and_child_" + child_corr_shape.shape_id + "_size_factor_equal")
 
+					# Keep the alternate representation the same, if the two children are both alternate groups
+					if child.is_alternate and child_corr_shape.is_alternate:
+						self.constraints += cb.assert_expr(cb.eq(child.variables.alternate.id,
+																 child_corr_shape.variables.alternate.id),
+														   "repeat_group_child_" + child.shape_id + "_and_child_"
+														   + child_corr_shape.shape_id + "_alternate_representation_equal")
+
+
 		# The order of the elements within the groups should be uniform
 		for group in subgroups:
 			group_children = group.children

@@ -160,54 +160,23 @@ export default class DesignCanvas extends React.Component {
     });
 
     let elementsList = []; 
-    for(let elementID in this.props.elements) {
-      if(this.state.elements.hasOwnProperty(elementID)) {
-        let element = this.props.elements[elementID];
-        if(element.type != "canvas") {
-          elementsList.push(element); 
-        }
-      }
-    }
-
-    // Make sure the elements are sorted by containment 
-    elementsList.sort(function(a, b) {
-      let a_x = a.x; 
-      let a_y = a.y; 
-      let a_width = a.width;
-      let a_height = a.height; 
-      let a_is_group = a.type == "group" && !a.alternate; 
-
-      let b_x = b.x; 
-      let b_y = b.y; 
-      let b_width = b.width; 
-      let b_height = b.height;
-      let b_is_group = b.type == "group" && !b.alternate; 
-
-      // Sort by containment
-      if(a_is_group && !b_is_group) {
-        // Groups should be always sorted after elements
-        return -1; 
-      }
-      else if(!a_is_group && b_is_group) {
-        return 1; 
-      }
-      else if(a_is_group && b_is_group) {
-        if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
-          // Sort b first if b contains a so it appears higher in the DOM hierarchy
-          // then sort by boundigng box
-          return -1; 
-        }
-        else if(b_x >= a_x && b_y >= a_y && (b_y+b_height <= a_y+a_height) && (b_x+b_width <= a_x+a_width)) {
-          return -1; 
-        }
-      }
-
-      return 0; 
-    }); 
+    this.getSortedElementsList(canvas, elementsList); 
 
     this.setState({
       elementsList: elementsList
     }); 
+  }
+  
+  getSortedElementsList = (node, elementsList) => {
+    if(node.children && node.children.length) {
+      for(let i=0; i<node.children.length; i++) {
+        let childElement = node.children[i]; 
+        let designElement = this.props.elements[childElement.name]; 
+        elementsList.push(designElement); 
+
+        this.getSortedElementsList(childElement, elementsList); 
+      }
+    }
   }
 
   performDesignCanvasMenuAction = (action) => {

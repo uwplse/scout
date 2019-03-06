@@ -7,6 +7,8 @@ label_types = ["text"]
 
 
 TOUCH_TARGETS = ["button", "field"]
+SEPARATOR_TARGETS = ["separator"]
+
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
 MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
@@ -46,7 +48,7 @@ def compute_layout_grid_domains():
 
 	return domain
 
-def compute_size_domain_touch_target_at_root(importance, width, height, layout_grids): 
+def compute_size_domain_change_width_only_root(importance, width, height, layout_grids): 
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
 	domain = []
@@ -79,7 +81,7 @@ def compute_size_domain_touch_target_at_root(importance, width, height, layout_g
 		domain_with_factor.append([domain[i][0], domain[i][1], i])
 	return domain_with_factor
 
-def compute_size_domain_aspect_ratio_at_root(importance, width, height, layout_grids):
+def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, layout_grids):
 	# For touch targets, the calcuated sizes should only
 	# increase/decrease the width (buttons, fields)
 	domain = []
@@ -110,7 +112,7 @@ def compute_size_domain_aspect_ratio_at_root(importance, width, height, layout_g
 		domain_with_factor.append([domain[i][0], domain[i][1], i])
 	return domain_with_factor
 
-def compute_size_domain_touch_target(importance, width, height): 
+def compute_size_domain_change_width_only(importance, width, height): 
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
 	domain = []
@@ -280,15 +282,15 @@ class Shape(object):
 			size_domain = []
 			if self.at_root:
 				layout_grid_domains = compute_layout_grid_domains()
-				if self.semantic_type in TOUCH_TARGETS: 
-					size_domain = compute_size_domain_touch_target_at_root(self.importance, size_width, size_height,
+				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS: 
+					size_domain = compute_size_domain_change_width_only_root(self.importance, size_width, size_height,
 																		   layout_grid_domains)
 				else: 
-					size_domain = compute_size_domain_aspect_ratio_at_root(self.importance, size_width, size_height,
+					size_domain = compute_size_domain_maintain_aspect_ratio_root(self.importance, size_width, size_height,
 																		   layout_grid_domains)
 			else: 
-				if self.semantic_type in TOUCH_TARGETS:
-					size_domain = compute_size_domain_touch_target(self.importance, size_width, size_height)
+				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS:
+					size_domain = compute_size_domain_change_width_only(self.importance, size_width, size_height)
 				else: 
 					size_domain = compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height)
 				
