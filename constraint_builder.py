@@ -533,15 +533,18 @@ class ConstraintBuilder(object):
 
 					# Enforce that the padding used for spacing the elements on the canvas is greater than 
 					# the minimum or greater than the padding in the groups that are being spaced to maintain
-					# visual separation. 
+					# visual separation. /
 					spacing = canvas.min_spacing
 					if shape1.is_container and shape2.is_container: 
 						spacing = cb.ite(cb.gt(shape1.variables.padding.id, shape2.variables.padding.id), 
 							shape1.variables.padding.id, shape2.variables.padding.id)
+						spacing = cb.mult("2", spacing)
 					elif shape1.is_container: 
 						spacing = shape1.variables.padding.id
+						spacing = cb.mult("2", spacing)
 					elif shape2.is_container: 
 						spacing = shape2.variables.padding.id
+						spacing = cb.mult("2", spacing)
 
 					# Non-overlapping
 					left = cb.lt(cb.add(shape1_x, cb.add(shape1_width, spacing)), shape2_x)

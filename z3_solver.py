@@ -115,7 +115,7 @@ class Solver(object):
 
 		# Prunes 
 		# time_start = time.time()
-		# self.prune_domain_values()
+		self.prune_domain_values()
 		# time_end = time.time()
 		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
 
@@ -268,27 +268,29 @@ class Solver(object):
 
 		for shape in self.shapes.values(): 
 			if shape.type == "leaf": # Only prune for leaf node shapes as groups size is a function of the child layout
-				height = shape.variables.height
-				width = shape.variables.width 
-				size_factor = shape.variables.size_factor
-				size_combo = shape.variables.size_combo
+				if not shape.at_root:
+					height = shape.variables.height
+					width = shape.variables.width
+					size_factor = shape.variables.size_factor
+					size_combo = shape.variables.size_combo
 
-				size_combos = [val for val in size_combo.domain if val[1] % selected_grid == 0]
-				if len(size_combos) > 0:
-					size_combo.domain = size_combos
-					height.domain = [val[1] for val in size_combos]
-					width.domain = [val[0] for val in size_combos]
-					size_factor.domain = [val[2] for val in size_combos]
+					size_combos = [val for val in size_combo.domain if val[1] % selected_grid == 0]
+					if len(size_combos) > 0:
+						size_combo.domain = size_combos
+						height.domain = [val[1] for val in size_combos]
+						width.domain = [val[0] for val in size_combos]
+						size_factor.domain = [val[2] for val in size_combos]
 
-				# Prune the y-coordinate values 
-				y = shape.variables.y
-				y_values = [val for val in y.domain if val % selected_grid == 0]
-				y.domain = y_values
+				# Prune the y-coordinate values
+				if shape.at_root:
+					y = shape.variables.y
+					y_values = [val for val in y.domain if val % selected_grid == 0]
+					y.domain = y_values
 
-			if shape.is_alternate: 
-				alternate = shape.variables.alternate 
-				alternate_subset = random.sample(alternate.domain, 1)
-				alternate.domain = alternate_subset
+			# if shape.is_alternate: 
+			# 	alternate = shape.variables.alternate 
+			# 	alternate_subset = random.sample(alternate.domain, 1)
+			# 	alternate.domain = alternate_subset
 			#
 			# if shape.is_container and not shape.type == "canvas":
 			# 	# Prune the alignment values
@@ -306,19 +308,27 @@ class Solver(object):
 
 		# num_to_select = int(len(layout_grid.domain)/reduction)
 		layout_grid_subset = random.sample(layout_grid.domain, 1)
+		selected_grid = layout_grid_subset[0]
+
 		layout_grid.domain = layout_grid_subset
 		margin.domain = [x[0] for x in layout_grid_subset]
 		columns.domain = [x[1] for x in layout_grid_subset]
 		gutter_width.domain = [x[2] for x in layout_grid_subset]
 		column_width.domain = [x[3] for x in layout_grid_subset]
+		logging.debug("Selected layout grid... ")
+		logging.debug(layout_grid_subset)
 
 		# Prune column values based on the selected values 
 		max_cols = max(columns.domain)
 		for shape in self.shapes.values(): 
 			if shape.at_root: # It should have the column variable if it is on the root of the canvas
 				left_column = shape.variables.left_column
-				left_column_pruned = [val for val in left_column.domain if val < max_cols]
+				left_column_pruned = [val for val in left_column.domain if val <= max_cols]
 				left_column.domain = left_column_pruned
+
+				right_column = shape.variables.right_column
+				right_column_pruned = [val for val in right_column.domain if val <= max_cols]
+				right_column.domain = right_column_pruned
 
 			if shape.type == "leaf": 
 				selected_margin = layout_grid_subset[0][0]
@@ -326,6 +336,22 @@ class Solver(object):
 				max_width = CANVAS_WIDTH - margin_size
 				size_combos = shape.variables.size_combo
 				size_combos_subset = [val for val in size_combos.domain if val[0] <= max_width]
+
+				# Reduce the size of the size domain to search for performance
+				if shape.at_root: 
+					selected_columns = selected_grid[1]
+					selected_gutter_width = selected_grid[2]
+					selected_column_width = selected_grid[3]
+					possible_widths = []
+					for i in range(1, selected_columns+1):
+						possible_width = (i * selected_column_width) + ((i-1) * selected_gutter_width) 
+						possible_widths.append(possible_width)
+					size_combos_subset = [val for val in size_combos_subset if val[0] in possible_widths]
+				else: 
+					num_size_combos_to_select = int(len(size_combos_subset)/reduction)
+					if num_size_combos_to_select >= reduction:
+						size_combos_subset = random.sample(size_combos_subset, num_size_combos_to_select)
+
 				shape.variables.size_combo.domain = size_combos_subset
 				shape.variables.width.domain = [val[0] for val in size_combos_subset]
 				shape.variables.height.domain = [val[1] for val in size_combos_subset]
