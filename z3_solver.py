@@ -259,10 +259,11 @@ class Solver(object):
 		# Group children by semantic type 
 		groups = dict()
 		for child in container.children: 
-			if child.semantic_type not in groups: 
-				groups[child.semantic_type] = []
+			if child.semantic_type != "group" or child.is_alternate:
+				if child.semantic_type not in groups: 
+					groups[child.semantic_type] = []
 
-			groups[child.semantic_type].append(child)
+				groups[child.semantic_type].append(child)
 
 		# Prune sizes based on grouped containers
 		for key,group_children in groups.items(): 
@@ -271,7 +272,7 @@ class Solver(object):
 
 			# Further reduce the size of the domain 
 			if len(size_factors) > DOMAIN_SIZE_REDUCTION: 
-				num_to_select = int(len(size_factors)/4)
+				num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
 				if num_to_select > 0: 
 					size_factors = random.sample(size_factors, num_to_select)
 
@@ -283,15 +284,42 @@ class Solver(object):
 				child.variables.width.domain = [val[0] for val in size_combos]
 				child.variables.height.domain = [val[1] for val in size_combos]
 
+	def prune_repeat_group_child_sizes(self, container): 
+		# Get the first item in the repeat group 
+		if len(container.children): 
+			first_item = container.children[0]
+
+			# Prune the domains for the first group randomly. 
+			# Then apply the domains to the corresponding children 
+			self.prune_container_child_sizes(first_item)
+
+			if len(first_item.children): 
+				for item_child in first_item.children: 
+					# Update the size domains on the coreesponding shapes 
+					item_corresponding_ids = item_child.correspondingIDs
+					for corresponding_child_id in item_corresponding_ids: 
+						corresponding_child_shape = self.shapes[corresponding_child_id]
+
+						corresponding_child_shape.variables.size_combo.domain = item_child.variables.size_combo.domain
+						corresponding_child_shape.variables.size_factor.domain = item_child.variables.size_factor.domain
+						corresponding_child_shape.variables.width.domain = item_child.variables.width.domain
+						corresponding_child_shape.variables.height.domain = item_child.variables.height.domain
 
 	def prune_size_domains(self): 
 		for shape in self.shapes.values(): 
-			if shape.type == "container":
-				# Prune domain for child elements
-				# based on the size_factor values of each 
-				# to ensure that the rules are maintained regarding child 
-				# sizing. (Increase/Decrease size of elements with same semantic type proporotionally)
-				self.prune_container_child_sizes(shape)
+			if shape.type == "container" and not shape.item:
+				if shape.typed: 
+					# Prune domain for child elements
+					# based on the size_factor values of each 
+					# to ensure that the rules are maintained regarding child 
+					# sizing. (Increase/Decrease size of elements with same semantic type proporotionally)
+					self.prune_repeat_group_child_sizes(shape)
+				else: 
+					# Prune domain for child elements
+					# based on the size_factor values of each 
+					# to ensure that the rules are maintained regarding child 
+					# sizing. (Increase/Decrease size of elements with same semantic type proporotionally)
+					self.prune_container_child_sizes(shape)
 
 	def prune_layout_grid_domains(self): 
 		# Randomly select a subset of the search space to search to find a 

@@ -215,6 +215,7 @@ class Shape(object):
 		self.semantic_type = element["type"]
 		self.element = element
 		self.typed = False
+		self.item = False
 		self.has_baseline = False
 		self.variables = DotMap() 
 		self.variables.x = sh.Variable(shape_id, "x")
@@ -263,6 +264,9 @@ class Shape(object):
 
 		if "typed" in element: 
 			self.typed = element["typed"]
+
+		if "item" in element: 
+			self.item = element["item"]
 
 		if "correspondingIDs" in element: 
 			self.correspondingIDs = element["correspondingIDs"]

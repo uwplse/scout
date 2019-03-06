@@ -166,15 +166,16 @@ export default class DesignCanvas extends React.Component {
       elementsList: elementsList
     }); 
   }
-  
+
   getSortedElementsList = (node, elementsList) => {
     if(node.children && node.children.length) {
       for(let i=0; i<node.children.length; i++) {
         let childElement = node.children[i]; 
         let designElement = this.props.elements[childElement.name]; 
-        elementsList.push(designElement); 
-
-        this.getSortedElementsList(childElement, elementsList); 
+        if(designElement) {
+          elementsList.push(designElement); 
+          this.getSortedElementsList(childElement, elementsList); 
+        }
       }
     }
   }
