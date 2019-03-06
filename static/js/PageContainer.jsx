@@ -237,7 +237,8 @@ export default class PageContainer extends React.Component {
 
       // Get all of the solutions so far to check their validity 
       if(this.state.solutions.length) {
-        let prevSolutions = JSON.stringify(this.state.solutions);
+        let notDiscardedSolutions = this.state.solutions.filter((solution) => !solution.invalidated);
+        let prevSolutions = JSON.stringify(notDiscardedSolutions);
 
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
