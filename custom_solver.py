@@ -5,6 +5,7 @@ import multiprocessing
 import json
 import z3_solver
 import logging
+import solution as sln
 import solver_helpers as sh
 
 NUM_SOLUTIONS = 10
@@ -26,12 +27,14 @@ class CustomSolver(object):
 		solver = z3_solver.Solver(z3_context, elements, prev_solutions)
 
 		# Solve for a design solution
-		state = sh.Solution()
+		state = sln.Solution()
 		time_start = time.time()
 		solution = solver.branch_and_bound(state)
 		time_end = time.time()
 		logging.debug("Time in z3 " + str(i) + ": " + str(solver.time_z3))
 		logging.debug("Time to generate a solution " + str(i) + ": " + str(time_end-time_start))
+		if solution is None: 
+			logging.debug("----No solution found---")
 		results[i] = solution
 
 	def solve(self):
@@ -194,7 +197,7 @@ class CustomSolver(object):
 		logging.debug("Number of processes: " + str(len(jobs)))
 		for proc in jobs:
 			print("End after 30s timeout.")
-			proc.join(30)
+			proc.join(1000000)
 
 		for proc in jobs: 
 			if proc.is_alive(): 

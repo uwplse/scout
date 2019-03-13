@@ -4,6 +4,7 @@ import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
 import '../css/PageContainer.css';
 import ConstraintsCanvas from "./ConstraintsCanvas"; 
+import Exporter from "./Exporter"; 
 import FeedbackContainer from "./FeedbackContainer"; 
 import WidgetsContainer from "./WidgetsContainer"; 
 import DesignCanvas from './DesignCanvas';
@@ -17,8 +18,6 @@ import SVGInline from "react-svg-inline";
 import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
 import {getUniqueID} from './util'; 
-import domtoimage from 'dom-to-image'; 
-import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 
 export default class PageContainer extends React.Component {
@@ -238,7 +237,8 @@ export default class PageContainer extends React.Component {
 
       // Get all of the solutions so far to check their validity 
       if(this.state.solutions.length) {
-        let prevSolutions = JSON.stringify(this.state.solutions);
+        let notDiscardedSolutions = this.state.solutions.filter((solution) => !solution.invalidated);
+        let prevSolutions = JSON.stringify(notDiscardedSolutions);
 
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
@@ -341,7 +341,7 @@ export default class PageContainer extends React.Component {
 
       let conflicts = solution.conflicts; 
       let keepConflicts = []; 
-      if(shape.locks && shape.locks.length) {
+      if(shape.locks && shape.locks.length && element) {
         for(let j=0; j<shape.locks.length; j++) {
           let lock = shape.locks[j];
           let elementValue = element[lock];
@@ -361,7 +361,7 @@ export default class PageContainer extends React.Component {
       }
 
       let preventConflicts = []; 
-      if(shape.prevents && shape.prevents.length) {
+      if(shape.prevents && shape.prevents.length && element) {
         for(let j=0; j<shape.prevents.length; j++) {
           let prevent = shape.prevents[j];
           let elementValue = element[prevent];
@@ -421,6 +421,7 @@ export default class PageContainer extends React.Component {
     // Retrieve the solution corresponding to the design canvas ID
     let solution = this.solutionsMap[designCanvasID]; 
     solution.saved = 1;  
+    solution.invalidated = 0
 
     // Update the state
     // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
@@ -728,36 +729,18 @@ export default class PageContainer extends React.Component {
     }
   }
 
-
   exportSavedDesigns = () => {
-    var zip = new JSZip();
-
+    let exporter = new Exporter(); 
     let savedSolutions = this.state.solutions.filter((solution) => { return solution.saved; }); 
-    let promises = []; 
     for(let i=0; i<savedSolutions.length; i++) {
       let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
-      let solution = document.getElementById(solutionDesignID); 
-      if(solution) {
-        promises.push(domtoimage.toPng(solution)
-        .then(function (imgData) {
-            /* do something */
-            let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
-            zip.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
-
-            let solutionJSON = JSON.stringify(savedSolutions[i]); 
-            zip.file(solutionDesignID + ".json", solutionJSON); 
-        })); 
-      }
+      let solutionNode = document.getElementById(solutionDesignID); 
+      if(solutionNode) {
+        exporter.addDesignToExports(savedSolutions[i], solutionNode); 
+      } 
     }
 
-    Promise.all(promises)
-    .then(() => {
-      zip.generateAsync({type:"blob"})
-      .then(function(content) {
-          // see FileSaver.js
-          saveAs(content, "exported_from_scout.zip");
-      });
-    }); 
+    exporter.exportDesigns(); 
   }
 
   closeNoSolutionsAlert = () => {
@@ -907,10 +890,10 @@ export default class PageContainer extends React.Component {
                 </div>
               </div>  
               {(!this.state.solutionsFound ? (
-                <div class="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
+                <div className="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
                   <strong>Sorry!</strong> Scout was not able to find any more layouts for your wireframes. <br /> <br />
                   <span>Adjust your constraints in the Outline panel to help Scout find more layouts.</span>
-                  <button type="button" class="close" aria-label="Close"
+                  <button type="button" className="close" aria-label="Close"
                     onClick={this.closeNoSolutionsAlert}>
                     <span aria-hidden="true">&times;</span>
                   </button>

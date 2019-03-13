@@ -1,16 +1,22 @@
 from z3 import * 
 import solver_helpers as sh
+import variable as var
 from dotmap import DotMap
 import smtlib_builder as smt
 
 label_types = ["text"]
+
+
+TOUCH_TARGETS = ["button", "field"]
+SEPARATOR_TARGETS = ["separator"]
 
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
 MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
 MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
-MIN_HEIGHT = 48
+MIN_WIDTH_TOUCH_TARGET = 120
+MIN_HEIGHT_ASPECT_RATIO = 24
 GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
@@ -43,7 +49,111 @@ def compute_layout_grid_domains():
 
 	return domain
 
-def compute_size_domain(importance, width, height): 
+def compute_size_domain_change_width_only_root(importance, width, height, layout_grids): 
+	# For touch targets, the calcuated sizes should only 
+	# increase/decrease the width (buttons, fields) 
+	domain = []
+	factor_id = 0
+
+	# First, round the values down to a mult of the grid constant
+	height_diff = height % GRID_CONSTANT
+	orig_height = height -  height_diff
+	orig_width = width 
+
+	for grid in layout_grids: 
+		margin = grid[0]
+		columns = grid[1]
+		gutter_width = grid[2]
+		column_width = grid[3] 
+
+		num_columns = 1
+		while num_columns <= columns: 
+			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
+			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH: 
+				if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
+					hw_values = [width_value, orig_height]
+					if hw_values not in domain:
+						domain.append([width_value, orig_height])
+						factor_id += 1
+			num_columns += 1
+
+	domain_with_factor = []
+	for i in range(0, len(domain)): 
+		domain_with_factor.append([domain[i][0], domain[i][1], i])
+	return domain_with_factor
+
+def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, layout_grids):
+	# For touch targets, the calcuated sizes should only
+	# increase/decrease the width (buttons, fields)
+	domain = []
+	factor_id = 0
+	aspect_ratio = height/width
+
+	for grid in layout_grids:
+		margin = grid[0]
+		columns = grid[1]
+		gutter_width = grid[2]
+		column_width = grid[3]
+
+		num_columns = 1
+		while num_columns <= columns:
+			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
+			height_value = int(width_value * aspect_ratio)
+			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH \
+					and height_value >= MIN_HEIGHT_ASPECT_RATIO and height_value <= MAX_HEIGHT:
+				if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
+					hw_values = [width_value, height_value]
+					if hw_values not in domain:
+						domain.append(hw_values)
+						factor_id += 1
+			num_columns += 1
+
+	domain_with_factor = []
+	for i in range(0, len(domain)):
+		domain_with_factor.append([domain[i][0], domain[i][1], i])
+	return domain_with_factor
+
+def compute_size_domain_change_width_only(importance, width, height): 
+	# For touch targets, the calcuated sizes should only 
+	# increase/decrease the width (buttons, fields) 
+	domain = []
+	factor_id = 0
+
+	# First, round the values down to a mult of the grid constant
+	height_diff = height % GRID_CONSTANT
+	orig_height = height -  height_diff
+	
+	width_diff = width % GRID_CONSTANT
+	orig_width = width - width_diff
+
+	domain.append([orig_width, orig_height, factor_id])
+
+	computed_width = orig_width
+	minimum_element_width = MIN_WIDTH_TOUCH_TARGET
+	shrink_factor_id = 0
+
+	if importance != "high": 
+		while computed_width > minimum_element_width: 
+				shrink_factor_id -= 1
+
+				computed_width -= GRID_CONSTANT
+				if computed_width >= minimum_element_width: 
+					domain.append([computed_width, orig_height, shrink_factor_id])
+
+	computed_width = orig_width
+	increase_factor_id = 0
+	maximum_element_width = MAX_WIDTH
+	if importance != "low": 
+		while computed_width < maximum_element_width: 
+				increase_factor_id += 1
+
+				computed_width += GRID_CONSTANT
+				if computed_width <= maximum_element_width: 
+					domain.append([computed_width, orig_height, increase_factor_id])
+
+	return domain	
+
+def compute_size_domain_maintain_aspect_ratio(importance, width, height): 
 	domain = []
 	factor_id = 0
 	aspect_ratio = width/height
@@ -63,7 +173,7 @@ def compute_size_domain(importance, width, height):
 	# Don't reduce height greater than half from the original 
 	# minimum_element_height = MIN_HEIGHT if MIN_HEIGHT > (orig_height/2) else (orig_height/2)
 	# minimum_element_width = MIN_WIDTH if MIN_WIDTH > (orig_width/2)  else (orig_width/2)
-	minimum_element_height = MIN_HEIGHT
+	minimum_element_height = MIN_HEIGHT_ASPECT_RATIO
 	minimum_element_width = MIN_WIDTH
 	shrink_factor_id = 0
 
@@ -103,13 +213,14 @@ def compute_size_domain(importance, width, height):
 class Shape(object):
 	def __init__(self, solver_ctx, shape_id, element, shape_type, num_siblings, at_root=False): 
 		self.shape_id = shape_id
-		self.shape_type = element["type"]
+		self.semantic_type = element["type"]
 		self.element = element
 		self.typed = False
+		self.item = False
 		self.has_baseline = False
 		self.variables = DotMap() 
-		self.variables.x = sh.Variable(shape_id, "x")
-		self.variables.y = sh.Variable(shape_id, "y")
+		self.variables.x = var.Variable(shape_id, "x")
+		self.variables.y = var.Variable(shape_id, "y")
 		self.type = shape_type 
 		self.ctx = solver_ctx
 		self.locks = None
@@ -144,7 +255,7 @@ class Shape(object):
 		if "baseline" in element: 
 			self.has_baseline = True
 			self.orig_baseline = element["baseline"]
-			self.variables.baseline = sh.Variable(shape_id, "baseline")
+			self.variables.baseline = var.Variable(shape_id, "baseline")
 
 		if "importance" in element: 
 			self.importance = element["importance"]
@@ -154,6 +265,9 @@ class Shape(object):
 
 		if "typed" in element: 
 			self.typed = element["typed"]
+
+		if "item" in element: 
+			self.item = element["item"]
 
 		if "correspondingIDs" in element: 
 			self.correspondingIDs = element["correspondingIDs"]
@@ -166,19 +280,33 @@ class Shape(object):
 			domain = element["representations"] 
 			size_width = element["alternate_width"]
 			size_height = element["alternate_height"]
-			self.variables.alternate = sh.Variable(shape_id, "alternate", domain, var_type="String", index_domain=False)
+			self.variables.alternate = var.Variable(shape_id, "alternate", domain, var_type="String", index_domain=False)
 			self.search_variables.append(self.variables.alternate)
 
 		if self.type == "leaf": 
-			size_domain = compute_size_domain(self.importance, size_width, size_height)
-			self.variables.height = sh.Variable(shape_id, "height", 
+			size_domain = []
+			if self.at_root:
+				layout_grid_domains = compute_layout_grid_domains()
+				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS: 
+					size_domain = compute_size_domain_change_width_only_root(self.importance, size_width, size_height,
+																		   layout_grid_domains)
+				else: 
+					size_domain = compute_size_domain_maintain_aspect_ratio_root(self.importance, size_width, size_height,
+																		   layout_grid_domains)
+			else: 
+				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS:
+					size_domain = compute_size_domain_change_width_only(self.importance, size_width, size_height)
+				else: 
+					size_domain = compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height)
+				
+			self.variables.height = var.Variable(shape_id, "height", 
 				[x[1] for x in size_domain], index_domain=False)
-			self.variables.width = sh.Variable(shape_id, "width", 
+			self.variables.width = var.Variable(shape_id, "width", 
 				[x[0] for x in size_domain], index_domain=False)
-			self.variables.size_factor = sh.Variable(shape_id, "size_factor",
+			self.variables.size_factor = var.Variable(shape_id, "size_factor",
 				[x[2] for x in size_domain], index_domain=False)
 
-			self.variables.size_combo = sh.Variable(shape_id, "size_combo", 
+			self.variables.size_combo = var.Variable(shape_id, "size_combo", 
 				size_domain)
 			self.search_variables.append(self.variables.size_combo)
 
@@ -186,15 +314,15 @@ class Shape(object):
 			# Add the column variable if the element is at the root of the canvas. 
 			# The canvas will use this variable to place it in its correct column 
 			self.has_columns = True
-			self.variables.left_column = sh.Variable(shape_id, "left_column", COLUMNS, index_domain=False)
-			self.variables.right_column = sh.Variable(shape_id, "right_column", COLUMNS, index_domain=False)
+			self.variables.left_column = var.Variable(shape_id, "left_column", COLUMNS, index_domain=False)
+			self.variables.right_column = var.Variable(shape_id, "right_column", COLUMNS, index_domain=False)
 			self.search_variables.append(self.variables.left_column)
 			self.search_variables.append(self.variables.right_column)
 
 			# The y position should have a computed domain so they can be part of the variable search 
 			# Elements at the root level of the canvas will be aligned by the baseline grid and columns
 			y_domain = compute_y_domain()
-			self.variables.y = sh.Variable(shape_id, "y", y_domain, index_domain=False)
+			self.variables.y = var.Variable(shape_id, "y", y_domain, index_domain=False)
 			self.search_variables.append(self.variables.y)
 
 	def computed_width(self): 
@@ -215,18 +343,18 @@ class ContainerShape(Shape):
 	def __init__(self, solver_ctx, shape_id, element, num_siblings, at_root=False):
 		Shape.__init__(self, solver_ctx, shape_id, element, "container", num_siblings, at_root)
 		self.children = []
-		self.variables.arrangement = sh.Variable(shape_id, "arrangement", 
+		self.variables.arrangement = var.Variable(shape_id, "arrangement", 
 			["horizontal", "vertical", "rows", "columns"])
-		self.variables.padding = sh.Variable(shape_id, "padding", 
+		self.variables.padding = var.Variable(shape_id, "padding", 
 			PADDINGS, index_domain=False)
-		self.variables.alignment = sh.Variable(shape_id, "alignment", ["left", "center", "right"])
+		self.variables.alignment = var.Variable(shape_id, "alignment", ["left", "center", "right"])
 		self.search_variables.append(self.variables.alignment)
 		self.search_variables.append(self.variables.arrangement)
 		self.search_variables.append(self.variables.padding)
 
-		self.variables.extra_in_first = sh.Variable(shape_id, "extra_in_first", var_type="Bool")
-		self.variables.width = sh.Variable(shape_id, "width")
-		self.variables.height = sh.Variable(shape_id, "height")
+		self.variables.extra_in_first = var.Variable(shape_id, "extra_in_first", var_type="Bool")
+		self.variables.width = var.Variable(shape_id, "width")
+		self.variables.height = var.Variable(shape_id, "height")
 
 		self.container_order = "unimportant"
 		self.container_type = "group"
@@ -235,6 +363,9 @@ class ContainerShape(Shape):
 			if "containerOrder" in element: 
 				self.container_order = element["containerOrder"]
 			self.container_type = element["type"]
+
+		if self.at_root: 
+			self.variables.outside_padding = var.Variable(shape_id, "outside_padding")
 
 	def add_child(self, child): 
 		self.children.append(child)
@@ -253,7 +384,7 @@ class CanvasShape(Shape):
 		Shape.__init__(self, solver_ctx, shape_id, element, "canvas", num_siblings, at_root=False)
 		self.children = []
 
-		self.variables.baseline_grid = sh.Variable("canvas", "baseline_grid", BASELINE_GRIDS, index_domain=False)
+		self.variables.baseline_grid = var.Variable("canvas", "baseline_grid", BASELINE_GRIDS, index_domain=False)
 		self.search_variables.append(self.variables.baseline_grid)
 
 		layout_grid_domains = compute_layout_grid_domains()
@@ -261,13 +392,13 @@ class CanvasShape(Shape):
 		cols_domain = [x[1] for x in layout_grid_domains]
 		gutter_domain = [x[2] for x in layout_grid_domains]
 		col_width_domain = [x[3] for x in layout_grid_domains]
-		self.variables.grid_layout = sh.Variable("canvas", "grid_layout", layout_grid_domains)
+		self.variables.grid_layout = var.Variable("canvas", "grid_layout", layout_grid_domains)
 		self.search_variables.append(self.variables.grid_layout)
 
-		self.variables.margin = sh.Variable("canvas", "margin", marg_domain, index_domain=False)
-		self.variables.columns = sh.Variable("canvas", "columns", cols_domain, index_domain=False)
-		self.variables.gutter_width = sh.Variable("canvas", "gutter_width", gutter_domain, index_domain=False) # TODO: What should the domain be? 
-		self.variables.column_width = sh.Variable("canvas", "column_width", col_width_domain, index_domain=False)
+		self.variables.margin = var.Variable("canvas", "margin", marg_domain, index_domain=False)
+		self.variables.columns = var.Variable("canvas", "columns", cols_domain, index_domain=False)
+		self.variables.gutter_width = var.Variable("canvas", "gutter_width", gutter_domain, index_domain=False) # TODO: What should the domain be? 
+		self.variables.column_width = var.Variable("canvas", "column_width", col_width_domain, index_domain=False)
 
 
 		self.min_spacing = str(GRID_CONSTANT)

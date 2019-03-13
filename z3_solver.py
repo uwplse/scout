@@ -7,6 +7,7 @@ import constraint_builder
 import shapes as shape_classes
 import smtlib_builder as smt
 import solver_helpers as sh
+import solution as sln
 import logging
 import numpy as np
 z3.set_param(
@@ -18,6 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 RANDOM_SEEDS=100000
 CANVAS_WIDTH = 360
+DOMAIN_SIZE_REDUCTION = 4 
 
 RELAX_PROPERTIES = {
 	"arrangement": [["x", "y", "width", "height", "left_column"], ["padding"]],
@@ -115,7 +117,8 @@ class Solver(object):
 
 		# Prunes 
 		# time_start = time.time()
-		# self.prune_domain_values()
+		self.prune_layout_grid_domains()
+		self.prune_size_domains() 
 		# time_end = time.time()
 		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
 
@@ -253,8 +256,73 @@ class Solver(object):
 
 		return shape_hierarchy
 
-	def prune_domain_values(self): 
-		reduction = 4
+	def prune_container_child_sizes(self, container):
+		# Group children by semantic type 
+		groups = dict()
+		for child in container.children: 
+			if child.semantic_type != "group" or child.is_alternate:
+				if child.semantic_type not in groups: 
+					groups[child.semantic_type] = []
+
+				groups[child.semantic_type].append(child)
+
+		# Prune sizes based on grouped containers
+		for key,group_children in groups.items(): 
+			size_factors = [set(child.variables.size_factor.domain) for child in group_children]
+			size_factors = list(set.intersection(*size_factors))
+
+			# Further reduce the size of the domain 
+			if len(size_factors) > DOMAIN_SIZE_REDUCTION: 
+				num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
+				if num_to_select > 0: 
+					size_factors = random.sample(size_factors, num_to_select)
+
+			for child in group_children: 
+				size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
+
+				child.variables.size_combo.domain = size_combos
+				child.variables.size_factor.domain = [val[2] for val in size_combos]
+				child.variables.width.domain = [val[0] for val in size_combos]
+				child.variables.height.domain = [val[1] for val in size_combos]
+
+	def prune_repeat_group_child_sizes(self, container): 
+		# Get the first item in the repeat group 
+		if len(container.children): 
+			first_item = container.children[0]
+
+			# Prune the domains for the first group randomly. 
+			# Then apply the domains to the corresponding children 
+			self.prune_container_child_sizes(first_item)
+
+			if len(first_item.children): 
+				for item_child in first_item.children: 
+					# Update the size domains on the coreesponding shapes 
+					item_corresponding_ids = item_child.correspondingIDs
+					for corresponding_child_id in item_corresponding_ids: 
+						corresponding_child_shape = self.shapes[corresponding_child_id]
+
+						corresponding_child_shape.variables.size_combo.domain = item_child.variables.size_combo.domain
+						corresponding_child_shape.variables.size_factor.domain = item_child.variables.size_factor.domain
+						corresponding_child_shape.variables.width.domain = item_child.variables.width.domain
+						corresponding_child_shape.variables.height.domain = item_child.variables.height.domain
+
+	def prune_size_domains(self): 
+		for shape in self.shapes.values(): 
+			if shape.type == "container" and not shape.item:
+				if shape.typed: 
+					# Prune domain for child elements
+					# based on the size_factor values of each 
+					# to ensure that the rules are maintained regarding child 
+					# sizing. (Increase/Decrease size of elements with same semantic type proporotionally)
+					self.prune_repeat_group_child_sizes(shape)
+				else: 
+					# Prune domain for child elements
+					# based on the size_factor values of each 
+					# to ensure that the rules are maintained regarding child 
+					# sizing. (Increase/Decrease size of elements with same semantic type proporotionally)
+					self.prune_container_child_sizes(shape)
+
+	def prune_layout_grid_domains(self): 
 		# Randomly select a subset of the search space to search to find a 
 		# design in this iteration. For performance. 
 		# Prune based on variable values selected intelligently 
@@ -268,64 +336,75 @@ class Solver(object):
 
 		for shape in self.shapes.values(): 
 			if shape.type == "leaf": # Only prune for leaf node shapes as groups size is a function of the child layout
-				height = shape.variables.height
-				width = shape.variables.width 
-				size_factor = shape.variables.size_factor
-				size_combo = shape.variables.size_combo
+				if not shape.at_root:
+					height = shape.variables.height
+					width = shape.variables.width
+					size_factor = shape.variables.size_factor
+					size_combo = shape.variables.size_combo
 
-				size_combos = [val for val in size_combo.domain if val[1] % selected_grid == 0]
-				if len(size_combos) > 0:
-					size_combo.domain = size_combos
-					height.domain = [val[1] for val in size_combos]
-					width.domain = [val[0] for val in size_combos]
-					size_factor.domain = [val[2] for val in size_combos]
+					size_combos = [val for val in size_combo.domain if val[1] % selected_grid == 0]
+					if len(size_combos) > 0:
+						# Prune the pre-computed size values based on the selected baseline grid 
+						size_combo.domain = size_combos
+						height.domain = [val[1] for val in size_combos]
+						width.domain = [val[0] for val in size_combos]
+						size_factor.domain = [val[2] for val in size_combos]
 
-				# Prune the y-coordinate values 
-				y = shape.variables.y
-				y_values = [val for val in y.domain if val % selected_grid == 0]
-				y.domain = y_values
+				# Prune the y-coordinate values by the selected baseline grid
+				if shape.at_root:
+					y = shape.variables.y
+					y_values = [val for val in y.domain if val % selected_grid == 0]
+					y.domain = y_values
 
-			if shape.is_alternate: 
-				alternate = shape.variables.alternate 
-				alternate_subset = random.sample(alternate.domain, 1)
-				alternate.domain = alternate_subset
-			#
-			# if shape.is_container and not shape.type == "canvas":
-			# 	# Prune the alignment values
-			# 	padding = shape.variables.padding
-			# 	num_to_select = int(len(padding.domain)/reduction)
-			# 	padding_subset = random.sample(padding.domain, num_to_select)
-			# 	padding.domain = padding_subset
-
-		# Narrow down the set of column/gutter/column width/margin combinations
+		# Select a layout grid combination to use for this instance
 		layout_grid = canvas_shape.variables.grid_layout
 		margin = canvas_shape.variables.margin
 		columns = canvas_shape.variables.columns
 		gutter_width = canvas_shape.variables.gutter_width
 		column_width = canvas_shape.variables.column_width
 
-		# num_to_select = int(len(layout_grid.domain)/reduction)
 		layout_grid_subset = random.sample(layout_grid.domain, 1)
+		selected_grid = layout_grid_subset[0]
+
 		layout_grid.domain = layout_grid_subset
 		margin.domain = [x[0] for x in layout_grid_subset]
 		columns.domain = [x[1] for x in layout_grid_subset]
 		gutter_width.domain = [x[2] for x in layout_grid_subset]
 		column_width.domain = [x[3] for x in layout_grid_subset]
+		logging.debug("Selected layout grid... ")
+		logging.debug(layout_grid_subset)
 
-		# Prune column values based on the selected values 
+		# Prune column, size values based on the selected baseline grid because 
+		# many of them will no longer be viable. 
 		max_cols = max(columns.domain)
 		for shape in self.shapes.values(): 
 			if shape.at_root: # It should have the column variable if it is on the root of the canvas
 				left_column = shape.variables.left_column
-				left_column_pruned = [val for val in left_column.domain if val < max_cols]
+				left_column_pruned = [val for val in left_column.domain if val <= max_cols]
 				left_column.domain = left_column_pruned
 
-			if shape.type == "leaf": 
+				right_column = shape.variables.right_column
+				right_column_pruned = [val for val in right_column.domain if val <= max_cols]
+				right_column.domain = right_column_pruned
+
+			if shape.type == "leaf" and shape.at_root: 
+				# Prune the size values that do not fit into the selected margin anymore 
 				selected_margin = layout_grid_subset[0][0]
 				margin_size = selected_margin * 2 
 				max_width = CANVAS_WIDTH - margin_size
 				size_combos = shape.variables.size_combo
 				size_combos_subset = [val for val in size_combos.domain if val[0] <= max_width]
+
+				# Prune the size combinations with a width that cannot be laid out on the selected baseline grid. 
+				selected_columns = selected_grid[1]
+				selected_gutter_width = selected_grid[2]
+				selected_column_width = selected_grid[3]
+				possible_widths = []
+				for i in range(1, selected_columns+1):
+					possible_width = (i * selected_column_width) + ((i-1) * selected_gutter_width) 
+					possible_widths.append(possible_width)
+				
+				size_combos_subset = [val for val in size_combos_subset if val[0] in possible_widths]
 				shape.variables.size_combo.domain = size_combos_subset
 				shape.variables.width.domain = [val[0] for val in size_combos_subset]
 				shape.variables.height.domain = [val[1] for val in size_combos_subset]
@@ -335,7 +414,6 @@ class Solver(object):
 		size = self.compute_search_space()
 		logging.debug("Total search space size after pruning the domains: " + str(size))
 		sys.stdout.flush()
-
 
 	def init_variables(self):
 		last = []
@@ -597,7 +675,7 @@ class Solver(object):
 
 			result = self.solver.check()
 			if str(result) == 'sat':
-				solution = sh.Solution()
+				solution = sln.Solution()
 				model = self.solver.model()
 				sln = solution.convert_to_json(self.shapes, model)
 				solutions.append(sln)
@@ -627,7 +705,7 @@ class Solver(object):
 				# Keep the solution & convert to json
 				# self.print_solution()
 				time_start = time.time()
-				sln = state.convert_to_json(self.shapes, model)
+				sln = state.convert_to_json(self.root, model)
 				time_end = time.time()
 				logging.debug("Time in converting solution to json: " + str(time_end-time_start))
 				self.restore_state()
@@ -857,7 +935,7 @@ class Solver(object):
 
 
 			self.unassigned = variables_unassigned
-			state = sh.Solution()
+			state = sln.Solution()
 
 			for assigned_variable in variables_assigned: 
 				self.solver.push()
@@ -946,13 +1024,6 @@ class Solver(object):
 
 				print("Solution could be found.")
 			else:
-				# # Get the unsat core for each solution
-				# unsat_core = self.solver.unsat_core()
-
-				# # Parse the output message to send identifiers to highlight the conflicting constraints
-				# conflicts = sh.parse_unsat_core(unsat_core)
-				# solution["conflicts"] = conflicts
-				
 				print("Solution could not be found.")
 
 		return solution

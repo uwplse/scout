@@ -1,6 +1,5 @@
 .design-canvas {
 	position: relative;
-	border: 1px solid #c4c4c4;
 	cursor: pointer;
 	transition: all .1s ease-in-out;
 	background-color: white; 
@@ -105,3 +104,9 @@
 .design-canvas.new-design {
 	outline: 4px #18BC9C solid; 
 }
+
+.design-canvas:not(.new-design) {
+	outline: 1px solid #c4c4c4;
+}
+
+

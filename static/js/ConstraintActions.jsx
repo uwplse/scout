@@ -4,8 +4,8 @@
 // Global - Whitespace, Density 
 class ConstraintActions {}
 
-ConstraintActions.computeColumnWidths = function computeColumnWidths() {
-	let widths = [];
+ConstraintActions.computeGridLayoutValues = function computeGridLayoutValues() {
+	let values = [];
 	for(let i=0; i<ConstraintActions.margins.length; i++) {
 		for(let j=0; j<ConstraintActions.num_columns.length; j++) {
 			for(let k=0; k<ConstraintActions.gutter_widths.length; k++) {
@@ -14,13 +14,13 @@ ConstraintActions.computeColumnWidths = function computeColumnWidths() {
 				let gutter_width_value = ConstraintActions.gutter_widths[k]; 
 				let column_width = (ConstraintActions.canvas_width - (2*margin_value) - ((column_value-1)*gutter_width_value))/column_value; 
 				if(column_width - Math.round(column_width) == 0) {
-					widths.push(column_width); 
+					values.push([margin_value, column_value, gutter_width_value, column_width]); 
 				}
 			}
 		}
 	}
 
-	return _.uniq(widths).sort((a, b) => a - b); 
+	return _.uniq(values).sort((a, b) => a - b); 
 }
 
 // Variables where the domains are encoded as integer values into the domain list
@@ -52,7 +52,9 @@ ConstraintActions.margins = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60];
 ConstraintActions.num_columns = [2,3,4,6,12]; 
 ConstraintActions.gutter_widths = [4,8,16]
 ConstraintActions.baseline_grids = [4,8,16]
-ConstraintActions.column_widths = ConstraintActions.computeColumnWidths(); 
+
+ConstraintActions.grid_layout_values = ConstraintActions.computeGridLayoutValues(); 
+
 
 // Element specific domains
 ConstraintActions.left_columns = [1,2,3,4,5,6,7,8,9,10,11,12]; 
@@ -374,16 +376,99 @@ ConstraintActions.groupConstraints = {
 	}
 }
 
+ConstraintActions.computeCanvasDomainValues = function (shape, variableName) {
+	let potentialValues = ConstraintActions.grid_layout_values; 
+	if(shape.locks && shape.locks.length) {
+		if(shape.locks.indexOf("margin") > -1) {
+			let marginValues = shape.locked_values["margin"]; 
+
+			// Remove values that do not have this margin value 
+			if(variableName != "margin") {
+				potentialValues = potentialValues.filter((value) => marginValues.indexOf(value[0]) > -1);
+			}
+		}
+
+		if(shape.locks.indexOf("columns") > -1) {
+			let columnValues = shape.locked_values["columns"];
+
+			if(variableName != "columns") {
+				potentialValues = potentialValues.filter((value) => columnValues.indexOf(value[1]) > -1); 
+			}
+		}
+
+		if(shape.locks.indexOf("gutter_width") > -1) {
+			let gutterWidthValues = shape.locked_values["gutter_width"];
+
+			if(variableName != "gutter_width") {
+				potentialValues = potentialValues.filter((value) => gutterWidthValues.indexOf(value[2]) > -1); 
+			}
+		}
+
+		if(shape.locks.indexOf("column_width") > -1) {
+			let columnWidthValues = shape.locked_values["column_width"];
+
+			if(variableName != "column_width") {
+				potentialValues = potentialValues.filter((value) => columnWidthValues.indexOf(value[3]) > -1); 
+			}
+		}
+	}
+
+	if(shape.prevents && shape.prevents.length) {
+		if(shape.prevents.indexOf("margin") > -1) {
+			let marginValues = shape.prevented_values["margin"]; 
+			potentialValues = potentialValues.filter((value) => marginValues.indexOf(value[0]) == -1);
+		}
+
+		if(shape.prevents.indexOf("columns") > -1) {
+			let columnValues = shape.prevented_values["columns"];
+			potentialValues = potentialValues.filter((value) => columnValues.indexOf(value[1]) == -1); 
+		}
+
+		if(shape.prevents.indexOf("gutter_width") > -1) {
+			let gutterWidthValues = shape.prevented_values["gutter_width"];
+			potentialValues = potentialValues.filter((value) => gutterWidthValues.indexOf(value[2]) == -1); 
+		}
+
+		if(shape.prevents.indexOf("column_width") > -1) {
+			let columnWidthValues = shape.prevented_values["column_width"];
+			potentialValues = potentialValues.filter((value) => columnWidthValues.indexOf(value[3]) == -1); 
+		}
+	}
+
+	let valueIndex = 0; 
+	if(variableName == "columns") {
+		valueIndex = 1; 
+	}
+	else if(variableName == "gutter_width") {
+		valueIndex = 2; 
+	}
+	else if(variableName == "column_width") {
+		valueIndex = 3; 
+	}
+
+	let domainValues = potentialValues.map((value) => {return value[valueIndex];});
+	domainValues = _.uniq(domainValues).sort((a, b) => a - b);
+	return domainValues;  
+}
+
 ConstraintActions.canvasConstraints = {
 	"values": ["margin", "baseline_grid", "columns", "gutter_width", "column_width"], 
 	"keep": ConstraintActions.defaultKeep, 
 	"prevent": ConstraintActions.defaultPrevent, 
 	"domains": {
-		"margin": ConstraintActions.margins, 
+		"margin": function (shape) {
+			return ConstraintActions.computeCanvasDomainValues(shape, "margin"); 
+		}, 
 		"baseline_grid": ConstraintActions.baseline_grids, 
-		"columns": ConstraintActions.num_columns, 
-		"gutter_width": ConstraintActions.gutter_widths, 
-		"column_width": ConstraintActions.column_widths
+		"columns": function (shape) {
+			return ConstraintActions.computeCanvasDomainValues(shape, "columns"); 
+		}, 
+		"gutter_width": function (shape) {
+			return ConstraintActions.computeCanvasDomainValues(shape, "gutter_width"); 
+		}, 
+		"column_width": function (shape) {
+			return ConstraintActions.computeCanvasDomainValues(shape, "column_width"); 
+		}
 	}
 }
 

@@ -25,10 +25,22 @@ export default class WidgetsContainerSVGWidget extends React.Component {
         // Initialize the width and height from the viewBox attribute
         let element = svgElement[0]; 
         let viewBox = element.getAttribute("viewBox"); 
-        let parts = viewBox.split(" "); 
-        if(parts.length == 4) {
-          let width = Math.round(parseFloat(parts[2])); 
-          let height = Math.round(parseFloat(parts[3])); 
+        if(viewBox) {
+          let parts = viewBox.split(" "); 
+          if(parts.length == 4) {
+            let width = Math.round(parseFloat(parts[2])); 
+            let height = Math.round(parseFloat(parts[3])); 
+            this.setState({
+              width: width, 
+              height: height
+            }); 
+          }
+        }
+        else {
+          let widthAttr = element.getAttribute("width"); 
+          let heightAttr = element.getAttribute("height"); 
+          let width = Math.round(parseFloat(widthAttr)); 
+          let height = Math.round(parseFloat(heightAttr));
           this.setState({
             width: width, 
             height: height

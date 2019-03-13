@@ -28,10 +28,11 @@ export default class DesignCanvas extends React.Component {
       invalidated: props.invalidated, 
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
-      canvasShape: props.elements["canvas"], // The root level shape of the DesignCanvas
+      canvasShape: props.elements, // The root level shape of the DesignCanvas
       hovered: false, 
       primarySelection: props.primarySelection, 
-      elementsList: []
+      elementsList: [], 
+      scale: DesignCanvas.getScale(props.zoomed, props.savedState, props.invalidated)
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -45,9 +46,6 @@ export default class DesignCanvas extends React.Component {
 
     this.canvasWidth = 360; 
     this.canvasHeight = 640; 
-
-    // Original scaling factor
-    this.scalingFactor = this.getScalingFactor();
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -63,8 +61,25 @@ export default class DesignCanvas extends React.Component {
       conflicts: prevState.conflicts,
       primarySelection: nextProps.primarySelection, 
       canvasShape: prevState.canvasShape, 
-      elements: prevState.elements
+      elements: prevState.elements, 
+      scale: DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated)
     }    
+  }
+
+  static getScale(zoomed, saved, invalidated) {
+    if(zoomed) {
+      return 1.5; 
+    }
+
+    if(saved == 1) {
+      return 1.0; 
+    }
+
+    if(saved == -1 || invalidated) {
+      return 0.5; 
+    } 
+    
+    return 0.5;
   }
   
   componentDidMount() {
@@ -75,23 +90,6 @@ export default class DesignCanvas extends React.Component {
     if(prevProps.elements != this.props.elements) {
       this.initElements(); 
     }
-  }
-
-  getScalingFactor = () => {
-    if(this.props.zoomed) {
-      return 1.5; 
-    }
-
-    if(this.state.savedState == 1) {
-      return 1.0; 
-    }
-
-    // Return the amount of scaling to use depending on the state of this DesignCanvas
-    if(this.state.savedState == -1 || this.state.invalidated) {
-      return 0.5; 
-    } 
-    
-    return 0.5;
   }
 
   getDesignCanvasWidget = (shape, svgSource, width, height, left, top) => {
@@ -106,7 +104,7 @@ export default class DesignCanvas extends React.Component {
             height={height}
             left={left}
             top={top}
-            scaling={this.scalingFactor}
+            scale={this.state.scale}
             inMainCanvas={inMainCanvas}
             primarySelection={this.state.primarySelection}
             displayWidgetFeedback={this.displayWidgetFeedback}/>); 
@@ -142,10 +140,10 @@ export default class DesignCanvas extends React.Component {
         padding = 5;
       }
 
-      let computedHeight = (shape.height * this.scalingFactor + (padding * 2));
-      let computedWidth = (shape.width * this.scalingFactor + (padding * 2)); 
-      let computedLeft = ((shape.x * this.scalingFactor) - padding); 
-      let computedTop = ((shape.y * this.scalingFactor) - padding);
+      let computedHeight = (shape.height * this.state.scale + (padding * 2));
+      let computedWidth = (shape.width *  this.state.scale + (padding * 2)); 
+      let computedLeft = ((shape.x * this.state.scale) - padding); 
+      let computedTop = ((shape.y * this.state.scale) - padding);
 
       let designCanvasWidget = this.getDesignCanvasWidget(shape, svgSource, computedWidth, computedHeight, computedLeft, computedTop);
       return designCanvasWidget; 
@@ -155,63 +153,32 @@ export default class DesignCanvas extends React.Component {
   initElements = () => {
     // Initialize the canvas and page elements first 
     // so they are at the top of the dom hierarchy
-    let canvas = this.props.elements["canvas"]; 
+    let canvas = this.props.elements; 
     this.createSVGElement(canvas); 
     this.setState({
       canvasShape: canvas
     });
 
     let elementsList = []; 
-    for(let elementID in this.props.elements) {
-      if(this.state.elements.hasOwnProperty(elementID)) {
-        let element = this.props.elements[elementID];
-        if(element.type != "canvas") {
-          elementsList.push(element); 
-        }
-      }
-    }
-
-    // Make sure the elements are sorted by containment 
-    elementsList.sort(function(a, b) {
-      let a_x = a.x; 
-      let a_y = a.y; 
-      let a_width = a.width;
-      let a_height = a.height; 
-      let a_is_group = a.type == "group" && !a.alternate; 
-
-      let b_x = b.x; 
-      let b_y = b.y; 
-      let b_width = b.width; 
-      let b_height = b.height;
-      let b_is_group = b.type == "group" && !b.alternate; 
-
-      // Sort by containment
-      if(a_is_group && !b_is_group) {
-        // Groups should be always sorted after elements
-        return -1; 
-      }
-      else if(!a_is_group && b_is_group) {
-        return 1; 
-      }
-      else if(a_is_group && b_is_group) {
-        if(a_x >= b_x && a_y >= b_y && (a_y+a_height <= b_y+b_height) && (a_x+a_width <= b_x+b_width)) {
-          // Sort b first if b contains a so it appears higher in the DOM hierarchy
-          // then sort by boundigng box
-          return -1; 
-        }
-        else if(b_x >= a_x && b_y >= a_y && (b_y+b_height <= a_y+a_height) && (b_x+b_width <= a_x+a_width)) {
-          return -1; 
-        }
-      }
-
-      return 0; 
-    }); 
+    this.getSortedElementsList(canvas, elementsList); 
 
     this.setState({
       elementsList: elementsList
     }); 
   }
 
+  getSortedElementsList = (node, elementsList) => {
+    if(node.children && node.children.length) {
+      for(let i=0; i<node.children.length; i++) {
+        let childElement = node.children[i]; 
+        if(childElement) {
+          elementsList.push(childElement); 
+          this.getSortedElementsList(childElement, elementsList); 
+        }
+      }
+    }
+  }
+  
   performDesignCanvasMenuAction = (action) => {
     // For a zoomed design, perform these actions on the linked design instead 
     // of the zoomed in design ID as that is not maintained in the solutionsMap
@@ -318,7 +285,7 @@ export default class DesignCanvas extends React.Component {
     let hasConflicts = this.props.conflicts.length; 
     let menuVisible = !this.state.hovered; 
     let invalidated = this.state.invalidated; 
-    let scalingFactor = this.getScalingFactor();      
+    let scalingFactor = this.state.scale;     
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     let hideTrash = (this.state.savedState == -1 || this.state.invalidated); 
     let showConsider = ((this.state.savedState == -1 || this.state.invalidated) || this.state.savedState == 1); 
