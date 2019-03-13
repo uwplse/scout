@@ -68,6 +68,7 @@ Install the npm packages for building the web application.
 	npm run watch # Build the web page and watch for changes to the JS code
 
 If you want to just build the web application without watching for changes to the JS: 
+
 	cd scout
 	cd static 
 	npm run build
