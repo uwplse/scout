@@ -35,8 +35,11 @@ Activate the virtual environment
 
 
 ### Install Z3
-*** Make sure you have the Python virtual environment created above still activated. 
-	Clone into the directory with scout, the structure should be: 
+*** Make sure you have the Python virtual environment created above still activated when you build/install Z3. 
+
+	Clone Z3 into the same directory as scout. 
+
+	The structure should be: 
 		GitHub/
 			scout
 			z3
@@ -65,6 +68,7 @@ Install the npm packages for building the web application.
 	npm run watch # Build the web page and watch for changes to the JS code
 
 If you want to just build the web application without watching for changes to the JS: 
+
 	cd scout
 	cd static 
 	npm run build
