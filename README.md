@@ -36,7 +36,10 @@ Activate the virtual environment
 
 ### Install Z3
 *** Make sure you have the Python virtual environment created above still activated. 
-	Clone into the directory with scout, the structure should be: 
+
+	Clone Z3 into the same directory as scout. 
+
+	The structure should be: 
 		GitHub/
 			scout
 			z3
