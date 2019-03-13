@@ -28,7 +28,7 @@ export default class DesignCanvas extends React.Component {
       invalidated: props.invalidated, 
       added: props.added, // The elements that were added since this solution was generated
       removed: props.removed, // The elements that were removed since this solution was generated
-      canvasShape: props.elements["canvas"], // The root level shape of the DesignCanvas
+      canvasShape: props.elements, // The root level shape of the DesignCanvas
       hovered: false, 
       primarySelection: props.primarySelection, 
       elementsList: [], 
@@ -153,7 +153,7 @@ export default class DesignCanvas extends React.Component {
   initElements = () => {
     // Initialize the canvas and page elements first 
     // so they are at the top of the dom hierarchy
-    let canvas = this.props.elements["canvas"]; 
+    let canvas = this.props.elements; 
     this.createSVGElement(canvas); 
     this.setState({
       canvasShape: canvas
@@ -171,15 +171,14 @@ export default class DesignCanvas extends React.Component {
     if(node.children && node.children.length) {
       for(let i=0; i<node.children.length; i++) {
         let childElement = node.children[i]; 
-        let designElement = this.props.elements[childElement.name]; 
-        if(designElement) {
-          elementsList.push(designElement); 
+        if(childElement) {
+          elementsList.push(childElement); 
           this.getSortedElementsList(childElement, elementsList); 
         }
       }
     }
   }
-
+  
   performDesignCanvasMenuAction = (action) => {
     // For a zoomed design, perform these actions on the linked design instead 
     // of the zoomed in design ID as that is not maintained in the solutionsMap

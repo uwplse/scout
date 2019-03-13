@@ -5,6 +5,7 @@ import multiprocessing
 import json
 import z3_solver
 import logging
+import solution as sln
 import solver_helpers as sh
 
 NUM_SOLUTIONS = 10
@@ -26,7 +27,7 @@ class CustomSolver(object):
 		solver = z3_solver.Solver(z3_context, elements, prev_solutions)
 
 		# Solve for a design solution
-		state = sh.Solution()
+		state = sln.Solution()
 		time_start = time.time()
 		solution = solver.branch_and_bound(state)
 		time_end = time.time()

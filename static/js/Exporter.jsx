@@ -7,35 +7,6 @@ export default class Exporter  {
     this.exportPromises = []; 
   }
 
-  convertDesignToHierarchy(design) {
-  	let treeData = {}; 
-  	let rootNode = design.elements["canvas"]; 
-  	rootNode.width = rootNode.orig_width;
-  	rootNode.height = rootNode.orig_height; 
-  	this.getDataForNode(rootNode, treeData, design.elements); 
-  	return treeData; 
-  }
-
-  getDataForNode(node, data, elements) {
-  	let dataNode = elements[node.name]; 
-  	data.x = dataNode.x; 
-  	data.y = dataNode.y; 
-  	data.width = dataNode.width; 
-  	data.height = dataNode.height; 
-  	data.type = dataNode.type; 
-
-  	if(node.children && node.children.length) {
-  		data.children = []; 
-  		for(let i=0; i<node.children.length; i++) {
-  			let child = node.children[i]; 
-  			let childData = {}; 
-
-  			this.getDataForNode(child, childData, elements);
-  			data.children.push(childData);   
-  		}
-  	}
-  }
-
   addDesignToExports = (design, designNode) => {
   	let self = this; 
   	let designID = design.id; 
@@ -45,7 +16,7 @@ export default class Exporter  {
 	        let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
 	       	self.zipFile.file(designID + ".png", imgDataParsed, {base64: true});
 
-	       	let hierarchy = self.convertDesignToHierarchy(design); 
+	       	let hierarchy = design.elements; 
 	        let designJSON = JSON.stringify(hierarchy); 
 	        self.zipFile.file(designID + ".json", designJSON); 
 	    })); 

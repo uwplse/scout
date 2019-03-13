@@ -7,6 +7,7 @@ import constraint_builder
 import shapes as shape_classes
 import smtlib_builder as smt
 import solver_helpers as sh
+import solution as sln
 import logging
 import numpy as np
 z3.set_param(
@@ -674,7 +675,7 @@ class Solver(object):
 
 			result = self.solver.check()
 			if str(result) == 'sat':
-				solution = sh.Solution()
+				solution = sln.Solution()
 				model = self.solver.model()
 				sln = solution.convert_to_json(self.shapes, model)
 				solutions.append(sln)
@@ -704,7 +705,7 @@ class Solver(object):
 				# Keep the solution & convert to json
 				# self.print_solution()
 				time_start = time.time()
-				sln = state.convert_to_json(self.shapes, model)
+				sln = state.convert_to_json(self.root, model)
 				time_end = time.time()
 				logging.debug("Time in converting solution to json: " + str(time_end-time_start))
 				self.restore_state()
@@ -934,7 +935,7 @@ class Solver(object):
 
 
 			self.unassigned = variables_unassigned
-			state = sh.Solution()
+			state = sln.Solution()
 
 			for assigned_variable in variables_assigned: 
 				self.solver.push()
