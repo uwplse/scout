@@ -35,7 +35,7 @@ Activate the virtual environment
 
 
 ### Install Z3
-*** Make sure you have the Python virtual environment created above still activated. 
+*** Make sure you have the Python virtual environment created above still activated when you build/install Z3. 
 
 	Clone Z3 into the same directory as scout. 
 
