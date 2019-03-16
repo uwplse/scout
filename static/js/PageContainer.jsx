@@ -129,29 +129,7 @@ export default class PageContainer extends React.Component {
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               considerDesignCanvas={this.considerDesignCanvas}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
-  }
-
-  getSmallDesignCanvas = (solution, id, zoomed=false) => {
-    return (<SmallDesignCanvas 
-              key={id} 
-              id={id} 
-              elements={solution.elements}
-              savedState={solution.saved}
-              valid={solution.valid}
-              conflicts={solution.conflicts}
-              added={solution.added}
-              removed={solution.removed}
-              zoomed={zoomed}
-              invalidated={solution.invalidated}
-              svgWidgets={this.state.svgWidgets}
-              highlightAddedWidget={this.highlightAddedWidget}
-              highlightFeedbackConflict={this.highlightFeedbackConflict}
-              saveDesignCanvas={this.saveDesignCanvas} 
-              trashDesignCanvas={this.trashDesignCanvas}
-              zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
-              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
+              setPrimarySelection={this.setPrimarySelection} />); 
   }
 
   parseSolutions = (requestData) => {
@@ -289,6 +267,7 @@ export default class PageContainer extends React.Component {
 
         designSolution.conflicts = solution.conflicts; 
         designSolution.elements = solution.elements; 
+        designSolution.elements_dict = solution.elements_dict;
       }
     }
 
@@ -337,7 +316,7 @@ export default class PageContainer extends React.Component {
     for(let i=0; i < this.state.solutions.length; i++) {
       let solution = this.state.solutions[i]; 
       let shapeId = shape.name; 
-      let element = solution.elements[shapeId]; 
+      let element = solution.elements_dict[shapeId]; 
 
       let conflicts = solution.conflicts; 
       let keepConflicts = []; 
@@ -674,54 +653,31 @@ export default class PageContainer extends React.Component {
   }
 
   displayWidgetFeedback = (shape, feedbackCallbacks, constraintsCanvasShape=undefined) => {
-    let canvasShape = undefined; 
-    let designShape = undefined; 
-
-    if(!constraintsCanvasShape) {
-      canvasShape = shape; 
-
-      this.setState({
-        primarySelection: canvasShape
-      }); 
-    }
-    else {
-      canvasShape = constraintsCanvasShape; 
-      designShape = shape; 
-
-      this.setState({
-        primarySelection: designShape
-      }); 
-    }
-
-    this.setState({
-      activeCanvasShape: canvasShape,
-      activeDesignShape: designShape,  
+    this.setState({ 
+      activeCanvasShape: constraintsCanvasShape, 
+      primarySelection: shape, 
       feedbackCallbacks: feedbackCallbacks
     }); 
   }
 
   hideWidgetFeedback = () => {
     this.setState({
-      activeDesignShape: undefined, 
-      activeCanvasShape: undefined, 
       feedbackCallbacks: undefined, 
       primarySelection: undefined
     }); 
   }
 
-  displayWidgetFeedbackFromDesignCanvas = (shape) => {
+  setPrimarySelection = (shape) => {
     // Set this property to activate the corresponding element in the tree
     // And display feedback based on this instance of the element in the design canvas
     this.setState({
-      activeDesignShape: shape, 
       primarySelection: shape
     });
   }
 
   unsetPrimarySelection = () => {
     this.setState({
-      primarySelection: undefined, 
-      activeDesignShape: undefined
+      primarySelection: undefined
     });
 
     if(this.constraintsCanvasRef) {
@@ -812,12 +768,10 @@ export default class PageContainer extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedback}
               hideWidgetFeedback={this.hideWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
-              activeDesignShape={this.state.activeDesignShape}
               primarySelection={this.state.primarySelection}
               svgWidgets={this.state.svgWidgets} />
             <FeedbackContainer 
               activeCanvasShape={this.state.activeCanvasShape}
-              activeDesignShape={this.state.activeDesignShape}
               primarySelection={this.state.primarySelection}
               feedbackCallbacks={this.state.feedbackCallbacks}
               updateConstraintsCanvas={this.updateConstraintsCanvas}

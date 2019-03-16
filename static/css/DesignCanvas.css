@@ -101,7 +101,7 @@
 	outline: 4px lightblue solid;
 }
 
-.design-canvas.new-design {
+.design-canvas.new-design:not(.primary-selection):not(.secondary-selection) {
 	outline: 4px #18BC9C solid; 
 }
 

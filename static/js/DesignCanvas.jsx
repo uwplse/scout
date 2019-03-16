@@ -38,7 +38,7 @@ export default class DesignCanvas extends React.Component {
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape;
-    this.displayWidgetFeedback = props.displayWidgetFeedback; 
+    this.setPrimarySelection = props.setPrimarySelection; 
 
     // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
     this.highlightFeedbackConflict = props.highlightFeedbackConflict; 
@@ -107,7 +107,7 @@ export default class DesignCanvas extends React.Component {
             scale={this.state.scale}
             inMainCanvas={inMainCanvas}
             primarySelection={this.state.primarySelection}
-            displayWidgetFeedback={this.displayWidgetFeedback}/>); 
+            setPrimarySelection={this.setPrimarySelection}/>); 
   }
 
   getSVGSource = (node) => {
@@ -155,15 +155,12 @@ export default class DesignCanvas extends React.Component {
     // so they are at the top of the dom hierarchy
     let canvas = this.props.elements; 
     this.createSVGElement(canvas); 
-    this.setState({
-      canvasShape: canvas
-    });
-
     let elementsList = []; 
     this.getSortedElementsList(canvas, elementsList); 
 
     this.setState({
-      elementsList: elementsList
+      elementsList: elementsList, 
+      canvasShape: canvas
     }); 
   }
 
@@ -173,7 +170,9 @@ export default class DesignCanvas extends React.Component {
         let childElement = node.children[i]; 
         if(childElement) {
           elementsList.push(childElement); 
-          this.getSortedElementsList(childElement, elementsList); 
+          if(!childElement.alternate) {
+            this.getSortedElementsList(childElement, elementsList); 
+          }
         }
       }
     }
@@ -274,7 +273,7 @@ export default class DesignCanvas extends React.Component {
     // When the canvas node is clicked, display the widget feedback
     evt.stopPropagation();
 
-    this.displayWidgetFeedback(this.state.canvasShape);
+    this.setPrimarySelection(this.state.canvasShape);
   }
 
   render () {
