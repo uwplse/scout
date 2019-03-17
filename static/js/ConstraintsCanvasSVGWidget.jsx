@@ -209,7 +209,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         <div className="widget-control-row"> 
            <div>
            {source ? (<SVGInline 
-              className={"widget-control-" + this.type} 
+              className={"widget-control"} 
               svg={source} 
               height={this.state.height + "px"} 
               width={this.state.width + "px"} />) : undefined}

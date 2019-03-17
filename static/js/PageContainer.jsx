@@ -663,7 +663,8 @@ export default class PageContainer extends React.Component {
   hideWidgetFeedback = () => {
     this.setState({
       feedbackCallbacks: undefined, 
-      primarySelection: undefined
+      primarySelection: undefined,
+      activeCanvasShape: undefined
     }); 
   }
 
@@ -677,7 +678,9 @@ export default class PageContainer extends React.Component {
 
   unsetPrimarySelection = () => {
     this.setState({
-      primarySelection: undefined
+      primarySelection: undefined, 
+      feedbackCallbacks: undefined, 
+      activeCanvasShape: undefined
     });
 
     if(this.constraintsCanvasRef) {
@@ -686,7 +689,7 @@ export default class PageContainer extends React.Component {
   }
 
   exportSavedDesigns = () => {
-    let exporter = new Exporter(); 
+    let exporter = new Exporter(this.state.svgWidgets); 
     let savedSolutions = this.state.solutions.filter((solution) => { return solution.saved; }); 
     for(let i=0; i<savedSolutions.length; i++) {
       let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 

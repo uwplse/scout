@@ -106,7 +106,9 @@ export default class ConstraintsCanvas extends React.Component {
         let expandedNodes = this.state.expandedTreeNodes; 
         if(parentNode) {
           let parentTreeNode = this.widgetTreeNodeMap[parentNode.name]; 
-          expandedNodes.push(parentTreeNode.key); 
+          if(expandedNodes.indexOf(parentTreeNode.key) == -1) {
+            expandedNodes.push(parentTreeNode.key); 
+          }
         }
 
         // When the widget becomes active from a DesignCanvas, we should select the corresponding shape in the 
@@ -117,6 +119,13 @@ export default class ConstraintsCanvas extends React.Component {
           expandedTreeNodes: expandedNodes
         });
       } 
+    }
+    else {
+      if(prevProps.primarySelection != this.props.primarySelection) {
+        this.setState({
+          primarySelection: undefined
+        });
+      }
     }
   }
 
@@ -395,12 +404,12 @@ export default class ConstraintsCanvas extends React.Component {
 
   displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
     // Expand the corresponding parent node
-    // let parentNode = this.getCurrentParentNode(shape.name); 
-    // if(parentNode) {
-    //   this.setState({
-    //     expandedTreeNodes: this.state.expandedTreeNodes.concat(parentNode.key)
-    //   }); 
-    // }
+    let parentNode = this.getCurrentParentNode(shape.name); 
+    if(parentNode) {
+      this.setState({
+        expandedTreeNodes: this.state.expandedTreeNodes.concat(parentNode.key)
+      }); 
+    }
 
     // Call the PageContainer method to open the feedback panel 
     this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
@@ -1115,6 +1124,7 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   onExpand = (expandedKeys) => {
+    console.log(expandedKeys);
     this.setState({
       expandedTreeNodes: expandedKeys
     });

@@ -753,7 +753,7 @@ export default class FeedbackContainer extends React.Component {
             {groupFeedbackItems}
             {canvasFeedbackItems && canvasFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {canvasFeedbackItems}
-            {!canvasShape ? 
+            {!canvasShape || !this.state.feedbackCallbacks ? 
               (<div className="card card-body bg-light feedback-container-alert">
                 <span className="feedback-container-empty">Select an element in the Outline Panel or in a Design to see feedback options.</span>
               </div>) : undefined}

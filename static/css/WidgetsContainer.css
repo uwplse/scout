@@ -23,9 +23,14 @@
   transition: all .2s ease-in-out;
 }
 
-.widget-control-svg {
+.widget-control {
   padding-top: 30px;
   cursor: pointer;
+}
+
+.widget-control-svg {
+  min-height: 48px;
+  min-width: 48px; 
 }
 
 .widgets-button-collapsed {
