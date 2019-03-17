@@ -62,22 +62,18 @@ export default class DesignCanvas extends React.Component {
       primarySelection: nextProps.primarySelection, 
       canvasShape: prevState.canvasShape, 
       elements: prevState.elements, 
-      scale: DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated)
+      scale: DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated, nextProps.activePanel)
     }    
   }
 
-  static getScale(zoomed, saved, invalidated) {
+  static getScale(zoomed, saved, invalidated, activePanel) {
     if(zoomed) {
       return 1.5; 
     }
 
-    if(saved == 1) {
+    if(saved == 1 && activePanel == "saved") {
       return 1.0; 
     }
-
-    if(saved == -1 || invalidated) {
-      return 0.5; 
-    } 
     
     return 0.5;
   }
@@ -308,6 +304,7 @@ export default class DesignCanvas extends React.Component {
            id={"canvas-box-" + this.id}>
         <DesignMenu 
           showZoom={!this.props.zoomed}
+          showSave={!saved}
           showTrash={!hideTrash}
           showConsider={showConsider}
           visible={menuVisible}

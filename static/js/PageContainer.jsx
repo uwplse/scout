@@ -119,6 +119,7 @@ export default class PageContainer extends React.Component {
               removed={solution.removed}
               zoomed={zoomed}
               solutionID={solutionID}
+              activePanel={this.state.activeDesignPanel}
               primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
@@ -855,7 +856,7 @@ export default class PageContainer extends React.Component {
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>) : undefined)}
-              {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
+              {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0 && savedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">
                     <span>You currently have no designs under consideration. Click <span className="card-emph">Generate Designs</span> in the outline to see more.</span>
@@ -877,11 +878,20 @@ export default class PageContainer extends React.Component {
                 </div>) : null
               }
               <div className="design-canvas-container">
-                  { this.state.activeDesignPanel == "designs" && designCanvases.length ? 
-                    (<div className="panel designs-container current-designs-container panel-default">
-                      <DesignCanvasContainer 
+                  { this.state.activeDesignPanel == "designs" ? 
+                    (<div className="panel designs-container current-designs-container panel-default">{
+                      (savedCanvases.length ? <DesignCanvasContainer 
+                        saved={true}
                         onDrop={this.moveDesignCanvas}
-                        designCanvases={designCanvases} />
+                        designCanvases={savedCanvases} /> : null)}
+                      {(designCanvases.length ? (<DesignCanvasContainer 
+                        onDrop={this.moveDesignCanvas}
+                        designCanvases={designCanvases} />) : 
+                        (<div className="designs-area-alert-container">
+                          <div className="card card-body bg-light">
+                            <span>You currently have no designs under consideration. Click <span className="card-emph">Generate Designs</span> in the outline to see more.</span>
+                          </div>
+                        </div>))}
                     </div>) : null
                   }
                   { this.state.activeDesignPanel == "saved" && savedCanvases.length ? 
