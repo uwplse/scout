@@ -33,7 +33,12 @@ export default class Exporter  {
   }
 
   getSVGForNode = (node) => {
-    let svgElement = this.svgWidgets.filter(svgNode => svgNode.id == node.id); 
+    let id = node.id; 
+    if(node.type == "group" && node.alternate) {
+      id = node.alternate; 
+    }
+
+    let svgElement = this.svgWidgets.filter(svgNode => svgNode.id == id); 
     if(svgElement && svgElement.length) {
       svgElement = svgElement[0]; 
       return svgElement.svgData; 
@@ -62,10 +67,11 @@ export default class Exporter  {
       svgNode = svgGroup;
     }
 
-    if(node.children) {
-
-      for(let i=0; i<node.children.length; i++) {
-        this.drawDesignNode(svgNode, node.children[i]); 
+    if(!node.alternate) {
+      if(node.children) {
+        for(let i=0; i<node.children.length; i++) {
+          this.drawDesignNode(svgNode, node.children[i]); 
+        }
       }
     }
   }
