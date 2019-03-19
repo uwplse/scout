@@ -9,16 +9,6 @@ import WidgetFeedback from './WidgetFeedback';
 import WidgetFeedbackPanel from './WidgetFeedbackPanel';
 import ConstraintActions from './ConstraintActions';
 import { getUniqueID } from './util';
-// import {
-//   SortableTreeWithoutDndContext as SortableTree,
-//   removeNodeAtPath, 
-//   getNodeAtPath, 
-//   changeNodeAtPath, 
-//   defaultGetNodeKey, 
-//   insertNode,
-//   getFlatDataFromTree, 
-//   addNodeUnderParent } 
-// from 'react-sortable-tree';
 // import ConstraintsCanvasMenu from './ConstraintsCanvasMenu'; 
 import GroupingRightClickMenu from './GroupingRightClickMenu'; 
 import WidgetTyping from './WidgetTyping'; 

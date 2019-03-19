@@ -856,13 +856,6 @@ export default class PageContainer extends React.Component {
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>) : undefined)}
-              {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0 && savedCanvases.length == 0) ? 
-                (<div className="designs-area-alert-container">
-                  <div className="card card-body bg-light">
-                    <span>You currently have no designs under consideration. Click <span className="card-emph">Generate Designs</span> in the outline to see more.</span>
-                  </div>
-                </div>) : null
-              }
               {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">
