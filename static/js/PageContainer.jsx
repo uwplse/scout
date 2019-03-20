@@ -754,7 +754,7 @@ export default class PageContainer extends React.Component {
           <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <div className="navbar-header">
               <SVGInline className="scout-logo" svg={pageLogo} />
-              <h1>Scout <span className="scout-tagline"><small>Exploring wireframe layout alternatives.</small></span></h1>
+              <h1>Scout <span className="scout-tagline"><small>Exploring alternative layout ideas for wireframes.</small></span></h1>
             </div>
           </nav>
           <div className="bottom">
@@ -826,31 +826,31 @@ export default class PageContainer extends React.Component {
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearSavedDesigns}>Discard Saved Designs</button>
+                        onClick={this.clearSavedDesigns}>Discard Saved Ideas</button>
                     </div>) : null}
                   {this.state.activeDesignPanel == "discarded" ? 
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearDiscardedDesigns}>Clear Discarded Designs</button>
+                        onClick={this.clearDiscardedDesigns}>Clear Discarded Ideas</button>
                     </div>) : null}
                   <div 
                     className="btn-group header-button-group">
                     <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearAllDesigns}>Clear All Designs</button>
+                      onClick={this.clearAllDesigns}>Clear All Ideas</button>
                   </div>
                   {this.state.activeDesignPanel == "saved" ? (<div 
                     className="btn-group header-button-group">
                     <button type="button" 
                       onClick={this.exportSavedDesigns}
-                      className="btn btn-default design-canvas-button">Export Saved Designs</button>
+                      className="btn btn-default design-canvas-button">Export Saved Ideas</button>
                   </div>) : null}
                 </div>
               </div>  
               {(!this.state.solutionsFound ? (
                 <div className="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
-                  <strong>Sorry!</strong> Scout was not able to find any more layouts for your wireframes. <br /> <br />
-                  <span>Adjust your constraints in the Outline panel to help Scout find more layouts.</span>
+                  <strong>Sorry!</strong> Scout was not able to find any more layout ideas for your wireframes. <br /> <br />
+                  <span>Adjust your constraints in the Outline panel to help Scout find more layout ideas.</span>
                   <button type="button" className="close" aria-label="Close"
                     onClick={this.closeNoSolutionsAlert}>
                     <span aria-hidden="true">&times;</span>
@@ -859,14 +859,14 @@ export default class PageContainer extends React.Component {
               {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">
-                    <span>You currently have no saved designs. Click the star icon above a design in the <span className="card-emph">Under Consideration</span> panel to save a design.</span>
+                    <span>You currently have no saved layout ideas. Click the star icon above a layout idea canvas in the <span className="card-emph">Under Consideration</span> panel to save an idea.</span>
                   </div>
                 </div>) : null
               }
               {(this.state.activeDesignPanel == "discarded" && discardedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">
-                    <span>You currently have no discarded designs. Click the trash icon in the <span className="card-emph">Under Consideration</span> panel to discard any designs that you don't like.</span>
+                    <span>You currently have no discarded layout ideas. Click the trash icon above a layout idea canvas in the <span className="card-emph">Under Consideration</span> panel to discard ideas that you don't like.</span>
                   </div>
                 </div>) : null
               }
@@ -882,7 +882,7 @@ export default class PageContainer extends React.Component {
                         designCanvases={designCanvases} />) : 
                         (<div className="designs-area-alert-container">
                           <div className="card card-body bg-light">
-                            <span>You currently have no designs under consideration. Click <span className="card-emph">Generate Designs</span> in the outline to see more.</span>
+                            <span>You currently have no layout ideas under consideration. Click <span className="card-emph">See More Layout Ideas</span> in the outline to see more.</span>
                           </div>
                         </div>))}
                     </div>) : null
