@@ -408,43 +408,29 @@ export default class ConstraintsCanvas extends React.Component {
   displayRightClickMenu = (evt, shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID]; 
     if(node) {
-      let selectedAndMultipleSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1
+      let selectedAndMultipleSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1; 
       let isGroup = node.shape.type == "group"; 
-      if(!selectedAndMultipleSelected && isGroup) {
-        // Check whether the repeat group menu item should be shown 
-        let groupSize = this.checkGroupTyping(node);
-        node.typedGroupSize = groupSize; 
 
-        let containsGroup = this.containsGroup(node); 
-        this.setState({
-          rightClickMenuShown: true, 
-          rightClickMenuPosition: {
-            x: evt.clientX, 
-            y: evt.clientY
-          }, 
-          rightClickShapeID: shapeID, 
-          rightClickIsGroup: true, 
-          rightClickMenuTypeGroupSize: groupSize, 
-          rightClickMenuIsTyped: node.typed, 
-          rightClickMenuIsAlternate: node.alternate,
-          rightClickMenuContainsGroup: containsGroup
-        });         
-      } else if(selectedAndMultipleSelected) {
-        let containsGroup = this.selectedItemsContainGroup();
-        this.setState({
-          rightClickMenuShown: true, 
-          rightClickMenuPosition: {
-            x: evt.clientX, 
-            y: evt.clientY
-          }, 
-          rightClickShapeID: shapeID, 
-          rightClickIsGroup: false, 
-          rightClickMenuIsTyped: false, 
-          rightClickMenuIsAlternate: false,
-          rightClickMenuTypeGroupSize: -1, 
-          rightClickMenuContainsGroup: containsGroup
-        });   
-      }
+      let typed = isGroup && node.shape.typed; 
+      let alternate = isGroup && node.shape.alternate; 
+      let nodeChildren = isGroup ? node.children.map((child) => {return child.key; }) : this.state.selectedTreeNodes; 
+      let groupSize = typed ? -1 : this.checkGroupTyping(nodeChildren); 
+      let containsGroup = this.containsGroup(nodeChildren);
+      node.typedGroupSize = groupSize; 
+
+      this.setState({
+        rightClickMenuShown: true, 
+        rightClickMenuPosition: {
+          x: evt.clientX, 
+          y: evt.clientY
+        }, 
+        rightClickShapeID: shapeID, 
+        rightClickIsGroup: isGroup, 
+        rightClickMenuTypeGroupSize: groupSize, 
+        rightClickMenuIsTyped: typed, 
+        rightClickMenuIsAlternate: alternate,
+        rightClickMenuContainsGroup: containsGroup
+      });         
     }
   }
 
@@ -791,20 +777,30 @@ export default class ConstraintsCanvas extends React.Component {
     }, this.checkSolutionValidityAndUpdateCache); 
   }
 
-  createRepeatGroup = (groupID) => {
-    let groupNode = this.widgetTreeNodeMap[groupID];
-    if(groupNode) {
-      groupNode.typed = true; 
-      groupNode.src = repeatGridSVG; 
-      groupNode.shape.typed = true; 
+  createRepeatGroup = (shapeID) => {
+    let node = this.widgetTreeNodeMap[shapeID];
+    node.alternate = undefined; 
+    if(node.shape.type == "group") {
+      node.typed = true; 
+      node.src = repeatGridSVG; 
+      node.shape.typed = true; 
 
-      let newGroupChildren = this.restructureRepeatGroupChildren(groupNode.children, groupNode.typedGroupSize); 
-      groupNode.children = newGroupChildren; 
-
-      this.setState(state => ({
-        treeData: this.state.treeData
-      }), this.checkSolutionValidityAndUpdateCache); 
+      let newGroupChildren = this.restructureRepeatGroupChildren(node.children, node.typedGroupSize); 
+      node.children = newGroupChildren;       
     }
+    else {
+      let newGroup = this.groupSelectedNodes(); 
+      newGroup.typed = true; 
+      newGroup.src = repeatGridSVG; 
+      newGroup.shape.typed = true; 
+
+      let newGroupChildren  = this.restructureRepeatGroupChildren(newGroup.children, node.typedGroupSize); 
+      newGroup.children = newGroupChildren; 
+    }
+
+    this.setState(state => ({
+      treeData: this.state.treeData
+    }), this.checkSolutionValidityAndUpdateCache); 
   }
 
   removeRepeatGroup = (groupID) => {
@@ -926,15 +922,17 @@ export default class ConstraintsCanvas extends React.Component {
     return true;
   }
 
-  canSplitIntoGroupOfSize = (node, size) => {
+  canSplitIntoGroupOfSize = (children, size) => {
     // Determine if the children of this node can be split into a group of the given size
     let pattern = []; 
 
     // Collect all the types and split them into groups based on the given size
     let currSize = 0; 
     let currGroup = []; 
-    for(let i=0; i<node.children.length; i++) {
-      let currChild = node.children[i]; 
+    for(let i=0; i<children.length; i++) {
+      let currChildID = children[i]; 
+      let currChild = this.widgetTreeNodeMap[currChildID]; 
+
       currGroup.push(currChild.shape.type);
       currSize++; 
 
@@ -975,10 +973,11 @@ export default class ConstraintsCanvas extends React.Component {
     return sizes;
   }
 
-  containsGroup = (node) => {
-    let numChildren = node.children.length; 
+  containsGroup = (children) => {
+    let numChildren = children.length; 
     for(let i=0; i<numChildren; i++){
-      let child = node.children[i]; 
+      let childID = children[i]; 
+      let child = this.widgetTreeNodeMap[childID];
       if(child.shape.type == "group") {
         return true; 
       }
@@ -999,20 +998,16 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  checkGroupTyping = (node) => {
-    if(node.typed) {
-      return -1; 
-    }
-
+  checkGroupTyping = (children) => {
     // Do the type inference algorithm
     // iterate through each set of possible groupings starting with the greatest common divisor
-    let numChildren = node.children.length; 
+    let numChildren = children.length; 
     let groupSizes = this.getGroupSizes(numChildren);
 
     for(let i=0; i<groupSizes.length; i++) {
       let groupSize = groupSizes[i];
       if(groupSize >= this.minimumGroupSize) {
-        if(this.canSplitIntoGroupOfSize(node, groupSize)) {
+        if(this.canSplitIntoGroupOfSize(children, groupSize)) {
           return groupSize;
         }
       }
@@ -1080,17 +1075,18 @@ export default class ConstraintsCanvas extends React.Component {
         selectedTreeNode: newGroupNode.key, 
         primarySelection: newGroupNode.shape
       }, this.checkSolutionValidityAndUpdateCache); 
+
+      return newGroupNode; 
     }
   }
 
-  ungroupGroup = (nodeKey) => {
-    // Ungroup the elements inside of a group and remove the parent ndoe 
-    let parentNode = this.getParentNodeForKey(nodeKey, this.state.treeData[0]); 
+  removeGroup = (groupID) => {
+    let parentNode = this.getParentNodeForKey(groupID, this.state.treeData[0]); 
     let index = -1; 
     let groupChildren = [];
     for(let i=0; i<parentNode.children.length; i++) {
       let childNode = parentNode.children[i]; 
-      if(childNode.key == nodeKey) {
+      if(childNode.key == groupID) {
         index = i; 
         groupChildren = childNode.children; 
         childNode.children = undefined; 
@@ -1110,7 +1106,19 @@ export default class ConstraintsCanvas extends React.Component {
       selectedTreeNode: parentNode.key, 
       primarySelection: parentNode.shape,
       treeData: this.state.treeData
-    }, this.checkSolutionValidityAndUpdateCache); 
+    }, this.checkSolutionValidityAndUpdateCache);     
+  }
+
+  ungroupGroup = (nodeKey) => {
+    // Ungroup the elements inside of a group and remove the parent ndoe 
+    let group = this.widgetTreeNodeMap[nodeKey]; 
+    if(group.typed) {
+      this.removeRepeatGroup(nodeKey); 
+      this.removeGroup(nodeKey); 
+    }
+    else {
+      this.removeGroup(nodeKey); 
+    }
   }
 
   onExpand = (expandedKeys) => {
