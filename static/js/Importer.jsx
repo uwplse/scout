@@ -5,7 +5,6 @@ import '../css/ConstraintsCanvas.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Tree, { TreeNode } from 'rc-tree';
-import pageLogo from '../../wireframes/accounts/pie_chart.svg';
 import SVGInline from "react-svg-inline"
 import domtoimage from 'dom-to-image'; 
 import JSZip from 'jszip';
@@ -136,11 +135,7 @@ export default class Importer extends React.Component {
   }
 
   nodeIcon = () => {
-    return (<div><SVGInline 
-            svg={pageLogo} 
-            height={"116px"} 
-            width={"116px"} />
-            </div>);
+    return (<div></div>);
   }
 
 

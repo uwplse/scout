@@ -5,3 +5,4 @@ static/dist/*
 server/__pycache__
 *.pyc
 .idea/*
+*.DS_Store
