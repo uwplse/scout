@@ -119,7 +119,7 @@ class Solver(object):
 		# time_start = time.time()
 		self.prune_layout_grid_domains()
 		self.prune_size_domains() 
-		# time_end = time.time()
+		# # time_end = time.time()
 		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
 
 		self.output_variables = self.init_output_variables()
@@ -259,31 +259,32 @@ class Solver(object):
 	def prune_container_child_sizes(self, container):
 		# Group children by semantic type 
 		groups = dict()
-		for child in container.children: 
+		for child in container.children:
 			if child.semantic_type != "group" or child.is_alternate:
-				if child.semantic_type not in groups: 
-					groups[child.semantic_type] = []
+				if child.type not in groups:
+					groups[child.type] = []
 
-				groups[child.semantic_type].append(child)
+				groups[child.type].append(child)
 
 		# Prune sizes based on grouped containers
-		for key,group_children in groups.items(): 
+		for key,group_children in groups.items():
 			size_factors = [set(child.variables.size_factor.domain) for child in group_children]
 			size_factors = list(set.intersection(*size_factors))
 
-			# Further reduce the size of the domain 
-			if len(size_factors) > DOMAIN_SIZE_REDUCTION: 
-				num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
-				if num_to_select > 0: 
-					size_factors = random.sample(size_factors, num_to_select)
+			# Further reduce the size of the domain
+			if len(size_factors) > 0:
+				if len(size_factors) > DOMAIN_SIZE_REDUCTION:
+					num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
+					if num_to_select > 0:
+						size_factors = random.sample(size_factors, num_to_select)
 
-			for child in group_children: 
-				size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
+				for child in group_children:
+					size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
 
-				child.variables.size_combo.domain = size_combos
-				child.variables.size_factor.domain = [val[2] for val in size_combos]
-				child.variables.width.domain = [val[0] for val in size_combos]
-				child.variables.height.domain = [val[1] for val in size_combos]
+					child.variables.size_combo.domain = size_combos
+					child.variables.size_factor.domain = [val[2] for val in size_combos]
+					child.variables.width.domain = [val[0] for val in size_combos]
+					child.variables.height.domain = [val[1] for val in size_combos]
 
 	def prune_repeat_group_child_sizes(self, container): 
 		# Get the first item in the repeat group 
@@ -659,14 +660,14 @@ class Solver(object):
 
 	def z3_solve(self): 
 		# random_seed = random.randint(1,RANDOM_SEEDS)
-		random_seed = np.random.randint(0, 655350)
-		random_seed2 = np.random.randint(0, 655350)
-		z3.set_param(
-			 'auto_config', False,
-	         'smt.arith.random_initial_value', True,
-	         'smt.random_seed', random_seed,
-	         'sat.phase', 'random',
-	         'sat.random_seed', random_seed2)
+		# random_seed = np.random.randint(0, 655350)
+		# random_seed2 = np.random.randint(0, 655350)
+		# z3.set_param(
+		# 	 'auto_config', False,
+	     #     'smt.arith.random_initial_value', True,
+	     #     'smt.random_seed', random_seed,
+	     #     'sat.phase', 'random',
+	     #     'sat.random_seed', random_seed2)
 		solutions = []
 		num_solutions = 1
 		slns_found = 0
@@ -677,10 +678,10 @@ class Solver(object):
 			if str(result) == 'sat':
 				solution = sln.Solution()
 				model = self.solver.model()
-				sln = solution.convert_to_json(self.shapes, model)
-				solutions.append(sln)
+				json_sln = solution.convert_to_json(self.root, model)
+				solutions.append(json_sln)
 
-				self.encode_previous_solution_from_model(model, sln['id'])
+				self.encode_previous_solution_from_model(model, json_sln['id'])
 
 			slns_found += 1
 		return solutions

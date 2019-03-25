@@ -1435,6 +1435,7 @@ export default class ConstraintsCanvas extends React.Component {
       });
     };
 
+    const hasNodes = this.widgetTreeNodeMap["canvas"] && this.widgetTreeNodeMap["canvas"].children.length; 
     const treeNodes = gatherTreeNodes(this.state.treeData); 
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
@@ -1468,6 +1469,7 @@ export default class ConstraintsCanvas extends React.Component {
               <button 
                 type="button" 
                 className="btn btn-default design-canvas-button" 
+                disabled={!hasNodes}
                 onClick={this.requestDesigns}>See more layout ideas</button>
               {this.state.loading ? (<div className="spinner-border text-light constraints-container-spinner" role="status">
                                         <span className="sr-only">Loading...</span>

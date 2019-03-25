@@ -564,7 +564,7 @@ class ConstraintBuilder(object):
 					shape2 = child_shapes[j]
 					# Shapes must increase or decrease inside a group by the same amount
 					# If they are the same shape type. 
-					if shape1.type == "leaf" and shape2.type == "leaf" and shape1.semantic_type == shape2.semantic_type:
+					if shape1.type == "leaf" and shape2.type == "leaf":
 						size_eq = cb.eq(shape1.variables.size_factor.id, shape2.variables.size_factor.id)
 						size_equals.append(size_eq)
 
@@ -962,12 +962,12 @@ class ConstraintBuilder(object):
 			"container_" + container.shape_id + "_max_height_horizontal")
 
 		# Enforce that the padding used by the container is no taller or wider than the smallest width or height element
-		# min_w_constraint = self.get_min_width_constraint(1,0,child_shapes)
-		# min_h_constraint = self.get_min_height_constraint(1,0,child_shapes)
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
-		# 	"container_" + container.shape_id + "_padding_lt_shortest_child")
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
-		# 	"container_" + container.shape_id + "_padding_lt_thinnest_child")
+		min_w_constraint = self.get_min_width_constraint(1,0,child_shapes)
+		min_h_constraint = self.get_min_height_constraint(1,0,child_shapes)
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
+			"container_" + container.shape_id + "_padding_lt_shortest_child")
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
+			"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
 		self.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
 
