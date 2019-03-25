@@ -125,19 +125,6 @@
 	margin-right: 10px;
 }
 
-.widget-control-button .widget-editable-text, 
-.widget-control-orangeButton .widget-editable-text {
-	transform: translate(120px, 22px);
-}
-
-.widget-control-field .widget-editable-text {
-	transform: translate(9.7px, 24px);
-}
-
-.widget-control-label > .widget-control-svg {
-	width: 5em;
-}
-
 .widget-control-row {
 	display: flex; 
 	align-items: flex-start;

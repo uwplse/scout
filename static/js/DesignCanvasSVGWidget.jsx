@@ -13,7 +13,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     this.id = props.id; 
     this.element = props.shape; // constraints shape object
     this.svgSource = props.source; 
-    this.displayWidgetFeedback = props.displayWidgetFeedback; 
+    this.setPrimarySelection = props.setPrimarySelection; 
     this.timer = null;
 
     this.uniqueID = _.uniqueId();
@@ -23,7 +23,7 @@ export default class DesignCanvasSVGWidget extends React.Component {
     // Stop the event from propagating to the canvas shape. 
     evt.stopPropagation();
     
-    this.displayWidgetFeedback(this.element); 
+    this.setPrimarySelection(this.element); 
   }
 
   replaceViewBox = (svgSource) => {

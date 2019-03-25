@@ -64,29 +64,32 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
   }
 
   componentDidMount() {
-    if(this.props.activeCanvasShape && this.props.activeDesignShape) {
-        this.displayWidgetFeedback(this.props.activeDesignShape, this.feedbackCallbacks, this.props.activeCanvasShape);    
-    } 
-    else if(this.props.activeCanvasShape) {
-      this.displayWidgetFeedback(this.props.activeCanvasShape, this.feedbackCallbacks); 
+    if(this.props.primarySelection) {
+      this.updatePrimarySelection();
     }
   }
 
   componentDidUpdate = (prevProps) => {
-    if(prevProps.activeDesignShape != this.props.activeDesignShape && 
-      this.props.activeDesignShape != undefined) {
-      // Display the widget with the proper callbacks
-      // Use the true flag to indicate to the PageContainer that 
-      // the widget has been selected from a DesignCanvas
-      this.displayWidgetFeedback(this.props.activeDesignShape, this.feedbackCallbacks, this.props.activeCanvasShape); 
-    }
-    else if(prevProps.activeCanvasShape != this.props.activeCanvasShape && 
-      this.props.activeCanvasShape != undefined) {
-      // Display the widget with the proper callbacks
-      console.log("display widget feedback");
-      this.displayWidgetFeedback(this.props.activeCanvasShape, this.feedbackCallbacks);    
+    if(this.props.primarySelection) {
+      if(this.props.primarySelection != prevProps.primarySelection) {
+        this.updatePrimarySelection(); 
+      }
     }
   }
+
+  updatePrimarySelection = () => {
+    if(this.props.primarySelection == this.props.shape) {
+      // The shape associated with this node is currently the primary selection
+      this.displayWidgetFeedback(this.props.primarySelection, this.feedbackCallbacks); 
+    }
+    else if(this.props.primarySelection.name == this.props.shape.name) {
+      // The shape associated with this node is associated with the shape that is the primary selection
+      // It is active from the DesignCanvas node
+      // so set this node to be the secondary selection. 
+      this.displayWidgetFeedback(this.props.primarySelection, this.feedbackCallbacks, this.props.shape); 
+    }
+  }
+
 
   getFeedbackCallbacks = () => {
     let feedbackCallbacks = {}; 
@@ -206,7 +209,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
         <div className="widget-control-row"> 
            <div>
            {source ? (<SVGInline 
-              className={"widget-control-" + this.type} 
+              className={"widget-control"} 
               svg={source} 
               height={this.state.height + "px"} 
               width={this.state.width + "px"} />) : undefined}

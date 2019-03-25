@@ -105,13 +105,14 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
-  getDesignCanvas = (solution, id, zoomed=false, solutionID=undefined) => {
+  getDesignCanvas = (solution, id, zoomed=false, solutionID=undefined, scaling=undefined) => {
     return (<DesignCanvas 
               key={id} 
               id={id} 
               ref={"design-canvas-" + id}
               elements={solution.elements}
               savedState={solution.saved}
+              scaling={scaling}
               valid={solution.valid}
               new={solution.new}
               conflicts={solution.conflicts}
@@ -119,6 +120,7 @@ export default class PageContainer extends React.Component {
               removed={solution.removed}
               zoomed={zoomed}
               solutionID={solutionID}
+              activePanel={this.state.activeDesignPanel}
               primarySelection={this.state.primarySelection}
               invalidated={solution.invalidated}
               svgWidgets={this.state.svgWidgets}
@@ -129,29 +131,7 @@ export default class PageContainer extends React.Component {
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
               considerDesignCanvas={this.considerDesignCanvas}
               getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
-  }
-
-  getSmallDesignCanvas = (solution, id, zoomed=false) => {
-    return (<SmallDesignCanvas 
-              key={id} 
-              id={id} 
-              elements={solution.elements}
-              savedState={solution.saved}
-              valid={solution.valid}
-              conflicts={solution.conflicts}
-              added={solution.added}
-              removed={solution.removed}
-              zoomed={zoomed}
-              invalidated={solution.invalidated}
-              svgWidgets={this.state.svgWidgets}
-              highlightAddedWidget={this.highlightAddedWidget}
-              highlightFeedbackConflict={this.highlightFeedbackConflict}
-              saveDesignCanvas={this.saveDesignCanvas} 
-              trashDesignCanvas={this.trashDesignCanvas}
-              zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
-              getConstraintsCanvasShape={this.getConstraintsCanvasShape}
-              displayWidgetFeedback={this.displayWidgetFeedbackFromDesignCanvas} />); 
+              setPrimarySelection={this.setPrimarySelection} />); 
   }
 
   parseSolutions = (requestData) => {
@@ -289,6 +269,7 @@ export default class PageContainer extends React.Component {
 
         designSolution.conflicts = solution.conflicts; 
         designSolution.elements = solution.elements; 
+        designSolution.elements_dict = solution.elements_dict;
       }
     }
 
@@ -337,7 +318,7 @@ export default class PageContainer extends React.Component {
     for(let i=0; i < this.state.solutions.length; i++) {
       let solution = this.state.solutions[i]; 
       let shapeId = shape.name; 
-      let element = solution.elements[shapeId]; 
+      let element = solution.elements_dict[shapeId]; 
 
       let conflicts = solution.conflicts; 
       let keepConflicts = []; 
@@ -674,46 +655,25 @@ export default class PageContainer extends React.Component {
   }
 
   displayWidgetFeedback = (shape, feedbackCallbacks, constraintsCanvasShape=undefined) => {
-    let canvasShape = undefined; 
-    let designShape = undefined; 
-
-    if(!constraintsCanvasShape) {
-      canvasShape = shape; 
-
-      this.setState({
-        primarySelection: canvasShape
-      }); 
-    }
-    else {
-      canvasShape = constraintsCanvasShape; 
-      designShape = shape; 
-
-      this.setState({
-        primarySelection: designShape
-      }); 
-    }
-
-    this.setState({
-      activeCanvasShape: canvasShape,
-      activeDesignShape: designShape,  
+    this.setState({ 
+      activeCanvasShape: constraintsCanvasShape, 
+      primarySelection: shape, 
       feedbackCallbacks: feedbackCallbacks
     }); 
   }
 
   hideWidgetFeedback = () => {
     this.setState({
-      activeDesignShape: undefined, 
-      activeCanvasShape: undefined, 
       feedbackCallbacks: undefined, 
-      primarySelection: undefined
+      primarySelection: undefined,
+      activeCanvasShape: undefined
     }); 
   }
 
-  displayWidgetFeedbackFromDesignCanvas = (shape) => {
+  setPrimarySelection = (shape) => {
     // Set this property to activate the corresponding element in the tree
     // And display feedback based on this instance of the element in the design canvas
     this.setState({
-      activeDesignShape: shape, 
       primarySelection: shape
     });
   }
@@ -721,7 +681,8 @@ export default class PageContainer extends React.Component {
   unsetPrimarySelection = () => {
     this.setState({
       primarySelection: undefined, 
-      activeDesignShape: undefined
+      feedbackCallbacks: undefined, 
+      activeCanvasShape: undefined
     });
 
     if(this.constraintsCanvasRef) {
@@ -730,7 +691,7 @@ export default class PageContainer extends React.Component {
   }
 
   exportSavedDesigns = () => {
-    let exporter = new Exporter(); 
+    let exporter = new Exporter(this.state.svgWidgets); 
     let savedSolutions = this.state.solutions.filter((solution) => { return solution.saved; }); 
     for(let i=0; i<savedSolutions.length; i++) {
       let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
@@ -756,6 +717,11 @@ export default class PageContainer extends React.Component {
     const savedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
               .map((solution) => {
                   return this.getDesignCanvas(solution, solution.id); 
+                }); 
+
+    const pinnedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
+              .map((solution) => {
+                  return this.getDesignCanvas(solution, solution.id, false, undefined, 0.25); 
                 }); 
 
     const designCanvases = this.state.solutions
@@ -794,7 +760,7 @@ export default class PageContainer extends React.Component {
           <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
             <div className="navbar-header">
               <SVGInline className="scout-logo" svg={pageLogo} />
-              <h1>Scout <span className="scout-tagline"><small>Exploring wireframe layout alternatives.</small></span></h1>
+              <h1>Scout <span className="scout-tagline"><small>Exploring alternative layout ideas for wireframes.</small></span></h1>
             </div>
           </nav>
           <div className="bottom">
@@ -812,19 +778,17 @@ export default class PageContainer extends React.Component {
               displayWidgetFeedback={this.displayWidgetFeedback}
               hideWidgetFeedback={this.hideWidgetFeedback}
               checkSolutionValidity={this.checkSolutionValidity}
-              activeDesignShape={this.state.activeDesignShape}
               primarySelection={this.state.primarySelection}
               svgWidgets={this.state.svgWidgets} />
             <FeedbackContainer 
               activeCanvasShape={this.state.activeCanvasShape}
-              activeDesignShape={this.state.activeDesignShape}
               primarySelection={this.state.primarySelection}
               feedbackCallbacks={this.state.feedbackCallbacks}
               updateConstraintsCanvas={this.updateConstraintsCanvas}
               checkSolutionValidity={this.checkSolutionValidity} />
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
-                <h3 className="panel-title">Designs
+                <h3 className="panel-title">Layout Ideas
                 </h3>
                 <div>
                   <ul className="nav nav-pills designs-area-nav-pills">
@@ -868,63 +832,65 @@ export default class PageContainer extends React.Component {
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearSavedDesigns}>Discard Saved Designs</button>
+                        onClick={this.clearSavedDesigns}>Discard Saved Ideas</button>
                     </div>) : null}
                   {this.state.activeDesignPanel == "discarded" ? 
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearDiscardedDesigns}>Clear Discarded Designs</button>
+                        onClick={this.clearDiscardedDesigns}>Clear Discarded Ideas</button>
                     </div>) : null}
                   <div 
                     className="btn-group header-button-group">
                     <button type="button" className="btn btn-default design-canvas-button" 
-                      onClick={this.clearAllDesigns}>Clear All Designs</button>
+                      onClick={this.clearAllDesigns}>Clear All Ideas</button>
                   </div>
                   {this.state.activeDesignPanel == "saved" ? (<div 
                     className="btn-group header-button-group">
                     <button type="button" 
                       onClick={this.exportSavedDesigns}
-                      className="btn btn-default design-canvas-button">Export Saved Designs</button>
+                      className="btn btn-default design-canvas-button">Export Saved Ideas</button>
                   </div>) : null}
                 </div>
               </div>  
               {(!this.state.solutionsFound ? (
                 <div className="alert alert-warning alert-dismissible design-canvas-alert" role="alert">
-                  <strong>Sorry!</strong> Scout was not able to find any more layouts for your wireframes. <br /> <br />
-                  <span>Adjust your constraints in the Outline panel to help Scout find more layouts.</span>
+                  <strong>Sorry!</strong> Scout was not able to find any more layout ideas for your wireframes. <br /> <br />
+                  <span>Adjust your constraints in the Outline panel to help Scout find more layout ideas.</span>
                   <button type="button" className="close" aria-label="Close"
                     onClick={this.closeNoSolutionsAlert}>
                     <span aria-hidden="true">&times;</span>
                   </button>
                 </div>) : undefined)}
-              {(this.state.activeDesignPanel == "designs" && designCanvases.length == 0) ? 
-                (<div className="designs-area-alert-container">
-                  <div className="card card-body bg-light">
-                    <span>You currently have no designs under consideration. Click <span className="card-emph">Generate Designs</span> in the outline to see more.</span>
-                  </div>
-                </div>) : null
-              }
               {(this.state.activeDesignPanel == "saved" && savedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">
-                    <span>You currently have no saved designs. Click the star icon above a design in the <span className="card-emph">Under Consideration</span> panel to save a design.</span>
+                    <span>You currently have no saved layout ideas. Click the star icon above a layout idea canvas in the <span className="card-emph">Under Consideration</span> panel to save an idea.</span>
                   </div>
                 </div>) : null
               }
               {(this.state.activeDesignPanel == "discarded" && discardedCanvases.length == 0) ? 
                 (<div className="designs-area-alert-container">
                   <div className="card card-body bg-light">
-                    <span>You currently have no discarded designs. Click the trash icon in the <span className="card-emph">Under Consideration</span> panel to discard any designs that you don't like.</span>
+                    <span>You currently have no discarded layout ideas. Click the trash icon above a layout idea canvas in the <span className="card-emph">Under Consideration</span> panel to discard ideas that you don't like.</span>
                   </div>
                 </div>) : null
               }
               <div className="design-canvas-container">
-                  { this.state.activeDesignPanel == "designs" && designCanvases.length ? 
-                    (<div className="panel designs-container current-designs-container panel-default">
-                      <DesignCanvasContainer 
+                  { this.state.activeDesignPanel == "designs" ? 
+                    (<div className="panel designs-container current-designs-container panel-default">{
+                      (pinnedCanvases.length ? <DesignCanvasContainer 
+                        saved={true}
                         onDrop={this.moveDesignCanvas}
-                        designCanvases={designCanvases} />
+                        designCanvases={pinnedCanvases} /> : null)}
+                      {(designCanvases.length ? (<DesignCanvasContainer 
+                        onDrop={this.moveDesignCanvas}
+                        designCanvases={designCanvases} />) : 
+                        (<div className="designs-area-alert-container">
+                          <div className="card card-body bg-light">
+                            <span>You currently have no layout ideas under consideration. Click <span className="card-emph">See More Layout Ideas</span> in the outline to see more.</span>
+                          </div>
+                        </div>))}
                     </div>) : null
                   }
                   { this.state.activeDesignPanel == "saved" && savedCanvases.length ? 

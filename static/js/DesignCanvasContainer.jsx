@@ -34,9 +34,11 @@ class DesignCanvasContainer extends React.Component {
     return (
       connectDropTarget &&
       connectDropTarget(
-        <div 
-          className="design-body">
+        <div>
+          <div className="design-body">
           {this.props.designCanvases}
+          </div>
+          {this.props.saved ? (<hr className="feedback-container-separator" />) : undefined}
         </div>)); 
   }
 }
