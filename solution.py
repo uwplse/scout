@@ -112,9 +112,10 @@ class Solution(object):
 		# Returns the computed cost
 		return 0 
 
-	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics):
+	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics, elements_dict):
 		if tree.element is not None: 
 			element = copy.deepcopy(tree.element)
+			elements_dict[element["name"]] = element; 
 
 			# Get the computed values from the model 
 			self.parse_values(tree, element, variables, model)
@@ -149,7 +150,7 @@ class Solution(object):
 			if hasattr(tree, "children") and len(tree.children):
 				element['children'] = []
 				for child in tree.children: 
-					child_element = self.process_hierarchy(child, variables, model, cost_matrix, cost_metrics)
+					child_element = self.process_hierarchy(child, variables, model, cost_matrix, cost_metrics, elements_dict)
 					if child_element is not None: 
 						element['children'].append(child_element)
 
@@ -167,7 +168,9 @@ class Solution(object):
 		cost_metrics['importance_max'] = 0
 
 		variables = sh.parse_variables_from_model(model)
-		element_tree = self.process_hierarchy(tree, variables, model, cost_matrix, cost_metrics)
+
+		elements_dict = dict()
+		element_tree = self.process_hierarchy(tree, variables, model, cost_matrix, cost_metrics, elements_dict)
 
 		# Current cost function metrics. 
 		symmetry_cost = ch.compute_symmetry_cost(cost_matrix)
@@ -186,6 +189,7 @@ class Solution(object):
 		# cost = self.compute_cost(tree)
 
 		print("Total cost: " + str(cost))
+		sln["elements_dict"] = elements_dict
 		sln["elements"] = element_tree
 		sln["id"] = self.id 
 		sln["cost"] = cost # Assign the computed cost here. 

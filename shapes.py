@@ -15,6 +15,7 @@ CANVAS_WIDTH = 360
 MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
 MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
+MIN_HEIGHT = 24
 MIN_WIDTH_TOUCH_TARGET = 120
 MIN_HEIGHT_ASPECT_RATIO = 24
 GRID_CONSTANT = 4

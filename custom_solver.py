@@ -30,6 +30,7 @@ class CustomSolver(object):
 		state = sln.Solution()
 		time_start = time.time()
 		solution = solver.branch_and_bound(state)
+
 		time_end = time.time()
 		logging.debug("Time in z3 " + str(i) + ": " + str(solver.time_z3))
 		logging.debug("Time to generate a solution " + str(i) + ": " + str(time_end-time_start))
