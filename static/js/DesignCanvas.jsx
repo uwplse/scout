@@ -32,7 +32,7 @@ export default class DesignCanvas extends React.Component {
       hovered: false, 
       primarySelection: props.primarySelection, 
       elementsList: [], 
-      scale: DesignCanvas.getScale(props.zoomed, props.savedState, props.invalidated)
+      scale: props.scaling ? props.scaling : DesignCanvas.getScale(props.zoomed, props.savedState, props.invalidated)
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
@@ -62,7 +62,7 @@ export default class DesignCanvas extends React.Component {
       primarySelection: nextProps.primarySelection, 
       canvasShape: prevState.canvasShape, 
       elements: prevState.elements, 
-      scale: DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated, nextProps.activePanel)
+      scale: nextProps.scaling ? nextProps.scaling : DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated, nextProps.activePanel)
     }    
   }
 

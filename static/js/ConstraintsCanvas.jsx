@@ -408,12 +408,33 @@ export default class ConstraintsCanvas extends React.Component {
   displayRightClickMenu = (evt, shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID]; 
     if(node) {
-      let selectedAndMultipleSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1 && this.state.selectedTreeNodes.length > 1; 
+      let isSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1; 
+      let multipleSelected = this.state.selectedTreeNodes.length > 1; 
+
       let isGroup = node.shape.type == "group"; 
 
       let typed = isGroup && node.shape.typed; 
       let alternate = isGroup && node.shape.alternate; 
-      let nodeChildren = isGroup ? node.children.map((child) => {return child.key; }) : this.state.selectedTreeNodes; 
+      let nodeChildren = []; 
+
+      if(isSelected && multipleSelected) {
+        // Grouping applies to selected elements
+        nodeChildren = this.state.selectedTreeNodes; 
+
+        // This should only apply if the element clicked on was the only one selected
+        isGroup = false; 
+      }
+      else if(isSelected && isGroup) {
+        nodeChildren = node.children.map((child) => {return child.key; }); 
+      }
+      else {
+        if(isGroup) {
+          nodeChildren = node.children.map((child) => {return child.key; });
+        } else {
+          nodeChildren = []; 
+        }
+      }
+
       let groupSize = typed ? -1 : this.checkGroupTyping(nodeChildren); 
       let containsGroup = this.containsGroup(nodeChildren);
       node.typedGroupSize = groupSize; 
@@ -780,7 +801,11 @@ export default class ConstraintsCanvas extends React.Component {
   createRepeatGroup = (shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID];
     node.alternate = undefined; 
-    if(node.shape.type == "group") {
+
+    let isSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1; 
+    let multipleSelected = this.state.selectedTreeNodes.length > 1; 
+
+    if(node.shape.type == "group" && ((isSelected && !multipleSelected) || !isSelected)) {
       node.typed = true; 
       node.src = repeatGridSVG; 
       node.shape.typed = true; 
@@ -1165,7 +1190,10 @@ export default class ConstraintsCanvas extends React.Component {
     let selectedNodes = selectedKeys; 
     let selectedElement = selected; 
 
-    if (evt.nativeEvent && evt.nativeEvent.shiftKey) {
+    if(!selectedElement) {
+      selectedNodes = []; 
+    }
+    else if (evt.nativeEvent && evt.nativeEvent.shiftKey) {
       // Get the last selected node and verify that it has the same parent node as the other 
       // selected nodes
       if(selectedKeys.length > 1) {
@@ -1440,7 +1468,7 @@ export default class ConstraintsCanvas extends React.Component {
               <button 
                 type="button" 
                 className="btn btn-default design-canvas-button" 
-                onClick={this.requestDesigns}>See More Layout Ideas</button>
+                onClick={this.requestDesigns}>See more layout ideas</button>
               {this.state.loading ? (<div className="spinner-border text-light constraints-container-spinner" role="status">
                                         <span className="sr-only">Loading...</span>
                                       </div>) : null}

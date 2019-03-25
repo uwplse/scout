@@ -79,8 +79,14 @@
 	cursor: pointer;
 }
 
+
+.design-canvas:not(.new-design) {
+	outline: 1px solid #c4c4c4;
+}
+
 .design-canvas.hovered, 
 .design-canvas.hovered .design-canvas-hovered, 
+.design-canvas.hovered.primary-selection, 
 .design-canvas.hovered.secondary-selection {
 	outline: 4px #FF83A8 solid;
 	z-index: 1000; 
@@ -103,10 +109,6 @@
 
 .design-canvas.new-design:not(.primary-selection):not(.secondary-selection) {
 	outline: 4px #18BC9C solid; 
-}
-
-.design-canvas:not(.new-design) {
-	outline: 1px solid #c4c4c4;
 }
 
 

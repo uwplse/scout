@@ -1,3 +1,7 @@
 .widget-feedback ul.widget-feedback-items {
 	padding: 0 0 0 20px;
 }
+
+.widget-feedback-items-label {
+	font-size: 14;
+}

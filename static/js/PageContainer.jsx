@@ -105,13 +105,14 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
 
-  getDesignCanvas = (solution, id, zoomed=false, solutionID=undefined) => {
+  getDesignCanvas = (solution, id, zoomed=false, solutionID=undefined, scaling=undefined) => {
     return (<DesignCanvas 
               key={id} 
               id={id} 
               ref={"design-canvas-" + id}
               elements={solution.elements}
               savedState={solution.saved}
+              scaling={scaling}
               valid={solution.valid}
               new={solution.new}
               conflicts={solution.conflicts}
@@ -718,6 +719,11 @@ export default class PageContainer extends React.Component {
                   return this.getDesignCanvas(solution, solution.id); 
                 }); 
 
+    const pinnedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
+              .map((solution) => {
+                  return this.getDesignCanvas(solution, solution.id, false, undefined, 0.25); 
+                }); 
+
     const designCanvases = this.state.solutions
       .filter((solution) => { 
         return (solution.saved == 0 && (!solution.invalidated)); 
@@ -782,7 +788,7 @@ export default class PageContainer extends React.Component {
               checkSolutionValidity={this.checkSolutionValidity} />
             <div className="panel panel-primary designs-area-container">
               <div className="panel-heading"> 
-                <h3 className="panel-title">Designs
+                <h3 className="panel-title">Layout Ideas
                 </h3>
                 <div>
                   <ul className="nav nav-pills designs-area-nav-pills">
@@ -873,10 +879,10 @@ export default class PageContainer extends React.Component {
               <div className="design-canvas-container">
                   { this.state.activeDesignPanel == "designs" ? 
                     (<div className="panel designs-container current-designs-container panel-default">{
-                      (savedCanvases.length ? <DesignCanvasContainer 
+                      (pinnedCanvases.length ? <DesignCanvasContainer 
                         saved={true}
                         onDrop={this.moveDesignCanvas}
-                        designCanvases={savedCanvases} /> : null)}
+                        designCanvases={pinnedCanvases} /> : null)}
                       {(designCanvases.length ? (<DesignCanvasContainer 
                         onDrop={this.moveDesignCanvas}
                         designCanvases={designCanvases} />) : 
