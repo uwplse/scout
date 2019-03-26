@@ -1361,7 +1361,7 @@ export default class ConstraintsCanvas extends React.Component {
     }
 
     // If the node was dropped in a repeat group, we need to remove it as it will no longer match the pattern 
-    if(droppedOnRepeatGroup) {
+    if(droppedOnRepeatGroup && !info.dropToGap) {
       this.removeRepeatGroup(dropObj.key); 
     }
 
