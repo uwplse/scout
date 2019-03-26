@@ -179,6 +179,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }
   }
 
+  onClick = (evt) => {
+    // prevent the event from escaping the ConstraintsCanvas container
+    // so that the active selections will not be deactivated 
+    // evt.stopPropagation();
+  }
+
   render () {
     const source = this.state.svgSource; 
     const height = this.state.height; 

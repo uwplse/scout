@@ -1294,6 +1294,12 @@ export default class ConstraintsCanvas extends React.Component {
       dropObj = item; 
     });
 
+    let droppedOnCanvas = false; 
+    if(dropObj.shape.type == "canvas") {
+      // Prevent dropping on the canvas node
+      return;
+    }
+
     let droppedOnGroup = false; 
     if(dropObj.shape.type == "group") {
       droppedOnGroup = true;
@@ -1375,10 +1381,8 @@ export default class ConstraintsCanvas extends React.Component {
     }, this.checkSolutionValidityAndUpdateCache);
   }
 
-  onClick = (evt) => {
-    // prevent the event from escaping the ConstraintsCanvas container
-    // so that the active selections will not be deactivated 
-    evt.stopPropagation();
+  preventClick = (evt) => {
+    evt.stopPropagation(); 
   }
 
   designsReturned = () => {
@@ -1465,7 +1469,7 @@ export default class ConstraintsCanvas extends React.Component {
             <h3 className="panel-title">Outline
             </h3>
             <div className="btn-group header-button-group"
-              onClick={this.onClick}>
+              onClick={this.preventClick}>
               <button 
                 type="button" 
                 className="btn btn-default design-canvas-button" 

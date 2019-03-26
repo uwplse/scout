@@ -13,10 +13,13 @@
 	transform: none;
 }
 
+.design-canvas.saved-design {
+	transform: none;
+}
+
 .zoomed-design-container .canvas-actions-container  {
 	display: none;
 }
-
 
 .design-canvas.hovered .SVGInline-svg {
 	cursor: pointer; 
