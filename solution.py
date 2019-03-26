@@ -119,7 +119,7 @@ class Solution(object):
 
 			# Get the computed values from the model 
 			self.parse_values(tree, element, variables, model)
-			
+
 			# Emphasis cost function calculations
 			if tree.type != "canvas":
 				height = element["height"]
@@ -186,7 +186,8 @@ class Solution(object):
 		# for the variables (x,y,width,height, etc) and other metadata (type)
 		# cost = self.compute_cost(tree)
 
-		new_cost = cost_model.compute_cost(tree)
+		new_cost = cost_model.compute_cost(element_tree)
+		cost = new_cost
 
 		print("Total cost: " + str(cost))
 		sln["elements"] = element_tree

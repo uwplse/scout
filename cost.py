@@ -43,7 +43,7 @@ def compute_weighted_cost(importance_cost, symmetry_cost, distance_cost):
 
 def compute_distance_from_center(shape_x, shape_y, shape_width, shape_height):
 	center_x = CANVAS_WIDTH/2
-	center_y = CANVAS_HEIGHT/2 
+	center_y = CANVAS_HEIGHT/2
 
 	shape_center_x = shape_x + (shape_width/2)
 	shape_center_y = shape_y + (shape_height/2)
