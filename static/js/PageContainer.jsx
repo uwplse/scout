@@ -3,15 +3,8 @@ import React from "react";
 import '../css/bootstrap.min.css';
 import '../css/Canvas.css'; 
 import '../css/PageContainer.css';
-import ConstraintsCanvas from "./ConstraintsCanvas"; 
-import Exporter from "./Exporter"; 
-import FeedbackContainer from "./FeedbackContainer"; 
-import WidgetsContainer from "./WidgetsContainer"; 
-import DesignCanvas from './DesignCanvas';
-import SmallDesignCanvas from './SmallDesignCanvas';
-import DesignCanvasContainer from './DesignCanvasContainer'; 
 import { DragDropContextProvider } from 'react-dnd'; 
-import HTML5Backend from 'react-dnd';
+import HTML5Backend from 'react-dnd-html5-backend';
 import $ from 'jquery';
 import uuidv4 from 'uuid/v4'; 
 import SVGInline from "react-svg-inline"; 
@@ -19,6 +12,13 @@ import ConstraintsCanvasSVGWidget from './ConstraintsCanvasSVGWidget';
 import pageLogo from '../assets/logo.svg';
 import {getUniqueID} from './util'; 
 import { saveAs } from 'file-saver';
+import ConstraintsCanvas from "./ConstraintsCanvas"; 
+import Exporter from "./Exporter"; 
+import FeedbackContainer from "./FeedbackContainer"; 
+import WidgetsContainer from "./WidgetsContainer"; 
+import DesignCanvas from './DesignCanvas';
+import SmallDesignCanvas from './SmallDesignCanvas';
+import DesignCanvasContainer from './DesignCanvasContainer'; 
 
 export default class PageContainer extends React.Component {
   constructor(props) {
