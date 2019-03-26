@@ -11,7 +11,7 @@ import DesignCanvas from './DesignCanvas';
 import SmallDesignCanvas from './SmallDesignCanvas';
 import DesignCanvasContainer from './DesignCanvasContainer'; 
 import { DragDropContextProvider } from 'react-dnd'; 
-import HTML5Backend from 'react-dnd-html5-backend';
+import HTML5Backend from 'react-dnd';
 import $ from 'jquery';
 import uuidv4 from 'uuid/v4'; 
 import SVGInline from "react-svg-inline"; 
