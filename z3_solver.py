@@ -118,7 +118,7 @@ class Solver(object):
 		# Prunes 
 		# time_start = time.time()
 		self.prune_layout_grid_domains()
-		self.prune_size_domains() 
+		self.prune_size_domains()
 		# # time_end = time.time()
 		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
 
