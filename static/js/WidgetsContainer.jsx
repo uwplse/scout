@@ -6,7 +6,7 @@ import {
   DropTargetMonitor,
   ConnectDropTarget,
 } from 'react-dnd'; 
-import { NativeTypes } from 'react-dnd-html5-backend'; 
+import { NativeTypes } from 'react-dnd'; 
 import WidgetsContainerSVGWidget from "./WidgetsContainerSVGWidget"; 
 
 const { FILE } = NativeTypes; 
