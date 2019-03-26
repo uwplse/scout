@@ -246,6 +246,7 @@ export default class ConstraintsCanvas extends React.Component {
                 typingAlerts={typingAlerts}
                 displayRightClickMenu={this.displayRightClickMenu}
                 displayWidgetFeedback={this.displayWidgetFeedback}
+                removeTreeNodes={this.clearShapesFromCanvas}
                 getCurrentShapePrevNextSiblings={this.getCurrentShapePrevNextSiblings}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
@@ -348,9 +349,9 @@ export default class ConstraintsCanvas extends React.Component {
   clearShapesFromCanvas = () => {
     let newTreeData = []; 
     let rootNode = this.initRootNode(); 
-    this.state.treeData = this.state.treeData.concat(rootNode); 
+    newTreeData.push(rootNode); 
     this.setState({
-      treeData: this.state.treeData
+      treeData: newTreeData
     }, this.updateShapeCache); 
   }
 

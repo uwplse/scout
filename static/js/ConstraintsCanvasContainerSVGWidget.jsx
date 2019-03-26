@@ -20,6 +20,7 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         highlighted={this.props.highlighted}
         typed={this.props.typed}
         item={this.props.item}
+        removeTreeNodes={this.props.removeTreeNodes}
         displayRightClickMenu={this.props.displayRightClickMenu}
         displayWidgetFeedback={this.props.displayWidgetFeedback}
         getCurrentShapeSiblings={this.props.getCurrentShapeSiblings}

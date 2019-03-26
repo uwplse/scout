@@ -131,9 +131,15 @@
 	flex-direction: column;
 }
 
+.widget-control-row .remove-tree-nodes {
+	border: 1px solid gray;
+	margin-left: 1em;
+}
+
 .widget-control-info {
     display: flex;
     margin-top: 0.5em;
+    align-items: center; 
 }
 
 .widget-control-info span {

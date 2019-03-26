@@ -84,10 +84,6 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  clearShapesFromConstraintsCanvas = () => {
-    this.constraintsCanvasRef.current.clearShapesFromCanvas(); 
-  }
-
   showWidgetFeedback = (shapeId, evt) => {
     evt.stopPropagation();
     this.constraintsCanvasRef.current.showWidgetFeedback(shapeId); 

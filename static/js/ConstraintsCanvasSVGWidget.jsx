@@ -179,10 +179,9 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }
   }
 
-  onClick = (evt) => {
-    // prevent the event from escaping the ConstraintsCanvas container
-    // so that the active selections will not be deactivated 
-    // evt.stopPropagation();
+  onClickRemoveNodes = (evt) => {
+    evt.stopPropagation();
+    this.props.removeTreeNodes();
   }
 
   render () {
@@ -198,6 +197,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const importanceLabel = importance == "high" ? "Emphasized" : (importance == "low" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
+    const isCanvas = this.props.shape.type == "canvas";
 
     const isPrimary = this.props.primarySelection && this.props.primarySelection == this.props.shape; 
     const isSecondary = this.props.primarySelection && !isPrimary && this.props.primarySelection.name == this.props.shape.name; 
@@ -219,6 +219,10 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
               svg={source} 
               height={this.state.height + "px"} 
               width={this.state.width + "px"} />) : undefined}
+              {(isCanvas ? (<button 
+              type="button" 
+              className="btn btn-default remove-tree-nodes" 
+              onClick={this.onClickRemoveNodes}>Remove nodes</button>) : undefined)}
             <span 
               className="widget-control-remove-icon glyphicon glyphicon-remove"
               style={{visibility: (this.state.hovered ? "" : "hidden")}}
