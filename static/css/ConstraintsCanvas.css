@@ -52,7 +52,6 @@
 	background-color: white;
 }
 
-
 /* 
   Constraints canvas 
  */
@@ -72,7 +71,7 @@
 
  .constraints-canvas-alert {
  	margin: 2em;
- 	margin-top: 4em;
+ 	margin-top: 0em;
  }
 
 /** 
@@ -131,9 +130,10 @@
 	flex-direction: column;
 }
 
-.widget-control-row .remove-tree-nodes {
+.widget-control-remove-items .canvas-node-action {
 	border: 1px solid gray;
-	margin-left: 1em;
+	margin-top: 0.5em;
+	margin-right: 1em;
 }
 
 .widget-control-info {

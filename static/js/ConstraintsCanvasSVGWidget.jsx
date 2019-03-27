@@ -184,6 +184,11 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.props.removeTreeNodes();
   }
 
+  onClickClearFeedback = (evt) => {
+    evt.stopPropagation();
+    this.props.clearFeedback();
+  }
+
   render () {
     const source = this.state.svgSource; 
     const height = this.state.height; 
@@ -219,10 +224,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
               svg={source} 
               height={this.state.height + "px"} 
               width={this.state.width + "px"} />) : undefined}
-              {(isCanvas ? (<button 
-              type="button" 
-              className="btn btn-default remove-tree-nodes" 
-              onClick={this.onClickRemoveNodes}>Remove nodes</button>) : undefined)}
             <span 
               className="widget-control-remove-icon glyphicon glyphicon-remove"
               style={{visibility: (this.state.hovered ? "" : "hidden")}}
@@ -238,6 +239,22 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
                 {importanceLabel}
               </span>
             </div>
+            {(isCanvas ? (<div 
+              className="widget-control-remove-items"> 
+                <div>
+                  <button 
+                    type="button" 
+                    className="btn btn-default canvas-node-action" 
+                    disabled={!this.props.hasTreeNodes}
+                    onClick={this.onClickRemoveNodes}>Remove all nodes</button>
+                  <button 
+                    type="button" 
+                    className="btn btn-default canvas-node-action" 
+                    disabled={!this.props.hasFeedback}
+                    onClick={this.onClickClearFeedback}>Remove all feedback</button>
+                </div>
+                <hr className="feedback-container-separator" /> 
+            </div>) : undefined)}
             {this.props.feedbackItems}
         </div>
       </div>); 

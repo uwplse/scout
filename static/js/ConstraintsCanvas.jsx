@@ -228,6 +228,8 @@ export default class ConstraintsCanvas extends React.Component {
     let item = options.item ? options.item : false;
     let typed = options.typed ? options.typed : false;
     let feedback = options.feedback ? options.feedback : [];
+    let hasNodes = options.hasNodes; 
+    let hasFeedback = feedback.length; 
 
     let typingAlerts = [];
     if(options.typeGroupSize > 1) {
@@ -247,6 +249,9 @@ export default class ConstraintsCanvas extends React.Component {
                 displayRightClickMenu={this.displayRightClickMenu}
                 displayWidgetFeedback={this.displayWidgetFeedback}
                 removeTreeNodes={this.clearShapesFromCanvas}
+                hasTreeNodes={hasNodes}
+                clearFeedback={this.clearFeedback}
+                hasFeedback={hasFeedback}
                 getCurrentShapePrevNextSiblings={this.getCurrentShapePrevNextSiblings}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
@@ -355,6 +360,22 @@ export default class ConstraintsCanvas extends React.Component {
     }, this.updateShapeCache); 
   }
 
+  clearFeedback = () => {
+    Object.entries(this.widgetTreeNodeMap).map((item) => {
+      if(item.length == 2) {
+        let node = item[1]; 
+        delete node.shape.locks; 
+        delete node.shape.locked_values; 
+        delete node.shape.prevents; 
+        delete node.shape.prevented_values;  
+      }
+    }); 
+
+    this.setState({
+      treeData: this.state.treeData
+    }, this.updateShapeCache); 
+  }
+
   createNewTreeNode = (id, type, source, options={}) => {
     // Creates a new tree node widget and returns it
     let width = options.width ? options.width : 0;
@@ -368,7 +389,6 @@ export default class ConstraintsCanvas extends React.Component {
     }; 
 
     this.widgetTreeNodeMap[shape.name] = newTreeNode; 
-
     return newTreeNode; 
   }
 
@@ -1402,6 +1422,8 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   render () {
+    const hasNodes = this.widgetTreeNodeMap["canvas"] && this.widgetTreeNodeMap["canvas"].children.length; 
+
     // Gather the set of tree nodes
     const gatherTreeNodes = data => {
       return data.map((item) => {
@@ -1432,6 +1454,7 @@ export default class ConstraintsCanvas extends React.Component {
         let highlightedConflicts = item.conflicts ? item.conflicts : []; 
         let widgetFeedbacks = this.getWidgetFeedbacks(item.shape, highlightedConflicts); 
         widgetOptions.feedback = widgetFeedbacks; 
+        widgetOptions.hasNodes = hasNodes; 
         let widget = this.getWidget(item.shape, widgetSource, widgetOptions); 
         if (item.children && item.children.length) {
           return <TreeNode key={item.key} icon={widget} title={""} disabled={item.disabled}>{gatherTreeNodes(item.children)}</TreeNode>;
@@ -1440,7 +1463,6 @@ export default class ConstraintsCanvas extends React.Component {
       });
     };
 
-    const hasNodes = this.widgetTreeNodeMap["canvas"] && this.widgetTreeNodeMap["canvas"].children.length; 
     const treeNodes = gatherTreeNodes(this.state.treeData); 
     const shapes = this.constraintsShapes; 
     const pageFeedbacks = this.state.pageFeedbackWidgets;
