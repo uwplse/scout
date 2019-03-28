@@ -317,7 +317,8 @@ export default class DesignCanvas extends React.Component {
             + (this.state.hovered ? "hovered " : " ")
             + (canvasIsPrimary ? "primary-selection " : " ")
             + (canvasIsSecondary ? "secondary-selection " : " ")
-            + (this.state.new ? "new-design" : "")}
+            + (this.state.new ? "new-design " : " ")
+            + (saved ? "saved-design" : " ")}
             onClick={this.onCanvasClick}
             onMouseEnter={this.highlightConflicts} 
             onMouseLeave={this.unhighlightConflicts}>

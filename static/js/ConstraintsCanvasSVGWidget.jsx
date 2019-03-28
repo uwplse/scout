@@ -179,6 +179,16 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     }
   }
 
+  onClickRemoveNodes = (evt) => {
+    evt.stopPropagation();
+    this.props.removeTreeNodes();
+  }
+
+  onClickClearFeedback = (evt) => {
+    evt.stopPropagation();
+    this.props.clearFeedback();
+  }
+
   render () {
     const source = this.state.svgSource; 
     const height = this.state.height; 
@@ -192,6 +202,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const importanceLabel = importance == "high" ? "Emphasized" : (importance == "low" ? "Deemphasized" : ""); 
     const highlighted = this.state.highlighted; 
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
+    const isCanvas = this.props.shape.type == "canvas";
 
     const isPrimary = this.props.primarySelection && this.props.primarySelection == this.props.shape; 
     const isSecondary = this.props.primarySelection && !isPrimary && this.props.primarySelection.name == this.props.shape.name; 
@@ -228,6 +239,22 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
                 {importanceLabel}
               </span>
             </div>
+            {(isCanvas ? (<div 
+              className="widget-control-remove-items"> 
+                <div>
+                  <button 
+                    type="button" 
+                    className="btn btn-default canvas-node-action" 
+                    disabled={!this.props.hasTreeNodes}
+                    onClick={this.onClickRemoveNodes}>Remove all nodes</button>
+                  <button 
+                    type="button" 
+                    className="btn btn-default canvas-node-action" 
+                    disabled={!this.props.hasFeedback}
+                    onClick={this.onClickClearFeedback}>Remove all feedback</button>
+                </div>
+                <hr className="feedback-container-separator" /> 
+            </div>) : undefined)}
             {this.props.feedbackItems}
         </div>
       </div>); 
