@@ -32,13 +32,13 @@ export default class DesignCanvas extends React.Component {
       hovered: false, 
       primarySelection: props.primarySelection, 
       elementsList: [], 
-      scale: DesignCanvas.getScale(props.zoomed, props.savedState, props.invalidated)
+      scale: props.scaling ? props.scaling : DesignCanvas.getScale(props.zoomed, props.savedState, props.invalidated)
   	}; 
 
   	// a callback method to update the constraints canvas when a menu item is selected
   	this.updateConstraintsCanvas = props.updateConstraintsCanvas; 
     this.getConstraintsCanvasShape = props.getConstraintsCanvasShape;
-    this.displayWidgetFeedback = props.displayWidgetFeedback; 
+    this.setPrimarySelection = props.setPrimarySelection; 
 
     // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
     this.highlightFeedbackConflict = props.highlightFeedbackConflict; 
@@ -62,22 +62,18 @@ export default class DesignCanvas extends React.Component {
       primarySelection: nextProps.primarySelection, 
       canvasShape: prevState.canvasShape, 
       elements: prevState.elements, 
-      scale: DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated)
+      scale: nextProps.scaling ? nextProps.scaling : DesignCanvas.getScale(nextProps.zoomed, prevState.savedState, nextProps.invalidated, nextProps.activePanel)
     }    
   }
 
-  static getScale(zoomed, saved, invalidated) {
+  static getScale(zoomed, saved, invalidated, activePanel) {
     if(zoomed) {
       return 1.5; 
     }
 
-    if(saved == 1) {
+    if(saved == 1 && activePanel == "saved") {
       return 1.0; 
     }
-
-    if(saved == -1 || invalidated) {
-      return 0.5; 
-    } 
     
     return 0.5;
   }
@@ -107,7 +103,7 @@ export default class DesignCanvas extends React.Component {
             scale={this.state.scale}
             inMainCanvas={inMainCanvas}
             primarySelection={this.state.primarySelection}
-            displayWidgetFeedback={this.displayWidgetFeedback}/>); 
+            setPrimarySelection={this.setPrimarySelection}/>); 
   }
 
   getSVGSource = (node) => {
@@ -155,15 +151,12 @@ export default class DesignCanvas extends React.Component {
     // so they are at the top of the dom hierarchy
     let canvas = this.props.elements; 
     this.createSVGElement(canvas); 
-    this.setState({
-      canvasShape: canvas
-    });
-
     let elementsList = []; 
     this.getSortedElementsList(canvas, elementsList); 
 
     this.setState({
-      elementsList: elementsList
+      elementsList: elementsList, 
+      canvasShape: canvas
     }); 
   }
 
@@ -173,7 +166,9 @@ export default class DesignCanvas extends React.Component {
         let childElement = node.children[i]; 
         if(childElement) {
           elementsList.push(childElement); 
-          this.getSortedElementsList(childElement, elementsList); 
+          if(!childElement.alternate) {
+            this.getSortedElementsList(childElement, elementsList); 
+          }
         }
       }
     }
@@ -274,7 +269,7 @@ export default class DesignCanvas extends React.Component {
     // When the canvas node is clicked, display the widget feedback
     evt.stopPropagation();
 
-    this.displayWidgetFeedback(this.state.canvasShape);
+    this.setPrimarySelection(this.state.canvasShape);
   }
 
   render () {
@@ -309,6 +304,7 @@ export default class DesignCanvas extends React.Component {
            id={"canvas-box-" + this.id}>
         <DesignMenu 
           showZoom={!this.props.zoomed}
+          showSave={!saved}
           showTrash={!hideTrash}
           showConsider={showConsider}
           visible={menuVisible}

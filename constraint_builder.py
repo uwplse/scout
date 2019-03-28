@@ -154,7 +154,7 @@ class ConstraintBuilder(object):
 					"child_shape_" + shape1.shape_id + "_lt_parent_height")
 
 				# Create importance level constraints
-				if shape1.type == "leaf": 
+				if shape1.type == "leaf":
 					self.init_size(shape1, canvas)
 
 		self.init_layout_grid(canvas)
@@ -564,7 +564,7 @@ class ConstraintBuilder(object):
 					shape2 = child_shapes[j]
 					# Shapes must increase or decrease inside a group by the same amount
 					# If they are the same shape type. 
-					if shape1.type == "leaf" and shape2.type == "leaf" and shape1.semantic_type == shape2.semantic_type:
+					if shape1.type == "leaf" and shape2.type == "leaf":
 						size_eq = cb.eq(shape1.variables.size_factor.id, shape2.variables.size_factor.id)
 						size_equals.append(size_eq)
 
@@ -649,7 +649,7 @@ class ConstraintBuilder(object):
 			next_child = child_shapes[child_i]
 			next_child_width = str(next_child.computed_width())
 			return cb.ite(cb.lt(thinnest_child_width, next_child_width),
-				self.get_min_width_constraint(child_i+1, thinnest_i, child_shapes), 
+				self.get_min_width_constraint(child_i+1, thinnest_i, child_shapes),
 				self.get_max_width_constraint(child_i+1, child_i, child_shapes))
 		else: 
 			child_shape_width = str(child_shapes[thinnest_i].computed_width())
@@ -726,7 +726,7 @@ class ConstraintBuilder(object):
 				left_column_lt_right = cb.lte(child_left_column.id, child_right_column.id)
 				self.constraints += cb.assert_expr(left_column_lt_right, "child_" + child.shape_id + "_left_column_lt_right_column")
 
-				# Enforce that the x position of the child falls to the left edge of a column 
+				# Enforce that the x position of the child falls to the left edge of a column
 				left_column_mult = cb.sub(child_left_column.id, "1")
 				left_columns_spacing = cb.mult(column_width.id, left_column_mult)
 				left_gutter_spacing = cb.mult(gutter_width.id, left_column_mult)
@@ -962,12 +962,13 @@ class ConstraintBuilder(object):
 			"container_" + container.shape_id + "_max_height_horizontal")
 
 		# Enforce that the padding used by the container is no taller or wider than the smallest width or height element
-		# min_w_constraint = self.get_min_width_constraint(1,0,child_shapes)
-		# min_h_constraint = self.get_min_height_constraint(1,0,child_shapes)
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
-		# 	"container_" + container.shape_id + "_padding_lt_shortest_child")
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
-		# 	"container_" + container.shape_id + "_padding_lt_thinnest_child")
+		shapes_no_seps = [shp for shp in child_shapes if shp.semantic_type != "separator"]
+		min_w_constraint = self.get_min_width_constraint(1,0,shapes_no_seps)
+		min_h_constraint = self.get_min_height_constraint(1,0,shapes_no_seps)
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
+			"container_" + container.shape_id + "_padding_lt_shortest_child")
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
+			"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
 		self.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
 

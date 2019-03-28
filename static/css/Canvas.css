@@ -138,6 +138,7 @@ h1, h2, h3 {
 .designs-container {
 	display: flex; 
 	flex-direction: column;
+	overflow: auto;
 }
 
 .widgets-panel-container, 

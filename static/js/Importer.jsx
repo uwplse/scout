@@ -135,7 +135,11 @@ export default class Importer extends React.Component {
   }
 
   nodeIcon = () => {
-    return (<div></div>);
+    return (<div><SVGInline 
+            svg={"pageLogo"} 
+            height={"116px"} 
+            width={"116px"} />
+            </div>);
   }
 
 

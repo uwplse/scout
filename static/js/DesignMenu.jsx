@@ -39,7 +39,9 @@ export default class DesignMenu extends React.Component {
       menuItems.push(<DesignMenuItem key="consider" onClick={this.menuAction} action="consider" label={consider} />); 
     }
 
-    menuItems.push(<DesignMenuItem key="save" onClick={this.menuAction} action="save" label={save} />); 
+    if(this.props.showSave) {
+      menuItems.push(<DesignMenuItem key="save" onClick={this.menuAction} action="save" label={save} />); 
+    }
 
     if(this.props.showTrash) {
       menuItems.push(<DesignMenuItem key="trash" onClick={this.menuAction} action="trash" label={trash} />); 
