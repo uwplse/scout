@@ -76,6 +76,35 @@ export default class Exporter  {
     }
   }
 
+  computeDiversityScores = (designs) => {
+    // Compute a pairwise diversity score for the three designs saved by the designer. 
+    // Metric should compute an average of the diversity score for all three pairs. 
+
+    // Comparing a single pair of designs
+    // For each matched pair of shapes (Find the matching shape of the name property of the element in the element tree)
+      // Compute difference across the following dimensions
+          // Position - absolute value of distance moved (computed distance between two x,y coordinates) 
+                // - Normalize by dividing by screen diagonal length 
+          // Size - absolute value of the difference of the two areas (HxW) between the two shapes (Normalize )
+                // - Normalize by dividing by the total area of the screen
+          // Neighboring elements
+              // Find the closest neighboring element in each direction for each element
+              // L, T, B, R 
+              // If there is no element in a direction (L,T,B,R), the neighboring element in that direction is the canvas
+              // For each closest neighboring element along each dimension: 
+                  // Neighbor is a different element: 1, Not a different element: 0 
+                  // Distance to neighbor in that direction (T,B,L,R)
+                      // -- normalize by dividing by width (L,R)  or height (T,B) of canvas 
+              // There should be 8 metrics T_changed + T_distance + L_changed + L_distance + B_changed + B_distance + R_changed + R_distance
+              // Divide the total score/8 to get the neighboring elements diversity score
+          // Representation (only for Alternate groups) - Changed - 1, Not Changed - 0
+
+      // Diversity score for a single pair is a weighted average of Position, Size, Neighboring Elements, Alternate Rep (only for Alternate groups)
+
+    // Sum up the total of diversity scores for the full set of elements. 
+    // Then return that as the total score. 
+  }
+
   addDesignToExports = (design, designNode) => {
   	let designID = design.id;
 
