@@ -4,7 +4,7 @@ import cost as ch
 import uuid
 import shapes as shape_objects
 import numpy as np
-import cost_model
+# import cost_model
 
 CANVAS_WIDTH = 360
 CANVAS_HEIGHT = 640
@@ -187,10 +187,10 @@ class Solution(object):
 		# Alnd also the related cost matrix for computing the symmetry (cost_matrix)
 		# tree is a hierarchy structure of nodes with computed values 
 		# for the variables (x,y,width,height, etc) and other metadata (type)
-		# cost = self.compute_cost(tree)
+		cost = self.compute_cost(tree)
 
-		new_cost = cost_model.compute_cost(element_tree)
-		cost = new_cost
+		# new_cost = cost_model.compute_cost(element_tree)
+		# cost = new_cost
 
 		print("Total cost: " + str(cost))
 		sln["elements_dict"] = elements_dict
