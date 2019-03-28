@@ -82,6 +82,7 @@ export default class Exporter  {
 
     // Comparing a single pair of designs
     // For each matched pair of shapes (Find the matching shape of the name property of the element in the element tree)
+      /// Only leaf node shapes 
       // Compute difference across the following dimensions
           // Position - absolute value of distance moved (computed distance between two x,y coordinates) 
                 // - Normalize by dividing by screen diagonal length 
@@ -98,6 +99,7 @@ export default class Exporter  {
               // There should be 8 metrics T_changed + T_distance + L_changed + L_distance + B_changed + B_distance + R_changed + R_distance
               // Divide the total score/8 to get the neighboring elements diversity score
           // Representation (only for Alternate groups) - Changed - 1, Not Changed - 0
+                // shape.alternate  = true 
 
       // Diversity score for a single pair is a weighted average of Position, Size, Neighboring Elements, Alternate Rep (only for Alternate groups)
 
