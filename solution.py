@@ -4,6 +4,7 @@ import cost as ch
 import uuid
 import shapes as shape_objects
 import numpy as np
+import cost_model
 
 CANVAS_WIDTH = 360
 CANVAS_HEIGHT = 640
@@ -119,7 +120,7 @@ class Solution(object):
 
 			# Get the computed values from the model 
 			self.parse_values(tree, element, variables, model)
-			
+
 			# Emphasis cost function calculations
 			if tree.type != "canvas":
 				height = element["height"]
@@ -187,6 +188,9 @@ class Solution(object):
 		# tree is a hierarchy structure of nodes with computed values 
 		# for the variables (x,y,width,height, etc) and other metadata (type)
 		# cost = self.compute_cost(tree)
+
+		new_cost = cost_model.compute_cost(element_tree)
+		cost = new_cost
 
 		print("Total cost: " + str(cost))
 		sln["elements_dict"] = elements_dict
