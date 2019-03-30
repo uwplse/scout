@@ -689,7 +689,7 @@ class ConstraintBuilder(object):
 		column_width = canvas.variables.column_width
 		margin = canvas.variables.margin
 		canvas_x = canvas.variables.x
-		canvas_width = canvas.computed_width()
+		canvas_width = str(canvas.computed_width())
 
 		# Enforce children constraints
 		child_shapes = canvas.children
@@ -699,6 +699,7 @@ class ConstraintBuilder(object):
 				
 				child_left_column = child.variables.left_column
 				child_right_column = child.variables.right_column 
+				child_canvas_alignment = child.variables.canvas_alignment
 
 				# Enforce the child column domain values
 				left_column_values = []
@@ -714,6 +715,11 @@ class ConstraintBuilder(object):
 					right_column_values.append(col_eq)
 				self.constraints += cb.assert_expr(cb.or_expr(right_column_values),
 					"shape_" + child.shape_id + "_right_layout_column_value")
+
+				canvas_alignment_values = []
+				self.constraints += cb.assert_expr(cb.gte(child_canvas_alignment.id, "0"), "shape_" + child.shape_id + "_canvas_alignment_gt_0")
+				self.constraints += cb.assert_expr(cb.lt(child_canvas_alignment.id, str(len(child_canvas_alignment.domain))),
+					"shape_" + child.shape_id + "_canvas_alignemnt_lt_domain" )
 
 				# Enforce that the child column value is less than the canvas column amount
 				left_column_lt_parent = cb.lte(child_left_column.id, layout_columns.id)
@@ -741,6 +747,25 @@ class ConstraintBuilder(object):
 
 				self.constraints += cb.assert_expr(cb.eq(cb.add(child.variables.x.id, child.variables.width.id), child_right_position),
 												   "child_" + child.shape_id + "_right_position_right_column")
+
+				# Canvas alignment values 
+				child_width = str(child.computed_width())
+				l_index = child_canvas_alignment.domain.index("left")
+				is_left = cb.eq(child_canvas_alignment.id, str(l_index))
+
+				c_index = child_canvas_alignment.domain.index("center")
+				is_center = cb.eq(child_canvas_alignment.id, str(c_index))
+				
+				r_index = child_canvas_alignment.domain.index("right")
+				is_right = cb.eq(child_canvas_alignment.id, str(r_index))
+
+				aligned_left = cb.eq(child.variables.x.id, margin.id)
+				aligned_center = cb.eq(cb.add(child.variables.x.id, cb.div(child_width, "2")), cb.div(canvas_width, "2"))
+				aligned_right = cb.eq(cb.add(child.variables.x.id, child.variables.width.id), cb.sub(canvas_width, margin.id)) 
+
+				self.constraints += cb.assert_expr(cb.ite(is_left,aligned_left,"true"), "child_" + child.shape_id + "_canvas_alignment_left")
+				self.constraints += cb.assert_expr(cb.ite(is_right,aligned_right,"true"), "child_" + child.shape_id + "canvas_alignment_right")
+				self.constraints += cb.assert_expr(cb.ite(is_center,aligned_center,"true"), "child_" + child.shape_id + "_canvas_alignment_center")
 
 
 	def align_rows_or_columns(self, container, padding, rows, column_or_row,

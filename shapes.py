@@ -12,6 +12,7 @@ SEPARATOR_TARGETS = ["separator"]
 
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
+CANVAS_ALIGNMENT = ["left", "center", "right", "other"]
 MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
 MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
@@ -317,6 +318,7 @@ class Shape(object):
 			self.has_columns = True
 			self.variables.left_column = var.Variable(shape_id, "left_column", COLUMNS, index_domain=False)
 			self.variables.right_column = var.Variable(shape_id, "right_column", COLUMNS, index_domain=False)
+			self.variables.canvas_alignment = var.Variable(shape_id, "canvas_alignment", CANVAS_ALIGNMENT)
 			self.search_variables.append(self.variables.left_column)
 			self.search_variables.append(self.variables.right_column)
 

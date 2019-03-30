@@ -70,6 +70,9 @@ class Solution(object):
 		right_column = model[variables[shape.variables.right_column.id]].as_string()
 		element["right_column"] = int(right_column)
 
+		canvas_alignment = model[variables[shape.variables.canvas_alignment.id]].as_string()
+		element["canvas_alignment"] = int(canvas_alignment)
+
 	def parse_alternate_values(self, shape, element, variables, model):
 		alternate = model[variables[shape.variables.alternate.id]].as_string()
 		element["alternate"] = alternate
