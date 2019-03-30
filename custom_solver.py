@@ -76,7 +76,9 @@ class CustomSolver(object):
 		elements = json.loads(elements_json)
 
 		# Construct the solver instance
-		solver = z3_solver.Solver(z3_context, elements) 
+		# Do not prune the variable domains when we are checking validitiy so we 
+		# don't remove the values for the previous solution from the domains. 
+		solver = z3_solver.Solver(z3_context, elements, prune_domains=False) 
 
 		time_start = time.time()
 		solution = solver.check_validity(solution)

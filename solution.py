@@ -190,10 +190,11 @@ class Solution(object):
 		# Alnd also the related cost matrix for computing the symmetry (cost_matrix)
 		# tree is a hierarchy structure of nodes with computed values 
 		# for the variables (x,y,width,height, etc) and other metadata (type)
-		cost = self.compute_cost(tree)
-
-		new_cost = cost_model.compute_cost(element_tree)
-		cost = new_cost
+		# cost = self.compute_cost(tree)
+		#
+		# new_cost = cost_model.compute_cost(element_tree)
+		# cost = new_cost
+		cost = 0
 
 		print("Total cost: " + str(cost))
 		sln["elements_dict"] = elements_dict

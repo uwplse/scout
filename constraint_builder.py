@@ -6,6 +6,8 @@ import smtlib_builder as cb
 
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
+IGNORED_VALUE_CONSTRAINTS = ["baseline", "canvas_alignment", "extra_in_first", "size_combo", "grid_layout", "outside_padding"]
+IGNORED_PREVIOUS_SOLUTION_CONSTRAINTS = ["baseline", "extra_in_first", "size_combo", "grid_layout", "canvas_alignment"]
 
 def abs(x):
 	return If(x>=0,x,-x)
@@ -35,65 +37,76 @@ class ConstraintBuilder(object):
 			if (not "added" in solution and not "removed" in solution) or (not len(solution["added"]) and not len(solution["removed"])):
 				self.get_previous_solution_constraints_from_elements(shapes, elements, solution["id"])
 
-
-	def get_solution_variable_declarations(self, shapes, elements): 
+	def get_solution_variable_declarations(self, element_tree, shapes):
 		declarations = ""
-		for elementID in elements:
-			element = elements[elementID]
+		element_id = element_tree['name']
 
-			# Get the shape corresponding to the element name
-			shape = shapes[elementID]
-			variables = shape.variables.toDict()
-			for variable_key in variables.keys(): 
-				variable = variables[variable_key]
-				declarations += cb.declare(variable.id, variable.type)
+		# Get the shape corresponding to the element name
+		shape = shapes[element_id]
+		variables = shape.variables.toDict()
+		for variable_key in variables.keys(): 
+			variable = variables[variable_key]
+			declarations += cb.declare(variable.id, variable.type)
+
+		if 'children' in element_tree: 
+			for child in element_tree['children']: 
+				declarations += self.get_solution_variable_declarations(child, shapes)
 
 		return declarations
 
-	def get_previous_solution_constraints_from_elements(self, shapes, elements, solutionID):
-		all_values = []
-		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout"]
+	def get_previous_solution_variable_values(self, element_tree, shapes, value_constraints=[]):
+		element_id = element_tree['name']
 
-		for elementID in elements:
-			element = elements[elementID]
+		# Get the shape corresponding to the element name
+		shape = shapes[element_id]
+		variables = shape.variables.toDict()
+		if shape.type == "leaf":
+			for variable_key in variables.keys():
+				variable = variables[variable_key]
+				if variable.name not in IGNORED_PREVIOUS_SOLUTION_CONSTRAINTS:
+					variable_value = variable.get_value_from_element(element_tree)
+					value_constraints.append(cb.eq(variable.id,
+											str(variable_value)))
+		if 'children' in element_tree:
+			for child in element_tree['children']:
+				self.get_previous_solution_variable_values(child, shapes, value_constraints)
 
-			# Get the shape corresponding to the element name
-			shape = shapes[elementID]
-			variables = shape.variables.toDict()
-			if shape.type == "leaf":
-				for variable_key in variables.keys(): 
-					variable = variables[variable_key]
-					if variable.name not in ignored:
-						variable_value = variable.get_value_from_element(element)
-						all_values.append(cb.eq(variable.id,
-							str(variable_value)))
+
+	def get_previous_solution_constraints_from_elements(self, shapes, element_tree, solutionID):
+		value_constraints = []
+		self.get_previous_solution_variable_values(element_tree, shapes, value_constraints)
 
 		# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
-		self.constraints += cb.assert_expr(cb.not_expr(cb.and_expr(all_values)), 
+		self.constraints += cb.assert_expr(cb.not_expr(cb.and_expr(value_constraints)),
 			"prevent_previous_solution_" + solutionID + "_values")
 
-	def init_solution_constraints(self, shapes, elements, solutionID):
-		all_values = []
-		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout", "outside_padding"]
-		for elementID in elements:
-			element = elements[elementID]
+	def get_variable_value_constraints(self, element_tree, shapes, value_constraints):
+		element_id = element_tree['name']
 
-			# Get the shape corresponding to the element name
-			shape = shapes[elementID]
+		# Get the shape corresponding to the element name
+		shape = shapes[element_id]
 
-			variables = shape.variables.toDict()
-			for variable_key in variables.keys(): 
-				variable = variables[variable_key]
-				self.decl_constraints += cb.declare(variable.id, variable.type)
-				if variable.name not in ignored:
-					variable_value = variable.get_value_from_element(element)
-					if variable_value != None: 
-						all_values.append(cb.eq(variable.id, 
-							str(variable_value)))
+		variables = shape.variables.toDict()
+		for variable_key in variables.keys(): 
+			variable = variables[variable_key]
+			self.decl_constraints += cb.declare(variable.id, variable.type)
+			if variable.name not in IGNORED_VALUE_CONSTRAINTS:
+				variable_value = variable.get_value_from_element(element_tree)
+				if variable_value != None: 
+					value_constraints.append(cb.eq(variable.id, 
+						str(variable_value)))
+
+		if 'children' in element_tree: 
+			for child in element_tree['children']:
+				self.get_variable_value_constraints(child, shapes, value_constraints)
+
+	def init_solution_constraints(self, shapes, element_tree, solutionID):
+		value_constraints = []
+		self.get_variable_value_constraints(element_tree, shapes, value_constraints)
+		constraints = cb.assert_expr(cb.and_expr(value_constraints), "fix_solution_" + solutionID + "_values")
 
 		# Return the constraints so they can be loaded in after the intial initialization of the base constraints
-		declarations = self.get_solution_variable_declarations(shapes, elements)
-		constraints = cb.assert_expr(cb.and_expr(all_values), "fix_solution_" + solutionID + "_values")
+		declarations = self.get_solution_variable_declarations(element_tree, shapes)
 		return declarations + constraints
 
 	def init_shape_baseline(self, shape): 

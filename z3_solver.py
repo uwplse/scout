@@ -93,7 +93,7 @@ class OverrideSolver(object):
 			self.solver.add(constraint)
 
 class Solver(object): 
-	def __init__(self, solver_ctx, elements, solutions=[], relative_designs=None):
+	def __init__(self, solver_ctx, elements, solutions=[], relative_designs=None, prune_domains=True):
 		# Construct the solver instance we will use for Z3
 		self.solver_ctx = solver_ctx
 		self.solver = z3.Solver(ctx=self.solver_ctx)
@@ -117,8 +117,9 @@ class Solver(object):
 
 		# Prunes 
 		# time_start = time.time()
-		self.prune_layout_grid_domains()
-		self.prune_size_domains()
+		if prune_domains: 
+			self.prune_layout_grid_domains()
+			self.prune_size_domains()
 		# # time_end = time.time()
 		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
 
@@ -771,14 +772,17 @@ class Solver(object):
 		shapes_removed = []
 
 		# Look for shapes that were added or removed and in that case, we dont' need to check validity 
-		for elementID in elements:
-			if elementID not in self.shapes:
-				shapes_removed.append(elementID)
+		element_ids = []
+		sh.get_element_names(elements, element_ids)
 
-		for shapeID in self.shapes:
-			shape = self.shapes[shapeID]
-			if shapeID not in elements and (shape.type != "container" or len(shape.children)):
-				shapes_added.append(shapeID)
+		for element_id in element_ids:
+			if element_id not in self.shapes:
+				shapes_removed.append(element_id)
+
+		for shape_id in self.shapes:
+			shape = self.shapes[shape_id]
+			if shape_id not in element_ids and (shape.type != "container" or len(shape.children)):
+				shapes_added.append(shape_id)
 
 		return shapes_added, shapes_removed
 	

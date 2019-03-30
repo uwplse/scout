@@ -22,7 +22,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     this.checkSolutionValidity = props.checkSolutionValidit; 
     this.hideRightClickMenu = props.hideRightClickMenu; 
     this.getCurrentShapeSiblings = props.getCurrentShapeSiblings; 
-    this.getCurrentShapePrevNextSiblings = props.getCurrentShapePrevNextSiblings; 
     this.getCurrentShapeIndex = props.getCurrentShapeIndex;
     this.getCurrentParentNode = props.getCurrentParentNode; 
     this.isContainer = props.isContainer; 
@@ -102,7 +101,6 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
       feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
       feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings; 
-      feedbackCallbacks.getCurrentShapePrevNextSiblings = this.getCurrentShapePrevNextSiblings; 
       feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
     }
     else if(this.type == "canvas") {
@@ -111,7 +109,7 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     else {
       feedbackCallbacks.setOrder = this.setOrder; 
       feedbackCallbacks.getCurrentShapeIndex = this.getCurrentShapeIndex; 
-      feedbackCallbacks.getCurrentShapePrevNextSiblings = this.getCurrentShapePrevNextSiblings;
+      feedbackCallbacks.getCurrentShapeSiblings = this.getCurrentShapeSiblings;
       feedbackCallbacks.getCurrentParentNode = this.getCurrentParentNode; 
       feedbackCallbacks.setImportanceLevel = this.setImportanceLevel; 
     }

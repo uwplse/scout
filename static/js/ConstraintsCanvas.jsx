@@ -252,7 +252,6 @@ export default class ConstraintsCanvas extends React.Component {
                 hasTreeNodes={hasNodes}
                 clearFeedback={this.clearFeedback}
                 hasFeedback={hasFeedback}
-                getCurrentShapePrevNextSiblings={this.getCurrentShapePrevNextSiblings}
                 getCurrentShapeSiblings={this.getCurrentShapeSiblings}
                 getCurrentShapeIndex={this.getCurrentShapeIndex}
                 getCurrentParentNode={this.getCurrentParentNode}
@@ -272,7 +271,6 @@ export default class ConstraintsCanvas extends React.Component {
               highlighted={highlighted}
               displayRightClickMenu={this.displayRightClickMenu}
               displayWidgetFeedback={this.displayWidgetFeedback}
-              getCurrentShapePrevNextSiblings={this.getCurrentShapePrevNextSiblings}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
               getCurrentShapeIndex={this.getCurrentShapeIndex}
               getCurrentParentNode={this.getCurrentParentNode}
@@ -544,8 +542,8 @@ export default class ConstraintsCanvas extends React.Component {
   
   getCurrentShapePrevNextSiblings = (shapeId) => {
     // Go through tree data (recursive) and find the level of the element
-    let siblings = {}; 
-    let node = this.state.treeData; 
+    let siblings = []; 
+    let node = this.state.treeData[0]; 
     this.findShapeSiblings(shapeId, siblings, node);
 
     let siblingItems = {}; 
