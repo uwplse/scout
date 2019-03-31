@@ -877,6 +877,46 @@ export default class ConstraintsCanvas extends React.Component {
     }, this.checkSolutionValidityAndUpdateCache);
   }
 
+  removeOrderConstraints = (shapeID) => {
+    // Remove the order constraints for this node if its position in the hierarchy changes
+    let shapeNode = this.widgetTreeNodeMap[shapeID]; 
+    if(shapeNode) {
+      // Remove order constraints (order)
+      shapeNode.shape.order = -1; 
+    }
+  }
+
+  removeCanvasChildConstraints = (shapeID) => {
+    let toRemove = ["left_column", "right_column", "canvas_alignment"]; 
+
+    // Remove the canvas child constraints for this node if it is reparented
+    let shapeNode = this.widgetTreeNodeMap[shapeID]; 
+    if(shapeNode) {
+      let parentNode = this.getParentNodeForKey(shapeNode.key, this.state.treeData[0]); 
+      if(parentNode && parentNode.shape.type != "canvas") {
+        // IF there are any locks or prevents on this element that apply to canvas chidlren, remove them 
+        for(let i=0; i<toRemove.length; i++) {
+          let property = toRemove[i]; 
+          if(shapeNode.shape.locks) {
+            let shapeIndex = shapeNode.shape.locks.indexOf(property); 
+            if(shapeIndex > -1) {
+              shapeNode.shape.locks.splice(shapeIndex, 1); 
+              delete shapeNode.shape.locked_values[property]; 
+            }
+          }
+
+          if(shapeNode.shape.prevents) {
+            let shapeIndex = shapeNode.shape.prevents.indexOf(property); 
+            if(shapeIndex > -1) {
+              shapeNode.shape.prevents.splice(shapeIndex, 1); 
+              delete shapeNode.shape.prevented_values[property];             
+            }
+          }
+        }
+      }
+    }
+  }
+
   removeWidgetNode = (key) => { 
     let parentNode = this.getParentNodeForKey(key, this.state.treeData[0]); 
     let index = -1; 
@@ -1393,6 +1433,12 @@ export default class ConstraintsCanvas extends React.Component {
     if(droppedInItemGroup) {
       let parentRepeatGroup = this.getParentNodeForKey(parentDropNode.key, this.state.treeData[0]); 
       this.removeRepeatGroup(parentRepeatGroup.key); 
+    }
+
+    // Remove other constaints that should be removed when the element is dragged around in the tree
+    if(dragObj) {
+      this.removeOrderConstraints(dragObj.key); 
+      this.removeCanvasChildConstraints(dragObj.key); 
     }
 
     this.setState({

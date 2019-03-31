@@ -229,7 +229,7 @@ class ConstraintBuilder(object):
 		const = cb.or_expr(grid_values) if len(grid_values) > 1 else grid_values[0]
 		self.constraints += cb.assert_expr(const, "canvas_baseline_grid_in_domain")
 
-	def init_container_constraints(self, container, shapes):
+	def init_container_constraints(self, container, shapes, canvas):
 		arrangement = container.variables.arrangement.id
 		alignment = container.variables.alignment.id
 		padding = container.variables.padding.id
@@ -252,6 +252,13 @@ class ConstraintBuilder(object):
 
 		self.constraints += cb.assert_expr(cb.or_expr(padding_values), "container_"
 			+ container.shape_id + "_padding_in_domain")
+
+		# Outside padding variable should be >= 0 
+		if container.at_root: 
+			outside_padding = container.variables.outside_padding.id
+			canvas_width = str(canvas.computed_width())
+			self.constraints += cb.assert_expr(cb.gte(outside_padding, "0"), "container_" + container.shape_id + "_outside_padding_gt_0")
+			self.constraints += cb.assert_expr(cb.lte(outside_padding, canvas_width), "container_" + container.shape_id + "_outside_padding_lt_canvas_width")
 
 		# Enforce children constraints
 		child_shapes = container.children
@@ -315,8 +322,6 @@ class ConstraintBuilder(object):
 	def init_repeat_group(self, container, shapes): 
 		subgroups = container.children
 		all_same_values = []
-		all_same_heights = []
-		all_same_widths = []
 
 		for i in range(0, len(subgroups)): 
 			if i < len(subgroups) - 1: 

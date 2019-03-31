@@ -192,13 +192,12 @@ class Solver(object):
 	def init_constraints(self):
 		# Initialize the set of constraints on shapes and containers
 		canvas = None
-		for shape in self.shapes.values(): 
-			if shape.type == "canvas":
-				self.cb.init_canvas_constraints(shape)
-				canvas = shape
+		canvas = self.shapes['canvas'] 
+		self.cb.init_canvas_constraints(canvas)
 
+		for shape in self.shapes.values(): 
 			if shape.type == "container": 
-				self.cb.init_container_constraints(shape, self.shapes)
+				self.cb.init_container_constraints(shape, self.shapes, canvas)
 
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
