@@ -16,9 +16,9 @@ CANVAS_ALIGNMENT = ["left", "center", "right", "other"]
 MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
 MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
-MIN_HEIGHT = 24
+MIN_HEIGHT = 12
 MIN_WIDTH_TOUCH_TARGET = 120
-MIN_HEIGHT_ASPECT_RATIO = 24
+MIN_HEIGHT_ASPECT_RATIO = 12
 GRID_CONSTANT = 4
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
@@ -71,7 +71,7 @@ def compute_size_domain_change_width_only_root(importance, width, height, layout
 		num_columns = 1
 		while num_columns <= columns: 
 			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
-			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH: 
+			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH:
 				if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
 					hw_values = [width_value, orig_height]
 					if hw_values not in domain:
@@ -101,9 +101,9 @@ def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, la
 		while num_columns <= columns:
 			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
 			height_value = int(width_value * aspect_ratio)
-			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH \
+			if width_value >= MIN_WIDTH and width_value <= MAX_WIDTH \
 					and height_value >= MIN_HEIGHT_ASPECT_RATIO and height_value <= MAX_HEIGHT:
-				if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
+				if (width_value >= width and importance != "low") or (width_value <= width and importance != "high"):
 					hw_values = [width_value, height_value]
 					if hw_values not in domain:
 						domain.append(hw_values)

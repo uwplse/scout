@@ -6,7 +6,8 @@ import smtlib_builder as cb
 
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
-IGNORED_VALUE_CONSTRAINTS = ["baseline", "canvas_alignment", "extra_in_first", "size_combo", "grid_layout", "outside_padding"]
+IGNORED_VALUE_CONSTRAINTS = ["baseline", "canvas_alignment", "extra_in_first", "size_combo", "grid_layout", "size_factor",
+							 "outside_padding"]
 IGNORED_PREVIOUS_SOLUTION_CONSTRAINTS = ["baseline", "extra_in_first", "size_combo", "grid_layout", "canvas_alignment"]
 
 def abs(x):
@@ -31,8 +32,7 @@ class ConstraintBuilder(object):
 
 	def init_previous_solution_constraints(self, previous_solutions, shapes): 
 		# Saved solutions should not appear again in the results
-		declared = False
-		for solution in previous_solutions: 
+		for solution in previous_solutions:
 			elements = solution["elements"]
 			if (not "added" in solution and not "removed" in solution) or (not len(solution["added"]) and not len(solution["removed"])):
 				self.get_previous_solution_constraints_from_elements(shapes, elements, solution["id"])
