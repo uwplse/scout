@@ -2,9 +2,9 @@ from z3 import *
 import solver_helpers as sh
 import cost as ch
 import uuid
-import shapes as shape_objects
 import numpy as np
 import cost_model
+from size_domains import MAX_HEIGHT, MAX_WIDTH, MIN_HEIGHT, MIN_WIDTH
 
 CANVAS_WIDTH = 360
 CANVAS_HEIGHT = 640
@@ -134,8 +134,8 @@ class Solution(object):
 					# Cost will be the distance from the maximum size
 					cost_metrics['importance_change'] += (height - tree.orig_height)
 					cost_metrics['importance_change'] += (width - tree.orig_width)
-					cost_metrics['importance_max'] += (shape_objects.MAX_HEIGHT - tree.orig_height)
-					cost_metrics['importance_max'] += (shape_objects.MAX_WIDTH - tree.orig_width)
+					cost_metrics['importance_max'] += (MAX_HEIGHT - tree.orig_height)
+					cost_metrics['importance_max'] += (MAX_WIDTH - tree.orig_width)
 
 					# Compute the distance of the shape from the center of the canvas
 					cost_metrics['distance_cost'] += ch.compute_distance_from_center(x, y, width, height)
@@ -143,8 +143,8 @@ class Solution(object):
 					# Used for computing importance cost
 					cost_metrics['importance_change'] += (tree.orig_height - height)
 					cost_metrics['importance_change'] += (tree.orig_width - width)
-					cost_metrics['importance_max'] += (tree.orig_height - shape_objects.MIN_HEIGHT)
-					cost_metrics['importance_max'] += (tree.orig_width - shape_objects.MIN_WIDTH)
+					cost_metrics['importance_max'] += (tree.orig_height - MIN_HEIGHT)
+					cost_metrics['importance_max'] += (tree.orig_width - MIN_WIDTH)
 
 					cost_metrics['distance_cost'] += ch.compute_inverse_distance_from_center(x, y, width, height)
 
