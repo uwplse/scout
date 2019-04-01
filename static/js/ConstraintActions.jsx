@@ -25,7 +25,7 @@ ConstraintActions.computeGridLayoutValues = function computeGridLayoutValues() {
 
 // Variables where the domains are encoded as integer values into the domain list
 // rather than string values, or real values (e.g., margins)
-ConstraintActions.index_domains = ["arrangement", "alignment"]
+ConstraintActions.index_domains = ["arrangement", "alignment", "canvas_alignment"]
 
 ConstraintActions.canvas_width = 360; 
 ConstraintActions.canvas_height = 640; 
@@ -46,6 +46,8 @@ ConstraintActions.horizontalAlignments = ["top", "y-center", "bottom"];
 ConstraintActions.alignments = ["Top-Left", "Center", "Bottom-Right"]; 
 ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]; 
 ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
+
+ConstraintActions.canvasAlignments = ["left", "center", "right", "other"]; 
 
 // Canvas variable domains 
 ConstraintActions.margins = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]; 
@@ -213,7 +215,10 @@ ConstraintActions.messages = {
 	"columns": function getMessage(shape, value) {
 		return " columns of " + value + ".";
 	}, 
-
+	"canvas_alignment": function getMessage(shape, value) {
+		let labelValue = ConstraintActions.canvasAlignments[value]; 
+		return " aligned to canvas " + labelValue + "."; 
+	}, 
 	"gutter_width": function getMessage(shape, value) {
 		return " gutter width of " + value + "px."; 
 	}, 
@@ -355,13 +360,14 @@ ConstraintActions.elementConstraints = {
 
 // These actions will only appear for direct children of the canvas container
 ConstraintActions.canvasChildConstraints = {
-	"values": ["left_column", "right_column", "y"],
+	"values": ["left_column", "right_column", "y", "canvas_alignment"],
 	"keep": ConstraintActions.defaultKeep, 
 	"prevent": ConstraintActions.defaultPrevent, 
 	"domains": {
 		"left_column": ConstraintActions.left_columns, 
 		"right_column": ConstraintActions.right_columns, 
-		"y": ConstraintActions.y_positions
+		"y": ConstraintActions.y_positions, 
+		"canvas_alignment": ConstraintActions.canvasAlignments
 	}
 }
 
@@ -468,7 +474,7 @@ ConstraintActions.canvasConstraints = {
 		}, 
 		"column_width": function (shape) {
 			return ConstraintActions.computeCanvasDomainValues(shape, "column_width"); 
-		}
+		} 
 	}
 }
 

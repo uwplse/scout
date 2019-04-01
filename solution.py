@@ -70,6 +70,9 @@ class Solution(object):
 		right_column = model[variables[shape.variables.right_column.id]].as_string()
 		element["right_column"] = int(right_column)
 
+		canvas_alignment = model[variables[shape.variables.canvas_alignment.id]].as_string()
+		element["canvas_alignment"] = int(canvas_alignment)
+
 	def parse_alternate_values(self, shape, element, variables, model):
 		alternate = model[variables[shape.variables.alternate.id]].as_string()
 		element["alternate"] = alternate
@@ -187,10 +190,11 @@ class Solution(object):
 		# Alnd also the related cost matrix for computing the symmetry (cost_matrix)
 		# tree is a hierarchy structure of nodes with computed values 
 		# for the variables (x,y,width,height, etc) and other metadata (type)
-		cost = self.compute_cost(tree)
-
-		new_cost = cost_model.compute_cost(element_tree)
-		cost = new_cost
+		# cost = self.compute_cost(tree)
+		#
+		# new_cost = cost_model.compute_cost(element_tree)
+		# cost = new_cost
+		cost = 0
 
 		print("Total cost: " + str(cost))
 		sln["elements_dict"] = elements_dict

@@ -27,7 +27,6 @@ export default class ConstraintsCanvasContainerSVGWidget extends React.Component
         displayRightClickMenu={this.props.displayRightClickMenu}
         displayWidgetFeedback={this.props.displayWidgetFeedback}
         getCurrentShapeSiblings={this.props.getCurrentShapeSiblings}
-        getCurrentShapePrevNextSiblings={this.props.getCurrentShapePrevNextSiblings}
         getCurrentShapeIndex={this.props.getCurrentShapeIndex}
         getCurrentParentNode={this.props.getCurrentParentNode}
         activeCanvasShape={this.props.activeCanvasShape}

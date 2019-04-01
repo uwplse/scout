@@ -10,6 +10,14 @@ import time
 CANVAS_WIDTH = 360
 CANVAS_HEIGHT = 640
 
+def get_element_names(element_tree, element_names=[]):
+	"""Get a list of all the names of elements in the tree hierarchy"""
+	element_names.append(element_tree['name'])
+
+	if 'children' in element_tree: 
+		for child in element_tree['children']: 
+			get_element_names(child, element_names)
+
 def get_row_column_values(num_siblings):
 	values = []
 	rows_or_columns = 2

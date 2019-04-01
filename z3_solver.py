@@ -10,6 +10,8 @@ import solver_helpers as sh
 import solution as sln
 import logging
 import numpy as np
+import size_domains as sizes
+from size_domains import LAYOUT_GRID_PROPERTIES, SIZE_PROPERTIES
 z3.set_param(
          'smt.arith.random_initial_value', True,
          'smt.random_seed', np.random.randint(0, 655350),
@@ -67,8 +69,7 @@ CANVAS_RELAX_PROPERTIES = {
 	"width": [["grid_layout"], ["baseline_grid"]]
 }
 
-LAYOUT_GRID_PROPERTIES = ["margin", "columns", "column_width", "gutter_width"]
-SIZE_PROPERTIES = ["width", "height", "size_factor"]
+
 
 class OverrideSolver(object):
 	def __init__(self, solver):
@@ -93,7 +94,7 @@ class OverrideSolver(object):
 			self.solver.add(constraint)
 
 class Solver(object): 
-	def __init__(self, solver_ctx, elements, solutions=[], relative_designs=None):
+	def __init__(self, solver_ctx, elements, solutions=[], relative_designs=None, prune_domains=True):
 		# Construct the solver instance we will use for Z3
 		self.solver_ctx = solver_ctx
 		self.solver = z3.Solver(ctx=self.solver_ctx)
@@ -115,12 +116,9 @@ class Solver(object):
 		sys.stdout.flush()
 		start_time = time.time()
 
-		# Prunes 
-		# time_start = time.time()
-		self.prune_layout_grid_domains()
-		self.prune_size_domains()
-		# # time_end = time.time()
-		# logging.debug("Time for domain pruning: " + str(time_end-time_start))
+		if prune_domains: 
+			self.prune_layout_grid_domains()
+			self.prune_size_domains()
 
 		self.output_variables = self.init_output_variables()
 		self.variables_different = Int('VariablesDifferent')
@@ -191,13 +189,12 @@ class Solver(object):
 	def init_constraints(self):
 		# Initialize the set of constraints on shapes and containers
 		canvas = None
-		for shape in self.shapes.values(): 
-			if shape.type == "canvas":
-				self.cb.init_canvas_constraints(shape)
-				canvas = shape
+		canvas = self.shapes['canvas'] 
+		self.cb.init_canvas_constraints(canvas)
 
+		for shape in self.shapes.values(): 
 			if shape.type == "container": 
-				self.cb.init_container_constraints(shape, self.shapes)
+				self.cb.init_container_constraints(shape, self.shapes, canvas)
 
 		for shape in self.shapes.values():
 			if shape.type == "leaf":
@@ -210,9 +207,8 @@ class Solver(object):
 		root = self.construct_shape_hierarchy([self.elements], shapes)
 		return shapes,root
 
-	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal", at_root=False):
+	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal", at_root=False, selected_grid=[]):
 		shape_hierarchy = []
-		num_siblings = len(elements)
 		for i in range(0, len(elements)): 
 			element = elements[i]
 			element_type = element["type"]
@@ -225,29 +221,29 @@ class Solver(object):
 
 			sub_hierarchy = None
 
-
 			is_alternate = False
 			if "alternate" in element and element["alternate"]: 
 				is_alternate = True
 
-			is_at_root = True if element_type == "canvas" else False
-			if "children" in element and not is_alternate: 
-				children = element["children"]
-				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis, is_at_root)
-
 			shape_object = None
 			if element_type == "canvas": 
+				selected_grid = sizes.select_consistent_layout_grid(elements[0])
 				shape_object = shape_classes.CanvasShape(self.solver_ctx, 
-					element["name"], element, num_siblings)
+					element["name"], element, selected_grid)
 				shapes[shape_object.shape_id] = shape_object
 			elif element_type == "group" and not is_alternate:
 				shape_object = shape_classes.ContainerShape(self.solver_ctx, 
-					element["name"], element, num_siblings, at_root=at_root)
+					element["name"], element, selected_grid, at_root=at_root)
 				shapes[shape_object.shape_id] = shape_object
 			else:
 				shape_object = shape_classes.LeafShape(self.solver_ctx,
-					element["name"], element, num_siblings, at_root=at_root)
+					element["name"], element, selected_grid, at_root=at_root)
 				shapes[shape_object.shape_id] = shape_object
+
+			is_at_root = True if element_type == "canvas" else False
+			if "children" in element and not is_alternate: 
+				children = element["children"]
+				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis, is_at_root, selected_grid)
 
 			if sub_hierarchy is not None: 
 				shape_object.add_children(sub_hierarchy)
@@ -261,10 +257,10 @@ class Solver(object):
 		groups = dict()
 		for child in container.children:
 			if child.semantic_type != "group" or child.is_alternate:
-				if child.type not in groups:
-					groups[child.type] = []
+				if child.semantic_type not in groups:
+					groups[child.semantic_type] = []
 
-				groups[child.type].append(child)
+				groups[child.semantic_type].append(child)
 
 		# Prune sizes based on grouped containers
 		for key,group_children in groups.items():
@@ -302,10 +298,13 @@ class Solver(object):
 					for corresponding_child_id in item_corresponding_ids: 
 						corresponding_child_shape = self.shapes[corresponding_child_id]
 
-						corresponding_child_shape.variables.size_combo.domain = item_child.variables.size_combo.domain
-						corresponding_child_shape.variables.size_factor.domain = item_child.variables.size_factor.domain
-						corresponding_child_shape.variables.width.domain = item_child.variables.width.domain
-						corresponding_child_shape.variables.height.domain = item_child.variables.height.domain
+						size_combos = corresponding_child_shape.variables.size_combo.domain
+						size_combos_filtered = [combo for combo in size_combos if combo[2] in item_child.variables.size_factor.domain]
+
+						corresponding_child_shape.variables.size_combo.domain = size_combos_filtered
+						corresponding_child_shape.variables.size_factor.domain = [combo[2] for combo in size_combos]
+						corresponding_child_shape.variables.width.domain = [combo[0] for combo in size_combos]
+						corresponding_child_shape.variables.height.domain = [combo[1] for combo in size_combos]
 
 	def prune_size_domains(self): 
 		for shape in self.shapes.values(): 
@@ -358,22 +357,17 @@ class Solver(object):
 					y.domain = y_values
 
 		# Select a layout grid combination to use for this instance
-		layout_grid = canvas_shape.variables.grid_layout
-		margin = canvas_shape.variables.margin
 		columns = canvas_shape.variables.columns
-		gutter_width = canvas_shape.variables.gutter_width
-		column_width = canvas_shape.variables.column_width
+		# layout_grid_subset = random.sample(layout_grid.domain, 1)
+		# selected_grid = layout_grid_subset[0]
 
-		layout_grid_subset = random.sample(layout_grid.domain, 1)
-		selected_grid = layout_grid_subset[0]
-
-		layout_grid.domain = layout_grid_subset
-		margin.domain = [x[0] for x in layout_grid_subset]
-		columns.domain = [x[1] for x in layout_grid_subset]
-		gutter_width.domain = [x[2] for x in layout_grid_subset]
-		column_width.domain = [x[3] for x in layout_grid_subset]
-		logging.debug("Selected layout grid... ")
-		logging.debug(layout_grid_subset)
+		# layout_grid.domain = layout_grid_subset
+		# margin.domain = [x[0] for x in layout_grid_subset]
+		# columns.domain = [x[1] for x in layout_grid_subset]
+		# gutter_width.domain = [x[2] for x in layout_grid_subset]
+		# column_width.domain = [x[3] for x in layout_grid_subset]
+		# logging.debug("Selected layout grid... ")
+		# logging.debug(layout_grid_subset)
 
 		# Prune column, size values based on the selected baseline grid because 
 		# many of them will no longer be viable. 
@@ -388,28 +382,28 @@ class Solver(object):
 				right_column_pruned = [val for val in right_column.domain if val <= max_cols]
 				right_column.domain = right_column_pruned
 
-			if shape.type == "leaf" and shape.at_root: 
+			# if shape.type == "leaf" and shape.at_root: 
 				# Prune the size values that do not fit into the selected margin anymore 
-				selected_margin = layout_grid_subset[0][0]
-				margin_size = selected_margin * 2 
-				max_width = CANVAS_WIDTH - margin_size
-				size_combos = shape.variables.size_combo
-				size_combos_subset = [val for val in size_combos.domain if val[0] <= max_width]
+				# selected_margin = layout_grid_subset[0][0]
+				# margin_size = selected_margin * 2 
+				# max_width = CANVAS_WIDTH - margin_size
+				# size_combos = shape.variables.size_combo
+				# size_combos_subset = [val for val in size_combos.domain if val[0] <= max_width]
 
 				# Prune the size combinations with a width that cannot be laid out on the selected baseline grid. 
-				selected_columns = selected_grid[1]
-				selected_gutter_width = selected_grid[2]
-				selected_column_width = selected_grid[3]
-				possible_widths = []
-				for i in range(1, selected_columns+1):
-					possible_width = (i * selected_column_width) + ((i-1) * selected_gutter_width) 
-					possible_widths.append(possible_width)
+				# selected_columns = selected_grid[1]
+				# selected_gutter_width = selected_grid[2]
+				# selected_column_width = selected_grid[3]
+				# possible_widths = []
+				# for i in range(1, selected_columns+1):
+				# 	possible_width = (i * selected_column_width) + ((i-1) * selected_gutter_width) 
+				# 	possible_widths.append(possible_width)
 				
-				size_combos_subset = [val for val in size_combos_subset if val[0] in possible_widths]
-				shape.variables.size_combo.domain = size_combos_subset
-				shape.variables.width.domain = [val[0] for val in size_combos_subset]
-				shape.variables.height.domain = [val[1] for val in size_combos_subset]
-				shape.variables.size_factor.domain = [val[2] for val in size_combos_subset]
+				# size_combos_subset = [val for val in size_combos_subset if val[0] in possible_widths]
+				# shape.variables.size_combo.domain = size_combos_subset
+				# shape.variables.width.domain = [val[0] for val in size_combos_subset]
+				# shape.variables.height.domain = [val[1] for val in size_combos_subset]
+				# shape.variables.size_factor.domain = [val[2] for val in size_combos_subset]
 
 		# For debugging how large the search space isd
 		size = self.compute_search_space()
@@ -771,14 +765,17 @@ class Solver(object):
 		shapes_removed = []
 
 		# Look for shapes that were added or removed and in that case, we dont' need to check validity 
-		for elementID in elements:
-			if elementID not in self.shapes:
-				shapes_removed.append(elementID)
+		element_ids = []
+		sh.get_element_names(elements, element_ids)
 
-		for shapeID in self.shapes:
-			shape = self.shapes[shapeID]
-			if shapeID not in elements and (shape.type != "container" or len(shape.children)):
-				shapes_added.append(shapeID)
+		for element_id in element_ids:
+			if element_id not in self.shapes:
+				shapes_removed.append(element_id)
+
+		for shape_id in self.shapes:
+			shape = self.shapes[shape_id]
+			if shape_id not in element_ids and (shape.type != "container" or len(shape.children)):
+				shapes_added.append(shape_id)
 
 		return shapes_added, shapes_removed
 	

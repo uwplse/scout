@@ -6,6 +6,9 @@ import smtlib_builder as cb
 
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
+IGNORED_VALUE_CONSTRAINTS = ["baseline", "canvas_alignment", "extra_in_first", "size_combo", "grid_layout", "size_factor",
+							 "outside_padding"]
+IGNORED_PREVIOUS_SOLUTION_CONSTRAINTS = ["baseline", "extra_in_first", "size_combo", "grid_layout", "canvas_alignment"]
 
 def abs(x):
 	return If(x>=0,x,-x)
@@ -29,71 +32,81 @@ class ConstraintBuilder(object):
 
 	def init_previous_solution_constraints(self, previous_solutions, shapes): 
 		# Saved solutions should not appear again in the results
-		declared = False
-		for solution in previous_solutions: 
+		for solution in previous_solutions:
 			elements = solution["elements"]
 			if (not "added" in solution and not "removed" in solution) or (not len(solution["added"]) and not len(solution["removed"])):
 				self.get_previous_solution_constraints_from_elements(shapes, elements, solution["id"])
 
-
-	def get_solution_variable_declarations(self, shapes, elements): 
+	def get_solution_variable_declarations(self, element_tree, shapes):
 		declarations = ""
-		for elementID in elements:
-			element = elements[elementID]
+		element_id = element_tree['name']
 
-			# Get the shape corresponding to the element name
-			shape = shapes[elementID]
-			variables = shape.variables.toDict()
-			for variable_key in variables.keys(): 
-				variable = variables[variable_key]
-				declarations += cb.declare(variable.id, variable.type)
+		# Get the shape corresponding to the element name
+		shape = shapes[element_id]
+		variables = shape.variables.toDict()
+		for variable_key in variables.keys(): 
+			variable = variables[variable_key]
+			declarations += cb.declare(variable.id, variable.type)
+
+		if 'children' in element_tree: 
+			for child in element_tree['children']: 
+				declarations += self.get_solution_variable_declarations(child, shapes)
 
 		return declarations
 
-	def get_previous_solution_constraints_from_elements(self, shapes, elements, solutionID):
-		all_values = []
-		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout"]
+	def get_previous_solution_variable_values(self, element_tree, shapes, value_constraints=[]):
+		element_id = element_tree['name']
 
-		for elementID in elements:
-			element = elements[elementID]
+		# Get the shape corresponding to the element name
+		shape = shapes[element_id]
+		variables = shape.variables.toDict()
+		if shape.type == "leaf":
+			for variable_key in variables.keys():
+				variable = variables[variable_key]
+				if variable.name not in IGNORED_PREVIOUS_SOLUTION_CONSTRAINTS:
+					variable_value = variable.get_value_from_element(element_tree)
+					value_constraints.append(cb.eq(variable.id,
+											str(variable_value)))
+		if 'children' in element_tree:
+			for child in element_tree['children']:
+				self.get_previous_solution_variable_values(child, shapes, value_constraints)
 
-			# Get the shape corresponding to the element name
-			shape = shapes[elementID]
-			variables = shape.variables.toDict()
-			if shape.type == "leaf":
-				for variable_key in variables.keys(): 
-					variable = variables[variable_key]
-					if variable.name not in ignored:
-						variable_value = variable.get_value_from_element(element)
-						all_values.append(cb.eq(variable.id,
-							str(variable_value)))
+
+	def get_previous_solution_constraints_from_elements(self, shapes, element_tree, solutionID):
+		value_constraints = []
+		self.get_previous_solution_variable_values(element_tree, shapes, value_constraints)
 
 		# Prevent the exact same set of values from being produced again (Not an And on all of the constraints)
-		self.constraints += cb.assert_expr(cb.not_expr(cb.and_expr(all_values)), 
+		self.constraints += cb.assert_expr(cb.not_expr(cb.and_expr(value_constraints)),
 			"prevent_previous_solution_" + solutionID + "_values")
 
-	def init_solution_constraints(self, shapes, elements, solutionID):
-		all_values = []
-		ignored = ["baseline", "extra_in_first", "size_combo", "grid_layout", "outside_padding"]
-		for elementID in elements:
-			element = elements[elementID]
+	def get_variable_value_constraints(self, element_tree, shapes, value_constraints):
+		element_id = element_tree['name']
 
-			# Get the shape corresponding to the element name
-			shape = shapes[elementID]
+		# Get the shape corresponding to the element name
+		shape = shapes[element_id]
 
-			variables = shape.variables.toDict()
-			for variable_key in variables.keys(): 
-				variable = variables[variable_key]
-				self.decl_constraints += cb.declare(variable.id, variable.type)
-				if variable.name not in ignored:
-					variable_value = variable.get_value_from_element(element)
-					if variable_value != None: 
-						all_values.append(cb.eq(variable.id, 
-							str(variable_value)))
+		variables = shape.variables.toDict()
+		for variable_key in variables.keys(): 
+			variable = variables[variable_key]
+			self.decl_constraints += cb.declare(variable.id, variable.type)
+			if variable.name not in IGNORED_VALUE_CONSTRAINTS:
+				variable_value = variable.get_value_from_element(element_tree)
+				if variable_value != None: 
+					value_constraints.append(cb.eq(variable.id, 
+						str(variable_value)))
+
+		if 'children' in element_tree: 
+			for child in element_tree['children']:
+				self.get_variable_value_constraints(child, shapes, value_constraints)
+
+	def init_solution_constraints(self, shapes, element_tree, solutionID):
+		value_constraints = []
+		self.get_variable_value_constraints(element_tree, shapes, value_constraints)
+		constraints = cb.assert_expr(cb.and_expr(value_constraints), "fix_solution_" + solutionID + "_values")
 
 		# Return the constraints so they can be loaded in after the intial initialization of the base constraints
-		declarations = self.get_solution_variable_declarations(shapes, elements)
-		constraints = cb.assert_expr(cb.and_expr(all_values), "fix_solution_" + solutionID + "_values")
+		declarations = self.get_solution_variable_declarations(element_tree, shapes)
 		return declarations + constraints
 
 	def init_shape_baseline(self, shape): 
@@ -216,7 +229,7 @@ class ConstraintBuilder(object):
 		const = cb.or_expr(grid_values) if len(grid_values) > 1 else grid_values[0]
 		self.constraints += cb.assert_expr(const, "canvas_baseline_grid_in_domain")
 
-	def init_container_constraints(self, container, shapes):
+	def init_container_constraints(self, container, shapes, canvas):
 		arrangement = container.variables.arrangement.id
 		alignment = container.variables.alignment.id
 		padding = container.variables.padding.id
@@ -239,6 +252,13 @@ class ConstraintBuilder(object):
 
 		self.constraints += cb.assert_expr(cb.or_expr(padding_values), "container_"
 			+ container.shape_id + "_padding_in_domain")
+
+		# Outside padding variable should be >= 0 
+		if container.at_root: 
+			outside_padding = container.variables.outside_padding.id
+			canvas_width = str(canvas.computed_width())
+			self.constraints += cb.assert_expr(cb.gte(outside_padding, "0"), "container_" + container.shape_id + "_outside_padding_gt_0")
+			self.constraints += cb.assert_expr(cb.lte(outside_padding, canvas_width), "container_" + container.shape_id + "_outside_padding_lt_canvas_width")
 
 		# Enforce children constraints
 		child_shapes = container.children
@@ -302,8 +322,6 @@ class ConstraintBuilder(object):
 	def init_repeat_group(self, container, shapes): 
 		subgroups = container.children
 		all_same_values = []
-		all_same_heights = []
-		all_same_widths = []
 
 		for i in range(0, len(subgroups)): 
 			if i < len(subgroups) - 1: 
@@ -689,7 +707,7 @@ class ConstraintBuilder(object):
 		column_width = canvas.variables.column_width
 		margin = canvas.variables.margin
 		canvas_x = canvas.variables.x
-		canvas_width = canvas.computed_width()
+		canvas_width = str(canvas.computed_width())
 
 		# Enforce children constraints
 		child_shapes = canvas.children
@@ -699,6 +717,7 @@ class ConstraintBuilder(object):
 				
 				child_left_column = child.variables.left_column
 				child_right_column = child.variables.right_column 
+				child_canvas_alignment = child.variables.canvas_alignment
 
 				# Enforce the child column domain values
 				left_column_values = []
@@ -714,6 +733,11 @@ class ConstraintBuilder(object):
 					right_column_values.append(col_eq)
 				self.constraints += cb.assert_expr(cb.or_expr(right_column_values),
 					"shape_" + child.shape_id + "_right_layout_column_value")
+
+				canvas_alignment_values = []
+				self.constraints += cb.assert_expr(cb.gte(child_canvas_alignment.id, "0"), "shape_" + child.shape_id + "_canvas_alignment_gt_0")
+				self.constraints += cb.assert_expr(cb.lt(child_canvas_alignment.id, str(len(child_canvas_alignment.domain))),
+					"shape_" + child.shape_id + "_canvas_alignemnt_lt_domain" )
 
 				# Enforce that the child column value is less than the canvas column amount
 				left_column_lt_parent = cb.lte(child_left_column.id, layout_columns.id)
@@ -742,6 +766,29 @@ class ConstraintBuilder(object):
 				self.constraints += cb.assert_expr(cb.eq(cb.add(child.variables.x.id, child.variables.width.id), child_right_position),
 												   "child_" + child.shape_id + "_right_position_right_column")
 
+				# Canvas alignment values 
+				child_width = str(child.computed_width())
+				l_index = child_canvas_alignment.domain.index("left")
+				is_left = cb.eq(child_canvas_alignment.id, str(l_index))
+
+				c_index = child_canvas_alignment.domain.index("center")
+				is_center = cb.eq(child_canvas_alignment.id, str(c_index))
+				
+				r_index = child_canvas_alignment.domain.index("right")
+				is_right = cb.eq(child_canvas_alignment.id, str(r_index))
+
+				o_index = child_canvas_alignment.domain.index("other")
+				is_other = cb.eq(child_canvas_alignment.id, str(o_index))
+				
+				aligned_left = cb.eq(child.variables.x.id, margin.id)
+				aligned_center = cb.eq(cb.add(child.variables.x.id, cb.div(child_width, "2")), cb.div(canvas_width, "2"))
+				aligned_right = cb.eq(cb.add(child.variables.x.id, child.variables.width.id), cb.sub(canvas_width, margin.id)) 
+				aligned_other =	cb.and_expr([cb.not_expr(aligned_left), cb.not_expr(aligned_center), cb.not_expr(aligned_right)])
+
+				self.constraints += cb.assert_expr(cb.ite(is_left,aligned_left,"true"), "child_" + child.shape_id + "_canvas_alignment_left")
+				self.constraints += cb.assert_expr(cb.ite(is_right,aligned_right,"true"), "child_" + child.shape_id + "canvas_alignment_right")
+				self.constraints += cb.assert_expr(cb.ite(is_center,aligned_center,"true"), "child_" + child.shape_id + "_canvas_alignment_center")
+				self.constraints += cb.assert_expr(cb.ite(is_other,aligned_other,"true"), "child_" + child.shape_id + "_canvas_alignment_other")
 
 	def align_rows_or_columns(self, container, padding, rows, column_or_row,
 							  aligned_axis, aligned_axis_size, layout_axis, layout_axis_size):
