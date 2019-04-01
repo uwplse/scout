@@ -192,9 +192,9 @@ class Solution(object):
 		# for the variables (x,y,width,height, etc) and other metadata (type)
 		# cost = self.compute_cost(tree)
 		#
-		# new_cost = cost_model.compute_cost(element_tree)
-		# cost = new_cost
-		cost = 0
+		new_cost = cost_model.compute_cost(element_tree)
+		cost = new_cost
+		#cost = 0
 
 		print("Total cost: " + str(cost))
 		sln["elements_dict"] = elements_dict
