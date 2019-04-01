@@ -577,8 +577,10 @@ export default class ConstraintsCanvas extends React.Component {
 
   getCurrentParentNode = (shapeId) => {
     let node = this.widgetTreeNodeMap[shapeId]; 
-    let parentNode = this.getParentNodeForKey(node.key, this.state.treeData[0]); 
-    return parentNode.shape; 
+    if(node) {
+      let parentNode = this.getParentNodeForKey(node.key, this.state.treeData[0]); 
+      return parentNode.shape; 
+    }
   }
 
   highlightAddedWidget = (shapeId, highlighted) => {
@@ -888,6 +890,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   removeCanvasChildConstraints = (shapeID) => {
     let toRemove = ["left_column", "right_column", "canvas_alignment"]; 
+    let canvasToRemove = ["x"]; 
 
     // Remove the canvas child constraints for this node if it is reparented
     let shapeNode = this.widgetTreeNodeMap[shapeID]; 
@@ -897,6 +900,28 @@ export default class ConstraintsCanvas extends React.Component {
         // IF there are any locks or prevents on this element that apply to canvas chidlren, remove them 
         for(let i=0; i<toRemove.length; i++) {
           let property = toRemove[i]; 
+          if(shapeNode.shape.locks) {
+            let shapeIndex = shapeNode.shape.locks.indexOf(property); 
+            if(shapeIndex > -1) {
+              shapeNode.shape.locks.splice(shapeIndex, 1); 
+              delete shapeNode.shape.locked_values[property]; 
+            }
+          }
+
+          if(shapeNode.shape.prevents) {
+            let shapeIndex = shapeNode.shape.prevents.indexOf(property); 
+            if(shapeIndex > -1) {
+              shapeNode.shape.prevents.splice(shapeIndex, 1); 
+              delete shapeNode.shape.prevented_values[property];             
+            }
+          }
+        }
+      }
+
+      if(parentNode && parentNode.shape.type == "canvas") {
+        // IF there are any locks or prevents on this element that apply to canvas chidlren, remove them 
+        for(let i=0; i<canvasToRemove.length; i++) {
+          let property = canvasToRemove[i]; 
           if(shapeNode.shape.locks) {
             let shapeIndex = shapeNode.shape.locks.indexOf(property); 
             if(shapeIndex > -1) {
