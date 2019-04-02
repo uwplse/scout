@@ -44,6 +44,19 @@ def process_element_tree(node):
 		for c in node["children"]:
 			process_element_tree(c)
 
+def extract_groups_and_leaves(node):
+	"""get all groups and leaves from the tree"""
+	groups, leaves = [], []
+	if node["type"] in ["canvas", "group"]:
+		groups += [node]
+		for c in node["children"]:
+			more_groups, more_leaves = extract_groups_and_leaves(c)
+			groups += more_groups
+			leaves += more_leaves
+	else:
+		leaves.append(node)
+	return groups, leaves
+
 def print_layout_tree(node, indent=0):
 	"""render a mockup for semantic layout tree"""
 	space = "".join(["  " for i in range(indent)])
@@ -77,27 +90,12 @@ def compute_cost(layout_tree):
 		'avg_element_height': 1, 
 		'avg_alignment_score': 1, 
 		'density': 1, 
-		'imbalance': 1
+		'imbalance': -1
 	}
 
 	cost = sum([weights[key] * screen_features[key] for key in weights])
 	
 	return cost
-
-def extract_groups_and_leaves(node):
-	"""flatten the layout tree to allow only one level of grouping for feature extraction
-	"""
-	groups, leaves = [], []
-	if node["type"] in ["canvas", "group"]:
-		groups += [node]
-		for c in node["children"]:
-			more_groups, more_leaves = extract_groups_and_leaves(c)
-			groups += more_groups
-			leaves += more_leaves
-	else:
-		leaves.append(node)
-	return groups, leaves
-
 
 def overlap_area(a, b):  
 	# returns 0 if rectangles don't intersect
@@ -188,8 +186,15 @@ def extract_layout_features(tree_root):
 	"""extract layout features for learning """
 
 	top_level_neighborhood = collect_neighbors(tree_root["children"])
+
+	if not top_level_neighborhood:
+		return {
+			"top_level_align_score": 0, "top_level_balance_score": 0, "top_level_overlapping_area": 0, "avg_element_width": 0,
+			"avg_element_height": 0, "avg_alignment_score": 0, "density": 0, "imbalance": 0
+		}
+
 	top_level_alignments = collect_neighbor_aligns(top_level_neighborhood)
-	top_level_align_score = sum([len(al[-2]) for al in top_level_alignments]) / float(sum([al[-1] for al in top_level_alignments]))
+	top_level_align_score = (sum([len(al[-2]) for al in top_level_alignments]) + 1) / float(sum([al[-1] for al in top_level_alignments]) + 1)
 	top_level_margins = collect_neighbor_margins(top_level_neighborhood, x_range=(0, CANVAS_WIDTH), y_range=(0, CANVAS_HEIGHT))
 
 	top_level_overlapping_area = 0
@@ -207,11 +212,14 @@ def extract_layout_features(tree_root):
 	top_level_balance_score = (top_level_balance_h  + top_level_balance_v) / 2
 
 	tree_groups, leaf_nodes = extract_groups_and_leaves(tree_root)
+	# top level groups with single units
+	canvas_direct_leaf_nodes = [c for c in tree_root["children"] if c["type"] != "group"] 
+
 	# neighborhood relations among all visual elements
 	global_neighborhood = collect_neighbors(leaf_nodes)
 
 	group_features = []
-	for g in tree_groups:
+	for g in tree_groups + canvas_direct_leaf_nodes:
 		# canvs scores are calculated before low-level groups
 		if g["type"] == "canvas": continue
 
@@ -220,17 +228,17 @@ def extract_layout_features(tree_root):
 		g_x, g_y = g["bounds"][0], g["bounds"][1]
 		g_area = g_width * g_height
 
-		avg_ele_width = np.average([nd["width"] for nd in g["children"]])
-		avg_ele_height = np.average([nd["height"] for nd in g["children"]])
+		elements = g["children"] if (g["type"] in ["canvas", "group"]) and len(g["children"]) > 0 else [g]
 
-		group_neighborhood = collect_neighbors(g["children"])
+		avg_ele_width = np.average([nd["width"] for nd in elements])
+		avg_ele_height = np.average([nd["height"] for nd in elements])
+
+		group_neighborhood = collect_neighbors(elements)
 		# calculate in-group alignments
 		group_alignments = collect_neighbor_aligns(group_neighborhood)
 
-		elements = g["children"] if (g["type"] in ["canvas", "group"]) and len(g["children"]) > 0 else [g]
-
 		# + 1 to tolerate groups will only one elements
-		group_align_score = sum([len(al[-2]) for al in group_alignments]) / float(sum([al[-1] for al in group_alignments]))
+		group_align_score = (sum([len(al[-2]) for al in group_alignments]) + 1) / float(sum([al[-1] for al in group_alignments]) + 1)
 
 		# extending neighborhood with elements outside this group
 		extended_neighborhood = [p for p in global_neighborhood if p[0] in elements]
