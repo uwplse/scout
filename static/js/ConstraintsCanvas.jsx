@@ -1289,30 +1289,39 @@ export default class ConstraintsCanvas extends React.Component {
           let parentNode = this.getParentNodeForKey(selected, this.state.treeData[0]);  
           let newSelectedNodes = []; 
           let collect = false;
+          
+          let nodesToSelect = []; 
+          let childKeys = parentNode.children.map((item) => {
+            return item.key; 
+          }); 
+          let indexInParent = childKeys.indexOf(selected); 
+          if(indexInParent > -1) {
+            for(let i=0; i<parentNode.children.length; i++) {
+              let child = parentNode.children[i]; 
+              if(collect) {
+                nodesToSelect.push(child.key); 
+              }
 
-          // Find the range of elements in bewtween the last two selected nodes
-          for(let i=0; i<parentNode.children.length; i++) {
-            let child = parentNode.children[i]; 
-            if((child.key == prev || child.key == selected) && collect) {
-              newSelectedNodes.push(child.key); 
-              // Stop collecting
-              break;
-            }
-
-            if((child.key == prev || child.key == selected) && !collect) {
-              collect = true; 
-            }
-
-            if(collect) {
-              newSelectedNodes.push(child.key); 
+              let isSelected = selectedNodes.indexOf(child.key); 
+              if((i == indexInParent || isSelected) > -1) {
+                if(!collect) {
+                  collect = true; 
+                }
+                else {
+                  break;
+                }
+              }
             }
           }
 
-          selectedNodes = newSelectedNodes; 
-        }
+          let newNodesToSelect = nodesToSelect.filter((nodeKey) => {
+            return selectedNodes.indexOf(nodeKey) == -1; 
+          }); 
 
-        selectedElement = selected; 
-      }
+          selectedNodes.push(...newNodesToSelect); 
+          selectedElement = selected; 
+        }
+      } 
     }   
     else if (evt.nativeEvent && evt.nativeEvent.ctrlKey) {
       // Get the last selected node and verify that it has the same parent node as the other 
