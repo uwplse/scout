@@ -668,6 +668,9 @@ export default class ConstraintsCanvas extends React.Component {
             child.shape.alternate_width = firstChild.shape.orig_width; 
             child.shape.alternate_height = firstChild.shape.orig_height;
           }
+
+          // remove the children on the shape object so this group is treated as an individual element
+          child.shape.children = []; 
         }
         else {
           this.getShapeChildren(child);

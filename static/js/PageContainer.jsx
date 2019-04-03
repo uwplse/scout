@@ -818,29 +818,29 @@ export default class PageContainer extends React.Component {
                       <button type="button" className="btn btn-default design-canvas-button" 
                         onClick={this.clearInvalidDesignCanvases}>Discard Invalid</button>
                     </div>) : null}
-                  {/*this.state.activeDesignPanel == "designs" ? 
+                  {this.state.activeDesignPanel == "designs" ? 
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
                         onClick={this.clearDesignsUnderConsideration}>Discard Under Consideration</button>
-                    </div>) : null*/}
-                  {/*this.state.activeDesignPanel == "saved" ? 
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "saved" ? 
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
                         onClick={this.clearSavedDesigns}>Discard Saved Ideas</button>
-                    </div>) : null*/}
-                  {/*this.state.activeDesignPanel == "discarded" ? 
+                    </div>) : null}
+                  {this.state.activeDesignPanel == "discarded" ? 
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
                         onClick={this.clearDiscardedDesigns}>Clear Discarded Ideas</button>
-                    </div>) : null*/}
-                  {/*<div 
+                    </div>) : null}
+                  {<div 
                     className="btn-group header-button-group">
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearAllDesigns}>Clear All Ideas</button>
-                  </div>*/}
+                  </div>}
                   {this.state.activeDesignPanel == "saved" ? (<div 
                     className="btn-group header-button-group">
                     <button type="button" 
