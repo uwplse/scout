@@ -727,10 +727,10 @@ export default class PageContainer extends React.Component {
       }) 
       .sort(function(a, b) {
         // Do a sort of the designs by cost
-        if(a.cost < b.cost) {
+        if(a.cost > b.cost) {
           return -1; 
         }
-        else if(a.cost > b.cost) {
+        else if(a.cost < b.cost) {
           return 1; 
         }
         return 0; 
