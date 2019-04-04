@@ -106,6 +106,7 @@ export default class PageContainer extends React.Component {
               key={id} 
               id={id} 
               ref={"design-canvas-" + id}
+              cost={solution.cost}
               elements={solution.elements}
               savedState={solution.saved}
               scaling={scaling}

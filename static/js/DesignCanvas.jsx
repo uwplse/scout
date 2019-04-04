@@ -307,6 +307,7 @@ export default class DesignCanvas extends React.Component {
           showSave={!saved}
           showTrash={!hideTrash}
           showConsider={showConsider}
+          cost={this.props.cost} 
           visible={menuVisible}
           menuAction={this.performDesignCanvasMenuAction}/>
         <div id={"design-canvas-" + this.id}
