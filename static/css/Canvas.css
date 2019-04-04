@@ -1,6 +1,11 @@
 /** 
   Page level styles
  **/
+svg:not(:root) {
+	/* Temp solution for text shapes to get better alignment */
+	overflow: visible; 
+}
+
 div:focus {
 	outline: none;
 }
