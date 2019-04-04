@@ -736,11 +736,17 @@ export default class FeedbackContainer extends React.Component {
       return fbItem; 
     }) : undefined; 
 
+    let feedbackHidden = !canvasShape || !this.state.feedbackCallbacks; 
+
     return (
         <div className="panel panel-primary feedback-container">
           <div className="panel-heading"> 
             <h3 className="panel-title">Feedback
             </h3>
+            {(!feedbackHidden ? 
+              (<div className="feedback-primary-selection-indicator">
+                <div></div>
+              </div>) : undefined)}
           </div>
           <div tabIndex="1" className="panel-body feedback-container-body"
             onClick={this.onClick}> 
@@ -753,7 +759,7 @@ export default class FeedbackContainer extends React.Component {
             {groupFeedbackItems}
             {canvasFeedbackItems && canvasFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
             {canvasFeedbackItems}
-            {!canvasShape || !this.state.feedbackCallbacks ? 
+            {feedbackHidden ? 
               (<div className="card card-body bg-light feedback-container-alert">
                 <span className="feedback-container-empty">Select an element in the Outline Panel or in a layout idea canvas to the right to see feedback options.</span>
               </div>) : undefined}
