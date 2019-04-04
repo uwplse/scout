@@ -424,6 +424,16 @@ export default class ConstraintsCanvas extends React.Component {
     this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
   }
 
+  getSelectedNodes = (node, selectedKeys) => {
+    let selectedNodes = []; 
+    for(let i=0; i<node.children.length; i++) {
+      if(selectedKeys.indexOf(node.children[i].key) > -1) {
+        selectedNodes.push(node.children[i]); 
+      }
+    }
+    return selectedNodes; 
+  }
+
   displayRightClickMenu = (evt, shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID]; 
     if(node) {
@@ -438,7 +448,9 @@ export default class ConstraintsCanvas extends React.Component {
 
       if(isSelected && multipleSelected) {
         // Grouping applies to selected elements
-        nodeChildren = this.state.selectedTreeNodes; 
+        let parentTreeNode = this.getParentNodeForKey(shapeID, this.state.treeData[0]); 
+        let childNodes = this.getSelectedNodes(parentTreeNode, this.state.selectedTreeNodes); 
+        nodeChildren = childNodes.map((child) => {return child.key}); 
 
         // This should only apply if the element clicked on was the only one selected
         isGroup = false; 
