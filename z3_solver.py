@@ -104,6 +104,7 @@ class Solver(object):
 		self.elements = elements
 		self.previous_solutions = solutions
 		self.relative_search = False
+		self.prune_domains = prune_domains # Determines whether the domains have obviously invalid values removed
 		self.shapes, self.root = self.build_shape_hierarchy()
 		self.root = self.root[0]
 		self.invalid_solutions = 0
@@ -227,7 +228,9 @@ class Solver(object):
 
 			shape_object = None
 			if element_type == "canvas": 
-				selected_grid = sizes.select_consistent_layout_grid(elements[0])
+				selected_grid = sizes.get_layout_grids()
+				if self.prune_domains: 
+					selected_grid = sizes.select_consistent_layout_grid(elements[0])
 				shape_object = shape_classes.CanvasShape(self.solver_ctx, 
 					element["name"], element, selected_grid)
 				shapes[shape_object.shape_id] = shape_object

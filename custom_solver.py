@@ -8,7 +8,7 @@ import logging
 import solution as sln
 import solver_helpers as sh
 
-NUM_SOLUTIONS = 20
+NUM_SOLUTIONS = 10
 
 class CustomSolver(object):
 	def __init__(self, elements, previous_solutions, relative_designs=""): 

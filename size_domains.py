@@ -162,6 +162,11 @@ def select_consistent_layout_grid(element_tree):
 		selected_grid = random.sample(layout_grids, 1)
 		return selected_grid
 
+def get_layout_grids():
+	"""Return the full set of layout grids"""
+	layout_grids = compute_layout_grid_domains()
+	return layout_grids
+
 def compute_size_domain_change_width_only_root(importance, width, height, layout_grids): 
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
