@@ -891,15 +891,13 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  removeCanvasChildConstraints = (shapeID) => {
+  removeCanvasChildConstraints = (shapeNode, isCanvasChild) => {
     let toRemove = ["left_column", "right_column", "canvas_alignment"]; 
     let canvasToRemove = ["x"]; 
 
     // Remove the canvas child constraints for this node if it is reparented
-    let shapeNode = this.widgetTreeNodeMap[shapeID]; 
     if(shapeNode) {
-      let parentNode = this.getParentNodeForKey(shapeNode.key, this.state.treeData[0]); 
-      if(parentNode && parentNode.shape.type != "canvas") {
+      if(!isCanvasChild) {
         // IF there are any locks or prevents on this element that apply to canvas chidlren, remove them 
         for(let i=0; i<toRemove.length; i++) {
           let property = toRemove[i]; 
@@ -921,7 +919,7 @@ export default class ConstraintsCanvas extends React.Component {
         }
       }
 
-      if(parentNode && parentNode.shape.type == "canvas") {
+      if(isCanvasChild) {
         // IF there are any locks or prevents on this element that apply to canvas chidlren, remove them 
         for(let i=0; i<canvasToRemove.length; i++) {
           let property = canvasToRemove[i]; 
@@ -1142,8 +1140,15 @@ export default class ConstraintsCanvas extends React.Component {
     let nodes = []; 
     let index = 0;
     let firstIndex = -1; 
+
+
     while(treeNode.children.length && index <= treeNode.children.length-1) {
       let childNode = treeNode.children[index]; 
+
+      let isCanvasChild = treeNode.shape.type == "canvas";
+      // Remove canvas child constraints as they cannot exist inside the group.
+      this.removeCanvasChildConstraints(childNode, !isCanvasChild); 
+
       if(keys.indexOf(childNode.key) > -1) {
         if(firstIndex == -1) {
           firstIndex = index; 
@@ -1474,8 +1479,10 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Remove other constaints that should be removed when the element is dragged around in the tree
     if(dragObj) {
+      let parentNode = this.getParentNodeForKey(dragObj.key, this.state.treeData[0]); 
+      let isCanvasChild = parentNode.shape.type == "canvas"; 
       this.removeOrderConstraints(dragObj.key); 
-      this.removeCanvasChildConstraints(dragObj.key); 
+      this.removeCanvasChildConstraints(dragObj, isCanvasChild); 
     }
 
     this.setState({
