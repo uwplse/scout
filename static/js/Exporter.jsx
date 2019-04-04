@@ -6,7 +6,6 @@ import ConstraintActions from "./ConstraintActions";
 export default class Exporter  {
   constructor(svgWidgets) {
     this.zipFile = new JSZip();
-    this.exportPromises = []; 
     this.svgWidgets = svgWidgets; 
   }
 
@@ -107,24 +106,74 @@ export default class Exporter  {
     // Then return that as the total score. 
   }
 
-  addDesignToExports = (design, designNode) => {
-  	let designID = design.id;
+  exportHierarchy = (solutions, hierarchyID) => {
+    let solutionsJSON = JSON.stringify(solutions); 
+    this.zipFile.file(hierarchyID + ".json", solutionsJSON); 
+  }
 
-    let svgDesign = this.convertDesignToPaper(design); 
-    let svgString = svgDesign.toString();
-    this.zipFile.file(designID + ".svg", svgString); 
+  exportDesigns = (solutions) => {
+    let savedSolutions = solutions.filter((solution) => { return solution.saved; }); 
 
-    let hierarchy = design.elements; 
-    let designJSON = JSON.stringify(hierarchy); 
-    this.zipFile.file(designID + ".json", designJSON); 
+    // Compute diversity scores on the saved solutions only; 
+    let scores = this.computeDiversityScores(savedSolutions); 
+
+    // scores format 
+    // { pair: [solution1.id, solution2.id], pairwise_scores: [score1, score2, score3], overall_score: X}
+    let savedHierarchy = {}; 
+    savedHierarchy['saved'] = savedSolutions
+    savedHierarchy['diversity_scores'] = scores; 
+    this.exportHierarchy(savedHierarchy, 'saved'); 
+
+    let trashedSolutions = solutions.filter((solution) => { return solution.trashed; }); 
+    let trashedHierarchy = {}; 
+    trashedHierarchy['trashed'] = trashedSolutions; 
+    this.exportHierarchy(trashedHierarchy, 'trashed'); 
+
+    let invalidated = solutions.filter((solution) => { return solution.invalidated; }); 
+    let invalidatedHierarchy = {}; 
+    invalidatedHierarchy['invalidated'] = invalidated; 
+    this.exportHierarchy(invalidatedHierarchy, 'invalidated'); 
+
+    let underConsideration = solutions.filter((solution) => { return solution.saved == 0 && !solution.invalidated}); 
+    let underConsiderationHierarchy = {}; 
+    underConsiderationHierarchy['under_consideration'] = underConsideration; 
+    this.exportHierarchy(underConsiderationHierarchy, 'under_consideration'); 
+
+    // Export SVGs and Images of saved designs, and then export the ZIP file
+    this.exportZipFileAndSavedImages(savedSolutions); 
   }
   
-  exportDesigns = () => {
-    this.zipFile.generateAsync({type:"blob"})
-    .then(function(content) {
-        // see FileSaver.js
-        saveAs(content, "exported_from_scout.zip");
-    });
+  exportZipFileAndSavedImages = (savedSolutions) => {
+    let self = this;
+    let promises = []; 
+    let savedFolder = this.zipFile.folder('saved_svgs'); 
+
+    for(let i=0; i<savedSolutions.length; i++) {
+      let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
+      let solution = document.getElementById(solutionDesignID); 
+      if(solution) {
+        promises.push(domtoimage.toPng(solution)
+        .then(function (imgData) {
+            /* do something */
+            let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
+            savedFolder.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
+
+            let svgDesign = self.convertDesignToPaper(savedSolutions[i]); 
+
+            let svgString = svgDesign.toString();
+            savedFolder.file(solutionDesignID + ".svg", svgString); 
+        })); 
+      }
+    }
+
+   Promise.all(promises)
+    .then(() => {
+      this.zipFile.generateAsync({type:"blob"})
+      .then(function(content) {
+          // see FileSaver.js
+          saveAs(content, "exported_from_scout.zip");
+      });
+    }); 
   }
 }
 

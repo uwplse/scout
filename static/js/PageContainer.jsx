@@ -387,6 +387,7 @@ export default class PageContainer extends React.Component {
     let solution = this.solutionsMap[designCanvasID]; 
     solution.saved = 0;  
     solution.invalidated = 0; 
+    solution.trashed = false; 
 
     // Update the state
     this.setState({
@@ -414,6 +415,7 @@ export default class PageContainer extends React.Component {
     // Retrieve a design canvas by its ID
     let solution = this.solutionsMap[designCanvasID];
     solution.saved = -1; 
+    solution.trashed = true; 
 
     // Update the state
     // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
@@ -688,17 +690,9 @@ export default class PageContainer extends React.Component {
   }
 
   exportSavedDesigns = () => {
+    // Export all of the currently explored solutions into JSON and SVGs 
     let exporter = new Exporter(this.state.svgWidgets); 
-    let savedSolutions = this.state.solutions.filter((solution) => { return solution.saved; }); 
-    for(let i=0; i<savedSolutions.length; i++) {
-      let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
-      let solutionNode = document.getElementById(solutionDesignID); 
-      if(solutionNode) {
-        exporter.addDesignToExports(savedSolutions[i], solutionNode); 
-      } 
-    }
-
-    exporter.exportDesigns(); 
+    exporter.exportDesigns(this.state.solutions); 
   }
 
   closeNoSolutionsAlert = () => {
