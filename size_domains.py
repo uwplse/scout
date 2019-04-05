@@ -19,7 +19,7 @@ BASELINE_GRIDS = [4,8,16]
 # MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
 MARGINS = [4,8,12,16,20,24,28,32,36,40]
 # PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
-PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
+PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
 LAYOUT_GRID_PROPERTIES = ["margin", "columns", "column_width", "gutter_width"]
 SIZE_PROPERTIES = ["width", "height", "size_factor"]
 
@@ -49,23 +49,27 @@ def is_consistent_with_prevents(layout_grid, element, at_root=False):
 			if prevent in LAYOUT_GRID_PROPERTIES: 
 				if prevent == "margin": 
 					margin_value = element["prevented_values"]["margin"]
-					if layout_grid[0] == margin_value: 
-						return False
+					for marg_value in margin_value: 
+						if layout_grid[0] == marg_value: 
+							return False
 
 				if prevent == "columns": 
 					columns_value = element["prevented_values"]["columns"]
-					if layout_grid[1] == columns_value: 
-						return False
+					for col_value in columns_value: 
+						if layout_grid[1] == col_value: 
+							return False
 
 				if prevent == "gutter_width": 
 					gutter_width_value = element["prevented_values"]["gutter_width"]
-					if layout_grid[2] == gutter_width_value: 
-						return False
+					for gut_value in gutter_width_value: 
+						if layout_grid[2] == gut_value: 
+							return False
 
 				if prevent == "column_width": 
 					column_width_value = element["prevented_values"]["column_width"]
-					if layout_grid[3] == column_width_value: 
-						return False
+					for col_width_value in column_width_value: 
+						if layout_grid[3] == col_width_value: 
+							return False
 
 	return True
 
@@ -106,24 +110,39 @@ def is_consistent_with_locks(layout_grid, element, at_root=False):
 			if lock in LAYOUT_GRID_PROPERTIES: 
 				if lock == "margin": 
 					margin_value = element["locked_values"]["margin"]
-					if layout_grid[0] != margin_value: 
-						return False
+					matches = False
+					for marg_value in margin_value: 
+						if layout_grid[0] == margin_value: 
+							matches = True
+					if not matches: 
+						return False 
 
 				if lock == "columns": 
 					columns_value = element["locked_values"]["columns"]
-					if layout_grid[1] != columns_value: 
-						return False
+					matches = False
+					for col_value in columns_value: 
+						if layout_grid[1] == col_value: 
+							matches = True
+					if not matches: 
+						return False 
 
 				if lock == "gutter_width": 
 					gutter_width_value = element["locked_values"]["gutter_width"]
-					if layout_grid[2] != gutter_width_value: 
-						return False
+					matches = False
+					for gut_value in gutter_width_value: 
+						if layout_grid[2] == gut_value: 
+							matches = True
+					if not matches: 
+						return False 
 
 				if lock == "column_width": 
 					column_width_value = element["locked_values"]["column_width"]
-					if layout_grid[3] != column_width_value: 
-						return False
-
+					matches = False
+					for col_width_value in column_width_value: 
+						if layout_grid[3] == col_width_value: 
+							matches = True
+					if not matches: 
+						return False 
 	return True
 
 def grid_consistent_with_element_locks(layout_grid, element_tree, at_root=False): 
@@ -149,15 +168,15 @@ def select_consistent_layout_grid(element_tree):
 
 	# Select grids consistent with the current set of locks
 	filtered_grids = []
-	for grid in layout_grids: 
+	for grid in layout_grids:
 		if grid_consistent_with_element_locks(grid, element_tree):
 			filtered_grids.append(grid)
 
-	# Now, randomly sample one to use 
-	if len(filtered_grids): 
+	# Now, randomly sample one to use
+	if len(filtered_grids):
 		selected_grid = random.sample(filtered_grids, 1)
 		return selected_grid
-	else: 
+	else:
 		# Return any grid if we could not select a consistent one
 		selected_grid = random.sample(layout_grids, 1)
 		return selected_grid
