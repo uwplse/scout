@@ -8,8 +8,9 @@ MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
 MIN_HEIGHT = 12
 MIN_WIDTH_TOUCH_TARGET = 120
-MIN_HEIGHT_ASPECT_RATIO = 12
+MIN_HEIGHT_ASPECT_RATIO = 16
 GRID_CONSTANT = 4
+SNAP_GRID_CONSTANT = 16
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 LAYOUT_COLUMNS = [2,3,4,6]
@@ -19,7 +20,7 @@ BASELINE_GRIDS = [4,8,16]
 # MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
 MARGINS = [4,8,12,16,20,24,28,32,36,40]
 # PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
-PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
+PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
 LAYOUT_GRID_PROPERTIES = ["margin", "columns", "column_width", "gutter_width"]
 SIZE_PROPERTIES = ["width", "height", "size_factor"]
 
@@ -49,23 +50,27 @@ def is_consistent_with_prevents(layout_grid, element, at_root=False):
 			if prevent in LAYOUT_GRID_PROPERTIES: 
 				if prevent == "margin": 
 					margin_value = element["prevented_values"]["margin"]
-					if layout_grid[0] == margin_value: 
-						return False
+					for marg_value in margin_value: 
+						if layout_grid[0] == marg_value: 
+							return False
 
 				if prevent == "columns": 
 					columns_value = element["prevented_values"]["columns"]
-					if layout_grid[1] == columns_value: 
-						return False
+					for col_value in columns_value: 
+						if layout_grid[1] == col_value: 
+							return False
 
 				if prevent == "gutter_width": 
 					gutter_width_value = element["prevented_values"]["gutter_width"]
-					if layout_grid[2] == gutter_width_value: 
-						return False
+					for gut_value in gutter_width_value: 
+						if layout_grid[2] == gut_value: 
+							return False
 
 				if prevent == "column_width": 
 					column_width_value = element["prevented_values"]["column_width"]
-					if layout_grid[3] == column_width_value: 
-						return False
+					for col_width_value in column_width_value: 
+						if layout_grid[3] == col_width_value: 
+							return False
 
 	return True
 
@@ -106,24 +111,39 @@ def is_consistent_with_locks(layout_grid, element, at_root=False):
 			if lock in LAYOUT_GRID_PROPERTIES: 
 				if lock == "margin": 
 					margin_value = element["locked_values"]["margin"]
-					if layout_grid[0] != margin_value: 
-						return False
+					matches = False
+					for marg_value in margin_value: 
+						if layout_grid[0] == margin_value: 
+							matches = True
+					if not matches: 
+						return False 
 
 				if lock == "columns": 
 					columns_value = element["locked_values"]["columns"]
-					if layout_grid[1] != columns_value: 
-						return False
+					matches = False
+					for col_value in columns_value: 
+						if layout_grid[1] == col_value: 
+							matches = True
+					if not matches: 
+						return False 
 
 				if lock == "gutter_width": 
 					gutter_width_value = element["locked_values"]["gutter_width"]
-					if layout_grid[2] != gutter_width_value: 
-						return False
+					matches = False
+					for gut_value in gutter_width_value: 
+						if layout_grid[2] == gut_value: 
+							matches = True
+					if not matches: 
+						return False 
 
 				if lock == "column_width": 
 					column_width_value = element["locked_values"]["column_width"]
-					if layout_grid[3] != column_width_value: 
-						return False
-
+					matches = False
+					for col_width_value in column_width_value: 
+						if layout_grid[3] == col_width_value: 
+							matches = True
+					if not matches: 
+						return False 
 	return True
 
 def grid_consistent_with_element_locks(layout_grid, element_tree, at_root=False): 
@@ -149,15 +169,15 @@ def select_consistent_layout_grid(element_tree):
 
 	# Select grids consistent with the current set of locks
 	filtered_grids = []
-	for grid in layout_grids: 
+	for grid in layout_grids:
 		if grid_consistent_with_element_locks(grid, element_tree):
 			filtered_grids.append(grid)
 
-	# Now, randomly sample one to use 
-	if len(filtered_grids): 
+	# Now, randomly sample one to use
+	if len(filtered_grids):
 		selected_grid = random.sample(filtered_grids, 1)
 		return selected_grid
-	else: 
+	else:
 		# Return any grid if we could not select a consistent one
 		selected_grid = random.sample(layout_grids, 1)
 		return selected_grid
@@ -167,16 +187,19 @@ def get_layout_grids():
 	layout_grids = compute_layout_grid_domains()
 	return layout_grids
 
-def compute_size_domain_change_width_only_root(importance, width, height, layout_grids): 
+def compute_size_domain_change_width_only_root(importance, width, height, layout_grids, is_separator=False): 
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
 	domain = []
 	factor_id = 0
 
 	# First, round the values down to a mult of the grid constant
-	height_diff = height % GRID_CONSTANT
-	orig_height = height -  height_diff
+	orig_height = height
 	orig_width = width 
+	if not is_separator: 
+		height_diff = height % SNAP_GRID_CONSTANT
+		orig_height = height -  height_diff
+		orig_width = width 
 
 	for grid in layout_grids: 
 		margin = grid[0]
@@ -205,8 +228,9 @@ def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, la
 	# increase/decrease the width (buttons, fields)
 	domain = []
 	factor_id = 0
-	aspect_ratio = height/width
 
+	# First, round the values down to a mult of the grid constant
+	aspect_ratio = height/width
 	for grid in layout_grids:
 		margin = grid[0]
 		columns = grid[1]
@@ -231,15 +255,19 @@ def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, la
 		domain_with_factor.append([domain[i][0], domain[i][1], i])
 	return domain_with_factor
 
-def compute_size_domain_change_width_only(importance, width, height): 
+def compute_size_domain_change_width_only(importance, width, height, is_separator=False): 
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
 	domain = []
 	factor_id = 0
 
 	# First, round the values down to a mult of the grid constant
-	height_diff = height % GRID_CONSTANT
-	orig_height = height -  height_diff
+	orig_height = height
+	orig_width = width 
+	if not is_separator: 
+		height_diff = height % SNAP_GRID_CONSTANT
+		orig_height = height -  height_diff
+		orig_height = orig_height if orig_height > 0 else SNAP_GRID_CONSTANT
 	
 	width_diff = width % GRID_CONSTANT
 	orig_width = width - width_diff
@@ -277,11 +305,13 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height):
 	aspect_ratio = width/height
 
 	# First, round the values down to a mult of the grid constant
-	height_diff = height % GRID_CONSTANT
+	height_diff = height % SNAP_GRID_CONSTANT
 	orig_height = height -  height_diff
+	orig_height = orig_height if orig_height > 0 else SNAP_GRID_CONSTANT
 
 	orig_width = orig_height * aspect_ratio
 	orig_width = int(round(orig_width, 0))
+
 
 	domain.append([orig_width, orig_height, factor_id])
 

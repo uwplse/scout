@@ -379,11 +379,13 @@ export default class ConstraintsCanvas extends React.Component {
     let width = options.width ? options.width : 0;
     let height = options.height ? options.height : 0; 
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
+    let alternate = options.alternate ? true : false;
 
     let newTreeNode = {
       key: shape.name, 
       shape: shape, 
       src: source, 
+      alternate: alternate
     }; 
 
     this.widgetTreeNodeMap[shape.name] = newTreeNode; 
@@ -424,6 +426,16 @@ export default class ConstraintsCanvas extends React.Component {
     this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
   }
 
+  getSelectedNodes = (node, selectedKeys) => {
+    let selectedNodes = []; 
+    for(let i=0; i<node.children.length; i++) {
+      if(selectedKeys.indexOf(node.children[i].key) > -1) {
+        selectedNodes.push(node.children[i]); 
+      }
+    }
+    return selectedNodes; 
+  }
+
   displayRightClickMenu = (evt, shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID]; 
     if(node) {
@@ -438,7 +450,9 @@ export default class ConstraintsCanvas extends React.Component {
 
       if(isSelected && multipleSelected) {
         // Grouping applies to selected elements
-        nodeChildren = this.state.selectedTreeNodes; 
+        let parentTreeNode = this.getParentNodeForKey(shapeID, this.state.treeData[0]); 
+        let childNodes = this.getSelectedNodes(parentTreeNode, this.state.selectedTreeNodes); 
+        nodeChildren = childNodes.map((child) => {return child.key}); 
 
         // This should only apply if the element clicked on was the only one selected
         isGroup = false; 
@@ -691,6 +705,7 @@ export default class ConstraintsCanvas extends React.Component {
     let importance = (options.importance ? options.importance : "normal");
     let item = (options.item ? options.item : false); 
     let typed = (options.typed ? options.typed : false);
+    let alternate = (options.alternate ? options.alternate : false); 
 
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
@@ -703,8 +718,9 @@ export default class ConstraintsCanvas extends React.Component {
       "order": order, 
       "orig_width": width, 
       "orig_height": height,
-      "item": item, 
-      "typed": typed
+      "item": item,
+      "typed": typed, 
+      "alternate": alternate
     }
 
     if (type == "group") {
@@ -824,7 +840,6 @@ export default class ConstraintsCanvas extends React.Component {
 
   createRepeatGroup = (shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID];
-    node.alternate = undefined; 
 
     let isSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1; 
     let multipleSelected = this.state.selectedTreeNodes.length > 1; 
@@ -833,6 +848,7 @@ export default class ConstraintsCanvas extends React.Component {
       node.typed = true; 
       node.src = repeatGridSVG; 
       node.shape.typed = true; 
+      node.alternate = undefined; 
 
       let newGroupChildren = this.restructureRepeatGroupChildren(node.children, node.typedGroupSize); 
       node.children = newGroupChildren;       
@@ -1165,10 +1181,8 @@ export default class ConstraintsCanvas extends React.Component {
     let groupType = alternate ? "alternate" : "group"; 
     let groupSrc = alternate ? alternateSVG : groupSVG; 
     let group = this.createNewTreeNode(groupType, "group", groupSrc, 
-      {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+      {width: this.defaultNodeWidth, height: this.defaultNodeHeight, alternate: alternate});
     group.children = nodes; 
-    group.shape.alternate = alternate; 
-    group.alternate = alternate; 
 
     if(firstIndex != -1) {
       treeNode.children.splice(firstIndex, 0, group);

@@ -52,8 +52,8 @@ export default class DesignMenu extends React.Component {
     }
 
     // Temporary to show the cost value on a design 
-    let roundedCost = this.props.cost.toFixed(3); 
-    menuItems.push(<DesignMenuItem key="cost" label={roundedCost} />); 
+    // let roundedCost = this.props.cost.toFixed(3); 
+    // menuItems.push(<DesignMenuItem key="cost" label={roundedCost} />); 
 
   	return menuItems; 
   }
