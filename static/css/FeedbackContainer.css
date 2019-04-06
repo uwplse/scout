@@ -1,6 +1,6 @@
 .feedback-container {
-	min-width: 500px;
-	width: 500px;
+	min-width: 550px;
+	width: 550px;
 	display: flex;
 	flex-direction: column; 
 }

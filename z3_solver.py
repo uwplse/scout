@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 RANDOM_SEEDS=100000
 CANVAS_WIDTH = 360
-DOMAIN_SIZE_REDUCTION = 4 
+DOMAIN_SIZE_REDUCTION = 4
 
 RELAX_PROPERTIES = {
 	"arrangement": [["x", "y", "width", "height", "left_column"], ["padding"]],
@@ -231,6 +231,7 @@ class Solver(object):
 				selected_grid = sizes.get_layout_grids()
 				if self.prune_domains: 
 					selected_grid = sizes.select_consistent_layout_grid(elements[0])
+					print(selected_grid)
 				shape_object = shape_classes.CanvasShape(self.solver_ctx, 
 					element["name"], element, selected_grid)
 				shapes[shape_object.shape_id] = shape_object
@@ -256,34 +257,24 @@ class Solver(object):
 		return shape_hierarchy
 
 	def prune_container_child_sizes(self, container):
-		# Group children by semantic type 
-		groups = dict()
-		for child in container.children:
-			if child.semantic_type != "group" or child.is_alternate:
-				if child.semantic_type not in groups:
-					groups[child.semantic_type] = []
+		"""Prune the number of sizes that we are going to iterate through in the size domains"""
+		size_factors = [set(child.variables.size_factor.domain) for child in container.children]
+		size_factors = list(set.intersection(*size_factors))
 
-				groups[child.semantic_type].append(child)
+		# Further reduce the size of the domain
+		if len(size_factors) > 0:
+			if len(size_factors) > DOMAIN_SIZE_REDUCTION:
+				num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
+				if num_to_select > 0:
+					size_factors = random.sample(size_factors, num_to_select)
 
-		# Prune sizes based on grouped containers
-		for key,group_children in groups.items():
-			size_factors = [set(child.variables.size_factor.domain) for child in group_children]
-			size_factors = list(set.intersection(*size_factors))
+			for child in container.children:
+				size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
 
-			# Further reduce the size of the domain
-			if len(size_factors) > 0:
-				if len(size_factors) > DOMAIN_SIZE_REDUCTION:
-					num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
-					if num_to_select > 0:
-						size_factors = random.sample(size_factors, num_to_select)
-
-				for child in group_children:
-					size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
-
-					child.variables.size_combo.domain = size_combos
-					child.variables.size_factor.domain = [val[2] for val in size_combos]
-					child.variables.width.domain = [val[0] for val in size_combos]
-					child.variables.height.domain = [val[1] for val in size_combos]
+				child.variables.size_combo.domain = size_combos
+				child.variables.size_factor.domain = [val[2] for val in size_combos]
+				child.variables.width.domain = [val[0] for val in size_combos]
+				child.variables.height.domain = [val[1] for val in size_combos]
 
 	def prune_repeat_group_child_sizes(self, container): 
 		# Get the first item in the repeat group 
