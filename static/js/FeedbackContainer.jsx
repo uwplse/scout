@@ -225,7 +225,8 @@ class FeedbackItem extends React.Component {
     
     // Lock -> 
     return (<div className="feedback-container-toggle">
-              <label className="feedback-container-label">{propertyLabel}</label>
+              {(this.props.or ? <label className="feedback-container-or-label feedback-container-label">OR</label> : 
+                <label className="feedback-container-label">{propertyLabel}</label>)}
               <Dropdown>
                 <Dropdown.Toggle disabled={(locked || prevented)} id="dropdown-basic">
                   {this.toUpperCase(selectedLabel)}
@@ -423,6 +424,7 @@ export default class FeedbackContainer extends React.Component {
       selectedValue = FeedbackContainer.getDesignSelected(designShape, key); 
     }
 
+    let hasLockOrPrevent = false;
     if(canvasShape.locks && canvasShape.locks.length) {
       let lockedIndex = canvasShape.locks.indexOf(key); 
       if(lockedIndex > -1) {
@@ -433,12 +435,18 @@ export default class FeedbackContainer extends React.Component {
         }
 
         for(let k=0; k<lockedValues.length; k++) {
+          let or = false;
+          hasLockOrPrevent = true; 
+          if(k > 0) {
+            or = true; 
+          }
           let value = lockedValues[k]; 
           let feedbackItem = {
             id: _.uniqueId(), 
             key: key, 
             selectedValue: value, 
-            linkedShapes: linkedShapes
+            linkedShapes: linkedShapes, 
+            or: or
           }; 
           feedbackItems.push(feedbackItem); 
         }
@@ -455,12 +463,19 @@ export default class FeedbackContainer extends React.Component {
         }
 
         for(let k=0; k<preventedValues.length; k++) {
+          let or = false;
+          hasLockOrPrevent = true;
+          if(k > 0) {
+            or = true;
+          }
+
           let value = preventedValues[k]; 
           let feedbackItem = {
             id: _.uniqueId(), 
             key: key, 
             selectedValue: value, 
-            linkedShapes: linkedShapes                                  
+            linkedShapes: linkedShapes, 
+            or: or                                 
           };                                              
 
           feedbackItems.push(feedbackItem); 
@@ -473,7 +488,8 @@ export default class FeedbackContainer extends React.Component {
         id: _.uniqueId(), 
         key: key, 
         selectedValue: selectedValue, 
-        linkedShapes: linkedShapes
+        linkedShapes: linkedShapes, 
+        or: hasLockOrPrevent ? true : false
       }; 
 
       feedbackItems.push(feedbackItem); 
@@ -603,7 +619,7 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
-  getFeedbackItem = (id, key, value, action, linkedShapes=[]) => {    
+  getFeedbackItem = (id, key, value, action, or, linkedShapes=[]) => {    
     let itemKey = _.uniqueId();  
     let canvasShape = this.state.activeCanvasShape ? this.state.activeCanvasShape : this.state.primarySelection; 
     let designShape = this.state.activeCanvasShape ? this.state.primarySelection : undefined;    
@@ -619,6 +635,7 @@ export default class FeedbackContainer extends React.Component {
               update={this.props.updateConstraintsCanvas}
               selected={value}
               id={id}
+              or={or}
               key={itemKey} />;  
   }
 
@@ -678,7 +695,7 @@ export default class FeedbackContainer extends React.Component {
         action.domain = action.domain(canvasShape); 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
@@ -694,7 +711,7 @@ export default class FeedbackContainer extends React.Component {
         action.domain = action.domain(canvasShape); 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.linkedShapes); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or, item.linkedShapes); 
 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
@@ -706,7 +723,7 @@ export default class FeedbackContainer extends React.Component {
       action.prevent = ConstraintActions.canvasChildConstraints['prevent'];
       action.domain = ConstraintActions.canvasChildConstraints.domains[item.key];
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
     }) : undefined; 
@@ -731,7 +748,7 @@ export default class FeedbackContainer extends React.Component {
         }
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
     }) : undefined; 
