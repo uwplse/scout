@@ -712,7 +712,7 @@ export default class PageContainer extends React.Component {
 
     const pinnedCanvases = this.state.solutions.filter((solution) => { return (solution.saved == 1); })
               .map((solution) => {
-                  return this.getDesignCanvas(solution, solution.id, false, undefined, 0.25); 
+                  return this.getDesignCanvas(solution, solution.id, false, undefined, 0.5); 
                 }); 
 
     const designCanvases = this.state.solutions

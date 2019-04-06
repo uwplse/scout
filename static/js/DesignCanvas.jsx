@@ -75,7 +75,7 @@ export default class DesignCanvas extends React.Component {
       return 1.0; 
     }
     
-    return 0.5;
+    return 0.75; 
   }
   
   componentDidMount() {

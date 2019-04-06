@@ -1,6 +1,6 @@
 .feedback-container {
-	min-width: 500px;
-	width: 500px;
+	min-width: 550px;
+	width: 550px;
 	display: flex;
 	flex-direction: column; 
 }
@@ -19,6 +19,13 @@
 	margin-left: 1em;
 	font-size: 20px;
 	width: 175px;
+}
+
+.feedback-container-or-label {
+	margin-left: 3em;
+	border-left: 1px solid gray;
+	padding-left: 1em;
+	width: 132px;
 }
 
 .feedback-container-toggle {
@@ -90,3 +97,5 @@ hr.feedback-container-separator {
 	height: 20px;
 	background-color: #FF83A8;
 }
+
+/* Checkboxes */ 
