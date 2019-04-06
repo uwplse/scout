@@ -74,42 +74,48 @@ class FeedbackItem extends React.Component {
     return false;
   }
 
-  onSelected = (newValue) => {
+  onSelected = (newValue, evt) => {
     this.props.setSelectedValue(this.props.id, newValue); 
+
+    if(newValue != "Vary") {
+      // Automatically set the lock
+      this.onLocked(evt, newValue); 
+    }
   }
 
-  onLocked = () => {
+  onLocked = (evt, value) => {
     let canvasShape = this.state.canvasShape ? this.state.canvasShape : this.state.primarySelection; 
     let preventValue = this.state.prevented; 
+    let selectedValue = value != undefined && value != "Vary" ? value : this.state.selected; 
     let keepOrPrevent = ""; 
     if(this.state.prevented) {
       // If the property was already "Kept", remove it and keep the Prevent instead
-      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, this.state.selected);
+      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, selectedValue);
       preventValue = false;
 
       // If there are any linkedShapes, we should also update their feedback as well 
       for(let i=0; i<this.state.linkedShapes.length; i++) {
-        this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], this.state.selected);      
+        this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], selectedValue);      
       }
     }
 
     if(this.state.locked){
-      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, this.state.selected); 
+      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, selectedValue); 
 
       // If there are any linkedShapes, we should also update their feedback as well 
       for(let i=0; i<this.state.linkedShapes.length; i++) {
-        this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], this.state.selected);      
+        this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], selectedValue);      
       }   
     }
     else {
       // Notify the PageContainer that a keep was performed so it can reflow the invalid solutions
       keepOrPrevent = "keep"; 
 
-      this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, canvasShape, this.state.selected); 
+      this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, canvasShape, selectedValue); 
 
       // If there are any linkedShapes, we should also update their feedback as well 
       for(let i=0; i<this.state.linkedShapes.length; i++) {
-        this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], this.state.selected);      
+        this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], selectedValue);      
       }    
     }
 
@@ -123,7 +129,7 @@ class FeedbackItem extends React.Component {
     this.props.locksUpdated();
   }
 
-  onPrevented = () => {
+  onPrevented = (evt) => {
     let canvasShape = this.state.canvasShape ? this.state.canvasShape : this.state.primarySelection; 
     let lockedValue = this.state.locked; 
     let keepOrPrevent = ""; 
@@ -236,10 +242,28 @@ class FeedbackItem extends React.Component {
                 </Dropdown.Menu>
               </Dropdown>
               <div className="feedback-container-locks">
-                <span className={"glyphicon glyphicon-lock " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
+                <div className="btn-group"> 
+                  <button type="button" 
+                    onClick={(!lockDisabled ? this.onLocked : undefined)}
+                    className={"btn " + (locked ? "locked btn-success " : "unlocked btn-light ") + (lockDisabled ? "disabled" : "enabled")}>
+                    Keep
+                  </button>
+                  <button type="button"
+                    onClick={(!lockDisabled ? this.onPrevented : undefined)}
+                    className={"btn " + (prevented ? "locked btn-danger " : "unlocked btn-light ") + (preventDisabled ? "disabled" : "enabled")}>
+                    Prevent
+                  </button>
+                </div> 
+
+
+{/*                <label className={"label " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
+                onClick={(!lockDisabled ? this.onLocked : undefined)}>                  
+                  <input type="checkbox" className="checkbox color-primary" />Keep
+                </label>*/}
+{/*                <span className={"glyphicon glyphicon-lock " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
                   onClick={(!lockDisabled ? this.onLocked : undefined)}></span>
                 <span className={"glyphicon glyphicon-remove " + (prevented ? "locked " : "unlocked ") + (preventDisabled ? "disabled" : "enabled")}
-                  onClick={(!preventDisabled ? this.onPrevented : undefined)}></span>
+                  onClick={(!preventDisabled ? this.onPrevented : undefined)}></span>*/}
               </div> 
             </div>);
   }
