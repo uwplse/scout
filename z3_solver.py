@@ -17,7 +17,7 @@ z3.set_param(
          'smt.random_seed', np.random.randint(0, 655350),
          'sat.phase', 'random',
          'sat.random_seed', np.random.randint(0, 655350))
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 RANDOM_SEEDS=100000
 CANVAS_WIDTH = 360
