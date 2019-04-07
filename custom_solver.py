@@ -44,7 +44,6 @@ class CustomSolver(object):
 		self.branch_and_bound_n_solutions()
 		time_end = time.time()
 		logging.debug('Total time in branch and bound: ' + str(time_end-time_start))
-		logging.debug("number of solutions found: " + str(len(self.solutions)))
 
 		if len(self.solutions):
 			self.solutions.sort(key=lambda s: s["cost"])
@@ -200,7 +199,7 @@ class CustomSolver(object):
 		logging.debug("Number of processes: " + str(len(jobs)))
 		for proc in jobs:
 			print("End after 30s timeout.")
-			proc.join(1000000)
+			proc.join(30)
 
 		for proc in jobs: 
 			if proc.is_alive(): 

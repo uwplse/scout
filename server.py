@@ -152,5 +152,5 @@ def get_solutions(elements, solutions, relative_designs=""):
 	return solutions
 
 if __name__ == "__main__":
-	app.run()
-	#app.run()
+	port = int(os.environ.get("PORT", 5000))
+	app.run(host='0.0.0.0', port=port)

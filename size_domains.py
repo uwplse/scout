@@ -299,14 +299,19 @@ def compute_size_domain_change_width_only(importance, width, height, is_separato
 
 	return domain	
 
+def get_nearest_grid_size(size): 
+	floor_grid = (size // SNAP_GRID_CONSTANT) * SNAP_GRID_CONSTANT
+	ceil_grid = floor_grid + SNAP_GRID_CONSTANT
+	return (ceil_grid if size - floor_grid > ceil_grid - size else floor_grid)
+
 def compute_size_domain_maintain_aspect_ratio(importance, width, height): 
 	domain = []
 	factor_id = 0
 	aspect_ratio = width/height
 
 	# First, round the values down to a mult of the grid constant
-	height_diff = height % SNAP_GRID_CONSTANT
-	orig_height = height -  height_diff
+	# height_diff = height % SNAP_GRID_CONSTANT
+	orig_height = get_nearest_grid_size(height)
 	orig_height = orig_height if orig_height > 0 else SNAP_GRID_CONSTANT
 
 	orig_width = orig_height * aspect_ratio
