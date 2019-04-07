@@ -258,7 +258,7 @@ class Solver(object):
 
 	def prune_container_child_sizes(self, container):
 		"""Prune the number of sizes that we are going to iterate through in the size domains"""
-		size_factors = [set(child.variables.size_factor.domain) for child in container.children]
+		size_factors = [set(child.variables.size_factor.domain) for child in container.children if child.type == 'leaf']
 		size_factors = list(set.intersection(*size_factors))
 
 		# Further reduce the size of the domain
@@ -269,12 +269,13 @@ class Solver(object):
 					size_factors = random.sample(size_factors, num_to_select)
 
 			for child in container.children:
-				size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
+				if child.type == 'leaf':
+					size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
 
-				child.variables.size_combo.domain = size_combos
-				child.variables.size_factor.domain = [val[2] for val in size_combos]
-				child.variables.width.domain = [val[0] for val in size_combos]
-				child.variables.height.domain = [val[1] for val in size_combos]
+					child.variables.size_combo.domain = size_combos
+					child.variables.size_factor.domain = [val[2] for val in size_combos]
+					child.variables.width.domain = [val[0] for val in size_combos]
+					child.variables.height.domain = [val[1] for val in size_combos]
 
 	def prune_repeat_group_child_sizes(self, container): 
 		# Get the first item in the repeat group 
