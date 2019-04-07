@@ -311,7 +311,8 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height):
 
 	orig_width = orig_height * aspect_ratio
 	orig_width = int(round(orig_width, 0))
-
+	width_diff = orig_width % 2
+	orig_width = orig_width - width_diff
 
 	domain.append([orig_width, orig_height, factor_id])
 
@@ -332,6 +333,8 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height):
 				computed_height -= GRID_CONSTANT
 				computed_width = computed_height * aspect_ratio
 				computed_width = int(round(computed_width, 0))
+				width_diff = computed_width % 2
+				computed_width = computed_width - width_diff
 
 				if computed_height >= minimum_element_height and computed_width >= minimum_element_width: 
 					domain.append([computed_width, computed_height, shrink_factor_id])
@@ -351,6 +354,8 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height):
 				computed_height += GRID_CONSTANT
 				computed_width = computed_height * aspect_ratio
 				computed_width = int(round(computed_width, 0))
+				width_diff = computed_width % 2
+				computed_width = computed_width - width_diff
 
 				if computed_width <= maximum_element_width and computed_height <= maximum_element_height: 
 					domain.append([computed_width, computed_height, increase_factor_id])
