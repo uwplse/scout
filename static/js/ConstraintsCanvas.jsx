@@ -451,18 +451,17 @@ export default class ConstraintsCanvas extends React.Component {
       if(isSelected && multipleSelected) {
         // Grouping applies to selected elements
         let parentTreeNode = this.getParentNodeForKey(shapeID, this.state.treeData[0]); 
-        let childNodes = this.getSelectedNodes(parentTreeNode, this.state.selectedTreeNodes); 
-        nodeChildren = childNodes.map((child) => {return child.key}); 
+        nodeChildren = this.getSelectedNodes(parentTreeNode, this.state.selectedTreeNodes); 
 
         // This should only apply if the element clicked on was the only one selected
         isGroup = false; 
       }
       else if(isSelected && isGroup) {
-        nodeChildren = node.children.map((child) => {return child.key; }); 
+        nodeChildren = node.children; 
       }
       else {
         if(isGroup) {
-          nodeChildren = node.children.map((child) => {return child.key; });
+          nodeChildren = node.children; 
         } else {
           nodeChildren = []; 
         }
@@ -770,38 +769,54 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   restructureRepeatGroupChildren = (groupChildren, groupSize) => {
-    // Split the children of this group node into uniformly sized groups 
-    let curr = 0; 
-    let currGroup = []; 
-    let groups = []; 
-    for(let i=0; i<groupChildren.length; i++) {
-      currGroup.push(groupChildren[i]); 
-      curr++; 
+    let childGroups = groupChildren.filter((child) => child.shape.type == "group"); 
+    let allGroups = groupChildren.length == childGroups.length; 
 
-      if(curr == groupSize) {
-        groups.push(currGroup);
-        currGroup = [];
-        curr = 0;  
+    let newChildren = []; 
+    if(allGroups) {
+      // Simply turn each child group into an item. 
+      for(let i=0; i<groupChildren.length; i++) {
+        let groupNode = groupChildren[i]; 
+        groupNode.item = true; 
+        groupNode.shape.item = true; 
+        groupNode.src = itemSVG; 
+        newChildren.push(groupNode); 
       }
     }
+    else {
+      // Split the children of this group node into uniformly sized groups 
+      let curr = 0; 
+      let currGroup = []; 
+      let groups = []; 
+      for(let i=0; i<groupChildren.length; i++) {
+        currGroup.push(groupChildren[i]); 
+        curr++; 
 
-    // For each group of children, create a new group node in the tree, and return these groups as 
-    // the new children 
-    let newChildren = []; 
-    for(let i=0; i<groups.length; i++) {
-      let currGroup = groups[i]; 
-
-      let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
-        {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
-
-      for(let j=0; j<currGroup.length; j++) {
-        currGroup[j].disabled = true;
+        if(curr == groupSize) {
+          groups.push(currGroup);
+          currGroup = [];
+          curr = 0;  
+        }
       }
 
-      newGroupNode.item = true;
-      newGroupNode.shape.item = true;
-      newGroupNode.children = currGroup; 
-      newChildren.push(newGroupNode); 
+      // For each group of children, create a new group node in the tree, and return these groups as 
+      // the new children 
+
+      for(let i=0; i<groups.length; i++) {
+        let currGroup = groups[i]; 
+
+        let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
+          {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+
+        for(let j=0; j<currGroup.length; j++) {
+          currGroup[j].disabled = true;
+        }
+
+        newGroupNode.item = true;
+        newGroupNode.shape.item = true;
+        newGroupNode.children = currGroup; 
+        newChildren.push(newGroupNode); 
+      }
     }
 
     return newChildren; 
@@ -1049,6 +1064,10 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   canSplitIntoGroupOfSize = (children, size) => {
+    if(children.length <= size) {
+      return false;
+    }
+
     // Determine if the children of this node can be split into a group of the given size
     let pattern = []; 
 
@@ -1056,9 +1075,7 @@ export default class ConstraintsCanvas extends React.Component {
     let currSize = 0; 
     let currGroup = []; 
     for(let i=0; i<children.length; i++) {
-      let currChildID = children[i]; 
-      let currChild = this.widgetTreeNodeMap[currChildID]; 
-
+      let currChild = children[i]; 
       currGroup.push(currChild.shape.type);
       currSize++; 
 
@@ -1088,9 +1105,8 @@ export default class ConstraintsCanvas extends React.Component {
 
   getGroupSizes = (total) => {
     // Get the set of group sizes to check by finding the possible divisors
-    let totalFloor = Math.floor(total/2); 
     let sizes = []; 
-    for(let i=2; i<=totalFloor; i++) {
+    for(let i=2; i<=total; i++) {
       if(total % i == 0){
         sizes.push(i); 
       }
@@ -1102,8 +1118,7 @@ export default class ConstraintsCanvas extends React.Component {
   containsGroup = (children) => {
     let numChildren = children.length; 
     for(let i=0; i<numChildren; i++){
-      let childID = children[i]; 
-      let child = this.widgetTreeNodeMap[childID];
+      let child = children[i]; 
       if(child.shape.type == "group") {
         return true; 
       }
@@ -1124,7 +1139,7 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  checkGroupTyping = (children) => {
+  canSplitChildrenIntoGroups = (children) => {
     // Do the type inference algorithm
     // iterate through each set of possible groupings starting with the greatest common divisor
     let numChildren = children.length; 
@@ -1138,7 +1153,50 @@ export default class ConstraintsCanvas extends React.Component {
         }
       }
     }
+  }
 
+  canMakeGroupsIntoItems = (groups) => {
+    // Determine if we can make a set of groups into items for a repeat group 
+    let patterns = []; 
+
+    // Collect orders of types for each group 
+    for(let i=0; i<groups.length; i++) {
+      let group = groups[i];
+      let pattern = []; 
+      for(let j=0; j<group.children.length; j++) {
+        let child = group.children[j]; 
+        pattern.push(child.shape.type); 
+      }
+      patterns.push(pattern); 
+    }
+
+    // Now, verify that each of the subgroups has the exact same set of types
+    for(let i=0; i<patterns.length; i++){
+      if(i < patterns.length - 1) {
+        let patternGroup = patterns[i]; 
+        let nextPatternGroup = patterns[i+1]; 
+        if(!this.typesMatch(patternGroup, nextPatternGroup)) {
+          return false;
+        }
+      }
+    }
+
+    return true; 
+  }
+
+  checkGroupTyping = (children) => {
+    let childGroups = children.filter((child) => child.shape.type == "group"); 
+    let allGroups = childGroups.length == children.length; 
+
+    if(allGroups) {
+        let canGroup = this.canMakeGroupsIntoItems(children); 
+        if(canGroup) {
+          return 1; 
+        }
+    }
+    else {
+      return this.canSplitChildrenIntoGroups(children);
+    }
     return -1;
   }
 

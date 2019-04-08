@@ -4,6 +4,7 @@ import '../css/FeedbackContainer.css';
 import Toggle from 'react-bootstrap-toggle';
 import {Dropdown} from 'react-bootstrap'; 
 import ConstraintActions from "./ConstraintActions"; 
+import FeedbackSeparator from "./FeedbackSeparator"; 
 
 class FeedbackItem extends React.Component {
   constructor(props) {
@@ -792,13 +793,13 @@ export default class FeedbackContainer extends React.Component {
           <div tabIndex="1" className="panel-body feedback-container-body"
             onClick={this.onClick}> 
             {treeFeedbackItems}
-            {elementFeedbackItems && elementFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {elementFeedbackItems && elementFeedbackItems.length ? <FeedbackSeparator label="Size" /> : undefined}
             {elementFeedbackItems}
-            {canvasChildItems && canvasChildItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {canvasChildItems && canvasChildItems.length ? <FeedbackSeparator label="Grid Layout & Placement" />  : undefined}
             {canvasChildItems}
-            {groupFeedbackItems && groupFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {groupFeedbackItems && groupFeedbackItems.length ? <FeedbackSeparator label="Arrangement" />  : undefined}
             {groupFeedbackItems}
-            {canvasFeedbackItems && canvasFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {canvasFeedbackItems && canvasFeedbackItems.length ? <FeedbackSeparator label="Grid Layout" /> : undefined}
             {canvasFeedbackItems}
             {feedbackHidden ? 
               (<div className="card card-body bg-light feedback-container-alert">

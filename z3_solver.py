@@ -259,7 +259,7 @@ class Solver(object):
 	def prune_container_child_sizes(self, container):
 		"""Prune the number of sizes that we are going to iterate through in the size domains"""
 		size_factors = [set(child.variables.size_factor.domain) for child in container.children if child.type == 'leaf']
-		size_factors = list(set.intersection(*size_factors))
+		size_factors = list(set.intersection(*size_factors)) if len(size_factors) else size_factors
 
 		# Further reduce the size of the domain
 		if len(size_factors) > 0:

@@ -282,7 +282,7 @@ export default class DesignCanvas extends React.Component {
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.state.scale;     
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
-    let hideTrash = (this.state.savedState == -1 || this.state.invalidated); 
+    let hideTrash = (this.state.savedState == -1); 
     let showConsider = ((this.state.savedState == -1 || this.state.invalidated) || this.state.savedState == 1); 
     let childSVGs = this.state.childSVGs; 
 

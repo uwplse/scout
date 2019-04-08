@@ -8,6 +8,7 @@ MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
 MIN_HEIGHT = 12
 MIN_WIDTH_TOUCH_TARGET = 120
+MIN_WIDTH_SEPARATOR = 24
 MIN_HEIGHT_ASPECT_RATIO = 16
 GRID_CONSTANT = 4
 SNAP_GRID_CONSTANT = 16
@@ -275,7 +276,7 @@ def compute_size_domain_change_width_only(importance, width, height, is_separato
 	domain.append([orig_width, orig_height, factor_id])
 
 	computed_width = orig_width
-	minimum_element_width = MIN_WIDTH_TOUCH_TARGET
+	minimum_element_width = MIN_WIDTH_SEPARATOR if is_separator else MIN_WIDTH_TOUCH_TARGET
 	shrink_factor_id = 0
 
 	if importance != "high": 

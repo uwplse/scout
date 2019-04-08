@@ -40,11 +40,16 @@
 	margin-top: 10em;
 }
 
-hr.feedback-container-separator {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    border-top: 1px solid rgba(0,0,0,0.125);
+span.feedback-container-separator {
+    border-top: 2px solid rgba(0,0,0,0.125);
     height: 1;
+    flex: 1 1 0px;
+    margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.feedback-container-separator-label {
+	font-size: 20px;
 }
 
 .feedback-container-toggle .dropdown {
@@ -96,6 +101,13 @@ hr.feedback-container-separator {
 	width: 50px;
 	height: 20px;
 	background-color: #FF83A8;
+}
+
+.feedback-container-separator-group {
+	display: flex; 
+	flex-direction: row; 
+	margin-top: 20px;
+	align-items: center;
 }
 
 /* Checkboxes */ 
