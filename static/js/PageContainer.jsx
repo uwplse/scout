@@ -197,7 +197,7 @@ export default class PageContainer extends React.Component {
    // Send an ajax request to the server 
    // Solve for the new designs
     let self = this;
-    $.post("/scout/solve", {"elements": jsonShapes, "solutions": prevSolutions}, 
+    $.post("/solve", {"elements": jsonShapes, "solutions": prevSolutions}, 
       function processDesigns(requestData) {
         self.parseSolutions(requestData); 
         if(callback){
@@ -217,7 +217,7 @@ export default class PageContainer extends React.Component {
         let notDiscardedSolutions = this.state.solutions.filter((solution) => !solution.invalidated);
         let prevSolutions = JSON.stringify(notDiscardedSolutions);
 
-        $.post("/scout/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
+        $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
           this.updateSolutionValidityFromRequest(requestParsed.solutions);
 
