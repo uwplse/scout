@@ -11,7 +11,7 @@ import solution as sln
 import logging
 import numpy as np
 import size_domains as sizes
-from size_domains import LAYOUT_GRID_PROPERTIES, SIZE_PROPERTIES
+from size_domains import LAYOUT_GRID_PROPERTIES, SIZE_PROPERTIES, BASELINE_GRIDS
 z3.set_param(
          'smt.arith.random_initial_value', True,
          'smt.random_seed', np.random.randint(0, 655350),
@@ -208,7 +208,7 @@ class Solver(object):
 		root = self.construct_shape_hierarchy([self.elements], shapes)
 		return shapes,root
 
-	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal", at_root=False, selected_grid=[]):
+	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal", at_root=False, selected_grid=[], selected_baseline_grid=[]):
 		shape_hierarchy = []
 		for i in range(0, len(elements)): 
 			element = elements[i]
@@ -229,25 +229,27 @@ class Solver(object):
 			shape_object = None
 			if element_type == "canvas": 
 				selected_grid = sizes.get_layout_grids()
+				selected_baseline_grid = BASELINE_GRIDS
 				if self.prune_domains: 
 					selected_grid = sizes.select_consistent_layout_grid(elements[0])
-					print(selected_grid)
-				shape_object = shape_classes.CanvasShape(self.solver_ctx, 
-					element["name"], element, selected_grid)
+					selected_baseline_grid = sizes.select_consistent_baseline_grid(elements[0])
+				shape_object = shape_classes.CanvasShape(self.solver_ctx,
+					element["name"], element, selected_grid, selected_baseline_grid)
 				shapes[shape_object.shape_id] = shape_object
 			elif element_type == "group" and not is_alternate:
 				shape_object = shape_classes.ContainerShape(self.solver_ctx, 
-					element["name"], element, selected_grid, at_root=at_root)
+					element["name"], element, selected_grid, selected_baseline_grid, at_root=at_root)
 				shapes[shape_object.shape_id] = shape_object
 			else:
 				shape_object = shape_classes.LeafShape(self.solver_ctx,
-					element["name"], element, selected_grid, at_root=at_root)
+					element["name"], element, selected_grid, selected_baseline_grid, at_root=at_root)
 				shapes[shape_object.shape_id] = shape_object
 
 			is_at_root = True if element_type == "canvas" else False
 			if "children" in element and not is_alternate: 
 				children = element["children"]
-				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, element_emphasis, is_at_root, selected_grid)
+				sub_hierarchy = self.construct_shape_hierarchy(children, shapes, parent_emphasis=element_emphasis, at_root=is_at_root, 
+					selected_grid=selected_grid, selected_baseline_grid=selected_baseline_grid)
 
 			if sub_hierarchy is not None: 
 				shape_object.add_children(sub_hierarchy)
@@ -353,19 +355,6 @@ class Solver(object):
 
 		# Select a layout grid combination to use for this instance
 		columns = canvas_shape.variables.columns
-		# layout_grid_subset = random.sample(layout_grid.domain, 1)
-		# selected_grid = layout_grid_subset[0]
-
-		# layout_grid.domain = layout_grid_subset
-		# margin.domain = [x[0] for x in layout_grid_subset]
-		# columns.domain = [x[1] for x in layout_grid_subset]
-		# gutter_width.domain = [x[2] for x in layout_grid_subset]
-		# column_width.domain = [x[3] for x in layout_grid_subset]
-		# logging.debug("Selected layout grid... ")
-		# logging.debug(layout_grid_subset)
-
-		# Prune column, size values based on the selected baseline grid because 
-		# many of them will no longer be viable. 
 		max_cols = max(columns.domain)
 		for shape in self.shapes.values(): 
 			if shape.at_root: # It should have the column variable if it is on the root of the canvas
@@ -376,29 +365,6 @@ class Solver(object):
 				right_column = shape.variables.right_column
 				right_column_pruned = [val for val in right_column.domain if val <= max_cols]
 				right_column.domain = right_column_pruned
-
-			# if shape.type == "leaf" and shape.at_root: 
-				# Prune the size values that do not fit into the selected margin anymore 
-				# selected_margin = layout_grid_subset[0][0]
-				# margin_size = selected_margin * 2 
-				# max_width = CANVAS_WIDTH - margin_size
-				# size_combos = shape.variables.size_combo
-				# size_combos_subset = [val for val in size_combos.domain if val[0] <= max_width]
-
-				# Prune the size combinations with a width that cannot be laid out on the selected baseline grid. 
-				# selected_columns = selected_grid[1]
-				# selected_gutter_width = selected_grid[2]
-				# selected_column_width = selected_grid[3]
-				# possible_widths = []
-				# for i in range(1, selected_columns+1):
-				# 	possible_width = (i * selected_column_width) + ((i-1) * selected_gutter_width) 
-				# 	possible_widths.append(possible_width)
-				
-				# size_combos_subset = [val for val in size_combos_subset if val[0] in possible_widths]
-				# shape.variables.size_combo.domain = size_combos_subset
-				# shape.variables.width.domain = [val[0] for val in size_combos_subset]
-				# shape.variables.height.domain = [val[1] for val in size_combos_subset]
-				# shape.variables.size_factor.domain = [val[2] for val in size_combos_subset]
 
 		# For debugging how large the search space isd
 		size = self.compute_search_space()
@@ -430,28 +396,25 @@ class Solver(object):
 							filtered_keys.append(lock_index)
 					elif lock == "height" or lock == "width":						
 						if "size_combo" in keys:
-							if len(locked_values) > 1: 
-								locked_index = SIZE_PROPERTIES.index(lock)
+							locked_index = SIZE_PROPERTIES.index(lock)
 
-								size_combo_domain = shape.variables["size_combo"].domain
-								pruned_size = [val for val in size_combo_domain if val[locked_index] in locked_values]
-								if len(pruned_size) > 1: 
-									shape.variables["size_combo"].domain = pruned_size
+							size_combo_domain = shape.variables["size_combo"].domain
+							pruned_size = [val for val in size_combo_domain if val[locked_index] in locked_values]
 
-									width_domain = [val[0] for val in pruned_size]
-									shape.variables["width"].domain = width_domain
+							shape.variables["size_combo"].domain = pruned_size
 
-									height_domain = [val[1] for val in pruned_size]
-									shape.variables["height"].domain = height_domain
+							width_domain = [val[0] for val in pruned_size]
+							shape.variables["width"].domain = width_domain
 
-									size_factor_domain = [val[0] for val in pruned_size]
-									shape.variables["size_factor"].domain = size_factor_domain
-								else: 
-									size_combo_var_index = keys.index("size_combo")
-									filtered_keys.append(size_combo_var_index)
-							else: 
-								size_index = keys.index("size_combo")
-								filtered_keys.append(size_index)
+							height_domain = [val[1] for val in pruned_size]
+							shape.variables["height"].domain = height_domain
+
+							size_factor_domain = [val[0] for val in pruned_size]
+							shape.variables["size_factor"].domain = size_factor_domain
+
+							if len(pruned_size) <= 1:
+								size_combo_var_index = keys.index("size_combo")
+								filtered_keys.append(size_combo_var_index)
 
 			if shape.prevents is not None: 
 				for prevent in shape.prevents: 
