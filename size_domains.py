@@ -45,6 +45,13 @@ def compute_layout_grid_domains():
 
 	return domain
 
+def baseline_grid_consistent_with_prevents(baseline_grid, element, at_root=False):
+	if "prevents" in element and "baseline_grid" in element["prevents"]: 
+		bg_value = element["prevented_values"]["baseline_grid"]
+		if baseline_grid in bg_value: 
+			return False
+	return True
+
 def is_consistent_with_prevents(layout_grid, element, at_root=False):
 	if "prevents" in element: 
 		for prevent in element["prevents"]: 
@@ -73,6 +80,23 @@ def is_consistent_with_prevents(layout_grid, element, at_root=False):
 						if layout_grid[3] == col_width_value: 
 							return False
 
+	return True
+
+def baseline_grid_consistent_with_locks(baseline_grid, element, at_root=False): 
+	# Check if the baseline grid is consistent with the locks on the element
+	if "locks" in element: 
+		for lock in element["locks"]: 
+			if lock == "height":
+				# Consistency of the height values with the baseline grid value 
+				height = element["locked_values"]["height"]
+				for height_val in height: 
+					if height_val % baseline_grid != 0: 
+						return False	
+
+			if lock == "baseline_grid": 
+				bg_value = element["locked_values"]["baseline_grid"]
+				if baseline_grid not in bg_value: 
+					return False
 	return True
 
 def is_consistent_with_locks(layout_grid, element, at_root=False): 
@@ -165,6 +189,24 @@ def grid_consistent_with_element_locks(layout_grid, element_tree, at_root=False)
 
 	return True
 
+def baseline_grid_consistent_with_element_locks(baseline_grid, element_tree, at_root=False): 
+	cons = baseline_grid_consistent_with_locks(baseline_grid, element_tree, at_root)
+	if not cons: 
+		return False
+
+	cons = baseline_grid_consistent_with_prevents(baseline_grid, element_tree, at_root)
+	if not cons: 
+		return False
+
+	if "children" in element_tree: 
+		for child in element_tree["children"]: 
+			at_root = element_tree["type"] == "canvas"
+			cons = baseline_grid_consistent_with_element_locks(baseline_grid, child, at_root)
+			if not cons:
+				return False
+
+	return True
+
 def select_consistent_layout_grid(element_tree): 
 	layout_grids = compute_layout_grid_domains()
 
@@ -172,6 +214,22 @@ def select_consistent_layout_grid(element_tree):
 	filtered_grids = []
 	for grid in layout_grids:
 		if grid_consistent_with_element_locks(grid, element_tree):
+			filtered_grids.append(grid)
+
+	# Now, randomly sample one to use
+	if len(filtered_grids):
+		selected_grid = random.sample(filtered_grids, 1)
+		return selected_grid
+	else:
+		# Return any grid if we could not select a consistent one
+		selected_grid = random.sample(layout_grids, 1)
+		return selected_grid
+
+def select_consistent_baseline_grid(element_tree): 
+	"""Select a consistent baseline grid with the values that are locked"""
+	filtered_grids = []
+	for grid in BASELINE_GRIDS:
+		if baseline_grid_consistent_with_element_locks(grid, element_tree):
 			filtered_grids.append(grid)
 
 	# Now, randomly sample one to use
@@ -256,19 +314,20 @@ def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, la
 		domain_with_factor.append([domain[i][0], domain[i][1], i])
 	return domain_with_factor
 
-def compute_size_domain_change_width_only(importance, width, height, is_separator=False): 
+def compute_size_domain_change_width_only(importance, width, height, baseline_grid, is_separator=False): 
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
 	domain = []
 	factor_id = 0
 
 	# First, round the values down to a mult of the grid constant
+	grid = baseline_grid[0] if len(baseline_grid) == 0 else GRID_CONSTANT
 	orig_height = height
 	orig_width = width 
 	if not is_separator: 
-		height_diff = height % SNAP_GRID_CONSTANT
+		height_diff = height % grid
 		orig_height = height -  height_diff
-		orig_height = orig_height if orig_height > 0 else SNAP_GRID_CONSTANT
+		orig_height = orig_height if orig_height > SNAP_GRID_CONSTANT else SNAP_GRID_CONSTANT
 	
 	width_diff = width % GRID_CONSTANT
 	orig_width = width - width_diff
@@ -300,20 +359,22 @@ def compute_size_domain_change_width_only(importance, width, height, is_separato
 
 	return domain	
 
-def get_nearest_grid_size(size): 
-	floor_grid = (size // SNAP_GRID_CONSTANT) * SNAP_GRID_CONSTANT
-	ceil_grid = floor_grid + SNAP_GRID_CONSTANT
+def get_nearest_grid_size(size, grid): 
+	print(grid)
+	floor_grid = (size // grid) * grid
+	ceil_grid = floor_grid + grid
 	return (ceil_grid if size - floor_grid > ceil_grid - size else floor_grid)
 
-def compute_size_domain_maintain_aspect_ratio(importance, width, height): 
+def compute_size_domain_maintain_aspect_ratio(importance, width, height, baseline_grid): 
 	domain = []
 	factor_id = 0
 	aspect_ratio = width/height
 
 	# First, round the values down to a mult of the grid constant
 	# height_diff = height % SNAP_GRID_CONSTANT
-	orig_height = get_nearest_grid_size(height)
-	orig_height = orig_height if orig_height > 0 else SNAP_GRID_CONSTANT
+	grid = baseline_grid[0] if len(baseline_grid) == 0 else GRID_CONSTANT
+	orig_height = get_nearest_grid_size(height, grid)
+	orig_height = orig_height if orig_height > SNAP_GRID_CONSTANT else SNAP_GRID_CONSTANT
 
 	orig_width = orig_height * aspect_ratio
 	orig_width = int(round(orig_width, 0))
@@ -336,7 +397,7 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height):
 		while computed_height > minimum_element_height and computed_width > minimum_element_width: 
 				shrink_factor_id -= 1
 
-				computed_height -= GRID_CONSTANT
+				computed_height -= baseline_grid
 				computed_width = computed_height * aspect_ratio
 				computed_width = int(round(computed_width, 0))
 				width_diff = computed_width % 2
