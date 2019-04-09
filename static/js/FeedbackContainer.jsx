@@ -610,7 +610,7 @@ export default class FeedbackContainer extends React.Component {
     let callbacks = this.state.feedbackCallbacks; 
 
     let linkedSiblings = []; 
-    if(shape.item) {
+    if(callbacks && callbacks.getCurrentShapeSiblings && shape.item) {
       linkedSiblings = callbacks.getCurrentShapeSiblings(shape.name); 
     }
 

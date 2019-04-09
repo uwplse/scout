@@ -31,6 +31,11 @@ export default class WidgetFeedback extends React.Component {
 
     this.action["undo"].updateConstraintsCanvasShape(this.property, this.shape, this.value);
 
+    // If there are any linkedShapes, we should also update their feedback as well 
+    for(let i=0; i<this.props.linkedShapes.length; i++) {
+      this.action["undo"].updateConstraintsCanvasShape(this.property, this.props.linkedShapes[i],  this.value);      
+    } 
+
     // Notify the ConstraintsCanvas to update its rendering
     this.props.update(this.shape, this.property, this.value); 
   }

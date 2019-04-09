@@ -92,21 +92,17 @@ export default class ConstraintsCanvas extends React.Component {
 
     if(this.props.primarySelection != undefined){
       if(prevProps.primarySelection != this.props.primarySelection) {
-        let parentNode = this.getCurrentParentNode(this.props.primarySelection.name); 
-        let expandedNodes = this.state.expandedTreeNodes; 
-        if(parentNode) {
-          let parentTreeNode = this.widgetTreeNodeMap[parentNode.name]; 
-          if(expandedNodes.indexOf(parentTreeNode.key) == -1) {
-            expandedNodes.push(parentTreeNode.key); 
-          }
-        }
+        // Expand the corresponding parent node
+        let toExpand = []; 
+        this.getParentNodesToExpand(this.props.primarySelection.name, this.state.expandedTreeNodes, toExpand); 
+        toExpand.push(...this.state.expandedTreeNodes);
 
         // When the widget becomes active from a DesignCanvas, we should select the corresponding shape in the 
         // ConstraintsCanvas tree. 
         this.setState({
           treeData: this.state.treeData, 
           primarySelection: this.props.primarySelection,
-          expandedTreeNodes: expandedNodes
+          expandedTreeNodes: toExpand
         });
       } 
     }
@@ -283,6 +279,12 @@ export default class ConstraintsCanvas extends React.Component {
     let keepConflicts = highlightedConflicts.filter(conflict => conflict.type == "lock"); 
     let preventConflicts = highlightedConflicts.filter(conflict => conflict.type == "prevent");
 
+    let linkedSiblings = []; 
+    if(shape.item) {
+      // Should be updating the corresponding item groups
+      linkedSiblings = this.getCurrentShapeSiblings(shape.name); 
+    }
+
     // Restore feedback items for locks 
     let feedbackItems = []; 
     if(shape.locks && shape.locks.length) {
@@ -298,7 +300,7 @@ export default class ConstraintsCanvas extends React.Component {
               let uniqueId = getUniqueID();
               let message = action["do"].getFeedbackMessage(lock, shape, value);
               let id = shape.name + "_" + uniqueId; 
-              let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, value, message, highlighted);
+              let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, value, message, highlighted, linkedSiblings);
               feedbackItems.push(widgetFeedback); 
             } 
           }
@@ -319,7 +321,7 @@ export default class ConstraintsCanvas extends React.Component {
               let uniqueId = getUniqueID();
               let message = action["do"].getFeedbackMessage(prevent, shape, value);
               let id = shape.name + "_" + uniqueId; 
-              let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, value, message, highlighted);
+              let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, value, message, highlighted, linkedSiblings);
               feedbackItems.push(widgetFeedback); 
             } 
           }
@@ -392,7 +394,7 @@ export default class ConstraintsCanvas extends React.Component {
     return newTreeNode; 
   }
 
-  getWidgetFeedback = (shapeID, shape, action, property, value, message, highlighted) => {
+  getWidgetFeedback = (shapeID, shape, action, property, value, message, highlighted, linkedShapes=[]) => {
     return (<WidgetFeedback 
               key={shapeID} 
               type="feedback"
@@ -403,6 +405,7 @@ export default class ConstraintsCanvas extends React.Component {
               value={value}
               message={message} 
               highlighted={highlighted}
+              linkedShapes={linkedShapes}
               update={this.updateConstraintsCanvas}/>); 
   }
 
@@ -413,15 +416,19 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
-    // Expand the corresponding parent node
-    let parentNode = this.getCurrentParentNode(shape.name); 
-    if(parentNode) {
-      this.setState({
-        expandedTreeNodes: this.state.expandedTreeNodes.concat(parentNode.key)
-      }); 
+  getParentNodesToExpand = (shapeID, expandedNodes, toExpand=[]) => {
+    // Retrieve all of the parent nodes to expand to be able to view a child node, if they are not already expanded. 
+    let parentNode = this.getCurrentParentNode(shapeID); 
+    if(expandedNodes.indexOf(parentNode.name) == -1) {
+      toExpand.push(parentNode.name); 
     }
 
+    if(parentNode.type != "canvas") {
+      this.getParentNodesToExpand(parentNode.name, expandedNodes, toExpand); 
+    }
+  }
+
+  displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
     // Call the PageContainer method to open the feedback panel 
     this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
   }
