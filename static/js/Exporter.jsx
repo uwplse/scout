@@ -103,11 +103,6 @@ export default class Exporter  {
 
       // Diversity score for a single pair is a weighted average of Position, Size, Neighboring Elements, Alternate Rep (only for Alternate groups)
 
-    // $.post("/compute_diversity_scores", {"designs": designs}, (data) => {
-    //     let parsedData = JSON.parse(data); 
-    //     console.log(parsedData)
-    //   });
-
     // Sum up the total of diversity scores for the full set of elements. 
     // Then return that as the total score. 
   }
