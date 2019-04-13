@@ -119,7 +119,6 @@ class Solution(object):
 	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics, elements_dict):
 		if tree.element is not None: 
 			element = copy.deepcopy(tree.element)
-			elements_dict[element["name"]] = element; 
 
 			# Get the computed values from the model 
 			self.parse_values(tree, element, variables, model)
@@ -197,7 +196,6 @@ class Solution(object):
 		#cost = 0
 
 		print("Total cost: " + str(cost))
-		sln["elements_dict"] = elements_dict
 		sln["elements"] = element_tree
 		sln["id"] = self.id 
 		sln["cost"] = cost # Assign the computed cost here. 
