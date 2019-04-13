@@ -20,6 +20,8 @@ import DesignCanvas from './DesignCanvas';
 import SmallDesignCanvas from './SmallDesignCanvas';
 import DesignCanvasContainer from './DesignCanvasContainer'; 
 
+const STORAGE_MAX_SOLUTIONS = 200; 
+
 export default class PageContainer extends React.Component {
   constructor(props) {
   	super(props); 
@@ -73,10 +75,15 @@ export default class PageContainer extends React.Component {
   }
 
   updateSolutionsCache = () => {
+    // Check the number of solutions already kept in local storage and
+    // remove > invalid solutions
     let solutionsJSON = JSON.stringify(this.state.solutions); 
     localStorage.setItem('solutions', solutionsJSON);
-  }
 
+    // Keep the most recent 200 and discard the rest
+    const discardedCanvases = this.state.solutions.filter((solution) => { 
+      return solution.saved == -1 || solution.invalidated; }); 
+  }
 
   addShapeToConstraintsCanvas = (id, src, type, width, height) => {
     return () => {
@@ -266,7 +273,6 @@ export default class PageContainer extends React.Component {
 
         designSolution.conflicts = solution.conflicts; 
         designSolution.elements = solution.elements; 
-        designSolution.elements_dict = solution.elements_dict;
       }
     }
 
@@ -310,12 +316,27 @@ export default class PageContainer extends React.Component {
     // }
   }
 
+  getElementFromTree = (shape, element_tree) => {
+    if(element_tree.name == shape.name) {
+      return element_tree; 
+    }
+
+    if(element_tree.children) {
+      for(let i=0; i<element_tree.children.length; i++) {
+        let elt = this.getElementFromTree(shape, element_tree.children[i]); 
+        if(elt) {
+          return elt; 
+        }
+      }
+    }
+  }
+
   checkSolutionValidityClient = (shape) => {
     let invalidSolutions = []; 
     for(let i=0; i < this.state.solutions.length; i++) {
       let solution = this.state.solutions[i]; 
       let shapeId = shape.name; 
-      let element = solution.elements_dict[shapeId]; 
+      let element = this.getElementFromTree(shape, solution.elements);
 
       let conflicts = solution.conflicts; 
       let keepConflicts = []; 
@@ -784,21 +805,21 @@ export default class PageContainer extends React.Component {
                 <div>
                   <ul className="nav nav-pills designs-area-nav-pills">
                     <li className="nav-item">
-                      <a className={"nav-link" + (this.state.activeDesignPanel == "designs" ? " active" : "")} 
+                      <a className={"nav-link designs-area-link" + (this.state.activeDesignPanel == "designs" ? " active" : "")} 
                          href="#"
                          onClick={this.toggleActiveDesignPanel.bind(this, "designs")}>
                          <span className="designs-area-number">{designCanvases.length}</span>
                          Under Consideration</a> 
                     </li> 
                     <li className="nav-item"> 
-                      <a className={"nav-link" + (this.state.activeDesignPanel == "saved" ? " active" : "")}  
+                      <a className={"nav-link  designs-area-link" + (this.state.activeDesignPanel == "saved" ? " active" : "")}  
                         href="#"
                         onClick={this.toggleActiveDesignPanel.bind(this, "saved")}>
                          <span className="designs-area-number">{savedCanvases.length}</span>
                         Saved</a>
                     </li> 
                     <li className="nav-item"> 
-                      <a className={"nav-link" + (this.state.activeDesignPanel == "discarded" ? " active" : "")} 
+                      <a className={"nav-link  designs-area-link" + (this.state.activeDesignPanel == "discarded" ? " active" : "")} 
                         href="#"
                         onClick={this.toggleActiveDesignPanel.bind(this, "discarded")}>
                          <span className="designs-area-number">{discardedCanvases.length}</span>

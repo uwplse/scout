@@ -9,7 +9,7 @@ export default class DesignCanvasContainer extends React.Component {
         <div className="design-body design-body-saved">
         {this.props.designCanvases}
         </div>
-        <hr className="feedback-container-separator" />
+        <hr className="design-canvas-container-separator" />
       </div> : 
 	    <div className="design-body">
 	    {this.props.designCanvases}
