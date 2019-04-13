@@ -6,7 +6,7 @@
 }
 
 .design-canvas:hover {
-	transform: scale(1.25) translate(0, 40px);
+	transform: scale(1.25) translate(0, 60px);
 }
 
 .zoomed-design-container .design-canvas:hover {

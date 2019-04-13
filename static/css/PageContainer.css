@@ -20,6 +20,10 @@
 	font-size: 20;
 }
 
+.designs-area-container .designs-area-link {
+	font-size: 16;
+}
+
 .designs-area-container .designs-area-actions {
 	display: flex; 
 	flex: 1 1 0px;
