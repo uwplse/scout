@@ -256,7 +256,7 @@ def compute_size_domain_change_width_only_root(importance, width, height, layout
 	orig_height = height
 	orig_width = width 
 	if not is_separator: 
-		height_diff = height % SNAP_GRID_CONSTANT
+		height_diff = height % GRID_CONSTANT
 		orig_height = height -  height_diff
 		orig_width = width 
 
@@ -321,7 +321,7 @@ def compute_size_domain_change_width_only(importance, width, height, baseline_gr
 	factor_id = 0
 
 	# First, round the values down to a mult of the grid constant
-	grid = baseline_grid[0] if len(baseline_grid) == 0 else GRID_CONSTANT
+	grid = baseline_grid[0] if len(baseline_grid) > 0 else GRID_CONSTANT
 	orig_height = height
 	orig_width = width 
 	if not is_separator: 
@@ -372,7 +372,7 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height, baselin
 
 	# First, round the values down to a mult of the grid constant
 	# height_diff = height % SNAP_GRID_CONSTANT
-	grid = baseline_grid[0] if len(baseline_grid) == 0 else GRID_CONSTANT
+	grid = baseline_grid[0] if len(baseline_grid) > 0 else GRID_CONSTANT
 	orig_height = get_nearest_grid_size(height, grid)
 	orig_height = orig_height if orig_height > SNAP_GRID_CONSTANT else SNAP_GRID_CONSTANT
 
@@ -397,7 +397,7 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height, baselin
 		while computed_height > minimum_element_height and computed_width > minimum_element_width: 
 				shrink_factor_id -= 1
 
-				computed_height -= baseline_grid
+				computed_height -= grid
 				computed_width = computed_height * aspect_ratio
 				computed_width = int(round(computed_width, 0))
 				width_diff = computed_width % 2
@@ -418,7 +418,7 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height, baselin
 		while computed_width < maximum_element_width and computed_height < maximum_element_height: 
 				increase_factor_id += 1
 
-				computed_height += GRID_CONSTANT
+				computed_height += grid
 				computed_width = computed_height * aspect_ratio
 				computed_width = int(round(computed_width, 0))
 				width_diff = computed_width % 2
