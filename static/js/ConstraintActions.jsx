@@ -25,7 +25,7 @@ ConstraintActions.computeGridLayoutValues = function computeGridLayoutValues() {
 
 // Variables where the domains are encoded as integer values into the domain list
 // rather than string values, or real values (e.g., margins)
-ConstraintActions.index_domains = ["arrangement", "alignment", "canvas_alignment"]
+ConstraintActions.index_domains = ["arrangement", "alignment", "canvas_alignment", "group_alignment"]
 
 ConstraintActions.canvas_width = 360; 
 ConstraintActions.canvas_height = 640; 
@@ -42,6 +42,7 @@ ConstraintActions.verticalArrangements = ["vertical", "columns"];
 ConstraintActions.arrangments = ["horizontal", "vertical", "rows", "columns"]; 
 ConstraintActions.verticalAlignments = ["left", "x-center", "right"];
 ConstraintActions.horizontalAlignments = ["top", "y-center", "bottom"];
+ConstraintActions.groupAlignments = ["left", "center", "right"]; 
 
 ConstraintActions.alignments = ["Top-Left", "Center", "Bottom-Right"]; 
 ConstraintActions.paddings = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]; 
@@ -239,6 +240,10 @@ ConstraintActions.messages = {
 		// 	alignmentValue = ConstraintActions.horizontalAlignments[shape["alignment"]]; 
 		// }
 		return " alignment " + alignmentValue + "."; 
+	}, 
+	"group_alignment": function getMessage(shape, value) {
+		let labelValue = ConstraintActions.groupAlignments[value]; 
+		return " group alignment " + labelValue + "."; 
 	}
 }
 
@@ -376,13 +381,14 @@ ConstraintActions.canvasChildConstraints = {
 }
 
 ConstraintActions.groupConstraints = {
-	"values": ["arrangement", "alignment", "padding"], 
+	"values": ["arrangement", "alignment", "padding", "group_alignment"], 
 	"keep": ConstraintActions.defaultKeep, 
 	"prevent": ConstraintActions.defaultPrevent, 
 	"domains": {
 		"arrangement": ConstraintActions.arrangments, 
 		"alignment": ConstraintActions.alignments, 
-		"padding": ConstraintActions.paddings
+		"padding": ConstraintActions.paddings, 
+		"group_alignment": ConstraintActions.groupAlignments
 	}
 }
 

@@ -10,6 +10,7 @@ import solver_helpers as sh
 import solution as sln
 import logging
 import numpy as np
+import uuid
 import size_domains as sizes
 from size_domains import LAYOUT_GRID_PROPERTIES, SIZE_PROPERTIES, BASELINE_GRIDS
 z3.set_param(
@@ -22,16 +23,20 @@ z3.set_param(
 RANDOM_SEEDS=100000
 CANVAS_WIDTH = 360
 DOMAIN_SIZE_REDUCTION = 4
+REPAIR_TRIES = 2
 
 RELAX_PROPERTIES = {
-	"arrangement": [["x", "y", "width", "height", "left_column"], ["padding"]],
-	"padding": [["x", "y", "width", "height", "left_column"], ["arrangement"]],
+	"arrangement": [["x", "y", "width", "height", "left_column", "right_column"], ["padding"]],
+	"padding": [["x", "y", "width", "height", "left_column", "right_column"], ["arrangement"]],
 	"alignment": [],
+	"group_alignment": [], 
 	"width": [["x", "height", "size_factor"], ["arrangement"], ["padding"]],
 	"height": [["y", "width", "size_factor"], ["arrangement"], ["padding"]], 
 	"y": [["height", "width", "size_factor"], ["arrangement"], ["padding"]], 
 	"x": [["height", "width", "size_factor"], ["arrangement"], ["padding"]], 
 	"left_column": [["x", "y"], ["size_combo"], ["arrangement"], ["padding"]], 
+	"right_column": [["x", "y"], ["size_combo"], ["arrangement"], ["padding"]], 
+	"canvas_alignment": [["x", "y"], ["size_combo"], ["arrangement"], ["padding"]], 
 	"baseline_grid": [], 
 	"margin": [["grid_layout"]], 
 	"columns": [["grid_layout"]], 
@@ -43,33 +48,37 @@ CHILDREN_RELAX_PROPERTIES = {
 	"arrangement": [["x", "y"], ["size_combo"], ["padding", "arrangement"]], 
 	"padding": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
 	"left_column": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
+	"right_column": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
+	"canvas_alignment": [["x", "y"], ["size_combo"], ["padding", "arrangement"]],
 	"alignment": [["x", "y"]],
+	"group_alignment": [["x", "y"]], 
 	"height": [["size_combo"]],
 	"width": [["size_combo"]], 
 	"x": [["x", "y"]], 
 	"y": [["x", "y"]], 
-	"baseline_grid": [["y", "left_column"], ["size_factor"], ["x"], 
+	"baseline_grid": [["y", "left_column", "right_column"], ["size_factor"], ["x"], 
 		["arrangement", "padding"]], 
-	"margin": [["y", "x", "left_column"], ["size_combo"], ["padding", "arrangement"]],
-	"columns": [["x", "left_column", "y"], ["size_combo"], ["padding", "arrangement"]], 
-	"column_width": [["x", "left_column"], ["size_combo"], ["y"], ["padding", "arrangement"]], 
-	"gutter_width": [["x", "left_column"], ["size_combo"], ["y"], ["padding", "arrangement"]]
+	"margin": [["y", "x", "left_column", "right_column", "size_combo", "padding", "arrangement"]],
+	"columns": [["x", "left_column", "y", "right_column"], ["size_combo"], ["padding", "arrangement"]], 
+	"column_width": [["x", "left_column", "right_column"], ["size_combo"], ["y"], ["padding", "arrangement"]], 
+	"gutter_width": [["x", "left_column", "right_column"], ["size_combo"], ["y"], ["padding", "arrangement"]]
 }
 
 CANVAS_RELAX_PROPERTIES = {
 	"padding": [["grid_layout"], ["baseline_grid"]], 
 	"arrangement": [["grid_layout"], ["baseline_grid"]], 
 	"alignment": [["baseline_grid"], ["grid_layout"]],
+	"group_alignment": [["baseline_grid"], ["grid_layout"]],
 	"y": [["grid_layout"], ["baseline_grid"]], 
-	"left_column": [["grid_layout"], ["baseline_grid"]],
+	"left_column": [["grid_layout"]],
+	"right_column": [["grid_layout"]],
 	"column_width": [["grid_layout"], ["baseline_grid"]], 
+	"canvas_alignment": [["grid_layout"], ["baseline_grid"]], 
 	"gutter_width": [["grid_layout"], ["baseline_grid"]], 
-	"margin": [["grid_layout"], ["baseline_grid"]], 
+	"margin": [["grid_layout", "baseline_grid"]], 
 	"height": [["baseline_grid"], ["grid_layout"]], 
 	"width": [["grid_layout"], ["baseline_grid"]]
 }
-
-
 
 class OverrideSolver(object):
 	def __init__(self, solver):
@@ -202,6 +211,13 @@ class Solver(object):
 				self.cb.init_shape_bounds(shape)
 				self.cb.init_shape_baseline(shape)
 				self.cb.init_shape_alternate(shape)
+
+		for shape in self.shapes.values(): 
+			if shape.importance: 
+				if shape.importance == "high": 
+					self.cb.init_high_emphasis(shape, self.shapes.values())
+				if shape.importance == "low":
+					self.cb.init_low_emphasis(shape, self.shapes.values())
 
 	def build_shape_hierarchy(self): 
 		shapes = dict()
@@ -736,44 +752,6 @@ class Solver(object):
 				shapes_added.append(shape_id)
 
 		return shapes_added, shapes_removed
-	
-	def relax_shape_properties(self, solution, changed_element_id, changed_property, changed_value, relaxed_property_values):
-		element = solution["elements"][changed_element_id]
-
-		relaxed_property_values[changed_element_id] = dict()
-
-		# Relax the changed property first and keep the old value to restore later
-		relaxed_property_values[changed_element_id][changed_property] = element[changed_property]
-
-		# Change the value for this property on the element to the kept value. 
-		element[changed_property] = changed_value
-
-		properties_to_relax = RELAX_PROPERTIES[changed_property]
-		for i in range(0, len(properties_to_relax)): 
-			property_to_relax = properties_to_relax[i]
-			if property_to_relax in element: 
-				relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
-				element[property_to_relax] = None
-
-		self.relax_child_properties(solution, changed_element_id, changed_property, relaxed_property_values)
-
-		return relaxed_property_values
-
-	def relax_child_properties(self, solution, element_id, changed_property, relaxed_property_values): 
-		# Relax child properties 
-		element_shape = self.shapes[element_id]
-		if hasattr(element_shape, 'children') and len(element_shape.children):
-			for child in element_shape.children:
-				solution_element = solution["elements"][child.shape_id]
-				child_properties_to_relax = CHILDREN_RELAX_PROPERTIES[changed_property]
-				relaxed_property_values[child.shape_id] = dict()
-				for i in range(0, len(child_properties_to_relax)): 
-					property_to_relax = child_properties_to_relax[i]
-					if property_to_relax in solution_element:
-						relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
-						solution_element[property_to_relax] = None
-				self.relax_child_properties(solution, child.shape_id, changed_property, relaxed_property_values)
-
 
 	def restore_relaxed_properties(self, solution, element_id, relaxed_property_values): 
 		solution_element = solution["elements"][element_id]
@@ -796,48 +774,61 @@ class Solver(object):
 					solution_element[key] = relaxed_value
 			self.restore_child_relaxed_properties(solution, child.shape_id, relaxed_property_values)
 
-	def get_variable_to_relax(self, solution, changed_element_id, changed_property, relaxed_property_values): 
-		element = solution["elements"][changed_element_id]
+	def relax_element_properties(self, elements, changed_element_id, changed_property, relaxed_property_values): 
+		element = elements[changed_element_id]
 		properties_to_relax = RELAX_PROPERTIES[changed_property]
 		for i in range(0, len(properties_to_relax)): 
 			property_group_to_relax = properties_to_relax[i]
-			relaxed = False
 			for property_to_relax in property_group_to_relax: 
 				if property_to_relax in element and property_to_relax not in relaxed_property_values[changed_element_id]: 
 					relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
-					relaxed = True
-			if relaxed: 
-				return True
+		self.relax_child_properties(elements, changed_element_id, changed_property, relaxed_property_values)
 
-		result = self.get_child_variable_to_relax(solution, changed_element_id, changed_property, relaxed_property_values)
-		if result: 
-			return result
-
+	def relax_canvas_properties(self, elements, changed_element_id, changed_property, relaxed_property_values):
 		#Then start to relax the canvas properties
-		canvas_element = solution["elements"]["canvas"]
+		canvas_element = elements["canvas"]
 		canvas_properties_to_relax = CANVAS_RELAX_PROPERTIES[changed_property]
 		if "canvas" not in relaxed_property_values: 
 			relaxed_property_values["canvas"] = dict()
 
 		for i in range(0, len(canvas_properties_to_relax)): 
 			canvas_property_group_to_relax = canvas_properties_to_relax[i]
-			relaxed = False
 			for canvas_property_to_relax in canvas_property_group_to_relax: 
 				if canvas_property_to_relax not in relaxed_property_values["canvas"]: 
 					relaxed_property_values["canvas"][canvas_property_to_relax] = canvas_element[canvas_property_to_relax]
-					relaxed = True
 
-			if relaxed: 
-				return True
+	def get_parent_node(self, element_tree, element_id): 
+		# Find the elements parent node in the tree
+		if "children" in element_tree: 
+			for child in element_tree["children"]: 
+				if child["name"] == element_id: 
+					return element_tree
+				parent = self.get_parent_node(child, element_id)
+				if parent: 
+					return parent 
 
-		return False
+	def get_corresponding_items(self, element_tree, element_id): 
+		parent = self.get_parent_node(element_tree, element_id)
+		items = []
+		for child in parent["children"]: 
+			if child["item"] and child["name"] != element_id: 
+				items.append(child)
+		return items
 
-	def get_child_variable_to_relax(self, solution, element_id, changed_property, relaxed_property_values): 
+	def relax_item_properties(self, element_tree, elements, changed_element_id, changed_property, relaxed_property_values): 
+		# Find the corresponding items in the parent container 
+		items = self.get_corresponding_items(element_tree, changed_element_id)
+		for item in items:
+			relaxed_property_values[item["name"]] = dict()
+			relaxed_property_values[item["name"]][changed_property] = item[changed_property]
+			self.relax_element_properties(elements, item["name"], changed_property, relaxed_property_values)
+
+	def relax_child_properties(self, elements, element_id, changed_property, relaxed_property_values):
 		# Relax child properties 
 		element_shape = self.shapes[element_id]
 		if hasattr(element_shape, 'children') and len(element_shape.children):
 			for child in element_shape.children:
-				solution_element = solution["elements"][child.shape_id]
+				solution_element = elements[child.shape_id]
 				child_properties_to_relax = CHILDREN_RELAX_PROPERTIES[changed_property]
 
 				if child.shape_id not in relaxed_property_values: 
@@ -845,50 +836,54 @@ class Solver(object):
 	
 				for i in range(0, len(child_properties_to_relax)): 
 					property_group_to_relax = child_properties_to_relax[i]
-					relaxed = False
 					for property_to_relax in property_group_to_relax: 
 						if property_to_relax in solution_element and property_to_relax not in relaxed_property_values[child.shape_id]:
 							relaxed_property_values[child.shape_id][property_to_relax] = solution_element[property_to_relax]
-							relaxed = True
-					if relaxed: 
-						return True
 
 			for child in element_shape.children: 
-				result = self.get_child_variable_to_relax(solution, child.shape_id, changed_property, relaxed_property_values)
-				if result: 
-					return result 
-		return False
+				self.relax_child_properties(elements, child.shape_id, changed_property, relaxed_property_values)
+
+	def get_elements_dict(self, element_tree, elements): 
+		"""Build a dictionary of the elements in the hierarchy for accessing elements directly"""
+		elements[element_tree["name"]] = element_tree 
+
+		if "children" in element_tree and len(element_tree["children"]): 
+			for child in element_tree["children"]: 
+				self.get_elements_dict(child, elements)
 
 	def repair_solution(self, solution, changed_element_id, changed_property, changed_value, keep_or_prevent): 
 		# Remove all of the non-relaxed varibles from the unassigned variables. 
 		relaxed_property_values = dict() 
 		relaxed_property_values[changed_element_id] = dict()
+		relaxed_property_values[changed_element_id][changed_property] = changed_value
+
+		elements = dict() 
+		element_tree = solution["elements"]
+		self.get_elements_dict(element_tree, elements)
 
 		repaired_solution = None
 		more_variables_to_relax = True
 		print("Begin repair")
-		while more_variables_to_relax and repaired_solution is None: 
+		repair_tries = 0 
+		while repair_tries < REPAIR_TRIES and repaired_solution is None: 
 			# Remove variables from unassigned that should be assigned
-			more_variables_to_relax = self.get_variable_to_relax(solution, changed_element_id, changed_property, relaxed_property_values)
+			if repair_tries == 0: 
+				self.relax_element_properties(elements, changed_element_id, changed_property, relaxed_property_values)
+			else: 
+				self.relax_canvas_properties(elements, changed_element_id, changed_property, relaxed_property_values)
+
 			print(relaxed_property_values)
+
+			if "item" in elements[changed_element_id] and elements[changed_element_id]["item"]: 
+				self.relax_item_properties(element_tree, elements, changed_element_id, changed_property, relaxed_property_values)
 
 			variables_unassigned = []
 			variables_assigned = []
 			for variable in self.unassigned: 
-				if keep_or_prevent == "keep": 
-					if variable.shape_id in relaxed_property_values and variable.name in relaxed_property_values[variable.shape_id]:
-						variables_unassigned.append(variable)
-					else: 
-						variables_assigned.append(variable)
+				if variable.shape_id in relaxed_property_values and variable.name in relaxed_property_values[variable.shape_id]: 
+					variables_unassigned.append(variable)
 				else: 
-					# Prevent the value from being assigned
-					# And unassign the variable
-					if variable.shape_id == changed_element_id and variable.name == changed_property  \
-						or (variable.shape_id in relaxed_property_values and variable.name in relaxed_property_values[variable.shape_id]): 
-						variables_unassigned.append(variable)
-					else: 
-						variables_assigned.append(variable)
-
+					variables_assigned.append(variable)
 
 			self.unassigned = variables_unassigned
 			state = sln.Solution()
@@ -903,13 +898,14 @@ class Solver(object):
 					value_to_assign = changed_value
 				else: 
 					if assigned_variable.name == "size_combo":
-						domain_value = solution["elements"][assigned_variable.shape_id]["size_combo"]
-						value_to_assign = assigned_variable.domain.index(domain_value)
-					elif assigned_variable.name == "grid_layout": 
-						domain_value = solution["elements"][assigned_variable.shape_id]["grid_layout"]
+						domain_value = elements[assigned_variable.shape_id]["size_combo"]
+						value_index = [i for i in range(0, len(assigned_variable.domain)) if assigned_variable.domain[i][0] == domain_value[0] and assigned_variable.domain[i][1] == domain_value[1]]
+						value_to_assign = value_index[0]
+					elif assigned_variable.name == "grid_layout":
+						domain_value = elements[assigned_variable.shape_id]["grid_layout"]
 						value_to_assign = assigned_variable.domain.index(domain_value)
 					else: 
-						value_to_assign = solution["elements"][assigned_variable.shape_id][assigned_variable.name]
+						value_to_assign = elements[assigned_variable.shape_id][assigned_variable.name]
 
 				if assigned_variable.index_domain: 
 					assigned_variable.assigned = value_to_assign
@@ -934,17 +930,18 @@ class Solver(object):
 				for i in range(0, len(variables_assigned)):
 					self.solver.pop()
 
+			repair_tries += 1
+
 		if repaired_solution:
 			print("Able to repair this solution. ")
-
-			# udpate the ID so it links back to the right solution in the client
-			repaired_solution["id"] = solution["id"]
+			repaired_solution["id"] = uuid.uuid4().hex
 			solution = repaired_solution
 			solution["conflicts"] = []
-			solution["valid"] = []
-			solution["new"] = False;
-	
-		return solution
+			solution["valid"] = True
+			solution["new"] = True
+			return solution
+
+		return None
 
 	def check_validity(self, solution):
 		# Look for any shapes that have been removed or added in this solution
