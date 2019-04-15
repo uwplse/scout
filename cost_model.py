@@ -62,7 +62,7 @@ def print_layout_tree(node, indent=0):
 	space = "".join(["  " for i in range(indent)])
 	label = node["type"]
 	idx = node["name"]
-	print(f"{space}{idx}:{label}")
+	# print(f"{space}{idx}:{label}")
 	if node["type"] in ["canvas", "group"]:
 		for c in node["children"]:
 			print_layout_tree(c, indent + 1)

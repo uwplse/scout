@@ -9,7 +9,7 @@ MIN_WIDTH = 48 # sort of arbitrary now, but could
 MIN_HEIGHT = 12
 MIN_WIDTH_TOUCH_TARGET = 120
 MIN_WIDTH_SEPARATOR = 24
-MIN_HEIGHT_ASPECT_RATIO = 16
+MIN_HEIGHT_ASPECT_RATIO = 8
 GRID_CONSTANT = 4
 SNAP_GRID_CONSTANT = 16
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
@@ -238,7 +238,7 @@ def select_consistent_baseline_grid(element_tree):
 		return selected_grid
 	else:
 		# Return any grid if we could not select a consistent one
-		selected_grid = random.sample(layout_grids, 1)
+		selected_grid = random.sample(BASELINE_GRIDS, 1)
 		return selected_grid
 
 def get_layout_grids():
@@ -270,11 +270,11 @@ def compute_size_domain_change_width_only_root(importance, width, height, layout
 		while num_columns <= columns: 
 			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
 			if width_value >= MIN_WIDTH_TOUCH_TARGET and width_value <= MAX_WIDTH:
-				if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
-					hw_values = [width_value, orig_height]
-					if hw_values not in domain:
-						domain.append([width_value, orig_height])
-						factor_id += 1
+				# if (width_value > width and importance != "low") or (width_value <= width and importance != "high"):
+				hw_values = [width_value, orig_height]
+				if hw_values not in domain:
+					domain.append([width_value, orig_height])
+					factor_id += 1
 			num_columns += 1
 
 	domain_with_factor = []
@@ -300,13 +300,13 @@ def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, la
 		while num_columns <= columns:
 			width_value = (column_width * num_columns) + (gutter_width * (num_columns-1))
 			height_value = int(width_value * aspect_ratio)
-			if width_value >= MIN_WIDTH and width_value <= MAX_WIDTH \
+			if width_value <= MAX_WIDTH \
 					and height_value >= MIN_HEIGHT_ASPECT_RATIO and height_value <= MAX_HEIGHT:
-				if (width_value >= width and importance != "low") or (width_value <= width and importance != "high"):
-					hw_values = [width_value, height_value]
-					if hw_values not in domain:
-						domain.append(hw_values)
-						factor_id += 1
+				# if (width_value >= width and importance != "low") or (width_value <= width and importance != "high"):
+				hw_values = [width_value, height_value]
+				if hw_values not in domain:
+					domain.append(hw_values)
+					factor_id += 1
 			num_columns += 1
 
 	domain_with_factor = []
@@ -360,10 +360,9 @@ def compute_size_domain_change_width_only(importance, width, height, baseline_gr
 	return domain	
 
 def get_nearest_grid_size(size, grid): 
-	print(grid)
 	floor_grid = (size // grid) * grid
 	ceil_grid = floor_grid + grid
-	return (ceil_grid if size - floor_grid > ceil_grid - size else floor_grid)
+	return (ceil_grid if size - floor_grid >= ceil_grid - size else floor_grid)
 
 def compute_size_domain_maintain_aspect_ratio(importance, width, height, baseline_grid): 
 	domain = []
@@ -372,8 +371,8 @@ def compute_size_domain_maintain_aspect_ratio(importance, width, height, baselin
 
 	# First, round the values down to a mult of the grid constant
 	# height_diff = height % SNAP_GRID_CONSTANT
-	grid = baseline_grid[0] if len(baseline_grid) > 0 else GRID_CONSTANT
-	orig_height = get_nearest_grid_size(height, grid)
+	grid = baseline_grid[0] if len(baseline_grid) == 1 else GRID_CONSTANT
+	orig_height = get_nearest_grid_size(height, SNAP_GRID_CONSTANT)
 	orig_height = orig_height if orig_height > SNAP_GRID_CONSTANT else SNAP_GRID_CONSTANT
 
 	orig_width = orig_height * aspect_ratio

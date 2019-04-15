@@ -91,10 +91,18 @@ class CustomSolver(object):
 		elements = json.loads(elements)
 
 		# Construct the solver instance
-		solver = z3_solver.Solver(z3_context, elements) 
+		solver = z3_solver.Solver(z3_context, elements, prune_domains=False)
 
 		time_start = time.time()
 		repaired_solution = solver.repair_solution(solution, changed_element_id, changed_property, changed_value, keep_or_prevent)
+		if repaired_solution is None:
+			print("Getting brand new solution")
+			solver = z3_solver.Solver(z3_context, elements)
+			# Get a new soltuion to replace the invalid one
+			state = sln.Solution()
+			time_start = time.time()
+			repaired_solution = solver.branch_and_bound(state)
+
 		time_end = time.time()
 		logging.debug("Time to check validity of solution " + str(i) + ": " + str(time_end-time_start))
 
@@ -128,16 +136,19 @@ class CustomSolver(object):
 
 		print("number of solutions: ")
 		print(str(len(solutions)))
+		repaired_solutions = []
 		for solution in solutions: 
 			sln_id = solution['id']
-			results_sln = results[sln_id]
+			if sln_id in results: 
+				results_sln = results[sln_id]
+				if results_sln is not None and results_sln['valid'] and not len(results_sln['conflicts']):
+					# Copy the repaired elements into the solution if a solution could be found
+					solution['elements'] = results_sln['elements']
+					solution['conflicts'] = results_sln['conflicts']
+					solution['id'] = results_sln['id'];
+					repaired_solutions.append(solution)
 
-			if solution['valid']:
-				# Copy the repaired elements into the solution if a solution could be found
-				solution['elements'] = results_sln['elements']
-				solution['conflicts'] = results_sln['conflicts']
-
-		self.solutions = solutions
+		self.solutions = repaired_solutions
 
 	def check_validity_of_solutions(self): 
 		manager = multiprocessing.Manager()
