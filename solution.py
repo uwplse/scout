@@ -58,9 +58,12 @@ class Solution(object):
 		arrangement = model[variables[shape.variables.arrangement.id]].as_string()
 		alignment = model[variables[shape.variables.alignment.id]].as_string()
 		padding = model[variables[shape.variables.padding.id]].as_string()
+		group_alignment = model[variables[shape.variables.group_alignment.id]].as_string()
+
 		element["arrangement"] = int(arrangement)
 		element["alignment"] = int(alignment)
 		element["padding"] = int(padding)
+		element["group_alignment"] = int(group_alignment)
 
 	def parse_column_values(self, shape, element, variables, model):
 		# Parse the left, right column values for elements on the root of the canvas. 
@@ -104,22 +107,9 @@ class Solution(object):
 				if shape.is_alternate: 
 					self.parse_alternate_values(shape, element, variables, model)
 
-	def compute_cost(self, tree):
-		# Relevant variables: 
-			# children = tree["children"]
-			# x = tree["x"]
-			# y = tree["y"]
-			# width = tree["width"]
-			# height = tree["height"]
-			# type = tree["type"]
-
-		# Returns the computed cost
-		return 0 
-
 	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics, elements_dict):
 		if tree.element is not None: 
 			element = copy.deepcopy(tree.element)
-			elements_dict[element["name"]] = element; 
 
 			# Get the computed values from the model 
 			self.parse_values(tree, element, variables, model)
@@ -185,19 +175,11 @@ class Solution(object):
 		importance_cost = ch.compute_importance_cost(importance_change, importance_max)
 		cost = ch.compute_weighted_cost(symmetry_cost, importance_cost, distance_cost)
 
-		# New cost function
-		# We can remove the above when we implement the new function 
-		# Alnd also the related cost matrix for computing the symmetry (cost_matrix)
-		# tree is a hierarchy structure of nodes with computed values 
-		# for the variables (x,y,width,height, etc) and other metadata (type)
-		# cost = self.compute_cost(tree)
-		#
+		# Cost function
 		new_cost = cost_model.compute_cost(element_tree)
 		cost = new_cost
-		#cost = 0
 
 		print("Total cost: " + str(cost))
-		sln["elements_dict"] = elements_dict
 		sln["elements"] = element_tree
 		sln["id"] = self.id 
 		sln["cost"] = cost # Assign the computed cost here. 

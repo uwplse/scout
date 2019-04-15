@@ -12,6 +12,7 @@
 .canvas-actions-menu {
 	list-style-type: none;
     padding: 0px;
+    display: flex; 
 }
 
 .canvas-actions-menu > li, {
@@ -42,4 +43,17 @@
 	transform: scale(1.5);
 	margin-left: 1em;
 	margin-top: 1em;
+}
+
+
+.canvas-actions-right-menu {
+	flex: 1 1 0px;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.canvas-actions-right-menu .canvas-actions-menu-new {
+	color: #18BC9C;
+	padding-right: 1em;
 }

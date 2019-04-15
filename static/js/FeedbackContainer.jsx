@@ -782,13 +782,9 @@ export default class FeedbackContainer extends React.Component {
 
     return (
         <div className="panel panel-primary feedback-container">
-          <div className="panel-heading"> 
+          <div className={"panel-heading " + (!feedbackHidden ? "primary-selection-indicator" : "")}> 
             <h3 className="panel-title">Feedback
             </h3>
-            {(!feedbackHidden ? 
-              (<div className="feedback-primary-selection-indicator">
-                <div></div>
-              </div>) : undefined)}
           </div>
           <div tabIndex="1" className="panel-body feedback-container-body"
             onClick={this.onClick}> 

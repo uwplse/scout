@@ -11,7 +11,7 @@ from size_domains import COLUMNS, CANVAS_ALIGNMENT, PADDINGS, BASELINE_GRIDS, GR
 
 # Shape classes for constructing the element hierarchy
 class Shape(object):
-	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, shape_type, at_root=False): 
+	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, shape_type, at_root=False): 
 		self.shape_id = shape_id
 		self.semantic_type = element["type"]
 		self.element = element
@@ -96,9 +96,9 @@ class Shape(object):
 			else: 
 				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS:
 					is_sep = self.semantic_type in SEPARATOR_TARGETS
-					size_domain = sizes.compute_size_domain_change_width_only(self.importance, size_width, size_height, is_sep)
+					size_domain = sizes.compute_size_domain_change_width_only(self.importance, size_width, size_height, selected_baseline_grid, is_sep)
 				else: 
-					size_domain = sizes.compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height)
+					size_domain = sizes.compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height, selected_baseline_grid)
 				
 			# Select only a subset of the size values to search here: 
 			self.variables.height = var.Variable(shape_id, "height", 
@@ -139,21 +139,23 @@ class Shape(object):
 		return self.variables.height.id
 
 class LeafShape(Shape): 
-	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, at_root=False):
-		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, "leaf", at_root)
+	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, at_root=False):
+		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, "leaf", at_root)
 
 class ContainerShape(Shape): 
-	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, at_root=False):
-		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, "container", at_root)
+	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, at_root=False):
+		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, "container", at_root)
 		self.children = []
 		self.variables.arrangement = var.Variable(shape_id, "arrangement", 
 			["horizontal", "vertical", "rows", "columns"])
 		self.variables.padding = var.Variable(shape_id, "padding", 
 			PADDINGS, index_domain=False)
 		self.variables.alignment = var.Variable(shape_id, "alignment", ["left", "center", "right"])
+		self.variables.group_alignment = var.Variable(shape_id, "group_alignment", ["left", "center", "right"])
 		self.search_variables.append(self.variables.alignment)
 		self.search_variables.append(self.variables.arrangement)
 		self.search_variables.append(self.variables.padding)
+		self.search_variables.append(self.variables.group_alignment)
 
 		self.variables.extra_in_first = var.Variable(shape_id, "extra_in_first", var_type="Bool")
 		self.variables.width = var.Variable(shape_id, "width")
@@ -183,11 +185,11 @@ class ContainerShape(Shape):
 		return 1 if len(self.children) <= 2 else 2
 
 class CanvasShape(Shape):
-	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid):
-		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, "canvas", at_root=False)
+	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid):
+		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, "canvas", at_root=False)
 		self.children = []
 
-		self.variables.baseline_grid = var.Variable("canvas", "baseline_grid", BASELINE_GRIDS, index_domain=False)
+		self.variables.baseline_grid = var.Variable("canvas", "baseline_grid", selected_baseline_grid, index_domain=False)
 		self.search_variables.append(self.variables.baseline_grid)
 
 		marg_domain = [x[0] for x in selected_layout_grid]

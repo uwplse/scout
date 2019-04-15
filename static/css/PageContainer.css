@@ -1,3 +1,7 @@
+.page-container {
+	height: 100%;
+}
+
 .designs-area-container .designs-area-nav-pills .nav-link.active{
 	background-color: #18BC9C;
 }
@@ -18,6 +22,10 @@
 .designs-area-container .designs-area-number {
 	padding-right: 10px;
 	font-size: 20;
+}
+
+.designs-area-container .designs-area-link {
+	font-size: 16;
 }
 
 .designs-area-container .designs-area-actions {

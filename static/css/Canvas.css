@@ -121,8 +121,7 @@ h1, h2, h3 {
 }
 
 .page-container, .top, .page-container, .widgets-panel, 
-.widgets-container, .designs-area-container, 
-.left-container, .invalid-container  {
+.widgets-container, .designs-area-container {
 	display: flex;
 	flex-direction: column;
 	flex-grow: 1; 
