@@ -151,9 +151,11 @@ class ContainerShape(Shape):
 		self.variables.padding = var.Variable(shape_id, "padding", 
 			PADDINGS, index_domain=False)
 		self.variables.alignment = var.Variable(shape_id, "alignment", ["left", "center", "right"])
+		self.variables.group_alignment = var.Variable(shape_id, "group_alignment", ["left", "center", "right"])
 		self.search_variables.append(self.variables.alignment)
 		self.search_variables.append(self.variables.arrangement)
 		self.search_variables.append(self.variables.padding)
+		self.search_variables.append(self.variables.group_alignment)
 
 		self.variables.extra_in_first = var.Variable(shape_id, "extra_in_first", var_type="Bool")
 		self.variables.width = var.Variable(shape_id, "width")

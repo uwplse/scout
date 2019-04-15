@@ -12,6 +12,7 @@
 .canvas-actions-menu {
 	list-style-type: none;
     padding: 0px;
+    display: flex; 
 }
 
 .canvas-actions-menu > li, {

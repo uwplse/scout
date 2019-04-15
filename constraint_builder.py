@@ -132,6 +132,62 @@ class ConstraintBuilder(object):
 		self.constraints += cb.assert_expr(cb.lte(cb.add(shape.variables.y.id, str(shape.computed_height())), 
 			str(CANVAS_HEIGHT)), "shape_" + shape.shape_id + "_bottom_lt_height")
 
+	def init_high_emphasis(self, shape, shapes):
+		for other_shape in shapes: 
+			if shape.shape_id != other_shape.shape_id and other_shape.shape_id != "canvas":
+				# Emphasis shape has lower y coordinate, unless the other shape also has high emphasis 
+				if other_shape.importance != "high" and other_shape.type == "leaf": 
+					lower_y = cb.lte(shape.variables.y.id, other_shape.variables.y.id)
+					# self.constraints += cb.assert_expr(lower_y, "shape_" + shape.shape_id + "_high_emphasis_leq_y_" + other_shape.shape_id)	
+
+					shp_height = str(shape.computed_height())
+					other_shp_height = str(other_shape.computed_height())
+
+					shp_width = str(shape.computed_width())
+					other_shp_width = str(other_shape.computed_width())
+
+					wider = cb.gte(shp_width, other_shp_width)
+					taller = cb.gte(shp_height, other_shp_height)
+
+					all_emph_cons = [wider, taller]
+					self.constraints += cb.assert_expr(cb.or_expr(all_emph_cons), "shape_" + shape.shape_id 
+						+ "_other_shape_" + other_shape.shape_id + "_high_emphasis")
+
+					# Shoudl appear before another shape if the other shep has a larger area 
+					shp_area = cb.mult(shp_height, shp_width)
+					other_shp_area = cb.mult(other_shp_height, other_shp_width)
+
+					appear_before_smaller_area = cb.ite(cb.lte(shp_area, other_shp_area), lower_y, "true")
+					self.constraints += cb.assert_expr(appear_before_smaller_area, "shape_" + shape.shape_id + 
+						"_other_shape_" + other_shape.shape_id + "_appear_before_shape_if_smaller_area")
+
+	def init_low_emphasis(self, shape, shapes): 
+		for other_shape in shapes: 
+			if shape.shape_id != other_shape.shape_id and other_shape.shape_id != "canvas":
+				# Emphasis shape has lower y coordinate, unless the other shape also has low emphasis 
+				if other_shape.importance != "low" and other_shape.type == "leaf": 
+					shp_height = str(shape.computed_height())
+					other_shp_height = str(shape.computed_height())
+
+					shp_width = str(shape.computed_width())
+					other_shp_width = str(other_shape.computed_width())
+
+					skinnier = cb.lte(shp_width, other_shp_width)
+					shorter = cb.lte(shp_height, other_shp_height)
+
+					higher_y = cb.gte(cb.add(shape.variables.y.id, shp_height), cb.add(other_shape.variables.y.id, other_shp_height))
+					all_emph_cons = [skinnier, shorter]
+					self.constraints += cb.assert_expr(cb.or_expr(all_emph_cons), "shape_" + shape.shape_id + "_other_shape_" 
+						+ other_shape.shape_id + "_low_emphasis")				
+
+					# Shoudl appear before another shape if the other shep has a larger area 
+					shp_area = cb.mult(shp_height, shp_width)
+					other_shp_area = cb.mult(other_shp_height, other_shp_width)
+
+					appear_after_smaller_area = cb.ite(cb.gte(shp_area, other_shp_area), higher_y, "true")
+					self.constraints += cb.assert_expr(appear_after_smaller_area, "shape_" + shape.shape_id + 
+						"_other_shape_" + other_shape.shape_id + "_appear_after_shape_if_smaller_area")
+
 	def init_canvas_constraints(self, canvas): 
 		canvas_x = canvas.variables.x
 		canvas_y = canvas.variables.y
@@ -232,6 +288,7 @@ class ConstraintBuilder(object):
 	def init_container_constraints(self, container, shapes, canvas):
 		arrangement = container.variables.arrangement.id
 		alignment = container.variables.alignment.id
+		group_alignment = container.variables.group_alignment.id
 		padding = container.variables.padding.id
 		container_x = container.variables.x.id
 		container_y = container.variables.y.id
@@ -243,7 +300,8 @@ class ConstraintBuilder(object):
 		self.constraints += cb.assert_expr(cb.gte(alignment, "0"), "container_" + container.shape_id + "_alignment_gt_0")
 		self.constraints += cb.assert_expr(cb.lt(alignment, str(len(container.variables.alignment.domain))),
 			"container_" + container.shape_id + "_alignment_lt_domain")
-
+		self.constraints += cb.assert_expr(cb.gte(group_alignment, "0"), "container_" + container.shape_id + "_group_alignment_gt_0")
+		self.constraints += cb.assert_expr(cb.lt(group_alignment, str(len(container.variables.group_alignment.domain))))
 		# These two variables do not have variable values that correspond to an index 
 		# so create an OR constraint instead
 		padding_values = []
@@ -315,8 +373,7 @@ class ConstraintBuilder(object):
 			factor = cb.eq(shape.variables.size_factor.id, str(size_factors[i]))
 			size_combos.append(cb.and_expr([height, width, factor]))
 
-		const = cb.or_expr(size_combos) if len(size_combos) > 1 else size_combos[0]
-
+		const = cb.or_expr(size_combos) if len(size_combos) else "false"
 		self.constraints += cb.assert_expr(const, "shape_" + shape.shape_id + "_size_domains")
 
 	def init_repeat_group(self, container, shapes): 
@@ -908,6 +965,7 @@ class ConstraintBuilder(object):
 	# Sets up the arrangment constrains for a given container
 	def arrange_container(self, container, spacing): 
 		arrangement = container.variables.arrangement
+		group_alignment = container.variables.group_alignment
 		container_x = container.variables.x
 		container_y = container.variables.y
 		outside_padding = container.variables.outside_padding.id if container.at_root else "0"
@@ -925,6 +983,12 @@ class ConstraintBuilder(object):
 		is_rows = cb.eq(arrangement.id, str(rows_index))
 		columns_index = arrangement.domain.index("columns")
 		is_columns = cb.eq(arrangement.id, str(columns_index))
+
+		# Group alignment
+		left_index = group_alignment.domain.index("left")
+		center_index = group_alignment.domain.index("center")
+		is_left = cb.eq(group_alignment.id, str(left_index))
+		is_center = cb.eq(group_alignment.id, str(center_index))
 
 		if container.container_order == "important": 
 			vertical_pairs = []
@@ -962,6 +1026,9 @@ class ConstraintBuilder(object):
 		child_shapes = container.children
 		last_child_index = len(child_shapes) - 1
 
+		left_padding = cb.ite(is_left, "0", cb.ite(is_center, outside_padding, cb.mult(outside_padding, "2")))
+		right_padding = cb.ite(is_left, cb.mult(outside_padding, "2"), cb.ite(is_center, outside_padding, "0"))
+
 		# Enforce a max width or height of the container for horizontal or vertical
 		for child_i in range(0, len(child_shapes)): 
 			child = child_shapes[child_i]
@@ -975,21 +1042,21 @@ class ConstraintBuilder(object):
 			if child.order == last_child_index: 
 				# The bottom of the shape is the bottom of the container
 				is_bottom = cb.eq(cb.add(child_y, str(child.computed_height())), cb.add(container_y.id,  str(container.computed_height())))
-				is_right = cb.eq(cb.add(child_x, str(child.computed_width())), cb.sub(cb.add(container_x.id, str(container.computed_width())), outside_padding))
+				is_right = cb.eq(cb.add(child_x, str(child.computed_width())), cb.sub(cb.add(container_x.id, str(container.computed_width())), right_padding))
 				self.constraints += cb.assert_expr(cb.ite(is_vertical, is_bottom, "true"), "container_" + container.shape_id + "_vertical_order_last_child")
 				self.constraints += cb.assert_expr(cb.ite(is_horizontal, is_right, "true"), "container_" + container.shape_id + "_horizontal_order_last_child")
 
 			if child.order == 0:
 				is_top = cb.eq(child_y, container_y.id)
-				is_left = cb.eq(child_x, cb.add(container_x.id, outside_padding))
+				is_left = cb.eq(child_x, cb.add(container_x.id, left_padding))
 				self.constraints += cb.assert_expr(cb.ite(is_vertical, is_top, "true"), child.shape_id + "_" + container.shape_id + "_first_order_top")
 				self.constraints += cb.assert_expr(cb.ite(is_horizontal, is_left, "true"), child.shape_id + "_" + container.shape_id + "_first_order_left")
 
 
 			# Every child should be inside the bounds of the container, including the space left for the outside_padding 
-			self.constraints += cb.assert_expr(cb.gte(child_x, cb.add(container_x.id, outside_padding)), "container_" + container.shape_id + "_shape_" + child.shape_id + "_x_gt_left")
+			self.constraints += cb.assert_expr(cb.gte(child_x, cb.add(container_x.id, left_padding)), "container_" + container.shape_id + "_shape_" + child.shape_id + "_x_gt_left")
 			self.constraints += cb.assert_expr(cb.lte(cb.add(child_x, str(child.computed_width())), 
-				cb.sub(cb.add(container_x.id, str(container.computed_width())), outside_padding)), "container_" + container.shape_id + "_shape_" + child.shape_id + "_right_lt_width")
+				cb.sub(cb.add(container_x.id, str(container.computed_width())), right_padding)), "container_" + container.shape_id + "_shape_" + child.shape_id + "_right_lt_width")
 
 		# Enforce width and height of the container based on the arrangement axis and the total 
 		# sum of the child heights or widths. 
@@ -1009,13 +1076,13 @@ class ConstraintBuilder(object):
 			"container_" + container.shape_id + "_max_height_horizontal")
 
 		# Enforce that the padding used by the container is no taller or wider than the smallest width or height element
-		shapes_no_seps = [shp for shp in child_shapes if shp.semantic_type != "separator"]
-		min_w_constraint = self.get_min_width_constraint(1,0,shapes_no_seps)
-		min_h_constraint = self.get_min_height_constraint(1,0,shapes_no_seps)
-		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
-			"container_" + container.shape_id + "_padding_lt_shortest_child")
-		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
-			"container_" + container.shape_id + "_padding_lt_thinnest_child")
+		# shapes_no_seps = [shp for shp in child_shapes if shp.semantic_type != "separator"]
+		# min_w_constraint = self.get_min_width_constraint(1,0,shapes_no_seps)
+		# min_h_constraint = self.get_min_height_constraint(1,0,shapes_no_seps)
+		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
+		# 	"container_" + container.shape_id + "_padding_lt_shortest_child")
+		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
+		# 	"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
 		self.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
 
