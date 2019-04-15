@@ -166,20 +166,22 @@ def collect_neighbor_aligns(neighborhood):
 	return aligns
 
 
-def collect_neighbor_margins(neighborhood, x_range, y_range):
+def collect_neighbor_margins(neighborhood, x_range, y_range, return_as_dict=False):
 	"""collect margins among neighborhood elements. 
 		x_range, y_range: the range of x,y values that will be use to 
 			calculate margins for elements that has no neighbor on the certain direction
 	"""
-	margins = []
+	margins = {}
 	for e, neighbors in neighborhood:
 		ln, rn, tn, bn = neighbors
-		margins.append([
+		margins[e["id"]] = [
 			e["bounds"][0] - ln["bounds"][2] if ln is not None else e["bounds"][0] - x_range[0],
 			rn["bounds"][0] - e["bounds"][2] if rn is not None else x_range[1] - e["bounds"][2],
 			e["bounds"][1] - tn["bounds"][3] if tn is not None else e["bounds"][2] - y_range[0],
 			bn["bounds"][3] - e["bounds"][1] if bn is not None else y_range[1] - e["bounds"][3] 
-		])
+		]
+	if return_as_dict == False:
+		return [margins[x] for x in margins]
 	return margins
 
 def extract_layout_features(tree_root):
@@ -307,3 +309,102 @@ def alignment_check(elements):
 
 	return align_type
 
+
+# Comparing a single pair of designs
+#    For each matched pair of shapes (Find the matching shape of the name property of the element in the element tree)
+#      / Only leaf node shapes 
+#      Compute difference across the following dimensions
+#          Position - absolute value of distance moved (computed distance between two x,y coordinates) 
+#                - Normalize by dividing by screen diagonal length 
+#          Size - absolute value of the difference of the two areas (HxW) between the two shapes (Normalize )
+#                - Normalize by dividing by the total area of the screen
+#          Neighboring elements
+#              Find the closest neighboring element in each direction for each element
+#              L, T, B, R 
+#              If there is no element in a direction (L,T,B,R), the neighboring element in that direction is the canvas
+#              For each closest neighboring element along each dimension: 
+#                  Neighbor is a different element: 1, Not a different element: 0 
+#                  Distance to neighbor in that direction (T,B,L,R)
+#                      -- normalize by dividing by width (L,R)  or height (T,B) of canvas 
+#              There should be 8 metrics T_changed + T_distance + L_changed + L_distance + B_changed + B_distance + R_changed + R_distance
+#              Divide the total score/8 to get the neighboring elements diversity score
+#          Representation (only for Alternate groups) - Changed - 1, Not Changed - 0
+#                shape.alternate  = true 
+def compute_diversity_score(t1, t2):
+	"""Given two designs t1 and t2, compute their diversity score
+	Args:
+		t1, t2: two object representing designs
+	Returns:
+		their diversity score
+	"""
+
+	# annotate the element tree with essential information
+	process_element_tree(t1)
+	process_element_tree(t2)
+	groups_1, leaves_1 = extract_groups_and_leaves(t1)
+	groups_2, leaves_2 = extract_groups_and_leaves(t2)
+	neighbors1 = collect_neighbors(leaves_1)
+	neighbors2 = collect_neighbors(leaves_2)
+	margins1 = collect_neighbor_margins(neighbors1, x_range=(0, CANVAS_WIDTH), 
+										y_range=(0, CANVAS_HEIGHT), return_as_dict=True)
+	margins2 = collect_neighbor_margins(neighbors2, x_range=(0, CANVAS_WIDTH), 
+										y_range=(0, CANVAS_HEIGHT), return_as_dict=True)
+
+	# use all leave properties to compute leave difference
+	l1 = {e["id"]:e for e in leaves_1}
+	l2 = {e["id"]:e for e in leaves_2}
+	n1 = {r[0]["id"]:r[1] for r in neighbors1}
+	n2 = {r[0]["id"]:r[1] for r in neighbors2}
+
+	def check_neighbor_changed(n1, n2):
+		""" check whether two neighbor are the same or not"""
+		if n1 is None and n2 is None:
+			return False
+		elif n1 is None or n2 is None:
+			return False
+		else:
+			return n1["id"] != n2["id"]
+
+	diff = {}
+	for key in list(l1.keys()) + list(l2.keys()):
+		if key in l2 and key in l1:
+			pos_diff = ((l1[key]['x'] - l2[key]['x']) / float(CANVAS_WIDTH), 
+							 (l1[key]['y'] - l2[key]['y']) / float(CANVAS_HEIGHT))
+			size_diff = (l1[key]['height'] * l1[key]["width"] - l2[key]['height'] * l2[key]["width"]) 
+			size_diff = size_diff / float(CANVAS_WIDTH * CANVAS_HEIGHT)
+			neighbor_changed = [check_neighbor_changed(n1[key][i], n2[key][i]) for i in range(4)]
+			neighbor_dist_diff = [margins1[key][i] - margins2[key][i] for i in range(4)]
+			neighbor_dist_diff = [neighbor_dist_diff[0] / float(CANVAS_WIDTH), 
+								  neighbor_dist_diff[1] / float(CANVAS_WIDTH),
+								  neighbor_dist_diff[2] / float(CANVAS_HEIGHT), 
+								  neighbor_dist_diff[3] / float(CANVAS_HEIGHT)]
+		if key in l1 and key not in l2:
+			pos_diff = (1., 1.)
+			size_diff = (l1[key]['height'] * l1[key]["width"]) / float(CANVAS_WIDTH * CANVAS_HEIGHT)
+			neighbor_changed = None
+			neighbor_dist_diff = None
+		if key not in l1 and key in l2:
+			pos_diff = (-1, -1)
+			size_diff = - (l2[key]['height'] * l2[key]["width"]) / float(CANVAS_WIDTH * CANVAS_HEIGHT)
+			neighbor_changed = None
+			neighbor_dist_diff = None
+
+		diff[key] = {
+			"pos_diff": pos_diff,
+			"size_diff": size_diff,
+			"neighbor_changed": neighbor_changed,
+			"neighbor_dist_diff": neighbor_dist_diff
+		}
+
+	return diff
+
+
+# from pprint import pprint
+# if __name__ == '__main__':
+# 	with open("saved.json", "r") as f:
+# 		scout_exports = json.load(f)
+# 		trees = [t["elements"] for t in scout_exports["saved"]]
+# 		for i in range(len(trees)):
+# 			for j in range(i + 1, len(trees)):
+# 				diff = compute_diversity_score(trees[i], trees[j])
+# 				pprint(diff)
