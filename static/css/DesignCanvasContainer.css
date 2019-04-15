@@ -22,7 +22,7 @@
 .design-body.saved-body {
 	display: flex; 
 	flex-direction: row;
-	min-height: 500px;
+	min-height: 520px;
 	overflow: auto;
 	height: auto;
 }
@@ -76,4 +76,5 @@
 
 .design-canvas-container-separator {
 	border-top: 1px solid rgba(0,0,0,0.5);
+	height: 2px;
 }

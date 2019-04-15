@@ -908,7 +908,7 @@ export default class PageContainer extends React.Component {
                       {(pinnedCanvases.length ? <DesignCanvasContainer 
                         saved={true}
                         designCanvases={pinnedCanvases} /> : null)}
-                      {(pinnedCanvases.length ? <hr className="design-canvas-container-separator" /> : undefined)}
+                      {(pinnedCanvases.length ? <div className="design-canvas-container-separator"></div> : undefined)}
                       {(numUnderConsideration ? (<DesignCanvasContainer 
                         designCanvases={validDesignCanvases}
                         invalidDesignCanvases={invalidDesignCanvases} />) : 

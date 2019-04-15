@@ -2,6 +2,10 @@
 	height: 100%;
 }
 
+.designs-area-container {
+	overflow: auto; 
+}
+
 .designs-area-container .designs-area-nav-pills .nav-link.active{
 	background-color: #18BC9C;
 }
