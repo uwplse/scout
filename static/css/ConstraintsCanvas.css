@@ -105,8 +105,9 @@
 }
 
 .widget-container.highlighted {	
-	outline: 2px dashed black;
-	padding: 0.5em;
+   	outline: 2px dashed #85144b;
+   	background-color: #ef9a9a;	
+   	padding: 0.5em;
 }
 
 .rc-tree span.rc-tree-node-selected .widget-container.primary-selection {

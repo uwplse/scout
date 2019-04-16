@@ -6,7 +6,7 @@
 }
 
 .design-canvas:hover {
-	transform: scale(1.25) translate(0, 40px);
+	transform: scale(1.25) translate(0, 60px);
 }
 
 .zoomed-design-container .design-canvas:hover {
@@ -25,7 +25,7 @@
 	cursor: pointer; 
 }
 
-.design-body > .canvas-container {
+.design-body .canvas-container {
 	display: inline-block;
 	margin: 3em;
 }
@@ -40,26 +40,6 @@
 
 .canvas-container .canvas-container-invalid.canvas-container-invalid-scaled {
 	background-image: url("../assets/stripe_scaled.png");
-}
-
-.saved-body, .trashed-body {
-	height: 75px;
-	display: flex; 
-	flex-direction: row;
-}
-
-.invalidated-body {
-	display: flex;
-	flex-direction: column;
-	overflow: auto;
-}
-
-.saved-body .canvas-container, .trashed-body .canvas-container {
-	margin-right: 5px;
-}
-
-.invalidated-body .canvas-container {
-	margin-bottom: 5px;
 }
 
 .save-icon {

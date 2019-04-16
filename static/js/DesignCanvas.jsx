@@ -284,6 +284,7 @@ export default class DesignCanvas extends React.Component {
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
     let hideTrash = (this.state.savedState == -1); 
     let showConsider = ((this.state.savedState == -1 || this.state.invalidated) || this.state.savedState == 1); 
+    let showNew = this.state.new; 
     let childSVGs = this.state.childSVGs; 
 
     // Show invalid designs indicators? 
@@ -307,6 +308,7 @@ export default class DesignCanvas extends React.Component {
           showSave={!saved}
           showTrash={!hideTrash}
           showConsider={showConsider}
+          showNew={showNew}
           cost={this.props.cost} 
           visible={menuVisible}
           menuAction={this.performDesignCanvasMenuAction}/>

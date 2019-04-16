@@ -90,17 +90,8 @@ span.feedback-container-separator {
 	overflow-x: hidden;
 }
 
-.feedback-primary-selection-indicator {
-	display: flex; 
-	flex-direction: row; 
-	flex: 1 1 0px;
-	justify-content: flex-end;
-}
-
-.feedback-primary-selection-indicator div {
-	width: 50px;
-	height: 20px;
-	background-color: #FF83A8;
+.panel-primary > .panel-heading.primary-selection-indicator {
+	border-bottom: 4px solid #FF83A8;
 }
 
 .feedback-container-separator-group {

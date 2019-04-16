@@ -22,13 +22,17 @@ export default class Exporter  {
     return s; 
   }
 
-  replaceWidthAndHeight = (svgSource, width, height) => {
+  getScaledSize = (svgSource, width, height) => {
     let newSvg = svgSource; 
-    let newHeight = "height=\"" + height + "\"";
-    let newWidth = "width=\"" + width + "\"";
-    newSvg = svgSource.replace(/height="[0-9]+"/, newHeight);
-    newSvg = newSvg.replace(/width="[0-9]+"/, newWidth);  
-    return newSvg; 
+    let viewBox = svgSource.match(/viewBox="([^"]+)"/); 
+    let viewBoxSplit = viewBox[1].split(" "); 
+    let vbWidth = parseInt(viewBoxSplit[2]); 
+    let vbHeight = parseInt(viewBoxSplit[3]); 
+
+    let scaledX = width/vbWidth; 
+    let scaledY = height/vbHeight; 
+
+    return { scaleX: scaledX, scaleY: scaledY };  
   }
 
   getSVGForNode = (node) => {
@@ -50,14 +54,13 @@ export default class Exporter  {
     let svg = this.getSVGForNode(node); 
     let svgNode = s; 
     if(svg.length) {
-      let transform = "T" + node.x + "," + node.y; 
-      svg = this.replaceWidthAndHeight(svg, node.width, node.height); 
+      let scale = this.getScaledSize(svg, node.width, node.height); 
+
+      let transform2 = "translate(" + node.x + "," + node.y + ") scale(" + scale.scaleX + "," + scale.scaleY + ")"; 
       let svgParsed = Snap.parse(svg); 
       var svgGroup = svgNode.g();
       svgGroup.append(svgParsed); 
-      svgGroup.transform(transform); 
-      svgGroup.attr('width', node.width); 
-      svgGroup.attr('height', node.height); 
+      svgGroup.transform(transform2); 
       svgNode.append(svgGroup); 
     }
     else if(node.type == "group") {
@@ -112,7 +115,7 @@ export default class Exporter  {
   }
 
   exportDesigns = (solutions) => {
-    let savedSolutions = solutions.filter((solution) => { return solution.saved; }); 
+    let savedSolutions = solutions.filter((solution) => { return solution.saved == 1; }); 
 
     // Compute diversity scores on the saved solutions only; 
     let scores = this.computeDiversityScores(savedSolutions); 
