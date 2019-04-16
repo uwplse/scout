@@ -63,12 +63,16 @@ export default class WidgetsContainerSVGWidget extends React.Component {
 
   render () {
     return (
-        <SVGInline
-          id={this.state.selector}
-          style={{display: (this.props.visible || this.props.type == "group" ? "" : "none")}}
-          className="widget-control"
-          height={this.state.height + "px"} width={this.state.width + "px"} 
-          svg={ this.props.svgData } 
-          onClick={this.props.addShapeToConstraintsCanvas(this.props.id,this.props.svgData, this.state.type, this.state.width, this.state.height)} />);
+        <div className="widget-control-container"> 
+          {(this.state.type == "separator" ? <span className="widget-control-label">(Separator)</span> : undefined)}
+          <SVGInline
+            id={this.state.selector}
+            style={{display: (this.props.visible || this.props.type == "group" ? "" : "none")}}
+            className="widget-control"
+            height={this.state.height + "px"} width={this.state.width + "px"} 
+            svg={ this.props.svgData } 
+            onClick={this.props.addShapeToConstraintsCanvas(this.props.id,this.props.svgData, this.state.type, this.state.width, this.state.height)} />
+        </div>);
+
   }
 }

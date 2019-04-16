@@ -2,7 +2,7 @@ import React from "react";
 import ConstraintActions from './ConstraintActions';
 import SVGInline from "react-svg-inline"
 
-const TOUCH_TARGETS = ["button", "field"]; 
+const TOUCH_TARGETS = ["button", "field", "separator"]; 
 
 export default class DesignCanvasSVGWidget extends React.Component {
 

@@ -4,6 +4,7 @@ import '../css/FeedbackContainer.css';
 import Toggle from 'react-bootstrap-toggle';
 import {Dropdown} from 'react-bootstrap'; 
 import ConstraintActions from "./ConstraintActions"; 
+import FeedbackSeparator from "./FeedbackSeparator"; 
 
 class FeedbackItem extends React.Component {
   constructor(props) {
@@ -74,42 +75,48 @@ class FeedbackItem extends React.Component {
     return false;
   }
 
-  onSelected = (newValue) => {
+  onSelected = (newValue, evt) => {
     this.props.setSelectedValue(this.props.id, newValue); 
+
+    if(newValue != "Vary") {
+      // Automatically set the lock
+      this.onLocked(evt, newValue); 
+    }
   }
 
-  onLocked = () => {
+  onLocked = (evt, value) => {
     let canvasShape = this.state.canvasShape ? this.state.canvasShape : this.state.primarySelection; 
     let preventValue = this.state.prevented; 
+    let selectedValue = value != undefined && value != "Vary" ? value : this.state.selected; 
     let keepOrPrevent = ""; 
     if(this.state.prevented) {
       // If the property was already "Kept", remove it and keep the Prevent instead
-      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, this.state.selected);
+      this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, selectedValue);
       preventValue = false;
 
       // If there are any linkedShapes, we should also update their feedback as well 
       for(let i=0; i<this.state.linkedShapes.length; i++) {
-        this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], this.state.selected);      
+        this.state.action['prevent']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], selectedValue);      
       }
     }
 
     if(this.state.locked){
-      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, this.state.selected); 
+      this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, canvasShape, selectedValue); 
 
       // If there are any linkedShapes, we should also update their feedback as well 
       for(let i=0; i<this.state.linkedShapes.length; i++) {
-        this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], this.state.selected);      
+        this.state.action['keep']['undo'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], selectedValue);      
       }   
     }
     else {
       // Notify the PageContainer that a keep was performed so it can reflow the invalid solutions
       keepOrPrevent = "keep"; 
 
-      this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, canvasShape, this.state.selected); 
+      this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, canvasShape, selectedValue); 
 
       // If there are any linkedShapes, we should also update their feedback as well 
       for(let i=0; i<this.state.linkedShapes.length; i++) {
-        this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], this.state.selected);      
+        this.state.action['keep']['do'].updateConstraintsCanvasShape(this.state.property, this.state.linkedShapes[i], selectedValue);      
       }    
     }
 
@@ -123,7 +130,7 @@ class FeedbackItem extends React.Component {
     this.props.locksUpdated();
   }
 
-  onPrevented = () => {
+  onPrevented = (evt) => {
     let canvasShape = this.state.canvasShape ? this.state.canvasShape : this.state.primarySelection; 
     let lockedValue = this.state.locked; 
     let keepOrPrevent = ""; 
@@ -225,7 +232,8 @@ class FeedbackItem extends React.Component {
     
     // Lock -> 
     return (<div className="feedback-container-toggle">
-              <label className="feedback-container-label">{propertyLabel}</label>
+              {(this.props.or ? <label className="feedback-container-or-label feedback-container-label">OR</label> : 
+                <label className="feedback-container-label">{propertyLabel}</label>)}
               <Dropdown>
                 <Dropdown.Toggle disabled={(locked || prevented)} id="dropdown-basic">
                   {this.toUpperCase(selectedLabel)}
@@ -235,10 +243,28 @@ class FeedbackItem extends React.Component {
                 </Dropdown.Menu>
               </Dropdown>
               <div className="feedback-container-locks">
-                <span className={"glyphicon glyphicon-lock " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
+                <div className="btn-group"> 
+                  <button type="button" 
+                    onClick={(!lockDisabled ? this.onLocked : undefined)}
+                    className={"btn " + (locked ? "locked btn-success " : "unlocked btn-light ") + (lockDisabled ? "disabled" : "enabled")}>
+                    Keep
+                  </button>
+                  <button type="button"
+                    onClick={(!lockDisabled ? this.onPrevented : undefined)}
+                    className={"btn " + (prevented ? "locked btn-danger " : "unlocked btn-light ") + (preventDisabled ? "disabled" : "enabled")}>
+                    Prevent
+                  </button>
+                </div> 
+
+
+{/*                <label className={"label " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
+                onClick={(!lockDisabled ? this.onLocked : undefined)}>                  
+                  <input type="checkbox" className="checkbox color-primary" />Keep
+                </label>*/}
+{/*                <span className={"glyphicon glyphicon-lock " + (locked ? "locked " : "unlocked ")  + (lockDisabled ? "disabled" : "enabled")}
                   onClick={(!lockDisabled ? this.onLocked : undefined)}></span>
                 <span className={"glyphicon glyphicon-remove " + (prevented ? "locked " : "unlocked ") + (preventDisabled ? "disabled" : "enabled")}
-                  onClick={(!preventDisabled ? this.onPrevented : undefined)}></span>
+                  onClick={(!preventDisabled ? this.onPrevented : undefined)}></span>*/}
               </div> 
             </div>);
   }
@@ -423,6 +449,7 @@ export default class FeedbackContainer extends React.Component {
       selectedValue = FeedbackContainer.getDesignSelected(designShape, key); 
     }
 
+    let hasLockOrPrevent = false;
     if(canvasShape.locks && canvasShape.locks.length) {
       let lockedIndex = canvasShape.locks.indexOf(key); 
       if(lockedIndex > -1) {
@@ -433,12 +460,18 @@ export default class FeedbackContainer extends React.Component {
         }
 
         for(let k=0; k<lockedValues.length; k++) {
+          let or = false;
+          hasLockOrPrevent = true; 
+          if(k > 0) {
+            or = true; 
+          }
           let value = lockedValues[k]; 
           let feedbackItem = {
             id: _.uniqueId(), 
             key: key, 
             selectedValue: value, 
-            linkedShapes: linkedShapes
+            linkedShapes: linkedShapes, 
+            or: or
           }; 
           feedbackItems.push(feedbackItem); 
         }
@@ -455,12 +488,19 @@ export default class FeedbackContainer extends React.Component {
         }
 
         for(let k=0; k<preventedValues.length; k++) {
+          let or = false;
+          hasLockOrPrevent = true;
+          if(k > 0) {
+            or = true;
+          }
+
           let value = preventedValues[k]; 
           let feedbackItem = {
             id: _.uniqueId(), 
             key: key, 
             selectedValue: value, 
-            linkedShapes: linkedShapes                                  
+            linkedShapes: linkedShapes, 
+            or: or                                 
           };                                              
 
           feedbackItems.push(feedbackItem); 
@@ -473,7 +513,8 @@ export default class FeedbackContainer extends React.Component {
         id: _.uniqueId(), 
         key: key, 
         selectedValue: selectedValue, 
-        linkedShapes: linkedShapes
+        linkedShapes: linkedShapes, 
+        or: hasLockOrPrevent ? true : false
       }; 
 
       feedbackItems.push(feedbackItem); 
@@ -569,7 +610,7 @@ export default class FeedbackContainer extends React.Component {
     let callbacks = this.state.feedbackCallbacks; 
 
     let linkedSiblings = []; 
-    if(shape.item) {
+    if(callbacks && callbacks.getCurrentShapeSiblings && shape.item) {
       linkedSiblings = callbacks.getCurrentShapeSiblings(shape.name); 
     }
 
@@ -603,7 +644,7 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
-  getFeedbackItem = (id, key, value, action, linkedShapes=[]) => {    
+  getFeedbackItem = (id, key, value, action, or, linkedShapes=[]) => {    
     let itemKey = _.uniqueId();  
     let canvasShape = this.state.activeCanvasShape ? this.state.activeCanvasShape : this.state.primarySelection; 
     let designShape = this.state.activeCanvasShape ? this.state.primarySelection : undefined;    
@@ -619,6 +660,7 @@ export default class FeedbackContainer extends React.Component {
               update={this.props.updateConstraintsCanvas}
               selected={value}
               id={id}
+              or={or}
               key={itemKey} />;  
   }
 
@@ -678,7 +720,7 @@ export default class FeedbackContainer extends React.Component {
         action.domain = action.domain(canvasShape); 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
@@ -694,7 +736,7 @@ export default class FeedbackContainer extends React.Component {
         action.domain = action.domain(canvasShape); 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.linkedShapes); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or, item.linkedShapes); 
 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
@@ -706,7 +748,7 @@ export default class FeedbackContainer extends React.Component {
       action.prevent = ConstraintActions.canvasChildConstraints['prevent'];
       action.domain = ConstraintActions.canvasChildConstraints.domains[item.key];
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
     }) : undefined; 
@@ -731,29 +773,35 @@ export default class FeedbackContainer extends React.Component {
         }
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
     }) : undefined; 
+
+    let feedbackHidden = !canvasShape || !this.state.feedbackCallbacks; 
 
     return (
         <div className="panel panel-primary feedback-container">
           <div className="panel-heading"> 
             <h3 className="panel-title">Feedback
             </h3>
+            {(!feedbackHidden ? 
+              (<div className="feedback-primary-selection-indicator">
+                <div></div>
+              </div>) : undefined)}
           </div>
           <div tabIndex="1" className="panel-body feedback-container-body"
             onClick={this.onClick}> 
             {treeFeedbackItems}
-            {elementFeedbackItems && elementFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {elementFeedbackItems && elementFeedbackItems.length ? <FeedbackSeparator label="Size" /> : undefined}
             {elementFeedbackItems}
-            {canvasChildItems && canvasChildItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {canvasChildItems && canvasChildItems.length ? <FeedbackSeparator label="Grid Layout & Placement" />  : undefined}
             {canvasChildItems}
-            {groupFeedbackItems && groupFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {groupFeedbackItems && groupFeedbackItems.length ? <FeedbackSeparator label="Arrangement" />  : undefined}
             {groupFeedbackItems}
-            {canvasFeedbackItems && canvasFeedbackItems.length ? <hr className="feedback-container-separator" /> : undefined}
+            {canvasFeedbackItems && canvasFeedbackItems.length ? <FeedbackSeparator label="Grid Layout" /> : undefined}
             {canvasFeedbackItems}
-            {!canvasShape || !this.state.feedbackCallbacks ? 
+            {feedbackHidden ? 
               (<div className="card card-body bg-light feedback-container-alert">
                 <span className="feedback-container-empty">Select an element in the Outline Panel or in a layout idea canvas to the right to see feedback options.</span>
               </div>) : undefined}

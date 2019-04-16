@@ -103,7 +103,9 @@ ConstraintActions.defaultKeepConstraint = function keepConstraint(property, shap
 		shape["locked_values"][property] = []; 
 	}
 
-	shape["locked_values"][property].push(value); 	
+	if(shape["locked_values"][property].indexOf(value) == -1) {
+		shape["locked_values"][property].push(value); 	
+	}
 }
 
 ConstraintActions.defaultUndoKeepConstraint = function undoKeepConstraint(property, shape, value) {
@@ -150,7 +152,9 @@ ConstraintActions.defaultPreventConstraint = function preventConstraint(property
 		shape["prevented_values"][property] = []; 
 	}
 
-	shape["prevented_values"][property].push(value); 	
+	if(shape["prevented_values"][property].indexOf(value) == -1) {
+		shape["prevented_values"][property].push(value); 	
+	}
 }	
 
 ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(property, shape, value) {

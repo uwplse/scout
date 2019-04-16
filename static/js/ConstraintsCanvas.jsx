@@ -92,21 +92,17 @@ export default class ConstraintsCanvas extends React.Component {
 
     if(this.props.primarySelection != undefined){
       if(prevProps.primarySelection != this.props.primarySelection) {
-        let parentNode = this.getCurrentParentNode(this.props.primarySelection.name); 
-        let expandedNodes = this.state.expandedTreeNodes; 
-        if(parentNode) {
-          let parentTreeNode = this.widgetTreeNodeMap[parentNode.name]; 
-          if(expandedNodes.indexOf(parentTreeNode.key) == -1) {
-            expandedNodes.push(parentTreeNode.key); 
-          }
-        }
+        // Expand the corresponding parent node
+        let toExpand = []; 
+        this.getParentNodesToExpand(this.props.primarySelection.name, this.state.expandedTreeNodes, toExpand); 
+        toExpand.push(...this.state.expandedTreeNodes);
 
         // When the widget becomes active from a DesignCanvas, we should select the corresponding shape in the 
         // ConstraintsCanvas tree. 
         this.setState({
           treeData: this.state.treeData, 
           primarySelection: this.props.primarySelection,
-          expandedTreeNodes: expandedNodes
+          expandedTreeNodes: toExpand
         });
       } 
     }
@@ -283,6 +279,12 @@ export default class ConstraintsCanvas extends React.Component {
     let keepConflicts = highlightedConflicts.filter(conflict => conflict.type == "lock"); 
     let preventConflicts = highlightedConflicts.filter(conflict => conflict.type == "prevent");
 
+    let linkedSiblings = []; 
+    if(shape.item) {
+      // Should be updating the corresponding item groups
+      linkedSiblings = this.getCurrentShapeSiblings(shape.name); 
+    }
+
     // Restore feedback items for locks 
     let feedbackItems = []; 
     if(shape.locks && shape.locks.length) {
@@ -298,7 +300,7 @@ export default class ConstraintsCanvas extends React.Component {
               let uniqueId = getUniqueID();
               let message = action["do"].getFeedbackMessage(lock, shape, value);
               let id = shape.name + "_" + uniqueId; 
-              let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, value, message, highlighted);
+              let widgetFeedback = this.getWidgetFeedback(id, shape, action, lock, value, message, highlighted, linkedSiblings);
               feedbackItems.push(widgetFeedback); 
             } 
           }
@@ -319,7 +321,7 @@ export default class ConstraintsCanvas extends React.Component {
               let uniqueId = getUniqueID();
               let message = action["do"].getFeedbackMessage(prevent, shape, value);
               let id = shape.name + "_" + uniqueId; 
-              let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, value, message, highlighted);
+              let widgetFeedback = this.getWidgetFeedback(id, shape, action, prevent, value, message, highlighted, linkedSiblings);
               feedbackItems.push(widgetFeedback); 
             } 
           }
@@ -379,18 +381,20 @@ export default class ConstraintsCanvas extends React.Component {
     let width = options.width ? options.width : 0;
     let height = options.height ? options.height : 0; 
     let shape = this.createConstraintsCanvasShapeObject(id, type, width, height, options); 
+    let alternate = options.alternate ? true : false;
 
     let newTreeNode = {
       key: shape.name, 
       shape: shape, 
       src: source, 
+      alternate: alternate
     }; 
 
     this.widgetTreeNodeMap[shape.name] = newTreeNode; 
     return newTreeNode; 
   }
 
-  getWidgetFeedback = (shapeID, shape, action, property, value, message, highlighted) => {
+  getWidgetFeedback = (shapeID, shape, action, property, value, message, highlighted, linkedShapes=[]) => {
     return (<WidgetFeedback 
               key={shapeID} 
               type="feedback"
@@ -401,6 +405,7 @@ export default class ConstraintsCanvas extends React.Component {
               value={value}
               message={message} 
               highlighted={highlighted}
+              linkedShapes={linkedShapes}
               update={this.updateConstraintsCanvas}/>); 
   }
 
@@ -411,17 +416,31 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
-    // Expand the corresponding parent node
-    let parentNode = this.getCurrentParentNode(shape.name); 
-    if(parentNode) {
-      this.setState({
-        expandedTreeNodes: this.state.expandedTreeNodes.concat(parentNode.key)
-      }); 
+  getParentNodesToExpand = (shapeID, expandedNodes, toExpand=[]) => {
+    // Retrieve all of the parent nodes to expand to be able to view a child node, if they are not already expanded. 
+    let parentNode = this.getCurrentParentNode(shapeID); 
+    if(expandedNodes.indexOf(parentNode.name) == -1) {
+      toExpand.push(parentNode.name); 
     }
 
+    if(parentNode.type != "canvas") {
+      this.getParentNodesToExpand(parentNode.name, expandedNodes, toExpand); 
+    }
+  }
+
+  displayWidgetFeedback = (shape, callbacks, constraintsCanvasShape=undefined) => {
     // Call the PageContainer method to open the feedback panel 
     this.props.displayWidgetFeedback(shape, callbacks, constraintsCanvasShape); 
+  }
+
+  getSelectedNodes = (node, selectedKeys) => {
+    let selectedNodes = []; 
+    for(let i=0; i<node.children.length; i++) {
+      if(selectedKeys.indexOf(node.children[i].key) > -1) {
+        selectedNodes.push(node.children[i]); 
+      }
+    }
+    return selectedNodes; 
   }
 
   displayRightClickMenu = (evt, shapeID) => {
@@ -438,17 +457,18 @@ export default class ConstraintsCanvas extends React.Component {
 
       if(isSelected && multipleSelected) {
         // Grouping applies to selected elements
-        nodeChildren = this.state.selectedTreeNodes; 
+        let parentTreeNode = this.getParentNodeForKey(shapeID, this.state.treeData[0]); 
+        nodeChildren = this.getSelectedNodes(parentTreeNode, this.state.selectedTreeNodes); 
 
         // This should only apply if the element clicked on was the only one selected
         isGroup = false; 
       }
       else if(isSelected && isGroup) {
-        nodeChildren = node.children.map((child) => {return child.key; }); 
+        nodeChildren = node.children; 
       }
       else {
         if(isGroup) {
-          nodeChildren = node.children.map((child) => {return child.key; });
+          nodeChildren = node.children; 
         } else {
           nodeChildren = []; 
         }
@@ -668,6 +688,9 @@ export default class ConstraintsCanvas extends React.Component {
             child.shape.alternate_width = firstChild.shape.orig_width; 
             child.shape.alternate_height = firstChild.shape.orig_height;
           }
+
+          // remove the children on the shape object so this group is treated as an individual element
+          child.shape.children = []; 
         }
         else {
           this.getShapeChildren(child);
@@ -688,6 +711,7 @@ export default class ConstraintsCanvas extends React.Component {
     let importance = (options.importance ? options.importance : "normal");
     let item = (options.item ? options.item : false); 
     let typed = (options.typed ? options.typed : false);
+    let alternate = (options.alternate ? options.alternate : false); 
 
     // Set up the object that will keep the current state of this shape
     // And be passed with a set of information to the server for solving
@@ -700,8 +724,9 @@ export default class ConstraintsCanvas extends React.Component {
       "order": order, 
       "orig_width": width, 
       "orig_height": height,
-      "item": item, 
-      "typed": typed
+      "item": item,
+      "typed": typed, 
+      "alternate": alternate
     }
 
     if (type == "group") {
@@ -751,38 +776,54 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   restructureRepeatGroupChildren = (groupChildren, groupSize) => {
-    // Split the children of this group node into uniformly sized groups 
-    let curr = 0; 
-    let currGroup = []; 
-    let groups = []; 
-    for(let i=0; i<groupChildren.length; i++) {
-      currGroup.push(groupChildren[i]); 
-      curr++; 
+    let childGroups = groupChildren.filter((child) => child.shape.type == "group"); 
+    let allGroups = groupChildren.length == childGroups.length; 
 
-      if(curr == groupSize) {
-        groups.push(currGroup);
-        currGroup = [];
-        curr = 0;  
+    let newChildren = []; 
+    if(allGroups) {
+      // Simply turn each child group into an item. 
+      for(let i=0; i<groupChildren.length; i++) {
+        let groupNode = groupChildren[i]; 
+        groupNode.item = true; 
+        groupNode.shape.item = true; 
+        groupNode.src = itemSVG; 
+        newChildren.push(groupNode); 
       }
     }
+    else {
+      // Split the children of this group node into uniformly sized groups 
+      let curr = 0; 
+      let currGroup = []; 
+      let groups = []; 
+      for(let i=0; i<groupChildren.length; i++) {
+        currGroup.push(groupChildren[i]); 
+        curr++; 
 
-    // For each group of children, create a new group node in the tree, and return these groups as 
-    // the new children 
-    let newChildren = []; 
-    for(let i=0; i<groups.length; i++) {
-      let currGroup = groups[i]; 
-
-      let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
-        {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
-
-      for(let j=0; j<currGroup.length; j++) {
-        currGroup[j].disabled = true;
+        if(curr == groupSize) {
+          groups.push(currGroup);
+          currGroup = [];
+          curr = 0;  
+        }
       }
 
-      newGroupNode.item = true;
-      newGroupNode.shape.item = true;
-      newGroupNode.children = currGroup; 
-      newChildren.push(newGroupNode); 
+      // For each group of children, create a new group node in the tree, and return these groups as 
+      // the new children 
+
+      for(let i=0; i<groups.length; i++) {
+        let currGroup = groups[i]; 
+
+        let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
+          {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+
+        for(let j=0; j<currGroup.length; j++) {
+          currGroup[j].disabled = true;
+        }
+
+        newGroupNode.item = true;
+        newGroupNode.shape.item = true;
+        newGroupNode.children = currGroup; 
+        newChildren.push(newGroupNode); 
+      }
     }
 
     return newChildren; 
@@ -821,7 +862,6 @@ export default class ConstraintsCanvas extends React.Component {
 
   createRepeatGroup = (shapeID) => {
     let node = this.widgetTreeNodeMap[shapeID];
-    node.alternate = undefined; 
 
     let isSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1; 
     let multipleSelected = this.state.selectedTreeNodes.length > 1; 
@@ -830,6 +870,7 @@ export default class ConstraintsCanvas extends React.Component {
       node.typed = true; 
       node.src = repeatGridSVG; 
       node.shape.typed = true; 
+      node.alternate = undefined; 
 
       let newGroupChildren = this.restructureRepeatGroupChildren(node.children, node.typedGroupSize); 
       node.children = newGroupChildren;       
@@ -888,15 +929,13 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  removeCanvasChildConstraints = (shapeID) => {
+  removeCanvasChildConstraints = (shapeNode, isCanvasChild) => {
     let toRemove = ["left_column", "right_column", "canvas_alignment"]; 
     let canvasToRemove = ["x"]; 
 
     // Remove the canvas child constraints for this node if it is reparented
-    let shapeNode = this.widgetTreeNodeMap[shapeID]; 
     if(shapeNode) {
-      let parentNode = this.getParentNodeForKey(shapeNode.key, this.state.treeData[0]); 
-      if(parentNode && parentNode.shape.type != "canvas") {
+      if(!isCanvasChild) {
         // IF there are any locks or prevents on this element that apply to canvas chidlren, remove them 
         for(let i=0; i<toRemove.length; i++) {
           let property = toRemove[i]; 
@@ -918,7 +957,7 @@ export default class ConstraintsCanvas extends React.Component {
         }
       }
 
-      if(parentNode && parentNode.shape.type == "canvas") {
+      if(isCanvasChild) {
         // IF there are any locks or prevents on this element that apply to canvas chidlren, remove them 
         for(let i=0; i<canvasToRemove.length; i++) {
           let property = canvasToRemove[i]; 
@@ -1032,6 +1071,10 @@ export default class ConstraintsCanvas extends React.Component {
   }
 
   canSplitIntoGroupOfSize = (children, size) => {
+    if(children.length <= size) {
+      return false;
+    }
+
     // Determine if the children of this node can be split into a group of the given size
     let pattern = []; 
 
@@ -1039,9 +1082,7 @@ export default class ConstraintsCanvas extends React.Component {
     let currSize = 0; 
     let currGroup = []; 
     for(let i=0; i<children.length; i++) {
-      let currChildID = children[i]; 
-      let currChild = this.widgetTreeNodeMap[currChildID]; 
-
+      let currChild = children[i]; 
       currGroup.push(currChild.shape.type);
       currSize++; 
 
@@ -1071,9 +1112,8 @@ export default class ConstraintsCanvas extends React.Component {
 
   getGroupSizes = (total) => {
     // Get the set of group sizes to check by finding the possible divisors
-    let totalFloor = Math.floor(total/2); 
     let sizes = []; 
-    for(let i=2; i<=totalFloor; i++) {
+    for(let i=2; i<=total; i++) {
       if(total % i == 0){
         sizes.push(i); 
       }
@@ -1085,8 +1125,7 @@ export default class ConstraintsCanvas extends React.Component {
   containsGroup = (children) => {
     let numChildren = children.length; 
     for(let i=0; i<numChildren; i++){
-      let childID = children[i]; 
-      let child = this.widgetTreeNodeMap[childID];
+      let child = children[i]; 
       if(child.shape.type == "group") {
         return true; 
       }
@@ -1107,7 +1146,7 @@ export default class ConstraintsCanvas extends React.Component {
     return false;
   }
 
-  checkGroupTyping = (children) => {
+  canSplitChildrenIntoGroups = (children) => {
     // Do the type inference algorithm
     // iterate through each set of possible groupings starting with the greatest common divisor
     let numChildren = children.length; 
@@ -1121,7 +1160,50 @@ export default class ConstraintsCanvas extends React.Component {
         }
       }
     }
+  }
 
+  canMakeGroupsIntoItems = (groups) => {
+    // Determine if we can make a set of groups into items for a repeat group 
+    let patterns = []; 
+
+    // Collect orders of types for each group 
+    for(let i=0; i<groups.length; i++) {
+      let group = groups[i];
+      let pattern = []; 
+      for(let j=0; j<group.children.length; j++) {
+        let child = group.children[j]; 
+        pattern.push(child.shape.type); 
+      }
+      patterns.push(pattern); 
+    }
+
+    // Now, verify that each of the subgroups has the exact same set of types
+    for(let i=0; i<patterns.length; i++){
+      if(i < patterns.length - 1) {
+        let patternGroup = patterns[i]; 
+        let nextPatternGroup = patterns[i+1]; 
+        if(!this.typesMatch(patternGroup, nextPatternGroup)) {
+          return false;
+        }
+      }
+    }
+
+    return true; 
+  }
+
+  checkGroupTyping = (children) => {
+    let childGroups = children.filter((child) => child.shape.type == "group"); 
+    let allGroups = childGroups.length == children.length; 
+
+    if(allGroups) {
+        let canGroup = this.canMakeGroupsIntoItems(children); 
+        if(canGroup) {
+          return 1; 
+        }
+    }
+    else {
+      return this.canSplitChildrenIntoGroups(children);
+    }
     return -1;
   }
 
@@ -1139,8 +1221,15 @@ export default class ConstraintsCanvas extends React.Component {
     let nodes = []; 
     let index = 0;
     let firstIndex = -1; 
+
+
     while(treeNode.children.length && index <= treeNode.children.length-1) {
       let childNode = treeNode.children[index]; 
+
+      let isCanvasChild = treeNode.shape.type == "canvas";
+      // Remove canvas child constraints as they cannot exist inside the group.
+      this.removeCanvasChildConstraints(childNode, !isCanvasChild); 
+
       if(keys.indexOf(childNode.key) > -1) {
         if(firstIndex == -1) {
           firstIndex = index; 
@@ -1157,10 +1246,8 @@ export default class ConstraintsCanvas extends React.Component {
     let groupType = alternate ? "alternate" : "group"; 
     let groupSrc = alternate ? alternateSVG : groupSVG; 
     let group = this.createNewTreeNode(groupType, "group", groupSrc, 
-      {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
+      {width: this.defaultNodeWidth, height: this.defaultNodeHeight, alternate: alternate});
     group.children = nodes; 
-    group.shape.alternate = alternate; 
-    group.alternate = alternate; 
 
     if(firstIndex != -1) {
       treeNode.children.splice(firstIndex, 0, group);
@@ -1289,30 +1376,39 @@ export default class ConstraintsCanvas extends React.Component {
           let parentNode = this.getParentNodeForKey(selected, this.state.treeData[0]);  
           let newSelectedNodes = []; 
           let collect = false;
+          
+          let nodesToSelect = []; 
+          let childKeys = parentNode.children.map((item) => {
+            return item.key; 
+          }); 
+          let indexInParent = childKeys.indexOf(selected); 
+          if(indexInParent > -1) {
+            for(let i=0; i<parentNode.children.length; i++) {
+              let child = parentNode.children[i]; 
+              if(collect) {
+                nodesToSelect.push(child.key); 
+              }
 
-          // Find the range of elements in bewtween the last two selected nodes
-          for(let i=0; i<parentNode.children.length; i++) {
-            let child = parentNode.children[i]; 
-            if((child.key == prev || child.key == selected) && collect) {
-              newSelectedNodes.push(child.key); 
-              // Stop collecting
-              break;
-            }
-
-            if((child.key == prev || child.key == selected) && !collect) {
-              collect = true; 
-            }
-
-            if(collect) {
-              newSelectedNodes.push(child.key); 
+              let isSelected = selectedNodes.indexOf(child.key); 
+              if((i == indexInParent || isSelected) > -1) {
+                if(!collect) {
+                  collect = true; 
+                }
+                else {
+                  break;
+                }
+              }
             }
           }
 
-          selectedNodes = newSelectedNodes; 
-        }
+          let newNodesToSelect = nodesToSelect.filter((nodeKey) => {
+            return selectedNodes.indexOf(nodeKey) == -1; 
+          }); 
 
-        selectedElement = selected; 
-      }
+          selectedNodes.push(...newNodesToSelect); 
+          selectedElement = selected; 
+        }
+      } 
     }   
     else if (evt.nativeEvent && evt.nativeEvent.ctrlKey) {
       // Get the last selected node and verify that it has the same parent node as the other 
@@ -1462,8 +1558,10 @@ export default class ConstraintsCanvas extends React.Component {
 
     // Remove other constaints that should be removed when the element is dragged around in the tree
     if(dragObj) {
+      let parentNode = this.getParentNodeForKey(dragObj.key, this.state.treeData[0]); 
+      let isCanvasChild = parentNode.shape.type == "canvas"; 
       this.removeOrderConstraints(dragObj.key); 
-      this.removeCanvasChildConstraints(dragObj.key); 
+      this.removeCanvasChildConstraints(dragObj, isCanvasChild); 
     }
 
     this.setState({

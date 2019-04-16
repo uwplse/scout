@@ -21,7 +21,9 @@ class Variable(object):
 
 	def get_value_from_element(self, element):
 		# Return a Z3 expression or value to use in Z3 expressions from the element
-		value = element[self.name]
-		if self.type == "String":
-			return "\"" + value + "\""
-		return value
+		if self.name in element: 
+			value = element[self.name]
+			if self.type == "String":
+				return "\"" + value + "\""
+			return value
+		return None

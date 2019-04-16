@@ -5,11 +5,8 @@ import json
 import custom_solver
 import sys
 import os
-import faulthandler
 import time
 import logging
-faulthandler.enable()
-
 
 NUM_SOLVE_THREADS = 10
 NUM_CHECK_THREADS = 10
@@ -151,10 +148,9 @@ def get_solutions(elements, solutions, relative_designs=""):
 	print("Solving for designs.")
 	solutions = solver.solve()
 	time_end = time.time()
-	logging.debug("Total time taken for call: " + str(time_end-time_start))
+	print("Total time taken for call: " + str(time_end-time_start))
 	return solutions
 
 if __name__ == "__main__":
 	port = int(os.environ.get("PORT", 5000))
 	app.run(host='0.0.0.0', port=port)
-
