@@ -368,8 +368,7 @@ def compute_diversity_score(t1, t2):
 	diff = {}
 	for key in list(l1.keys()) + list(l2.keys()):
 		if key in l2 and key in l1:
-			pos_diff = ((l1[key]['x'] - l2[key]['x']) / float(CANVAS_WIDTH), 
-							 (l1[key]['y'] - l2[key]['y']) / float(CANVAS_HEIGHT))
+			pos_diff = ((l1[key]['x'] - l2[key]['x']), (l1[key]['y'] - l2[key]['y']))
 			size_diff = (l1[key]['height'] * l1[key]["width"] - l2[key]['height'] * l2[key]["width"]) 
 			size_diff = size_diff / float(CANVAS_WIDTH * CANVAS_HEIGHT)
 			neighbor_changed = [check_neighbor_changed(n1[key][i], n2[key][i]) for i in range(4)]
@@ -378,22 +377,23 @@ def compute_diversity_score(t1, t2):
 								  neighbor_dist_diff[1] / float(CANVAS_WIDTH),
 								  neighbor_dist_diff[2] / float(CANVAS_HEIGHT), 
 								  neighbor_dist_diff[3] / float(CANVAS_HEIGHT)]
-		if key in l1 and key not in l2:
-			pos_diff = (1., 1.)
-			size_diff = (l1[key]['height'] * l1[key]["width"]) / float(CANVAS_WIDTH * CANVAS_HEIGHT)
-			neighbor_changed = None
-			neighbor_dist_diff = None
-		if key not in l1 and key in l2:
-			pos_diff = (-1, -1)
-			size_diff = - (l2[key]['height'] * l2[key]["width"]) / float(CANVAS_WIDTH * CANVAS_HEIGHT)
+		else:
+			pos_diff = None
+			size_diff = None
 			neighbor_changed = None
 			neighbor_dist_diff = None
 
-		diff[key] = {
+		values = {
 			"pos_diff": pos_diff,
 			"size_diff": size_diff,
 			"neighbor_changed": neighbor_changed,
 			"neighbor_dist_diff": neighbor_dist_diff
+		}
+
+		diff[key] = {
+			"size_diff": np.absolute(size_diff),
+			"pos_diff": np.linalg.norm(pos_diff, ord=2) / np.linalg.norm((CANVAS_WIDTH, CANVAS_HEIGHT)),
+			"neighbor_diff": (sum(neighbor_changed) + sum([np.absolute(x) for x in neighbor_dist_diff])) / 8
 		}
 
 	return diff
