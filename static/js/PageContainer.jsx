@@ -20,6 +20,8 @@ import DesignCanvas from './DesignCanvas';
 import SmallDesignCanvas from './SmallDesignCanvas';
 import DesignCanvasContainer from './DesignCanvasContainer'; 
 
+const STORAGE_MAX_SOLUTIONS = 200; 
+
 export default class PageContainer extends React.Component {
   constructor(props) {
   	super(props); 
@@ -73,10 +75,15 @@ export default class PageContainer extends React.Component {
   }
 
   updateSolutionsCache = () => {
+    // Check the number of solutions already kept in local storage and
+    // remove > invalid solutions
     let solutionsJSON = JSON.stringify(this.state.solutions); 
     localStorage.setItem('solutions', solutionsJSON);
-  }
 
+    // Keep the most recent 200 and discard the rest
+    const discardedCanvases = this.state.solutions.filter((solution) => { 
+      return solution.saved == -1 || solution.invalidated; }); 
+  }
 
   addShapeToConstraintsCanvas = (id, src, type, width, height) => {
     return () => {
@@ -149,17 +156,17 @@ export default class PageContainer extends React.Component {
         for(let i=0; i<this.state.solutions.length; i++) {
           let designSolution = this.state.solutions[i]; 
 
-          let invalidated = false; 
-          if(designSolution.valid) {
-            if(designSolution.conflicts && designSolution.conflicts.length && designSolution.invalidated) {
-              invalidated = true; 
-            }
-          }
-          else {
-            invalidated = true;
-          }
+        //   let invalidated = false; 
+        //   if(designSolution.valid) {
+        //     if(designSolution.conflicts && designSolution.conflicts.length && designSolution.invalidated) {
+        //       invalidated = true; 
+        //     }
+        //   }
+        //   else {
+        //     invalidated = true;
+        //   }
 
-          designSolution.invalidated = invalidated; 
+        //   designSolution.invalidated = invalidated; 
 
           // Mark old solutions as not new
           designSolution.new = false;
@@ -241,14 +248,20 @@ export default class PageContainer extends React.Component {
 
       // In case the design was already removed while the request was processing. 
       if(designSolution) {
+        let elementsAddedOrRemoved = solution.added && solution.added.length || solution.removed && solution.removed.length; 
+        let previousAddedOrRemoved = designSolution.added && designSolution.added.length || designSolution.removed && designSolution.removed.length; 
+        if(elementsAddedOrRemoved && (elementsAddedOrRemoved != previousAddedOrRemoved)) {
+          designSolution.invalidated = true; 
+        }
+
+        if(designSolution.valid && !solutions.conflicts && !elementsAddedOrRemoved) {
+          designSolution.invalidated = false;
+        }    
+
         designSolution.valid = solution.valid; 
         designSolution.added = solution.added; 
         designSolution.removed = solution.removed;
         designSolution.conflicts = solution.conflicts; 
-
-        if(designSolution.valid && !solutions.conflicts) {
-          designSolution.invalidated = false;
-        }
       }
     }
 
@@ -261,19 +274,18 @@ export default class PageContainer extends React.Component {
   reflowSolutions = (solutions) => {
     if(solutions) {
       for(var i=0; i<solutions.length; i++) {
-        let solution = solutions[i]; 
-        let designSolution = this.solutionsMap[solution.id]; 
-
-        designSolution.conflicts = solution.conflicts; 
-        designSolution.elements = solution.elements; 
-        designSolution.elements_dict = solution.elements_dict;
+        let solution = solutions[i];  
+        if(solution.valid) {
+          solution.conflicts = []; 
+          this.solutionsMap[solution.id] = solution; 
+        }
       }
-    }
 
-    // Update the state
-    this.setState({
-      solutions: this.state.solutions
-    }, this.updateSolutionsCache); 
+      // Update the state
+      this.setState({
+        solutions: this.state.solutions.concat(solutions)
+      }, this.updateSolutionsCache); 
+    }
   }
 
   updateConstraintsCanvas = (shape, property, value, keepOrPrevent="") => {
@@ -310,67 +322,84 @@ export default class PageContainer extends React.Component {
     // }
   }
 
+  getElementFromTree = (shape, element_tree) => {
+    if(element_tree.name == shape.name) {
+      return element_tree; 
+    }
+
+    if(element_tree.children) {
+      for(let i=0; i<element_tree.children.length; i++) {
+        let elt = this.getElementFromTree(shape, element_tree.children[i]); 
+        if(elt) {
+          return elt; 
+        }
+      }
+    }
+  }
+
   checkSolutionValidityClient = (shape) => {
     let invalidSolutions = []; 
     for(let i=0; i < this.state.solutions.length; i++) {
       let solution = this.state.solutions[i]; 
-      let shapeId = shape.name; 
-      let element = solution.elements_dict[shapeId]; 
+      if(!solution.invalidated) {
+        let shapeId = shape.name; 
+        let element = this.getElementFromTree(shape, solution.elements);
 
-      let conflicts = solution.conflicts; 
-      let keepConflicts = []; 
-      if(shape.locks && shape.locks.length && element) {
-        for(let j=0; j<shape.locks.length; j++) {
-          let lock = shape.locks[j];
-          let elementValue = element[lock];
-          let lockedValues = shape["locked_values"][lock]; 
-          if(lockedValues && lockedValues.length) {
-            let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
-            if(!elementValueKept) {
-              keepConflicts.push({
-                type: "lock",
-                shapeID: shape.name, 
-                variable: lock, 
-                value: elementValue
-              }); 
+        let conflicts = solution.conflicts; 
+        let keepConflicts = []; 
+        if(shape.locks && shape.locks.length && element) {
+          for(let j=0; j<shape.locks.length; j++) {
+            let lock = shape.locks[j];
+            let elementValue = element[lock];
+            let lockedValues = shape["locked_values"][lock]; 
+            if(lockedValues && lockedValues.length) {
+              let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
+              if(!elementValueKept) {
+                keepConflicts.push({
+                  type: "lock",
+                  shapeID: shape.name, 
+                  variable: lock, 
+                  value: elementValue
+                }); 
+              }
             }
           }
         }
-      }
 
-      let preventConflicts = []; 
-      if(shape.prevents && shape.prevents.length && element) {
-        for(let j=0; j<shape.prevents.length; j++) {
-          let prevent = shape.prevents[j];
-          let elementValue = element[prevent];
-          let preventedValues = shape["prevented_values"][prevent]; 
-          if(preventedValues && preventedValues.length) {
-            let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
-            if(elementValuePrevented) {
-              preventConflicts.push({
-                type: "prevent",
-                shapeID: shape.name, 
-                variable: prevent, 
-                value: elementValue
-              }); 
+        let preventConflicts = []; 
+        if(shape.prevents && shape.prevents.length && element) {
+          for(let j=0; j<shape.prevents.length; j++) {
+            let prevent = shape.prevents[j];
+            let elementValue = element[prevent];
+            let preventedValues = shape["prevented_values"][prevent]; 
+            if(preventedValues && preventedValues.length) {
+              let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
+              if(elementValuePrevented) {
+                preventConflicts.push({
+                  type: "prevent",
+                  shapeID: shape.name, 
+                  variable: prevent, 
+                  value: elementValue
+                }); 
+              }
             }
           }
         }
-      }
 
-      // Remove previous conflicts corresponding to this shape 
-      let previousConflicts = conflicts.filter(conflict => conflict.shapeID != shape.name); 
-      if(keepConflicts.length) {
-        previousConflicts.push(...keepConflicts); 
-      }
+        // Remove previous conflicts corresponding to this shape 
+        let previousConflicts = conflicts.filter(conflict => conflict.shapeID != shape.name); 
+        if(keepConflicts.length) {
+          previousConflicts.push(...keepConflicts); 
+        }
 
-      if(preventConflicts.length) {
-        previousConflicts.push(...preventConflicts); 
-      }
-      solution.conflicts = previousConflicts; 
+        if(preventConflicts.length) {
+          previousConflicts.push(...preventConflicts); 
+        }
+        solution.conflicts = previousConflicts; 
 
-      if(conflicts.length) {
-        invalidSolutions.push(solution);
+        if(solution.conflicts.length) {
+          invalidSolutions.push(solution);
+        }
       }
     }
 
@@ -457,7 +486,9 @@ export default class PageContainer extends React.Component {
       let designSolution = this.state.solutions[i]; 
       
       // Invalidate the solution which means it should be moved into the right side panel 
-      designSolution.invalidated = (!designSolution.valid || designSolution.conflicts.length); 
+      if(!designSolution.valid || designSolution.conflicts.length) {
+        designSolution.invalidated = true; 
+      }
     }
 
     // Update the state
@@ -471,7 +502,7 @@ export default class PageContainer extends React.Component {
       let designSolution = this.state.solutions[i]; 
       
       if(designSolution.saved == 0) {
-        designSolution.saved = -1; 
+        designSolution.invalidated = true; 
       }
     }
 
@@ -499,7 +530,7 @@ export default class PageContainer extends React.Component {
   clearDiscardedDesigns = () => {
     const notDiscardedSolutions = this.state.solutions
       .filter((solution) => { 
-        return ((!solution.saved == -1) && (!solution.invalidated)); 
+        return ((!(solution.saved == -1)) && (!solution.invalidated)); 
     });  
 
     // Update the state
@@ -715,9 +746,9 @@ export default class PageContainer extends React.Component {
                   return this.getDesignCanvas(solution, solution.id, false, undefined, 0.5); 
                 }); 
 
-    const designCanvases = this.state.solutions
+    const validDesignCanvases = this.state.solutions
       .filter((solution) => { 
-        return (solution.saved == 0 && (!solution.invalidated)); 
+        return (solution.saved == 0 && (!solution.invalidated) && solution.valid && !solution.conflicts.length); 
       }) 
       .sort(function(a, b) {
         // Do a sort of the designs by cost
@@ -740,6 +771,16 @@ export default class PageContainer extends React.Component {
             return self.getDesignCanvas(solution, solution.id); 
           }
         });
+
+    const invalidDesignCanvases = this.state.solutions
+      .filter((solution) => { 
+        return (solution.saved == 0 && (!solution.invalidated) && (!solution.valid || solution.conflicts.length)); 
+      })
+      .map((solution) => {
+        return self.getDesignCanvas(solution, solution.id); 
+    });
+
+    let numUnderConsideration = invalidDesignCanvases.length + validDesignCanvases.length; 
       
     // Get the zoomed design canvas, if there is one set
     let zoomedDesignCanvas = this.state.zoomedDesignCanvasID ? this.getZoomedDesignCanvas() : undefined; 
@@ -784,22 +825,25 @@ export default class PageContainer extends React.Component {
                 <div>
                   <ul className="nav nav-pills designs-area-nav-pills">
                     <li className="nav-item">
-                      <a className={"nav-link" + (this.state.activeDesignPanel == "designs" ? " active" : "")} 
+                      <a className={"nav-link designs-area-link" + (this.state.activeDesignPanel == "designs" ? " active" : "")} 
                          href="#"
+                         title="View ideas under consideration."
                          onClick={this.toggleActiveDesignPanel.bind(this, "designs")}>
-                         <span className="designs-area-number">{designCanvases.length}</span>
+                         <span className="designs-area-number">{numUnderConsideration}</span>
                          Under Consideration</a> 
                     </li> 
                     <li className="nav-item"> 
-                      <a className={"nav-link" + (this.state.activeDesignPanel == "saved" ? " active" : "")}  
+                      <a className={"nav-link  designs-area-link" + (this.state.activeDesignPanel == "saved" ? " active" : "")}  
                         href="#"
+                        title="View saved ideas."
                         onClick={this.toggleActiveDesignPanel.bind(this, "saved")}>
                          <span className="designs-area-number">{savedCanvases.length}</span>
                         Saved</a>
                     </li> 
                     <li className="nav-item"> 
-                      <a className={"nav-link" + (this.state.activeDesignPanel == "discarded" ? " active" : "")} 
+                      <a className={"nav-link  designs-area-link" + (this.state.activeDesignPanel == "discarded" ? " active" : "")} 
                         href="#"
+                        title="View discarded ideas."
                         onClick={this.toggleActiveDesignPanel.bind(this, "discarded")}>
                          <span className="designs-area-number">{discardedCanvases.length}</span>
                         Discarded</a>
@@ -811,14 +855,14 @@ export default class PageContainer extends React.Component {
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearInvalidDesignCanvases}>Discard Invalid</button>
+                        onClick={this.clearInvalidDesignCanvases}>Discard Invalid Ideas</button>
                     </div>) : null}
-                  {/*this.state.activeDesignPanel == "designs" ? 
+                  {this.state.activeDesignPanel == "designs" ? 
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearDesignsUnderConsideration}>Discard Under Consideration</button>
-                    </div>) : null*/}
+                        onClick={this.clearDesignsUnderConsideration}>Discard Ideas Under Consideration</button>
+                    </div>) : undefined}
                   {this.state.activeDesignPanel == "saved" ? 
                     (<div 
                       className="btn-group header-button-group">
@@ -829,13 +873,13 @@ export default class PageContainer extends React.Component {
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearDiscardedDesigns}>Clear Discarded Ideas</button>
+                        onClick={this.clearDiscardedDesigns}>Remove all Discarded Ideas</button>
                     </div>) : null}
-                  {<div 
+                  {/*<div 
                     className="btn-group header-button-group">
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearAllDesigns}>Clear All Ideas</button>
-                  </div>}
+                  </div>*/}
                   {this.state.activeDesignPanel == "saved" ? (<div 
                     className="btn-group header-button-group">
                     <button type="button" 
@@ -869,14 +913,14 @@ export default class PageContainer extends React.Component {
               }
               <div className="design-canvas-container">
                   { this.state.activeDesignPanel == "designs" ? 
-                    (<div className="panel designs-container current-designs-container panel-default">{
-                      (pinnedCanvases.length ? <DesignCanvasContainer 
+                    (<div className="panel designs-container current-designs-container panel-default">
+                      {(pinnedCanvases.length ? <DesignCanvasContainer 
                         saved={true}
-                        onDrop={this.moveDesignCanvas}
                         designCanvases={pinnedCanvases} /> : null)}
-                      {(designCanvases.length ? (<DesignCanvasContainer 
-                        onDrop={this.moveDesignCanvas}
-                        designCanvases={designCanvases} />) : 
+                      {(pinnedCanvases.length ? <div className="design-canvas-container-separator"></div> : undefined)}
+                      {(numUnderConsideration ? (<DesignCanvasContainer 
+                        designCanvases={validDesignCanvases}
+                        invalidDesignCanvases={invalidDesignCanvases} />) : 
                         (<div className="designs-area-alert-container">
                           <div className="card card-body bg-light">
                             <span>You currently have no layout ideas under consideration. Click <span className="card-emph">See More Layout Ideas</span> in the outline to see more.</span>

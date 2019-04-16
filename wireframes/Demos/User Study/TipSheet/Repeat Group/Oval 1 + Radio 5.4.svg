@@ -1,0 +1,12 @@
+<svg width="40" height="26" viewBox="0 0 40 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Oval 1 + Radio 5.4">
+<g id="Oval 1">
+<mask id="path-1-inside-1" fill="white">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13 26C20.1797 26 26 20.1797 26 13C26 5.8203 20.1797 0 13 0C5.8203 0 0 5.8203 0 13C0 20.1797 5.8203 26 13 26Z"/>
+</mask>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M13 26C20.1797 26 26 20.1797 26 13C26 5.8203 20.1797 0 13 0C5.8203 0 0 5.8203 0 13C0 20.1797 5.8203 26 13 26Z" fill="white" stroke="#4387C5" stroke-width="6" mask="url(#path-1-inside-1)"/>
+</g>
+<rect id="Rectangle 40" x="1.5" y="1.5" width="37" height="23" rx="11.5" fill="#4387C5" stroke="#4387C5" stroke-width="3"/>
+<path id="Oval 2" fill-rule="evenodd" clip-rule="evenodd" d="M13 22C17.9706 22 22 17.9706 22 13C22 8.02944 17.9706 4 13 4C8.02944 4 4 8.02944 4 13C4 17.9706 8.02944 22 13 22Z" fill="white"/>
+</g>
+</svg>

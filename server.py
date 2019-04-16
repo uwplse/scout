@@ -113,15 +113,6 @@ def reflow():
 		return json.dumps(output).encode('utf-8')
 	sys.stdout.flush()
 
-@app.route('/compute_diversity_scores', methods=['POST','GET'])
-def compute_diversity_scores(designs):
-	print("computing diversity scores: ")
-	print(designs)
-	sys.stdout.flush()
-	return 0 
-
-
-
 def repair_solution_validity(elements, solutions, changed_element_id, changed_property, changed_value, keep_or_prevent):
 	# Wait until a context becomes available before proceeding
 	try: 
