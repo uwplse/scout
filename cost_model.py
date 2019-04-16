@@ -4,6 +4,7 @@ import json
 import numpy as np
 import os
 from pprint import pprint
+import sys
 
 from shapes import ContainerShape, CanvasShape
 
@@ -399,12 +400,13 @@ def compute_diversity_score(t1, t2):
 	return diff
 
 
-# from pprint import pprint
-# if __name__ == '__main__':
-# 	with open("saved.json", "r") as f:
-# 		scout_exports = json.load(f)
-# 		trees = [t["elements"] for t in scout_exports["saved"]]
-# 		for i in range(len(trees)):
-# 			for j in range(i + 1, len(trees)):
-# 				diff = compute_diversity_score(trees[i], trees[j])
-# 				pprint(diff)
+from pprint import pprint
+if __name__ == '__main__':
+	saved_path = sys.argv[1]
+	with open(saved_path, "r") as f:
+		scout_exports = json.load(f)
+		trees = [t["elements"] for t in scout_exports["saved"]]
+		for i in range(len(trees)):
+			for j in range(i + 1, len(trees)):
+				diff = compute_diversity_score(trees[i], trees[j])
+				pprint(diff)
