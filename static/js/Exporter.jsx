@@ -115,7 +115,7 @@ export default class Exporter  {
   }
 
   exportDesigns = (solutions) => {
-    let savedSolutions = solutions.filter((solution) => { return solution.saved; }); 
+    let savedSolutions = solutions.filter((solution) => { return solution.saved == 1; }); 
 
     // Compute diversity scores on the saved solutions only; 
     let scores = this.computeDiversityScores(savedSolutions); 
