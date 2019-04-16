@@ -51,7 +51,7 @@ ConstraintActions.arrangements = ["horizontal", "vertical", "rows", "columns"];
 ConstraintActions.canvasAlignments = ["left", "center", "right", "other"]; 
 
 // Canvas variable domains 
-ConstraintActions.margins = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]; 
+ConstraintActions.margins = [0,4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]; 
 ConstraintActions.num_columns = [2,3,4,6,12]; 
 ConstraintActions.gutter_widths = [4,8,16]
 ConstraintActions.baseline_grids = [4,8,16]

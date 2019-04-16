@@ -240,11 +240,12 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
             {(isCanvas ? (<div 
               className="widget-control-remove-items"> 
                 <div>
-                  <button 
+                  {/*<button 
                     type="button" 
                     className="btn btn-default canvas-node-action" 
                     disabled={!this.props.hasTreeNodes}
-                    onClick={this.onClickRemoveNodes}>Remove all nodes</button>
+                    onClick={this.onClickRemoveNodes}>
+                  Remove all nodes</button>*/}
                   <button 
                     type="button" 
                     className="btn btn-default canvas-node-action" 
