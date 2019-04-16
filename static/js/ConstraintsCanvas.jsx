@@ -1664,6 +1664,7 @@ export default class ConstraintsCanvas extends React.Component {
                 type="button" 
                 className="btn btn-default design-canvas-button" 
                 disabled={!hasNodes}
+                title="Tell Scout to generate more layout ideas."
                 onClick={this.requestDesigns}>See more layout ideas</button>
               {this.state.loading ? (<div className="spinner-border text-light constraints-container-spinner" role="status">
                                         <span className="sr-only">Loading...</span>

@@ -19,7 +19,7 @@ GUTTERS = [4,8,16] # TODO can introduce a variable value for these at some point
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
 # MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
-MARGINS = [4,8,12,16,20,24,28,32,36,40]
+MARGINS = [0,4,8,12,16,20,24,28,32,36,40]
 # PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
 PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
 LAYOUT_GRID_PROPERTIES = ["margin", "columns", "column_width", "gutter_width"]
@@ -130,15 +130,13 @@ def is_consistent_with_locks(layout_grid, element, at_root=False):
 				if not cons: 
 					return False
 
-			# TODO - check consistency of height values wrt width values in columns 
-
-
+			# TODO - check consistency of height values wrt width values in columns
 			if lock in LAYOUT_GRID_PROPERTIES: 
 				if lock == "margin": 
 					margin_value = element["locked_values"]["margin"]
 					matches = False
 					for marg_value in margin_value: 
-						if layout_grid[0] == margin_value: 
+						if layout_grid[0] == marg_value:
 							matches = True
 					if not matches: 
 						return False 

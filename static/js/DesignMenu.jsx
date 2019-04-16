@@ -14,7 +14,7 @@ class DesignMenuItem extends React.Component {
     const menuAction = this.props.onClick;
     const action = this.props.action;
 	  return <li 
-            onClick={function() { menuAction(action); }} 
+            onClick={function() { if(menuAction) { menuAction(action); }}} 
             className="canvas-actions-menu-item">{this.label}
           </li>; 
   }
@@ -30,10 +30,10 @@ export default class DesignMenu extends React.Component {
 
   getLeftMenuItems = () => {
   	let menuItems = []; 
-    let save = (<span className="glyphicon glyphicon-star" aria-hidden="true"></span>); 
-    let trash = (<span className="glyphicon glyphicon-trash" aria-hidden="true"></span>);
-    let zoom = (<span className="glyphicon glyphicon-zoom-in" aria-hidden="true"></span>); 
-    let consider = (<span className="glyphicon glyphicon-wrench" aria-hidden="true"></span>); 
+    let save = (<span className="glyphicon glyphicon-star" title="Save/Pin this idea to top of ideas panel." aria-hidden="true"></span>); 
+    let trash = (<span className="glyphicon glyphicon-trash" title="Discard this idea." aria-hidden="true"></span>);
+    let zoom = (<span className="glyphicon glyphicon-zoom-in" title="Zoom in on this idea." aria-hidden="true"></span>); 
+    let consider = (<span className="glyphicon glyphicon-wrench" title="Move this idea back to Under Consideration." aria-hidden="true"></span>); 
 
     if(this.props.showConsider) {
       menuItems.push(<DesignMenuItem key="consider" onClick={this.menuAction} action="consider" label={consider} />); 

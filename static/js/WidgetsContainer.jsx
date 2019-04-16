@@ -92,6 +92,7 @@ class WidgetsContainer extends React.Component {
               className={"btn-group header-button-group " 
               + (expanded ? "" : "collapsed")}>
               <button type="button" className="btn btn-default design-canvas-button" 
+                title="Remove all widgets from this panel."
                 onClick={this.props.onClick}>Clear Widgets</button>
             </div>
             <div 

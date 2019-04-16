@@ -248,14 +248,20 @@ export default class PageContainer extends React.Component {
 
       // In case the design was already removed while the request was processing. 
       if(designSolution) {
+        let elementsAddedOrRemoved = solution.added && solution.added.length || solution.removed && solution.removed.length; 
+        let previousAddedOrRemoved = designSolution.added && designSolution.added.length || designSolution.removed && designSolution.removed.length; 
+        if(elementsAddedOrRemoved && (elementsAddedOrRemoved != previousAddedOrRemoved)) {
+          designSolution.invalidated = true; 
+        }
+
+        if(designSolution.valid && !solutions.conflicts && !elementsAddedOrRemoved) {
+          designSolution.invalidated = false;
+        }    
+
         designSolution.valid = solution.valid; 
         designSolution.added = solution.added; 
         designSolution.removed = solution.removed;
         designSolution.conflicts = solution.conflicts; 
-
-        if(designSolution.valid && !solutions.conflicts) {
-          designSolution.invalidated = false;
-        }
       }
     }
 
@@ -821,6 +827,7 @@ export default class PageContainer extends React.Component {
                     <li className="nav-item">
                       <a className={"nav-link designs-area-link" + (this.state.activeDesignPanel == "designs" ? " active" : "")} 
                          href="#"
+                         title="View ideas under consideration."
                          onClick={this.toggleActiveDesignPanel.bind(this, "designs")}>
                          <span className="designs-area-number">{numUnderConsideration}</span>
                          Under Consideration</a> 
@@ -828,6 +835,7 @@ export default class PageContainer extends React.Component {
                     <li className="nav-item"> 
                       <a className={"nav-link  designs-area-link" + (this.state.activeDesignPanel == "saved" ? " active" : "")}  
                         href="#"
+                        title="View saved ideas."
                         onClick={this.toggleActiveDesignPanel.bind(this, "saved")}>
                          <span className="designs-area-number">{savedCanvases.length}</span>
                         Saved</a>
@@ -835,6 +843,7 @@ export default class PageContainer extends React.Component {
                     <li className="nav-item"> 
                       <a className={"nav-link  designs-area-link" + (this.state.activeDesignPanel == "discarded" ? " active" : "")} 
                         href="#"
+                        title="View discarded ideas."
                         onClick={this.toggleActiveDesignPanel.bind(this, "discarded")}>
                          <span className="designs-area-number">{discardedCanvases.length}</span>
                         Discarded</a>
@@ -846,13 +855,13 @@ export default class PageContainer extends React.Component {
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearInvalidDesignCanvases}>Discard Invalid</button>
+                        onClick={this.clearInvalidDesignCanvases}>Discard Invalid Ideas</button>
                     </div>) : null}
                   {this.state.activeDesignPanel == "designs" ? 
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearDesignsUnderConsideration}>Discard Under Consideration</button>
+                        onClick={this.clearDesignsUnderConsideration}>Discard Ideas Under Consideration</button>
                     </div>) : undefined}
                   {this.state.activeDesignPanel == "saved" ? 
                     (<div 
@@ -864,7 +873,7 @@ export default class PageContainer extends React.Component {
                     (<div 
                       className="btn-group header-button-group">
                       <button type="button" className="btn btn-default design-canvas-button" 
-                        onClick={this.clearDiscardedDesigns}>Clear Discarded Ideas</button>
+                        onClick={this.clearDiscardedDesigns}>Remove all Discarded Ideas</button>
                     </div>) : null}
                   {/*<div 
                     className="btn-group header-button-group">
@@ -908,7 +917,7 @@ export default class PageContainer extends React.Component {
                       {(pinnedCanvases.length ? <DesignCanvasContainer 
                         saved={true}
                         designCanvases={pinnedCanvases} /> : null)}
-                      {(pinnedCanvases.length ? <hr className="design-canvas-container-separator" /> : undefined)}
+                      {(pinnedCanvases.length ? <div className="design-canvas-container-separator"></div> : undefined)}
                       {(numUnderConsideration ? (<DesignCanvasContainer 
                         designCanvases={validDesignCanvases}
                         invalidDesignCanvases={invalidDesignCanvases} />) : 
