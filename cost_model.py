@@ -331,6 +331,25 @@ def alignment_check(elements):
 #              Divide the total score/8 to get the neighboring elements diversity score
 #          Representation (only for Alternate groups) - Changed - 1, Not Changed - 0
 #                shape.alternate  = true 
+
+
+# Diversity - iteration 2 
+# S - Spatial Score 
+# 		See algorithm above for computing P (position), S (size), N (neighbors)
+#		For each pair of elements
+#			Ppair + Spair + Npair 
+#		S = Ptotal/#Elements + Stotal/#Elements + Ntotal/#Elements  
+# A - Alternate Score
+#  For each pair of elements
+#     representation changed - 1, didn't change 0 
+#  Then divide by the total number of elements (This metric wont' have much weight in our case b/c only one element can have 
+#     an alternate, but it actually makes sense to normalize it this way since only one element changed)
+# E - Additional Elements (Separator)
+#    First, pair each separator to its closest separator in the other design (by distance)
+# 	 For the score: 
+#		Sum of additional elements / # elements on screen w/ additonal elements
+# Total Score = S + A + E  
+
 def compute_diversity_score(t1, t2):
 	"""Given two designs t1 and t2, compute their diversity score
 	Args:
@@ -400,13 +419,13 @@ def compute_diversity_score(t1, t2):
 	return diff
 
 
-# from pprint import pprint
-# if __name__ == '__main__':
-# 	saved_path = sys.argv[1]
-# 	with open(saved_path, "r") as f:
-# 		scout_exports = json.load(f)
-# 		trees = [t["elements"] for t in scout_exports["saved"]]
-# 		for i in range(len(trees)):
-# 			for j in range(i + 1, len(trees)):
-# 				diff = compute_diversity_score(trees[i], trees[j])
-# 				pprint(diff)
+from pprint import pprint
+if __name__ == '__main__':
+	saved_path = sys.argv[1]
+	with open(saved_path, "r") as f:
+		scout_exports = json.load(f)
+		trees = [t["elements"] for t in scout_exports["saved"]]
+		for i in range(len(trees)):
+			for j in range(i + 1, len(trees)):
+				diff = compute_diversity_score(trees[i], trees[j])
+				pprint(diff)
