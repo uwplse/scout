@@ -1,0 +1,10 @@
+<svg type="icon" xmlns="http://www.w3.org/2000/svg" width="37" height="33.176" viewBox="0 0 37 33.176">
+  <g id="H_Rainy" transform="translate(0.5 0.5)">
+    <line id="Line_29" data-name="Line 29" x2="3.266" y2="6.186" transform="translate(6.865 23.389)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1"/>
+    <line id="Line_30" data-name="Line 30" x2="3.266" y2="6.186" transform="translate(12.536 25.814)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1"/>
+    <line id="Line_31" data-name="Line 31" x2="3.266" y2="6.186" transform="translate(17.262 23.389)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1"/>
+    <line id="Line_32" data-name="Line 32" x2="3.266" y2="6.186" transform="translate(23.68 25.814)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1"/>
+    <line id="Line_33" data-name="Line 33" x2="3.266" y2="6.186" transform="translate(26.963 22.746)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1"/>
+    <path id="Path_26" data-name="Path 26" d="M37.7,192.957a5.6,5.6,0,0,1-5.619,5.592H7.468a5.741,5.741,0,1,1,0-11.481h.249a5.726,5.726,0,0,1,5.519-4.058,6.235,6.235,0,0,1,2.884.742A7.175,7.175,0,0,1,29,182.763a6.794,6.794,0,0,1,.994,3.613,8.055,8.055,0,0,1-.1,1.089c.1.1.149.2.3.247a5,5,0,0,1,1.939-.346,5.167,5.167,0,0,1,2.983.891A5.528,5.528,0,0,1,37.7,192.957Z" transform="translate(-1.7 -179.2)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="1"/>
+  </g>
+</svg>

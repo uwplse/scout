@@ -1,18 +1,6 @@
-<svg type="image" width="102" height="102" viewBox="0 0 102 102" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="100" height="100" transform="translate(0.986816 1)" fill="white"/>
-<rect x="0.986816" y="1" width="100" height="100" fill="white"/>
-<rect x="0.986816" y="1" width="100" height="100" fill="white" stroke="#A5ADBB"/>
-<mask id="mask0" mask-type="alpha" maskUnits="userSpaceOnUse" x="0" y="1" width="101" height="100">
-<rect x="0.986816" y="1" width="100" height="100" fill="#E5E5E5"/>
-</mask>
-<g mask="url(#mask0)">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M50.545 126.954H17.9868L17.9868 83.5427C28.8395 79.9251 36.0747 76.3075 39.6922 72.6899C45.1186 67.2636 28.8395 67.2636 28.8395 40.1318C28.8395 22.0439 36.0747 13 50.545 13C65.0152 13 72.2504 22.0439 72.2504 40.1318C72.2504 67.2636 55.9713 67.2636 61.3977 72.6899C65.0152 76.3075 72.2504 79.9251 83.1031 83.5427V129.667L50.545 126.954V126.954Z" fill="#A5ADBB"/>
-<mask id="mask1" mask-type="alpha" maskUnits="userSpaceOnUse" x="17" y="13" width="67" height="117">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M50.545 126.954H17.9868L17.9868 83.5427C28.8395 79.9251 36.0747 76.3075 39.6922 72.6899C45.1186 67.2636 28.8395 67.2636 28.8395 40.1318C28.8395 22.0439 36.0747 13 50.545 13C65.0152 13 72.2504 22.0439 72.2504 40.1318C72.2504 67.2636 55.9713 67.2636 61.3977 72.6899C65.0152 76.3075 72.2504 79.9251 83.1031 83.5427V129.667L50.545 126.954V126.954Z" fill="white"/>
-</mask>
-<g mask="url(#mask1)">
-<rect width="100" height="100" transform="translate(0.544983 -3.66664)" fill="#B3BAC5"/>
-<rect x="0.544983" y="-3.66663" width="100" height="100" fill="#A5ADBB"/>
-</g>
-</g>
+<svg xmlns="http://www.w3.org/2000/svg" width="101" height="101" viewBox="0 0 101 101">
+  <g id="_3_DesignerImage_Alt2" data-name="3_DesignerImage_Alt2" transform="translate(-84.487 -297.5)">
+    <rect id="Rectangle_4" data-name="Rectangle 4" width="100" height="100" transform="translate(84.987 298)" fill="#fff" stroke="#707070" stroke-width="1"/>
+    <path id="Intersection_3" data-name="Intersection 3" d="M292-228v-17.457q16.28-5.427,21.705-10.853c5.427-5.426-10.852-5.426-10.852-32.557q0-27.132,21.705-27.132t21.706,27.132c0,27.131-16.28,27.131-10.853,32.557q5.426,5.427,21.705,10.853V-228Z" transform="translate(-190 626)" fill="#a5adbb"/>
+  </g>
 </svg>
