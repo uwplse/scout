@@ -117,14 +117,8 @@ export default class Exporter  {
   exportDesigns = (solutions) => {
     let savedSolutions = solutions.filter((solution) => { return solution.saved == 1; }); 
 
-    // Compute diversity scores on the saved solutions only; 
-    let scores = this.computeDiversityScores(savedSolutions); 
-
-    // scores format 
-    // { pair: [solution1.id, solution2.id], pairwise_scores: [score1, score2, score3], overall_score: X}
     let savedHierarchy = {}; 
-    savedHierarchy['saved'] = savedSolutions
-    savedHierarchy['diversity_scores'] = scores; 
+    savedHierarchy['saved'] = savedSolutions; 
     this.exportHierarchy(savedHierarchy, 'saved'); 
 
     let trashedSolutions = solutions.filter((solution) => { return solution.trashed; }); 
@@ -148,35 +142,23 @@ export default class Exporter  {
   
   exportZipFileAndSavedImages = (savedSolutions) => {
     let self = this;
-    let promises = []; 
-    let savedFolder = this.zipFile.folder('saved_svgs'); 
+    let savedFolder = this.zipFile.folder('import_these_into_xd'); 
 
     for(let i=0; i<savedSolutions.length; i++) {
       let solutionDesignID = "design-canvas-" + savedSolutions[i].id; 
       let solution = document.getElementById(solutionDesignID); 
       if(solution) {
-        promises.push(domtoimage.toPng(solution)
-        .then(function (imgData) {
-            /* do something */
-            let imgDataParsed = imgData.replace('data:image/png;base64,', ''); 
-            savedFolder.file(solutionDesignID + ".png", imgDataParsed, {base64: true});
-
-            let svgDesign = self.convertDesignToPaper(savedSolutions[i]); 
-
-            let svgString = svgDesign.toString();
-            savedFolder.file(solutionDesignID + ".svg", svgString); 
-        })); 
+        let svgDesign = self.convertDesignToPaper(savedSolutions[i]); 
+        let svgString = svgDesign.toString();
+        savedFolder.file(solutionDesignID + ".svg", svgString); 
       }
     }
 
-   Promise.all(promises)
-    .then(() => {
-      this.zipFile.generateAsync({type:"blob"})
-      .then(function(content) {
-          // see FileSaver.js
-          saveAs(content, "exported_from_scout.zip");
-      });
-    }); 
+    this.zipFile.generateAsync({type:"blob"})
+    .then(function(content) {
+        // see FileSaver.js
+        saveAs(content, "exported_from_scout.zip");
+    });
   }
 }
 

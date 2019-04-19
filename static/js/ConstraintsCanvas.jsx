@@ -866,6 +866,8 @@ export default class ConstraintsCanvas extends React.Component {
     let isSelected = this.state.selectedTreeNodes.indexOf(shapeID) > -1; 
     let multipleSelected = this.state.selectedTreeNodes.length > 1; 
 
+    let expanded = []; 
+
     if(node.shape.type == "group" && ((isSelected && !multipleSelected) || !isSelected)) {
       node.typed = true; 
       node.src = repeatGridSVG; 
@@ -873,6 +875,10 @@ export default class ConstraintsCanvas extends React.Component {
       node.alternate = undefined; 
 
       let newGroupChildren = this.restructureRepeatGroupChildren(node.children, node.typedGroupSize); 
+
+      let expKeys = newGroupChildren.map((item) => item.key); 
+      expanded.push(...expKeys); 
+
       node.children = newGroupChildren;       
     }
     else {
@@ -882,11 +888,17 @@ export default class ConstraintsCanvas extends React.Component {
       newGroup.shape.typed = true; 
 
       let newGroupChildren  = this.restructureRepeatGroupChildren(newGroup.children, node.typedGroupSize); 
+      let expKeys = newGroupChildren.map((item) => item.key); 
+      expanded.push(...expKeys); 
+
       newGroup.children = newGroupChildren; 
     }
 
+
+    this.state.expandedTreeNodes.push(...expanded); 
     this.setState(state => ({
-      treeData: this.state.treeData
+      treeData: this.state.treeData, 
+      expandedTreeNodes: this.state.expandedTreeNodes
     }), this.checkSolutionValidityAndUpdateCache); 
   }
 
@@ -1264,12 +1276,16 @@ export default class ConstraintsCanvas extends React.Component {
     if(parentNode) {
       let newGroupNode = this.groupTreeNodes(parentNode, this.state.selectedTreeNodes, alternate);
 
+      // Auto expand the group after grouping 
+      this.state.expandedTreeNodes.push(newGroupNode.key);
+
       // Remove the selected tree nodes after grouping
       this.setState({
         treeData: this.state.treeData, 
         selectedTreeNodes: [newGroupNode.key], 
         selectedTreeNode: newGroupNode.key, 
-        primarySelection: newGroupNode.shape
+        primarySelection: newGroupNode.shape, 
+        expandedTreeNodes: this.state.expandedTreeNodes
       }, this.checkSolutionValidityAndUpdateCache); 
 
       return newGroupNode; 
