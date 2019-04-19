@@ -1,0 +1,26 @@
+{
+    "id": "YOUR_ID_HERE",
+    "name": "My plugin",
+    "version": "0.0.1",
+    "description": "Description of your plugin.",
+    "icons": [
+    ],
+    "host": {
+        "app": "XD",
+        "minVersion": "13.0.0"
+    },
+    "uiEntryPoints": [
+        {
+            "type": "menu",
+            "label": {
+                "default": "Export To Scout JSON",
+                "de": "Mein Kommando"
+            },
+            "commandId": "exportToScoutJSON",
+            "shortcut": {
+                "mac": "Cmd+Shift+P",
+                "win": "Ctrl+Shift+P"
+            }
+        }
+    ]
+}
