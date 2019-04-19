@@ -879,12 +879,12 @@ export default class PageContainer extends React.Component {
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearAllDesigns}>Clear All Ideas</button>
                   </div>*/}
-                  {this.state.activeDesignPanel == "saved" ? (<div 
+                  <div 
                     className="btn-group header-button-group">
                     <button type="button" 
                       onClick={this.exportSavedDesigns}
                       className="btn btn-default design-canvas-button">Export Saved Ideas</button>
-                  </div>) : null}
+                  </div>
                 </div>
               </div>  
               {(!this.state.solutionsFound ? (
