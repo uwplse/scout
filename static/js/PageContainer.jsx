@@ -659,19 +659,18 @@ export default class PageContainer extends React.Component {
   }
 
   clearWidgetsContainer = () => {
-    for(let i=0; i<this.state.svgWidgets.length; i++) {
+    /*for(let i=0; i<this.state.svgWidgets.length; i++) {
       // Mark widgets that we are removing as false
       // When designs are later cleared, we can completely remove them once the 
       // Designs using them are no longer there. 
       this.state.svgWidgets[i].visible = false; 
-    }
+    }*/
 
     // Update the local storage cache
-    let widgets = JSON.stringify(this.state.svgWidgets);
-    localStorage.setItem('svgWidgets', widgets); 
+    localStorage.removeItem('svgWidgets'); 
 
     this.setState({
-      svgWidgets: this.state.svgWidgets
+      svgWidgets: []
     });
   }
 

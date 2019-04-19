@@ -80,7 +80,13 @@
   flex-direction: column;
   margin: 2em;
   margin-top: 6em;
+  padding-top: 1em;
 }
+
+.box.has-advanced-upload.widgets-loaded {
+  border-top: 1px solid rgba(0,0,0,0.5);
+}
+
 
 .box.has-advanced-upload .box__icon {
     width: 100%;
