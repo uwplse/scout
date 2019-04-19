@@ -118,6 +118,17 @@ class Solver(object):
 		self.root = self.root[0]
 		self.invalid_solutions = 0
 
+		self.override_solver = OverrideSolver(self.solver)
+		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
+
+		# Build the initial set of constraints on the shapes and containers 
+		time_start = time.time()
+
+		self.cb.declare_variables(self.shapes)
+		self.init_constraints()
+		time_end = time.time()
+		logging.debug("Time to create constraints (init_constraints): " + str(time_end-time_start))
+
 		self.variables = self.init_variables()
 
 		# For debugging how large the search space is
@@ -133,16 +144,6 @@ class Solver(object):
 		self.output_variables = self.init_output_variables()
 		self.variables_different = Int('VariablesDifferent')
 
-		self.override_solver = OverrideSolver(self.solver)
-		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
-
-		# Build the initial set of constraints on the shapes and containers 
-		time_start = time.time()
-
-		self.cb.declare_variables(self.shapes)
-		self.init_constraints()
-		time_end = time.time()
-		logging.debug("Time to create constraints (init_constraints): " + str(time_end-time_start))
 
 		# Intialize the locked constraints (Keep/Prevent values)
 		start_time = time.time()

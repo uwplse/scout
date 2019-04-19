@@ -318,7 +318,7 @@ def alignment_check(elements):
 #          Position - absolute value of distance moved (computed distance between two x,y coordinates) 
 #                - Normalize by dividing by screen diagonal length 
 #          Size - absolute value of the difference of the two areas (HxW) between the two shapes (Normalize )
-#                - Normalize by dividing by the total area of the screen
+#                - Normalize by the largest element on either screen 
 #          Neighboring elements
 #              Find the closest neighboring element in each direction for each element
 #              L, T, B, R 
@@ -331,7 +331,6 @@ def alignment_check(elements):
 #              Divide the total score/8 to get the neighboring elements diversity score
 #          Representation (only for Alternate groups) - Changed - 1, Not Changed - 0
 #                shape.alternate  = true 
-
 
 # Diversity - iteration 2 
 # S - Spatial Score 

@@ -748,6 +748,11 @@ export default class FeedbackContainer extends React.Component {
       action.prevent = ConstraintActions.canvasChildConstraints['prevent'];
       action.domain = ConstraintActions.canvasChildConstraints.domains[item.key];
 
+      if(typeof action.domain == "function") {
+        let canvas = this.state.feedbackCallbacks.getCurrentParentNode(canvasShape.name); 
+        action.domain = action.domain(canvasShape, canvas); 
+      }
+
       let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
