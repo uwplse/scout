@@ -91,7 +91,14 @@ span.feedback-container-separator {
 }
 
 .panel-primary > .panel-heading.primary-selection-indicator {
-	border-bottom: 4px solid #FF83A8;
+	border-bottom: 10px solid #FF83A8;
+}
+
+@keyframes blink { 
+   50% { border-color: #997a8d; } 
+}
+.panel-primary > .panel-heading.primary-selection-indicator { /*or other element you want*/
+    animation: blink 1s ease-in-out 2 alternate;
 }
 
 .feedback-container-separator-group {
