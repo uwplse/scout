@@ -127,17 +127,22 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       linkedSibling.importance = level; 
     }
 
+    let invalidReason = level != "normal" ? {reason: "importance", shapeID: this.id} : 
+      {reason: "importance", shapeID: this.id, remove: true}; 
     this.setState({
       importance: level
-    }, this.props.update);
+    }, this.props.update.bind(this, invalidReason));
   }
 
   setOrder = (value) => {
     this.state.element.order = value; 
 
+
+    let invalidReason = value != -1 ? {reason: "order", shapeID: this.id} : 
+      {reason: "order", shapeID: this.id, remove: true}; 
     this.setState({
       order: value
-    }, this.props.update); 
+    }, this.props.update.bind(this, invalidReason)); 
   }
 
   setContainerOrder = (orderValue, linkedSiblings=[]) => {
@@ -149,9 +154,11 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
       linkedSibling.containerOrder = orderValue; 
     }
 
+    let invalidReason = orderValue == "important" ? {reason: "container_order", shapeID: this.id} : 
+      {reason: "container_order", shapeID: this.id, remove: true}; 
     this.setState({
       containerOrder: orderValue
-    }, this.props.update); 
+    }, this.props.update.bind(this, invalidReason)); 
   }
 
   showContextMenu = (evt) => {
@@ -197,10 +204,14 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
     const order = this.state.order;
     const ordered = this.state.containerOrder == "important"; 
     const orderLabel = order == 0 ? "First" : "Last"; 
-    const importanceLabel = importance == "high" ? "Emphasized" : (importance == "low" ? "Deemphasized" : ""); 
+    const importanceLabel = importance == "high" ? "High Emphasis" : (importance == "low" ? "Low Emphasis" : ""); 
     const highlighted = this.state.highlighted; 
     const showOrder = this.state.order != -1 && this.state.order != undefined;  
     const isCanvas = this.props.shape.type == "canvas";
+
+    const emphasisHighlighted = this.props.invalidReasons.indexOf("importance") > -1; 
+    const containerOrderHighlighted = this.props.invalidReasons.indexOf("container_order") > -1; 
+    const orderHighlighted = this.props.invalidReasons.indexOf("order") > -1; 
 
     const isPrimary = this.props.primarySelection && this.props.primarySelection == this.props.shape; 
     const isSecondary = this.props.primarySelection && !isPrimary && this.props.primarySelection.name == this.props.shape.name; 
@@ -230,10 +241,20 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
             <div 
               className={"widget-control-info " + ((importanceLabel.length || showOrder || this.isContainer) ? "" : "hidden")}>
               {this.isContainer ? 
-               (<span className={"badge " + (ordered ? "badge-success" : "badge-primary")}>{(ordered ? "Order Important" : "Order Unimportant")}
+               (<span className={"badge " 
+                  + (ordered ? "badge-success " : "badge-primary ")
+                  + (containerOrderHighlighted ? "highlighted" : "")}>
+                  {(ordered ? "Order Important" : "Order Unimportant")}
                 </span>) : undefined}
-              <span className={"widget-control-order badge badge-success " + (showOrder ? "" : "hidden")}>{orderLabel}</span>
-              <span className={"badge " + (importance == "most" ? "badge-success " : "badge-primary ") + (importanceLabel.length ? "" : "hidden")}>
+              <span className={"widget-control-order badge badge-success " 
+                + (showOrder ? " " : "hidden ")
+                + (orderHighlighted ? "highlighted" : "")}>
+                {orderLabel}
+              </span>
+              <span 
+                className={"badge " + (importance == "most" ? "badge-success " : "badge-primary ") 
+                + (importanceLabel.length ? " " : "hidden ")
+                + (emphasisHighlighted ? "highlighted" : "")}>
                 {importanceLabel}
               </span>
             </div>

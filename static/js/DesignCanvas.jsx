@@ -43,6 +43,7 @@ export default class DesignCanvas extends React.Component {
     // Callback method in the parent PageContainer to get a widget and widget feedback item to be highlighted in the ConstraintsCanvas
     this.highlightFeedbackConflict = props.highlightFeedbackConflict; 
     this.highlightAddedWidget = props.highlightAddedWidget; 
+    this.highlightInvalidReason = props.highlightInvalidReason; 
 
     this.canvasWidth = 360; 
     this.canvasHeight = 640; 
@@ -235,6 +236,11 @@ export default class DesignCanvas extends React.Component {
           this.highlightAddedWidget(addedID, true); 
         }
       }
+
+      if(this.props.invalid_reasons && this.props.invalid_reasons.length) {
+        let first_reason = this.props.invalid_reasons[0]; 
+        this.highlightInvalidReason(first_reason, true); 
+      }
     }
 
     this.setState({
@@ -257,6 +263,11 @@ export default class DesignCanvas extends React.Component {
           var addedID = this.state.added[i]; 
           this.highlightAddedWidget(addedID, false); 
         }
+      }
+      
+      if(this.props.invalid_reasons && this.props.invalid_reasons.length) {
+        let first_reason = this.props.invalid_reasons[0]; 
+        this.highlightInvalidReason(first_reason, false); 
       }
     }
 

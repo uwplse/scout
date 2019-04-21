@@ -148,15 +148,10 @@
 	margin-right: 0.5em;
 }
 
-.widget-control-info-left, 
-.widget-control-info-right {
-	display: flex; 
-	flex-direction: column; 
-	justify-content: center;
-}
-
-.widget-control-info-right {
-	margin-left: 10px;
+.widget-control-info span.highlighted {
+   	border: 2px dashed #85144b;
+   	background-color: #ef9a9a;
+   	padding: 0.2em;
 }
 
 .widget-control-labels {
