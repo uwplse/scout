@@ -17,9 +17,22 @@ GroupFeature = namedtuple("GroupFeature",
 	["x", "y", "width", "height", "avg_ele_width", 
 	 "avg_ele_height", "area", "align_score", "balance_h", "balance_v"])
 
+def process_id(node):
+	"""process id to handle alternate group and separator """
+	# consider alt-group as an element, rename its id for lookup purpose
+	if node["type"] == "group" and node["id"] == "alternate":
+		node["type"] = "alternate_group"
+	elif node["type"] in ["canvas", "group"]:
+		for c in node["children"]:
+			process_id(c)
+	elif node["type"] == "separator":
+		node["id"] = "separator"
+
 def process_element_tree(node):
 	"""given a layout tree starting from node, 
 		calculate tree bounds and high level features """
+
+	process_id(node)
 
 	# get bounds
 	width = CANVAS_WIDTH if node["type"] == "canvas" else node["width"]
@@ -29,12 +42,6 @@ def process_element_tree(node):
 	if node["type"] == "canvas":
 		children = []
 		for c in node["children"]:
-			if c["type"] == "group" and c["id"] == "alternate":
-				# consider alt-group as an element
-				# rename its id for lookup purpose
-				c["type"] = "alternate_group"
-				c["id"] = "$".join(c["representations"])
-
 			if c["type"] == "group":
 				_, leaves = extract_groups_and_leaves(c)
 				if len(leaves) <= 1:
@@ -354,6 +361,32 @@ def alignment_check(elements):
 #		Sum of additional elements / # elements on screen w/ additonal elements
 # Total Score = S + A + E  
 
+def match_separators(t1, t2):
+	""" since separators can appear multiple times, we try match them to minimize movements 
+		currently use a greedy algorithm to find the match, not optimal
+	"""
+	_, leaves_1 = extract_groups_and_leaves(t1)
+	_, leaves_2 = extract_groups_and_leaves(t2)
+
+	sep_1 = [e for e in leaves_1 if e["id"] == "separator"]
+	sep_2 = [e for e in leaves_2 if e["id"] == "separator"]
+
+	matched_j = []
+	for i in range(len(sep_1)):
+		sep_1[i]["id"] = "separator_{}".format(i)
+		dist_ij = [np.abs(sep_2[j]["y"] - sep_1[i]["y"]) if j not in matched_j else CANVAS_HEIGHT for j in range(len(sep_2))]
+		if len(dist_ij) > 0 and min(dist_ij) != CANVAS_HEIGHT:
+			j = np.argmax(dist_ij)
+			matched_j.append(j)
+			sep_2[j]["id"] = "separator_{}".format(i)
+
+	if len(sep_2) > len(sep_1):
+		i = len(sep_1)
+		for s in sep_2:
+			if s["id"] == "separator":
+				s["id"] = "separator_{}".format(i)
+				i += 1
+
 def compute_diversity_score(t1, t2):
 	"""Given two designs t1 and t2, compute their diversity score
 	Args:
@@ -365,6 +398,8 @@ def compute_diversity_score(t1, t2):
 	# annotate the element tree with essential information
 	process_element_tree(t1)
 	process_element_tree(t2)
+
+	match_separators(t1, t2)
 
 	groups_1, leaves_1 = extract_groups_and_leaves(t1)
 	groups_2, leaves_2 = extract_groups_and_leaves(t2)
@@ -389,33 +424,35 @@ def compute_diversity_score(t1, t2):
 			return False
 		else:
 			return n1["id"] != n2["id"]
+			
+	max_element_size = max([e["width"]*e["height"] for e in leaves_1] + [e["width"]*e["height"] for e in leaves_2] )
 
 	diff = {}
 	for key in list(l1.keys()) + list(l2.keys()):
 		if key in l2 and key in l1:
 			pos_diff = ((l1[key]['x'] - l2[key]['x']), (l1[key]['y'] - l2[key]['y']))
+
+			# normalize size by the maximum element size on both screen
 			size_diff = (l1[key]['height'] * l1[key]["width"] - l2[key]['height'] * l2[key]["width"]) 
-			size_diff = size_diff / float(CANVAS_WIDTH * CANVAS_HEIGHT)
+			size_diff = size_diff / max_element_size
+
 			neighbor_changed = [check_neighbor_changed(n1[key][i], n2[key][i]) for i in range(4)]
 			neighbor_dist_diff = [margins1[key][i] - margins2[key][i] for i in range(4)]
 			neighbor_dist_diff = [neighbor_dist_diff[0] / float(CANVAS_WIDTH), 
 								  neighbor_dist_diff[1] / float(CANVAS_WIDTH),
 								  neighbor_dist_diff[2] / float(CANVAS_HEIGHT), 
 								  neighbor_dist_diff[3] / float(CANVAS_HEIGHT)]
+			alt_group_diff = 0
 			if l1[key]['alternate'] and l2[key]['alternate']:
 				if l1[key]['alternate'] != l2[key]['alternate']:
 					alt_group_diff = 1
-				else:
-					alt_group_diff = 0
-			else:
-				alt_group_diff = None
-
 		else:
 			pos_diff = None
 			size_diff = None
 			neighbor_changed = None
 			neighbor_dist_diff = None
 			alt_group_diff = None
+			continue
 
 		values = {
 			"pos_diff": pos_diff,
@@ -432,7 +469,9 @@ def compute_diversity_score(t1, t2):
 			"alt_group_diff": alt_group_diff
 		}
 
-	return diff
+	score = sum([sum([diff[key][stype] for stype in diff[key]]) for key in diff]) / len(diff)
+
+	return score
 
 
 from pprint import pprint
@@ -447,3 +486,4 @@ if __name__ == '__main__':
 		for i in range(len(trees)):
 			for j in range(i + 1, len(trees)):
 				diff = compute_diversity_score(trees[i], trees[j])
+				pprint(diff)
