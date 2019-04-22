@@ -29,6 +29,12 @@ def process_element_tree(node):
 	if node["type"] == "canvas":
 		children = []
 		for c in node["children"]:
+			if c["type"] == "group" and c["id"] == "alternate":
+				# consider alt-group as an element
+				# rename its id for lookup purpose
+				c["type"] = "alternate_group"
+				c["id"] = "$".join(c["representations"])
+
 			if c["type"] == "group":
 				_, leaves = extract_groups_and_leaves(c)
 				if len(leaves) <= 1:
@@ -40,7 +46,6 @@ def process_element_tree(node):
 				children.append(c)
 		node["children"] = children
 
-	# add id for each node
 	if node["type"] in ["canvas", "group"]:
 		for c in node["children"]:
 			process_element_tree(c)
@@ -360,6 +365,7 @@ def compute_diversity_score(t1, t2):
 	# annotate the element tree with essential information
 	process_element_tree(t1)
 	process_element_tree(t2)
+
 	groups_1, leaves_1 = extract_groups_and_leaves(t1)
 	groups_2, leaves_2 = extract_groups_and_leaves(t2)
 	neighbors1 = collect_neighbors(leaves_1)
@@ -396,23 +402,34 @@ def compute_diversity_score(t1, t2):
 								  neighbor_dist_diff[1] / float(CANVAS_WIDTH),
 								  neighbor_dist_diff[2] / float(CANVAS_HEIGHT), 
 								  neighbor_dist_diff[3] / float(CANVAS_HEIGHT)]
+			if l1[key]['alternate'] and l2[key]['alternate']:
+				if l1[key]['alternate'] != l2[key]['alternate']:
+					alt_group_diff = 1
+				else:
+					alt_group_diff = 0
+			else:
+				alt_group_diff = None
+
 		else:
 			pos_diff = None
 			size_diff = None
 			neighbor_changed = None
 			neighbor_dist_diff = None
+			alt_group_diff = None
 
 		values = {
 			"pos_diff": pos_diff,
 			"size_diff": size_diff,
 			"neighbor_changed": neighbor_changed,
-			"neighbor_dist_diff": neighbor_dist_diff
+			"neighbor_dist_diff": neighbor_dist_diff,
+			"alt_group_diff": alt_group_diff
 		}
 
 		diff[key] = {
 			"size_diff": np.absolute(size_diff),
 			"pos_diff": np.linalg.norm(pos_diff, ord=2) / np.linalg.norm((CANVAS_WIDTH, CANVAS_HEIGHT)),
-			"neighbor_diff": (sum(neighbor_changed) + sum([np.absolute(x) for x in neighbor_dist_diff])) / 8
+			"neighbor_diff": (sum(neighbor_changed) + sum([np.absolute(x) for x in neighbor_dist_diff])) / 8,
+			"alt_group_diff": alt_group_diff
 		}
 
 	return diff
@@ -430,4 +447,3 @@ if __name__ == '__main__':
 		for i in range(len(trees)):
 			for j in range(i + 1, len(trees)):
 				diff = compute_diversity_score(trees[i], trees[j])
-				pprint(diff)
