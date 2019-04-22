@@ -86,6 +86,7 @@ class Shape(object):
 		if self.type == "leaf": 
 			size_domain = []
 			if self.at_root:
+
 				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS: 
 					is_sep = self.semantic_type in SEPARATOR_TARGETS
 					size_domain = sizes.compute_size_domain_change_width_only_root(self.importance, size_width, size_height,

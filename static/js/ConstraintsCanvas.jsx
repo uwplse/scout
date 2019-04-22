@@ -115,12 +115,17 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  checkSolutionValidityAndUpdateCache = () => {
+  checkSolutionValidityAndUpdateCache = (reason) => {
     // Update shapes cache in localStorage
     this.updateShapeCache(); 
 
     // Check validity of constraints
-    this.checkSolutionValidity();
+    let options = {}
+    if(reason) {
+      options.reason = reason; 
+    }
+
+    this.checkSolutionValidity(options); 
   }
 
   constructTreeFromCache = (treeData) => {  
@@ -173,10 +178,10 @@ export default class ConstraintsCanvas extends React.Component {
     }
   }
 
-  renderTreeAndCheckValidity = () => {
+  renderTreeAndCheckValidity = (reason) => {
     this.setState({
       treeData: this.state.treeData
-    }, this.checkSolutionValidityAndUpdateCache); 
+    }, this.checkSolutionValidityAndUpdateCache.bind(this, reason)); 
   }
 
   renderTreeCacheUpdate = () => {
@@ -239,6 +244,7 @@ export default class ConstraintsCanvas extends React.Component {
                 id={shapeId} 
                 source={src}
                 highlighted={highlighted}
+                invalidReasons={options.invalidReasons}
                 isContainer={true}
                 feedbackItems={feedback}
                 typingAlerts={typingAlerts}
@@ -265,6 +271,7 @@ export default class ConstraintsCanvas extends React.Component {
               feedbackItems={feedback}
               typingAlerts={typingAlerts}
               highlighted={highlighted}
+              invalidReasons={options.invalidReasons}
               displayRightClickMenu={this.displayRightClickMenu}
               displayWidgetFeedback={this.displayWidgetFeedback}
               getCurrentShapeSiblings={this.getCurrentShapeSiblings}
@@ -627,6 +634,28 @@ export default class ConstraintsCanvas extends React.Component {
         let index = treeNode.conflicts.indexOf(conflict); 
         if(index > -1) {
           treeNode.conflicts.splice(index, 1); 
+        }
+      }
+    }
+
+    this.setState({
+      treeData: this.state.treeData
+    });
+  }
+
+  highlightInvalidReason = (reason, highlighted) => {
+    let treeNode = this.widgetTreeNodeMap[reason.shapeID]; 
+    if(treeNode) {
+      if(!treeNode.invalid_reasons) {
+        treeNode.invalid_reasons = []; 
+      }
+
+      if(highlighted) {
+        treeNode.invalid_reasons.push(reason.reason); 
+      } else {
+        let index = treeNode.invalid_reasons.indexOf(reason.reason); 
+        if(index > -1) {
+          treeNode.invalid_reasons.splice(index, 1); 
         }
       }
     }
@@ -1638,6 +1667,7 @@ export default class ConstraintsCanvas extends React.Component {
         let widgetFeedbacks = this.getWidgetFeedbacks(item.shape, highlightedConflicts); 
         widgetOptions.feedback = widgetFeedbacks; 
         widgetOptions.hasNodes = hasNodes; 
+        widgetOptions.invalidReasons = item.invalid_reasons ? item.invalid_reasons : []; 
         let widget = this.getWidget(item.shape, widgetSource, widgetOptions); 
         if (item.children && item.children.length) {
           return <TreeNode key={item.key} icon={widget} title={""} disabled={item.disabled}>{gatherTreeNodes(item.children)}</TreeNode>;

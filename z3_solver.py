@@ -18,7 +18,7 @@ z3.set_param(
          'smt.random_seed', np.random.randint(0, 655350),
          'sat.phase', 'random',
          'sat.random_seed', np.random.randint(0, 655350))
-# logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 RANDOM_SEEDS=100000
 CANVAS_WIDTH = 360
@@ -166,6 +166,10 @@ class Solver(object):
 
 		sys.stdout.flush()
 
+
+		total = self.compute_search_space()
+		logging.debug("Size of search space: "  + str(total))
+
 		# For performance metrics
 		self.time_z3 = 0
 		self.z3_calls = 0
@@ -271,25 +275,51 @@ class Solver(object):
 		return shape_hierarchy
 
 	def prune_container_child_sizes(self, container):
-		"""Prune the number of sizes that we are going to iterate through in the size domains"""
-		size_factors = [set(child.variables.size_factor.domain) for child in container.children if child.type == 'leaf']
-		size_factors = list(set.intersection(*size_factors)) if len(size_factors) else size_factors
+		# Group children by semantic type 
+		groups = dict()
+		for child in container.children:
+			if child.semantic_type != "group" or child.is_alternate:
+				if child.semantic_type not in groups:
+					groups[child.semantic_type] = []
 
-		# Further reduce the size of the domain
-		if len(size_factors) > 0:
-			if len(size_factors) > DOMAIN_SIZE_REDUCTION:
-				num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
-				if num_to_select > 0:
-					size_factors = random.sample(size_factors, num_to_select)
+				groups[child.semantic_type].append(child)
 
-			for child in container.children:
-				if child.type == 'leaf':
-					size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
+		# Prune sizes based on grouped containers
+		for key,group_children in groups.items():
+			size_factors = [set(child.variables.size_factor.domain) for child in group_children if child.type == "leaf"]
+			size_factors = list(set.intersection(*size_factors)) if len(size_factors) else size_factors
 
-					child.variables.size_combo.domain = size_combos
-					child.variables.size_factor.domain = [val[2] for val in size_combos]
-					child.variables.width.domain = [val[0] for val in size_combos]
-					child.variables.height.domain = [val[1] for val in size_combos]
+			# Further reduce the size of the domain
+			if len(size_factors) > 0:
+				if len(size_factors) > DOMAIN_SIZE_REDUCTION:
+					num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
+					if num_to_select > 0:
+						size_factors = random.sample(size_factors, num_to_select)
+
+				for child in group_children:
+					if child.type == "leaf": 
+						size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
+
+						child.variables.size_combo.domain = size_combos
+						child.variables.size_factor.domain = [val[2] for val in size_combos]
+						child.variables.width.domain = [val[0] for val in size_combos]
+						child.variables.height.domain = [val[1] for val in size_combos]
+
+		# # Further reduce the size of the domain
+		# if len(size_factors) > 0:
+		# 	if len(size_factors) > DOMAIN_SIZE_REDUCTION:
+		# 		num_to_select = int(len(size_factors)/DOMAIN_SIZE_REDUCTION)
+		# 		if num_to_select > 0:
+		# 			size_factors = random.sample(size_factors, num_to_select)
+
+		# 	for child in container.children:
+		# 		if child.type == 'leaf':
+		# 			size_combos = [val for val in child.variables.size_combo.domain if val[2] in size_factors]
+
+		# 			child.variables.size_combo.domain = size_combos
+		# 			child.variables.size_factor.domain = [val[2] for val in size_combos]
+		# 			child.variables.width.domain = [val[0] for val in size_combos]
+		# 			child.variables.height.domain = [val[1] for val in size_combos]
 
 	def prune_repeat_group_child_sizes(self, container): 
 		# Get the first item in the repeat group 

@@ -104,6 +104,10 @@ export default class PageContainer extends React.Component {
     this.constraintsCanvasRef.current.highlightFeedbackConflict(conflict, highlighted);
   }
 
+  highlightInvalidReason = (reason, highlighted) => {
+    this.constraintsCanvasRef.current.highlightInvalidReason(reason, highlighted);
+  }
+
   highlightAddedWidget = (shapeId, highlighted) => {
     this.constraintsCanvasRef.current.highlightAddedWidget(shapeId, highlighted);
   }
@@ -120,6 +124,7 @@ export default class PageContainer extends React.Component {
               valid={solution.valid}
               new={solution.new}
               conflicts={solution.conflicts}
+              invalid_reasons={solution.invalid_reasons}
               added={solution.added}
               removed={solution.removed}
               zoomed={zoomed}
@@ -130,6 +135,7 @@ export default class PageContainer extends React.Component {
               svgWidgets={this.state.svgWidgets}
               highlightAddedWidget={this.highlightAddedWidget}
               highlightFeedbackConflict={this.highlightFeedbackConflict}
+              highlightInvalidReason={this.highlightInvalidReason}
               saveDesignCanvas={this.saveDesignCanvas} 
               trashDesignCanvas={this.trashDesignCanvas}
               zoomInOnDesignCanvas={this.zoomInOnDesignCanvas}
@@ -226,7 +232,10 @@ export default class PageContainer extends React.Component {
 
         $.post("/check", {"elements": jsonShapes, "solutions": prevSolutions}, (requestData) => {
           let requestParsed = JSON.parse(requestData); 
-          this.updateSolutionValidityFromRequest(requestParsed.solutions);
+
+          // The reason that the validity is being checked (for conflict highlighting)
+          let reason = options.reason;
+          this.updateSolutionValidityFromRequest(requestParsed.solutions, reason);
 
           if(options.callback) {
             options.callback();
@@ -240,7 +249,7 @@ export default class PageContainer extends React.Component {
     }
   }
 
-  updateSolutionValidityFromRequest = (solutions) => {
+  updateSolutionValidityFromRequest = (solutions, reason) => {
     // Update the state of each solution to display the updated valid/invalid state
     for(var i=0; i<solutions.length; i++) {
       let solution = solutions[i]; 
@@ -248,6 +257,10 @@ export default class PageContainer extends React.Component {
 
       // In case the design was already removed while the request was processing. 
       if(designSolution) {
+        designSolution.added = solution.added; 
+        designSolution.removed = solution.removed;
+        designSolution.conflicts = solution.conflicts; 
+      
         let elementsAddedOrRemoved = solution.added && solution.added.length || solution.removed && solution.removed.length; 
         let previousAddedOrRemoved = designSolution.added && designSolution.added.length || designSolution.removed && designSolution.removed.length; 
         if(elementsAddedOrRemoved && (elementsAddedOrRemoved != previousAddedOrRemoved)) {
@@ -258,10 +271,31 @@ export default class PageContainer extends React.Component {
           designSolution.invalidated = false;
         }    
 
-        designSolution.valid = solution.valid; 
-        designSolution.added = solution.added; 
-        designSolution.removed = solution.removed;
-        designSolution.conflicts = solution.conflicts; 
+
+        let prevValid = designSolution.valid; 
+        designSolution.valid = solution.valid;
+        if(!prevValid && designSolution.valid) {
+          delete designSolution.invalid_reasons; 
+        } 
+
+        if(!designSolution.valid && reason) {
+          if(reason.remove && designSolution.invalid_reasons.length) {
+            let index = designSolution.invalid_reasons.findIndex(item => item.reason == reason.reason 
+              && item.shapeID == reason.shapeID); 
+            if(index > -1) {
+              designSolution.invalid_reasons.splice(index, 1); 
+            }
+          }
+          else {
+            if(!designSolution.invalid_reasons) {
+              designSolution.invalid_reasons = []; 
+            }
+
+            if(designSolution.invalid_reasons.indexOf(reason) == -1) {
+              designSolution.invalid_reasons.push(reason); 
+            }
+          }
+        }
       }
     }
 
@@ -304,21 +338,29 @@ export default class PageContainer extends React.Component {
     let invalidSolutions = this.checkSolutionValidityClient(shape);
 
     if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
-      invalidSolutions = JSON.stringify(invalidSolutions);
-      let jsonShapes = this.getShapesJSON(); 
-      let callVariables = {
-        "elements": jsonShapes, 
-        "solutions": invalidSolutions, 
-        "changed_element_id": shape.name, 
-        "changed_property": property, 
-        "changed_value": value, 
-        "keep_or_prevent": keepOrPrevent
-      }; 
-
-      $.post("/reflow", callVariables, (requestData) => {
-        let requestParsed = JSON.parse(requestData); 
-        this.reflowSolutions(requestParsed.solutions);
+      let underConsideration = this.state.solutions.filter((solution) => {
+        return (solution.saved == 0 && (!solution.invalidated) && solution.valid && !solution.conflicts.length); 
       }); 
+
+      // Only request more designs if we have less than 50 designs under consideration
+      if(underConsideration.length < 50) {
+        console.log("reflwo"); 
+        invalidSolutions = JSON.stringify(invalidSolutions);
+        let jsonShapes = this.getShapesJSON(); 
+        let callVariables = {
+          "elements": jsonShapes, 
+          "solutions": invalidSolutions, 
+          "changed_element_id": shape.name, 
+          "changed_property": property, 
+          "changed_value": value, 
+          "keep_or_prevent": keepOrPrevent
+        }; 
+
+        $.post("/reflow", callVariables, (requestData) => {
+          let requestParsed = JSON.parse(requestData); 
+          this.reflowSolutions(requestParsed.solutions);
+        }); 
+      }
     }
   }
 

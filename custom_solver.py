@@ -9,6 +9,7 @@ import solution as sln
 import solver_helpers as sh
 
 NUM_SOLUTIONS = 10
+TIMEOUT = 10 
 
 class CustomSolver(object):
 	def __init__(self, elements, previous_solutions, relative_designs=""): 
@@ -207,16 +208,24 @@ class CustomSolver(object):
 			p.start()
 			i += 1
 
-		logging.debug("Number of processes: " + str(len(jobs)))
-		for proc in jobs:
-			print("End after 30s timeout.")
-			proc.join(30)
 
-		for proc in jobs: 
-			if proc.is_alive(): 
-				# If the thread times out afto 30 seconds, terminate it. 
-				print("Solving process timed out")
-				proc.terminate()
+		start = time.time()
+		timed_out = True 
+		while time.time() - start <= TIMEOUT: 
+			if any(proc.is_alive() for proc in jobs): 
+				time.sleep(.1)
+			else: 
+				timed_out = False
+				break 
+
+		if timed_out: 
+			for proc in jobs:
+				if proc.is_alive():  
+					print("Terminating solver process after timeout.")
+					proc.terminate()
+					proc.join()
+		else: 
+			print("All solver threads completed before timeout.")
 
 		slns = results.values()
 		slns = [sln for sln in slns if sln is not None]

@@ -53,6 +53,7 @@ def process_element_tree(node):
 				children.append(c)
 		node["children"] = children
 
+	# add id for each node
 	if node["type"] in ["canvas", "group"]:
 		for c in node["children"]:
 			process_element_tree(c)
@@ -398,7 +399,6 @@ def compute_diversity_score(t1, t2):
 	# annotate the element tree with essential information
 	process_element_tree(t1)
 	process_element_tree(t2)
-
 	match_separators(t1, t2)
 
 	groups_1, leaves_1 = extract_groups_and_leaves(t1)
@@ -443,7 +443,8 @@ def compute_diversity_score(t1, t2):
 								  neighbor_dist_diff[2] / float(CANVAS_HEIGHT), 
 								  neighbor_dist_diff[3] / float(CANVAS_HEIGHT)]
 			alt_group_diff = 0
-			if l1[key]['alternate'] and l2[key]['alternate']:
+			if ('alternate' in l1[key] and l1[key]['alternate'] 
+				 and 'alternate' in l2[key] and l2[key]['alternate']):
 				if l1[key]['alternate'] != l2[key]['alternate']:
 					alt_group_diff = 1
 		else:
@@ -458,15 +459,13 @@ def compute_diversity_score(t1, t2):
 			"pos_diff": pos_diff,
 			"size_diff": size_diff,
 			"neighbor_changed": neighbor_changed,
-			"neighbor_dist_diff": neighbor_dist_diff,
-			"alt_group_diff": alt_group_diff
+			"neighbor_dist_diff": neighbor_dist_diff
 		}
 
 		diff[key] = {
 			"size_diff": np.absolute(size_diff),
 			"pos_diff": np.linalg.norm(pos_diff, ord=2) / np.linalg.norm((CANVAS_WIDTH, CANVAS_HEIGHT)),
-			"neighbor_diff": (sum(neighbor_changed) + sum([np.absolute(x) for x in neighbor_dist_diff])) / 8,
-			"alt_group_diff": alt_group_diff
+			"neighbor_diff": (sum(neighbor_changed) + sum([np.absolute(x) for x in neighbor_dist_diff])) / 8
 		}
 
 	score = sum([sum([diff[key][stype] for stype in diff[key]]) for key in diff]) / len(diff)
@@ -476,10 +475,7 @@ def compute_diversity_score(t1, t2):
 
 from pprint import pprint
 if __name__ == '__main__':
-	if len(sys.argv) < 2:
-		saved_path = "saved_2.json"
-	else:
-		saved_path = sys.argv[1]
+	saved_path = sys.argv[1]
 	with open(saved_path, "r") as f:
 		scout_exports = json.load(f)
 		trees = [t["elements"] for t in scout_exports["saved"]]
