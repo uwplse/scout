@@ -118,20 +118,13 @@ class Solver(object):
 		self.root = self.root[0]
 		self.invalid_solutions = 0
 
-		self.variables = self.init_variables()
-
-		# For debugging how large the search space is
-		size = self.compute_search_space()
-		logging.debug("Total search space size: " + str(size))
-		sys.stdout.flush()
-		start_time = time.time()
-
 		if prune_domains: 
 			self.prune_layout_grid_domains()
 			self.prune_size_domains()
 
 		self.output_variables = self.init_output_variables()
 		self.variables_different = Int('VariablesDifferent')
+
 
 		self.override_solver = OverrideSolver(self.solver)
 		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
@@ -143,6 +136,9 @@ class Solver(object):
 		self.init_constraints()
 		time_end = time.time()
 		logging.debug("Time to create constraints (init_constraints): " + str(time_end-time_start))
+
+		# Initialize variables
+		self.variables = self.init_variables()
 
 		# Intialize the locked constraints (Keep/Prevent values)
 		start_time = time.time()
@@ -381,11 +377,6 @@ class Solver(object):
 				right_column = shape.variables.right_column
 				right_column_pruned = [val for val in right_column.domain if val <= max_cols]
 				right_column.domain = right_column_pruned
-
-		# For debugging how large the search space isd
-		size = self.compute_search_space()
-		logging.debug("Total search space size after pruning the domains: " + str(size))
-		sys.stdout.flush()
 
 	def init_variables(self):
 		last = []

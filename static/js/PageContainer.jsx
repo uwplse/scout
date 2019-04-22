@@ -303,23 +303,23 @@ export default class PageContainer extends React.Component {
     // This means that we do not need to make a request to the solver to check them 
     let invalidSolutions = this.checkSolutionValidityClient(shape);
 
-    // if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
-    //   invalidSolutions = JSON.stringify(invalidSolutions);
-    //   let jsonShapes = this.getShapesJSON(); 
-    //   let callVariables = {
-    //     "elements": jsonShapes, 
-    //     "solutions": invalidSolutions, 
-    //     "changed_element_id": shape.name, 
-    //     "changed_property": property, 
-    //     "changed_value": value, 
-    //     "keep_or_prevent": keepOrPrevent
-    //   }; 
+    if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
+      invalidSolutions = JSON.stringify(invalidSolutions);
+      let jsonShapes = this.getShapesJSON(); 
+      let callVariables = {
+        "elements": jsonShapes, 
+        "solutions": invalidSolutions, 
+        "changed_element_id": shape.name, 
+        "changed_property": property, 
+        "changed_value": value, 
+        "keep_or_prevent": keepOrPrevent
+      }; 
 
-    //   $.post("/reflow", callVariables, (requestData) => {
-    //     let requestParsed = JSON.parse(requestData); 
-    //     this.reflowSolutions(requestParsed.solutions);
-    //   }); 
-    // }
+      $.post("/reflow", callVariables, (requestData) => {
+        let requestParsed = JSON.parse(requestData); 
+        this.reflowSolutions(requestParsed.solutions);
+      }); 
+    }
   }
 
   getElementFromTree = (shape, element_tree) => {
@@ -659,19 +659,18 @@ export default class PageContainer extends React.Component {
   }
 
   clearWidgetsContainer = () => {
-    for(let i=0; i<this.state.svgWidgets.length; i++) {
+    /*for(let i=0; i<this.state.svgWidgets.length; i++) {
       // Mark widgets that we are removing as false
       // When designs are later cleared, we can completely remove them once the 
       // Designs using them are no longer there. 
       this.state.svgWidgets[i].visible = false; 
-    }
+    }*/
 
     // Update the local storage cache
-    let widgets = JSON.stringify(this.state.svgWidgets);
-    localStorage.setItem('svgWidgets', widgets); 
+    localStorage.removeItem('svgWidgets'); 
 
     this.setState({
-      svgWidgets: this.state.svgWidgets
+      svgWidgets: []
     });
   }
 
@@ -880,12 +879,12 @@ export default class PageContainer extends React.Component {
                     <button type="button" className="btn btn-default design-canvas-button" 
                       onClick={this.clearAllDesigns}>Clear All Ideas</button>
                   </div>*/}
-                  {this.state.activeDesignPanel == "saved" ? (<div 
+                  <div 
                     className="btn-group header-button-group">
                     <button type="button" 
                       onClick={this.exportSavedDesigns}
                       className="btn btn-default design-canvas-button">Export Saved Ideas</button>
-                  </div>) : null}
+                  </div>
                 </div>
               </div>  
               {(!this.state.solutionsFound ? (

@@ -107,10 +107,10 @@ class WidgetsContainer extends React.Component {
             onDragOver={this.onDragOver}
             onDragLeave={this.onDragLeave}
             onDrop={this.onDrop}>         
-           {hasVisibleWidgets ? 
-              widgets : 
-              (<form 
-                className={"box has-advanced-upload " + (this.state.hovered ? "hovered" : "")} 
+              {widgets} 
+              <form 
+                className={"box has-advanced-upload " + (this.state.hovered ? "hovered " : " ") 
+                + (widgets.length ? "widgets-loaded" : "")} 
                 method="post" 
                 action="" 
                 encType="multipart/form-data">
@@ -123,7 +123,7 @@ class WidgetsContainer extends React.Component {
                 <div className="box__uploading">Uploading&hellip;</div>
                 <div className="box__success">Done!</div>
                 <div className="box__error">Error! <span></span>.</div>
-              </form>)}
+              </form>
           </div>
         </div>
       )

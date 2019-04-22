@@ -60,8 +60,7 @@ ConstraintActions.grid_layout_values = ConstraintActions.computeGridLayoutValues
 
 
 // Element specific domains
-ConstraintActions.left_columns = [1,2,3,4,5,6,7,8,9,10,11,12]; 
-ConstraintActions.right_columns = [1,2,3,4,5,6,7,8,9,10,11,12]; 
+ConstraintActions.column_values = [1,2,3,4,5,6,7,8,9,10,11,12]; 
 
 ConstraintActions.y_positions = [...Array(ConstraintActions.canvas_height).keys()].filter((value) => {
 	return ((value % 4) == 0); 
@@ -367,15 +366,52 @@ ConstraintActions.elementConstraints = {
 	}
 }
 
+ConstraintActions.computeColumnValues = function (shape, canvas) {
+	let potentialValues = ConstraintActions.column_values; 
+	if(canvas.locks && canvas.locks.length) {
+		if(canvas.locks.indexOf("columns") > -1) {
+			let columnValues = canvas.locked_values["columns"]; 
+			let largest = Math.max(columnValues); 
+			potentialValues = ConstraintActions.column_values.filter((value) => value <= largest); 
+		}
+	}
+	return potentialValues; 
+}
+
+ConstraintActions.computeYValues = function (shape, canvas) {
+	let potentialValues = ConstraintActions.y_positions; 
+	if(canvas.locks && canvas.locks.length) {
+		if(canvas.locks.indexOf("baseline_grid") > -1) {
+			let bgValues = canvas.locked_values["baseline_grid"]; 
+			let valid = false; 
+			potentialValues = potentialValues.filter(function(value) {
+				for(let i=0; i<bgValues.length; i++) {
+					if(value % bgValues[i] == 0) {
+						return true; 
+					}
+				}
+				return false; 
+			}); 
+		}
+	}
+	return potentialValues; 
+}
+
 // These actions will only appear for direct children of the canvas container
 ConstraintActions.canvasChildConstraints = {
 	"values": ["left_column", "right_column", "y", "canvas_alignment"],
 	"keep": ConstraintActions.defaultKeep, 
 	"prevent": ConstraintActions.defaultPrevent, 
 	"domains": {
-		"left_column": ConstraintActions.left_columns, 
-		"right_column": ConstraintActions.right_columns, 
-		"y": ConstraintActions.y_positions, 
+		"left_column": function(shape, canvas) {
+			return ConstraintActions.computeColumnValues(shape, canvas); 
+		}, 
+		"right_column": function(shape, canvas) {
+			return ConstraintActions.computeColumnValues(shape, canvas); 
+		}, 
+		"y": function(shape, canvas) {
+			return ConstraintActions.computeYValues(shape, canvas); 
+		}, 
 		"canvas_alignment": ConstraintActions.canvasAlignments
 	}
 }
