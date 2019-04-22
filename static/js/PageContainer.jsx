@@ -338,21 +338,29 @@ export default class PageContainer extends React.Component {
     let invalidSolutions = this.checkSolutionValidityClient(shape);
 
     if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
-      invalidSolutions = JSON.stringify(invalidSolutions);
-      let jsonShapes = this.getShapesJSON(); 
-      let callVariables = {
-        "elements": jsonShapes, 
-        "solutions": invalidSolutions, 
-        "changed_element_id": shape.name, 
-        "changed_property": property, 
-        "changed_value": value, 
-        "keep_or_prevent": keepOrPrevent
-      }; 
-
-      $.post("/reflow", callVariables, (requestData) => {
-        let requestParsed = JSON.parse(requestData); 
-        this.reflowSolutions(requestParsed.solutions);
+      let underConsideration = this.state.solutions.filter((solution) => {
+        return (solution.saved == 0 && (!solution.invalidated) && solution.valid && !solution.conflicts.length); 
       }); 
+
+      // Only request more designs if we have less than 50 designs under consideration
+      if(underConsideration.length < 50) {
+        console.log("reflwo"); 
+        invalidSolutions = JSON.stringify(invalidSolutions);
+        let jsonShapes = this.getShapesJSON(); 
+        let callVariables = {
+          "elements": jsonShapes, 
+          "solutions": invalidSolutions, 
+          "changed_element_id": shape.name, 
+          "changed_property": property, 
+          "changed_value": value, 
+          "keep_or_prevent": keepOrPrevent
+        }; 
+
+        $.post("/reflow", callVariables, (requestData) => {
+          let requestParsed = JSON.parse(requestData); 
+          this.reflowSolutions(requestParsed.solutions);
+        }); 
+      }
     }
   }
 
