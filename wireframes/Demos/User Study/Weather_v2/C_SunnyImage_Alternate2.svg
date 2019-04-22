@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="82" height="82" viewBox="0 0 82 82">
+  <g id="C_SunnyImage_Alternate2" transform="translate(-137.051 -343.5)">
+    <g id="Group_18" data-name="Group 18" transform="translate(148.362 344.5)">
+      <ellipse id="Ellipse_1" data-name="Ellipse 1" cx="23.147" cy="23.061" rx="23.147" ry="23.061" transform="translate(11.65 11.842)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_1" data-name="Line 1" y1="7.028" transform="translate(34.781)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_2" data-name="Line 2" x1="4.91" y1="5.007" transform="translate(7.702 7.702)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_3" data-name="Line 3" x1="4.91" y2="4.91" transform="translate(7.702 57.098)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_4" data-name="Line 4" x2="4.91" y2="4.91" transform="translate(57.077 57.098)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_5" data-name="Line 5" y1="5.007" x2="4.91" transform="translate(57.077 7.702)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_6" data-name="Line 6" x1="6.932" transform="translate(0 34.919)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_7" data-name="Line 7" y2="6.932" transform="translate(34.781 62.779)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+      <line id="Line_8" data-name="Line 8" x2="6.932" transform="translate(62.757 34.919)" fill="none" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+    </g>
+    <path id="Path_32" data-name="Path 32" d="M459.09,42.211a12.463,12.463,0,0,1-12.469,12.483H392a12.815,12.815,0,0,1,0-25.63h.552A12.715,12.715,0,0,1,404.8,20.006a13.772,13.772,0,0,1,6.4,1.657,15.869,15.869,0,0,1,30.676,5.855,15.017,15.017,0,0,1-.331,3.2,13,13,0,0,1,5.076-.994A12.393,12.393,0,0,1,459.09,42.211Z" transform="translate(-241.149 369.805)" fill="#fff" stroke="#58595b" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
+  </g>
+</svg>
