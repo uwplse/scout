@@ -421,7 +421,10 @@ def compute_diversity_score(t1, t2):
 
 from pprint import pprint
 if __name__ == '__main__':
-	saved_path = sys.argv[1]
+	if len(sys.argv) < 2:
+		saved_path = "saved_2.json"
+	else:
+		saved_path = sys.argv[1]
 	with open(saved_path, "r") as f:
 		scout_exports = json.load(f)
 		trees = [t["elements"] for t in scout_exports["saved"]]
