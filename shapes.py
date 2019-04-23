@@ -40,17 +40,42 @@ class Shape(object):
 		self.orig_height = element["orig_height"]
 
 		if "locks" in element:
-			self.locks = element["locks"]
+			locks = []
+			for lock in element["locks"]: 
+				if "size" in element["locks"]: 
+					locks.append("width")
+					locks.append("height")
+				else: 
+					locks.append(lock)
+			self.locks = locks
 			
 			# values for locked variables
 			for lock in self.locks:
-				self.keep_values[lock] = element["locked_values"][lock]
+				if lock == "width": 
+					self.keep_values["width"] = [size[0] for size in element["locked_values"]["size"]]
+				elif lock == "height": 
+					self.keep_values["height"] = [size[1] for size in element["locked_values"]["size"]]
+				else: 
+					self.keep_values[lock] = element["locked_values"][lock]
 
 		if "prevents" in element: 
-			self.prevents = element["prevents"]
-
-			for prev in self.prevents: 
-				self.prevent_values[prev] = element["prevented_values"][prev]
+			prevents = []
+			for prevent in element["prevents"]: 
+				if "size" in element["prevents"]: 
+					prevents.append("width")
+					prevents.append("height")
+				else: 
+					prevents.append(prevent)
+			self.prevents = prevents
+			
+			# values for locked variables
+			for prevent in self.prevents:
+				if prevent == "width": 
+					self.prevent_values["width"] = [size[0] for size in element["prevented_values"]["size"]]
+				elif prevent == "height": 
+					self.prevent_values["height"] = [size[1] for size in element["prevented_values"]["size"]]
+				else: 
+					self.prevent_values[prevent] = element["prevented_values"][prevent]
 
 		if "baseline" in element: 
 			self.has_baseline = True

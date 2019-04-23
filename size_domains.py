@@ -3,8 +3,8 @@ import random
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
 CANVAS_ALIGNMENT = ["left", "center", "right", "other"]
-MAX_WIDTH = 356 # Largest while subtracting the smallest amount of padding
-MAX_HEIGHT = 636 # Largest while subtracting the smallest amount of padding
+MAX_WIDTH = 360 # Largest while subtracting the smallest amount of padding
+MAX_HEIGHT = 640 # Largest while subtracting the smallest amount of padding
 MIN_WIDTH = 48 # sort of arbitrary now, but could 
 MIN_HEIGHT = 12
 MIN_WIDTH_TOUCH_TARGET = 120
@@ -86,10 +86,12 @@ def baseline_grid_consistent_with_locks(baseline_grid, element, at_root=False):
 	# Check if the baseline grid is consistent with the locks on the element
 	if "locks" in element: 
 		for lock in element["locks"]: 
-			if lock == "height":
+			if lock == "size":
+				print(element["locked_values"]["size"])
 				# Consistency of the height values with the baseline grid value 
-				height = element["locked_values"]["height"]
-				for height_val in height: 
+				size = element["locked_values"]["size"]
+				for size_val in size: 
+					height_val = size_val[1]
 					if height_val % baseline_grid != 0: 
 						return False	
 
@@ -108,11 +110,14 @@ def is_consistent_with_locks(layout_grid, element, at_root=False):
 	# Check if the layout grid combination is consistent with the locks on the element
 	if "locks" in element: 
 		for lock in element["locks"]: 
-			if lock == "width" and at_root:
+			if lock == "size" and at_root:
 				# Consistency of the width values with the margins 
-				width_values = element["locked_values"]["width"]
+				size_values = element["locked_values"]["size"]
 				cons = False
-				for width_value in width_values: 
+				width_values = []
+				for size_value in size_values: 
+					width_value = size_value[0]
+					width_values.append(width_value)
 					if width_value <= (CANVAS_WIDTH  -  margin * 2): 
 						cons = True
 
