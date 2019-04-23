@@ -69,7 +69,7 @@ export default class DesignCanvas extends React.Component {
 
   static getScale(zoomed, saved, invalidated, activePanel) {
     if(zoomed) {
-      return 1.5; 
+      return 2.0; 
     }
 
     if(saved == 1 && activePanel == "saved") {
@@ -264,7 +264,7 @@ export default class DesignCanvas extends React.Component {
           this.highlightAddedWidget(addedID, false); 
         }
       }
-      
+
       if(this.props.invalid_reasons && this.props.invalid_reasons.length) {
         let first_reason = this.props.invalid_reasons[0]; 
         this.highlightInvalidReason(first_reason, false); 

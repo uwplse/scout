@@ -257,20 +257,20 @@ export default class PageContainer extends React.Component {
 
       // In case the design was already removed while the request was processing. 
       if(designSolution) {
-        designSolution.added = solution.added; 
-        designSolution.removed = solution.removed;
-        designSolution.conflicts = solution.conflicts; 
-      
         let elementsAddedOrRemoved = solution.added && solution.added.length || solution.removed && solution.removed.length; 
         let previousAddedOrRemoved = designSolution.added && designSolution.added.length || designSolution.removed && designSolution.removed.length; 
         if(elementsAddedOrRemoved && (elementsAddedOrRemoved != previousAddedOrRemoved)) {
           designSolution.invalidated = true; 
         }
 
+        designSolution.added = solution.added; 
+        designSolution.removed = solution.removed;
+        designSolution.conflicts = solution.conflicts; 
+      
+
         if(designSolution.valid && !solutions.conflicts && !elementsAddedOrRemoved) {
           designSolution.invalidated = false;
         }    
-
 
         let prevValid = designSolution.valid; 
         designSolution.valid = solution.valid;
@@ -279,11 +279,13 @@ export default class PageContainer extends React.Component {
         } 
 
         if(!designSolution.valid && reason) {
-          if(reason.remove && designSolution.invalid_reasons.length) {
-            let index = designSolution.invalid_reasons.findIndex(item => item.reason == reason.reason 
-              && item.shapeID == reason.shapeID); 
-            if(index > -1) {
-              designSolution.invalid_reasons.splice(index, 1); 
+          if(reason.remove) {
+            if(designSolution.invalid_reasons && designSolution.invalid_reasons.length) {
+              let index = designSolution.invalid_reasons.findIndex(item => item.reason == reason.reason 
+                && item.shapeID == reason.shapeID); 
+              if(index > -1) {
+                designSolution.invalid_reasons.splice(index, 1); 
+              }
             }
           }
           else {
@@ -337,31 +339,31 @@ export default class PageContainer extends React.Component {
     // This means that we do not need to make a request to the solver to check them 
     let invalidSolutions = this.checkSolutionValidityClient(shape);
 
-    if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
-      let underConsideration = this.state.solutions.filter((solution) => {
-        return (solution.saved == 0 && (!solution.invalidated) && solution.valid && !solution.conflicts.length); 
-      }); 
+    // if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
+    //   let underConsideration = this.state.solutions.filter((solution) => {
+    //     return (solution.saved == 0 && (!solution.invalidated) && solution.valid && !solution.conflicts.length); 
+    //   }); 
 
-      // Only request more designs if we have less than 50 designs under consideration
-      if(underConsideration.length < 50) {
-        console.log("reflwo"); 
-        invalidSolutions = JSON.stringify(invalidSolutions);
-        let jsonShapes = this.getShapesJSON(); 
-        let callVariables = {
-          "elements": jsonShapes, 
-          "solutions": invalidSolutions, 
-          "changed_element_id": shape.name, 
-          "changed_property": property, 
-          "changed_value": value, 
-          "keep_or_prevent": keepOrPrevent
-        }; 
+    //   // Only request more designs if we have less than 50 designs under consideration
+    //   if(underConsideration.length < 50) {
+    //     console.log("reflwo"); 
+    //     invalidSolutions = JSON.stringify(invalidSolutions);
+    //     let jsonShapes = this.getShapesJSON(); 
+    //     let callVariables = {
+    //       "elements": jsonShapes, 
+    //       "solutions": invalidSolutions, 
+    //       "changed_element_id": shape.name, 
+    //       "changed_property": property, 
+    //       "changed_value": value, 
+    //       "keep_or_prevent": keepOrPrevent
+    //     }; 
 
-        $.post("/reflow", callVariables, (requestData) => {
-          let requestParsed = JSON.parse(requestData); 
-          this.reflowSolutions(requestParsed.solutions);
-        }); 
-      }
-    }
+    //     $.post("/reflow", callVariables, (requestData) => {
+    //       let requestParsed = JSON.parse(requestData); 
+    //       this.reflowSolutions(requestParsed.solutions);
+    //     }); 
+    //   }
+    // }
   }
 
   getElementFromTree = (shape, element_tree) => {
@@ -395,8 +397,15 @@ export default class PageContainer extends React.Component {
             let elementValue = element[lock];
             let lockedValues = shape["locked_values"][lock]; 
             if(lockedValues && lockedValues.length) {
-              let elementValueKept = lockedValues.indexOf(elementValue) > -1; 
-              if(!elementValueKept) {
+              let elementValueKeptIndex = lockedValues.findIndex((elt) => {
+                if(Array.isArray(elt)) {
+                  return JSON.stringify(elt)==JSON.stringify(elementValue);
+                }
+
+                return elt == elementValue; 
+              });
+
+              if(elementValueKeptIndex == -1) {
                 keepConflicts.push({
                   type: "lock",
                   shapeID: shape.name, 
@@ -415,8 +424,15 @@ export default class PageContainer extends React.Component {
             let elementValue = element[prevent];
             let preventedValues = shape["prevented_values"][prevent]; 
             if(preventedValues && preventedValues.length) {
-              let elementValuePrevented = preventedValues.indexOf(elementValue) > -1; 
-              if(elementValuePrevented) {
+              let elementValuePreventedIndex = preventedValues.findIndex((elt) => {
+                if(Array.isArray(elt)) {
+                  return JSON.stringify(elt)==JSON.stringify(elementValue);
+                }
+
+                return elt == elementValue; 
+              });
+
+              if(elementValuePreventedIndex > -1) {
                 preventConflicts.push({
                   type: "prevent",
                   shapeID: shape.name, 

@@ -205,12 +205,41 @@ class FeedbackItem extends React.Component {
     return value;
   }
 
+  getLabelValue = (label) => {
+    if(label != "Vary" && this.state.property == "size") {
+      return label[0] + "x" + label[1]; 
+    }
+
+    return this.toUpperCase(label);
+  }
+
   getSelectedValue = (value) => {
     if(value != "Vary" && ConstraintActions.index_domains.indexOf(this.state.property) > -1) {
       return this.state.action.domain[value]; 
     }
 
+    if(value != "Vary" && this.state.property == "size") {
+      return value[0] + "x" + value[1]; 
+    }
+
     return value;
+  }
+
+  preventDisabled = () => {
+    if(this.state.selected == "Vary") {
+      return true; 
+    }
+
+    // Size, Position properties can only be kept/prevented 
+    // when activated from design shape. 
+    // There will be only one value in the feedback item, which can be kept or prevented. 
+    // Therefore we wont' disable it when there is only one value. 
+    if(this.state.property == "size" || this.state.property == "x" || this.state.property == "y") {
+      return false;
+    }
+
+    // The domain only has one value, so we should not prevent it
+    return this.state.action.domain.length == 1; 
   }
 
   render () {
@@ -221,9 +250,9 @@ class FeedbackItem extends React.Component {
     let label = locked ? "" : "Vary"; 
     let propertyLabel = this.getPropertyLabel(); 
     let lockDisabled = this.state.selected == "Vary"; 
-    let preventDisabled = this.state.selected == "Vary" || domain.length == 1; // If there is only one potential value left in the domain, do not allow preventing that value. 
+    let preventDisabled = this.preventDisabled(); // If there is only one potential value left in the domain, do not allow preventing that value. 
     let menuItems = domain.map((key) => {
-                    let labelValue = this.toUpperCase(key); 
+                    let labelValue = this.getLabelValue(key);  
                     let domainValue = this.getDomainValue(key);
                     return (<Dropdown.Item onClick={this.onSelected.bind(this, domainValue)}>{labelValue}</Dropdown.Item>);
                   }); 
@@ -232,8 +261,10 @@ class FeedbackItem extends React.Component {
     
     // Lock -> 
     return (<div className="feedback-container-toggle">
-              {(this.props.or ? <label className="feedback-container-or-label feedback-container-label">OR</label> : 
-                <label className="feedback-container-label">{propertyLabel}</label>)}
+              {(this.props.or ? 
+                (<label className="feedback-container-or-label feedback-container-label">OR</label>) :
+                (this.props.and ? (<label className="feedback-container-or-label feedback-container-label">AND</label>) : 
+                <label className="feedback-container-label">{propertyLabel}</label>))}
               <Dropdown>
                 <Dropdown.Toggle disabled={(locked || prevented)} id="dropdown-basic">
                   {this.toUpperCase(selectedLabel)}
@@ -430,6 +461,10 @@ export default class FeedbackContainer extends React.Component {
 
   static getDesignSelected(shape, property) {
     let value = shape[property]; 
+    if(property == "size") {
+      value = [shape["width"], shape["height"]]; 
+    }
+
     if(value != undefined) {
       return value; 
     }
@@ -455,8 +490,18 @@ export default class FeedbackContainer extends React.Component {
       if(lockedIndex > -1) {
         let lockedValues = canvasShape["locked_values"][key]; 
 
-        if(useDesignShape && lockedValues.indexOf(selectedValue) > -1) {
-          addVaryOption = false;
+        if(useDesignShape) {
+          let valueIndex = lockedValues.findIndex((val) => {
+            if(Array.isArray(selectedValue)) {
+              return JSON.stringify(val)==JSON.stringify(selectedValue);
+            }
+
+            return val == selectedValue; 
+          });
+
+          if(valueIndex > -1) {
+            addVaryOption = false;
+          }
         }
 
         for(let k=0; k<lockedValues.length; k++) {
@@ -482,16 +527,25 @@ export default class FeedbackContainer extends React.Component {
       let preventedIndex = canvasShape.prevents.indexOf(key); 
       if(preventedIndex > -1) {
         let preventedValues = canvasShape["prevented_values"][key]; 
+        if(useDesignShape) {
+          let valueIndex = preventedValues.findIndex((val) => {
+            if(Array.isArray(selectedValue)) {
+              return JSON.stringify(val)==JSON.stringify(selectedValue);
+            }
 
-        if(useDesignShape && preventedValues.indexOf(selectedValue) > -1) {
-          addVaryOption = false;
+            return val == selectedValue; 
+          });
+
+          if(valueIndex > -1) {
+            addVaryOption = false;
+          }
         }
 
         for(let k=0; k<preventedValues.length; k++) {
-          let or = false;
+          let and = false;
           hasLockOrPrevent = true;
           if(k > 0) {
-            or = true;
+            and = true;
           }
 
           let value = preventedValues[k]; 
@@ -500,7 +554,7 @@ export default class FeedbackContainer extends React.Component {
             key: key, 
             selectedValue: value, 
             linkedShapes: linkedShapes, 
-            or: or                                 
+            and: and                                 
           };                                              
 
           feedbackItems.push(feedbackItem); 
@@ -563,6 +617,20 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems;
   }
 
+  static addFeedbackItem(canvasChild, item, designShape) {
+    if((item.key == "x" || item.key == "y") && canvasChild) {
+      return false; 
+    }
+
+    if(!designShape) {
+      if(item.key == "size" || item.key == "x" || item.key == "y") {
+        return false; 
+      }    
+    }
+
+    return true; 
+  }
+
   static getElementFeedbackItems(canvasShape, designShape, callbacks) {
     let feedbackItems = []; 
 
@@ -575,10 +643,9 @@ export default class FeedbackContainer extends React.Component {
         for(let i=0; i<ConstraintActions.elementConstraints.values.length; i++) {
           let key = ConstraintActions.elementConstraints.values[i]; 
           let items = FeedbackContainer.getFeedbackItemsFromShape(canvasShape, designShape, key);
-
           for(let j=0; j<items.length; j++) {
             let item = items[j]; 
-            let pushItem = (item.key == "x" || item.key == "y") && isCanvasChild ? false : true; 
+            let pushItem = FeedbackContainer.addFeedbackItem(isCanvasChild, item, designShape); 
             if(pushItem) {
               feedbackItems.push(item); 
             }
@@ -644,7 +711,7 @@ export default class FeedbackContainer extends React.Component {
     return feedbackItems; 
   }
 
-  getFeedbackItem = (id, key, value, action, or, linkedShapes=[]) => {    
+  getFeedbackItem = (id, key, value, action, or, and, linkedShapes=[]) => {    
     let itemKey = _.uniqueId();  
     let canvasShape = this.state.activeCanvasShape ? this.state.activeCanvasShape : this.state.primarySelection; 
     let designShape = this.state.activeCanvasShape ? this.state.primarySelection : undefined;    
@@ -661,6 +728,7 @@ export default class FeedbackContainer extends React.Component {
               selected={value}
               id={id}
               or={or}
+              and={and}
               key={itemKey} />;  
   }
 
@@ -720,7 +788,7 @@ export default class FeedbackContainer extends React.Component {
         action.domain = action.domain(canvasShape); 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or, item.and); 
 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
@@ -736,7 +804,7 @@ export default class FeedbackContainer extends React.Component {
         action.domain = action.domain(canvasShape); 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or, item.linkedShapes); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or, item.and, item.linkedShapes); 
 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
@@ -753,7 +821,7 @@ export default class FeedbackContainer extends React.Component {
         action.domain = action.domain(canvasShape, canvas); 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or, item.and); 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
     }) : undefined; 
@@ -763,22 +831,21 @@ export default class FeedbackContainer extends React.Component {
       action.keep = ConstraintActions.elementConstraints['keep']; 
       action.prevent = ConstraintActions.elementConstraints['prevent'];
 
-      if(item.key == "height" || item.key == "width") {
-        action.domain = ConstraintActions.elementConstraints.domains["size"](canvasShape)[item.key]; 
-      }
-      else {
-        // For X, Y, if activated by a design shape, the computed value should be in the dropdown
-        // Otherwise, only show the "Vary" as it doesn't make sense to give htem 
-        // A selction for absolute x,y from the canvas node. 
-        if(designShape) {
+      // For X, Y, if activated by a design shape, the computed value should be in the dropdown
+      // Otherwise, only show the "Vary" as it doesn't make sense to give htem 
+      // A selction for absolute x,y from the canvas node. 
+      if(designShape) {
+        if(item.key == "size") {
+          action.domain = [[designShape["width"], designShape["height"]]]; 
+        } else {
           action.domain = [designShape[item.key]]; 
         }
-        else {
-          action.domain = []; 
-        }
+      }
+      else {
+        action.domain = []; 
       }
 
-      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or); 
+      let fbItem = this.getFeedbackItem(item.id, item.key, item.selectedValue, action, item.or, item.and); 
       this.state.feedbackItemMap[item.id] = item; 
       return fbItem; 
     }) : undefined; 
