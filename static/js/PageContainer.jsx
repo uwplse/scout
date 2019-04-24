@@ -337,17 +337,21 @@ export default class PageContainer extends React.Component {
 
     // Only check the validity of the lock and prevent values on the solutions
     // This means that we do not need to make a request to the solver to check them 
-    let invalidSolutions = this.checkSolutionValidityClient(shape);
+    this.checkSolutionValidityClient(shape);
 
     if(keepOrPrevent == "keep" || keepOrPrevent == "prevent") {
       let underConsideration = this.state.solutions.filter((solution) => {
-        return (solution.saved == 0 && (!solution.invalidated) && solution.valid && !solution.conflicts.length); 
+        return ((!solution.invalidated) && solution.valid && !solution.conflicts.length); 
+      }); 
+
+      let toRepair = this.state.solutions.filter((solution) => {
+        return (!solution.invalidated && solution.conflicts.length && !(solution.saved == 1)); 
       }); 
 
       // Only request more designs if we have less than 50 designs under consideration
       if(underConsideration.length < 50) {
         console.log("reflwo"); 
-        invalidSolutions = JSON.stringify(invalidSolutions);
+        let invalidSolutions = JSON.stringify(toRepair);
         let jsonShapes = this.getShapesJSON(); 
         let callVariables = {
           "elements": jsonShapes, 
@@ -382,7 +386,6 @@ export default class PageContainer extends React.Component {
   }
 
   checkSolutionValidityClient = (shape) => {
-    let invalidSolutions = []; 
     for(let i=0; i < this.state.solutions.length; i++) {
       let solution = this.state.solutions[i]; 
       if(!solution.invalidated) {
@@ -454,10 +457,6 @@ export default class PageContainer extends React.Component {
           previousConflicts.push(...preventConflicts); 
         }
         solution.conflicts = previousConflicts; 
-
-        if(solution.conflicts.length) {
-          invalidSolutions.push(solution);
-        }
       }
     }
 
@@ -465,15 +464,13 @@ export default class PageContainer extends React.Component {
     this.setState({
       solutions: this.state.solutions
     }, this.updateSolutionsCache); 
-
-    return invalidSolutions; 
   }
 
   considerDesignCanvas = (designCanvasID) => {
     // Retrieve the solution corresponding to the design canvas ID
     let solution = this.solutionsMap[designCanvasID]; 
     solution.saved = 0;  
-    solution.invalidated = 0; 
+    solution.invalidated = false; 
     solution.trashed = false; 
 
     // Update the state
@@ -487,7 +484,7 @@ export default class PageContainer extends React.Component {
     // Retrieve the solution corresponding to the design canvas ID
     let solution = this.solutionsMap[designCanvasID]; 
     solution.saved = 1;  
-    solution.invalidated = 0
+    solution.invalidated = false; 
 
     // Update the state
     // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
@@ -503,6 +500,7 @@ export default class PageContainer extends React.Component {
     let solution = this.solutionsMap[designCanvasID];
     solution.saved = -1; 
     solution.trashed = true; 
+    solution.invalidated = true; 
 
     // Update the state
     // Close the zoomed in canvas if it is open because a DesignCanvas can be saved 
