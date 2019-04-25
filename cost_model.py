@@ -465,7 +465,8 @@ def compute_diversity_score(t1, t2):
 		diff[key] = {
 			"size_diff": np.absolute(size_diff),
 			"pos_diff": np.linalg.norm(pos_diff, ord=2) / np.linalg.norm((CANVAS_WIDTH, CANVAS_HEIGHT)),
-			"neighbor_diff": (sum(neighbor_changed) + sum([np.absolute(x) for x in neighbor_dist_diff])) / 8
+			"neighbor_diff": (sum(neighbor_changed) + sum([np.absolute(x) for x in neighbor_dist_diff])) / 8,
+			"alt_group_diff": alt_group_diff
 		}
 
 	score = sum([sum([diff[key][stype] for stype in diff[key]]) for key in diff]) / len(diff)
