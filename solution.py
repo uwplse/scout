@@ -50,6 +50,7 @@ class Solution(object):
 		width = int(width)
 		element["width"] = width
 		element["height"] = height
+		element["size"] = [width, height]
 
 	def parse_container_values(self, shape, element, variables, model):
 		# Also include the container properties in the element object for each container shape 
@@ -79,6 +80,7 @@ class Solution(object):
 	def parse_alternate_values(self, shape, element, variables, model):
 		alternate = model[variables[shape.variables.alternate.id]].as_string()
 		element["alternate"] = alternate
+		print(alternate)
 
 	def parse_size_multiplier_values(self, shape, element, variables, model):
 		size_factor = model[variables[shape.variables.size_factor.id]].as_string()

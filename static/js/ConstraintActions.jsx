@@ -186,16 +186,19 @@ ConstraintActions.defaultUndoPreventConstraint = function undoPreventConstraint(
 
 ConstraintActions.messages = {
 	"width": function getMessage(shape, value) {
-		return "width of " + value + "px."
+		return "width of " + value + "px."; 
 	}, 
 	"height": function getMessage(shape, value) {
-		return "height of " + value + "px."
+		return "height of " + value + "px."; 
+	}, 
+	"size": function getMessage(shape, value) {
+		return "size of " + value[0] + "x" + value[1] + "."; 
 	}, 
 	"x": function getMessage(shape, value) {
-		return "x at location " + value + "px."
+		return "x at location " + value + "px."; 
 	}, 
 	"y": function getMessage(shape, value) {
-		return "y at location " + value + "px."
+		return "y at location " + value + "px."; 
 	},
 	"left_column": function getMessage(shape, value) {
 		return " left aligned to column " + value + ".";
@@ -245,6 +248,76 @@ ConstraintActions.messages = {
 		return " group alignment " + labelValue + "."; 
 	}
 }
+
+{/*ConstraintActions.doKeepPositionSize = {
+	"updateConstraintsCanvasShape": function keepConstraint(property, shape, value) {
+		if(property == "size") {
+			let width = value[0]; 
+			let height = value[1]; 
+			ConstraintActions.defaultKeepConstraint("width", shape, width); 
+			ConstraintActions.defaultKeepConstraint("height", shape, height); 
+		} else {
+			ConstraintActions.defaultKeepConstraint(property, shape, value);
+		}
+	}, 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
+		return "Keep " + message; 
+	}
+}
+
+ConstraintActions.undoKeepPositionSize =  {
+	"updateConstraintsCanvasShape": function undoKeepConstraint(property, shape, value) {
+		if(property == "size") {
+			let width = value[0]; 
+			let height = value[1]; 
+			ConstraintActions.defaultUndoKeepConstraint("width", shape, width); 
+			ConstraintActions.defaultUndoKeepConstraint("height", shape, height); 
+		}
+		else {
+			ConstraintActions.defaultUndoKeepConstraint(property, shape, value);
+		}
+	}, 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape); 
+		return "Don't keep " + message; 
+	}
+} 
+
+ConstraintActions.doPreventPositionSize = {
+	"updateConstraintsCanvasShape": function preventConstraint(property, shape, value) {
+		if(property == "size") {
+			let width = value[0]; 
+			let height = value[1]; 
+			ConstraintActions.defaultPreventConstraint("width", shape, width); 
+			ConstraintActions.defaultPreventConstraint("height", shape, height); 
+		} else {
+			ConstraintActions.defaultPreventConstraint(property, shape, value);
+		}
+	}, 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
+		return "Prevent " + message; 
+	}
+} 
+
+ConstraintActions.undoPreventPositionSize = {
+	"updateConstraintsCanvasShape": function undoPreventConstraint(property, shape, value) {
+		if(property == "size") {
+			let width = value[0]; 
+			let height = value[1]; 
+			ConstraintActions.defaultUndoPreventConstraint("width", shape, width); 
+			ConstraintActions.defaultUndoPreventConstraint("height", shape, height); 
+		} else {
+			ConstraintActions.defaultUndoPreventConstraint(property, shape, value);
+		}	
+	}, 
+	"getFeedbackMessage": function generateFeedbackMessage(property, shape, value) {
+		let message = ConstraintActions.messages[property](shape, value); 
+		return "Don't prevent " + message; 
+	}
+}
+*/}
 
 ConstraintActions.defaultDoKeep = {
 	"updateConstraintsCanvasShape": function keepConstraint(property, shape, value) {
@@ -297,7 +370,7 @@ ConstraintActions.defaultPrevent = {
 }
 
 ConstraintActions.elementConstraints = {
-	"values": ["x", "y", "width", "height"], 
+	"values": ["x", "y", "size"], 
 	"keep":  
 	{
 		"do": ConstraintActions.defaultDoKeep, 
@@ -308,59 +381,7 @@ ConstraintActions.elementConstraints = {
 		"undo": ConstraintActions.defaultUndoPrevent
 	}, 
 	"domains": {
-		"size": function(shape) {
-			let heights = [];
-			let widths = []; 
-
-			let orig_height = shape.orig_height; 
-			let orig_width = shape.orig_width; 
-			let aspect_ratio = orig_width/orig_height; 
-
-			let height_diff = orig_height % ConstraintActions.grid_constant; 
-			let height = orig_height - height_diff; 
-			let width = Math.round(height * aspect_ratio); 
-
-			heights.push(height);
-			widths.push(width); 
-
-			let minimum_element_height = ConstraintActions.min_height > (orig_height / 2) ? ConstraintActions.min_height : (orig_height / 2); 
-			let minimum_element_width = ConstraintActions.min_width > (orig_width / 2) ? ConstraintActions.min_width : (orig_width / 2); 
-			let computed_height = height;
-			let computed_width = width; 
-
-			if(shape.importance != "high") {
-				while (computed_height > minimum_element_height && computed_width > minimum_element_width) {
-					computed_height -= ConstraintActions.grid_constant; 
-					computed_width = Math.round(computed_height * aspect_ratio); 
-
-					if(computed_height > minimum_element_height && computed_width > minimum_element_width) {
-						heights.push(computed_height);
-						widths.push(computed_width); 
-					}
-				}
-			}
-
-			let maximum_element_height = ConstraintActions.max_height < (orig_height * 2) ? ConstraintActions.max_height : (orig_height * 2); 
-			let maximum_element_width = ConstraintActions.max_width < (orig_width * 2) ? ConstraintActions.max_width : (orig_width * 2); 
-			computed_height = height;
-			computed_width = width; 
-			if(shape.importance != "low") {
-				while (computed_height < maximum_element_height && computed_width < maximum_element_width) {
-					computed_height += ConstraintActions.grid_constant; 
-					computed_width = Math.round(computed_height * aspect_ratio); 
-
-					if(computed_height < maximum_element_height && computed_width < maximum_element_width) {
-						heights.push(computed_height);
-						widths.push(computed_width); 
-					}
-				}
-			}
-
-			heights.sort(function(a, b){return a-b});
-			widths.sort(function(a, b){return a-b}); 
-
-			return { "height" : heights, "width" : widths }
-		}, 
+		"size": [], 
 		"x": [], 
 		"y": []
 	}

@@ -119,6 +119,7 @@ class Solver(object):
 		self.invalid_solutions = 0
 
 		if prune_domains: 
+			self.prune_size_variable_domains_for_locks()
 			self.prune_layout_grid_domains()
 			self.prune_size_domains()
 
@@ -408,6 +409,49 @@ class Solver(object):
 				right_column_pruned = [val for val in right_column.domain if val <= max_cols]
 				right_column.domain = right_column_pruned
 
+	def prune_size_variable_domains_for_locks(self): 
+		for shape in self.shapes.values():
+			if shape.locks is not None:
+				for lock in shape.locks:
+					locked_values = shape.keep_values[lock]
+					if lock in SIZE_PROPERTIES: 					
+						locked_index = SIZE_PROPERTIES.index(lock)
+
+						size_combo_domain = shape.variables["size_combo"].domain
+						pruned_size = [val for val in size_combo_domain if val[locked_index] in locked_values]
+
+						shape.variables["size_combo"].domain = pruned_size
+
+						width_domain = [val[0] for val in pruned_size]
+						shape.variables["width"].domain = width_domain
+
+						height_domain = [val[1] for val in pruned_size]
+						shape.variables["height"].domain = height_domain
+
+						size_factor_domain = [val[0] for val in pruned_size]
+						shape.variables["size_factor"].domain = size_factor_domain 
+
+			if shape.prevents is not None: 
+				for prevent in shape.prevents: 
+					prevented_values = shape.prevent_values[prevent]
+					if prevent in SIZE_PROPERTIES:
+						prev_index = SIZE_PROPERTIES.index(prevent)
+
+						size_combo_domain = shape.variables["size_combo"].domain
+						pruned_size_combos = [val for val in size_combo_domain if val[prev_index] not in prevented_values]
+						if len(pruned_size_combos) > 1: 
+							shape.variables["size_combo"].domain = pruned_size_combos
+
+							width_domain = [val[0] for val in pruned_size_combos]
+							shape.variables["width"].domain = width_domain
+
+							height_domain = [val[1] for val in pruned_size_combos]
+							shape.variables["height"].domain = height_domain
+
+							size_factor_domain = [val[2] for val in pruned_size_combos]
+							shape.variables["size_factor"].domain = size_factor_domain
+
+
 	def init_variables(self):
 		last = []
 		first = []
@@ -431,25 +475,11 @@ class Solver(object):
 						else: 
 							lock_index = keys.index(lock)
 							filtered_keys.append(lock_index)
-					elif lock == "height" or lock == "width":						
+					elif lock in SIZE_PROPERTIES:						
 						if "size_combo" in keys:
 							locked_index = SIZE_PROPERTIES.index(lock)
-
 							size_combo_domain = shape.variables["size_combo"].domain
-							pruned_size = [val for val in size_combo_domain if val[locked_index] in locked_values]
-
-							shape.variables["size_combo"].domain = pruned_size
-
-							width_domain = [val[0] for val in pruned_size]
-							shape.variables["width"].domain = width_domain
-
-							height_domain = [val[1] for val in pruned_size]
-							shape.variables["height"].domain = height_domain
-
-							size_factor_domain = [val[0] for val in pruned_size]
-							shape.variables["size_factor"].domain = size_factor_domain
-
-							if len(pruned_size) <= 1:
+							if len(size_combo_domain) <= 1:
 								size_combo_var_index = keys.index("size_combo")
 								filtered_keys.append(size_combo_var_index)
 
@@ -482,21 +512,8 @@ class Solver(object):
 
 					elif prevent in SIZE_PROPERTIES:
 						prev_index = SIZE_PROPERTIES.index(prevent)
-
 						size_combo_domain = shape.variables["size_combo"].domain
-						pruned_size_combos = [val for val in size_combo_domain if val[prev_index] not in prevented_values]
-						if len(pruned_size_combos) > 1: 
-							shape.variables["size_combo"].domain = pruned_size_combos
-
-							width_domain = [val[0] for val in pruned_size_combos]
-							shape.variables["width"].domain = width_domain
-
-							height_domain = [val[1] for val in pruned_size_combos]
-							shape.variables["height"].domain = height_domain
-
-							size_factor_domain = [val[2] for val in pruned_size_combos]
-							shape.variables["size_factor"].domain = size_factor_domain
-						else: 
+						if len(size_combo_domain) <= 1: 
 							size_var_index = keys.index("size_combo")
 							filtered_keys.append(size_var_index)
 					else: 
@@ -505,7 +522,9 @@ class Solver(object):
 						domain_values = variable.domain
 						pruned_domain_values = [val for val in domain_values if val not in prevented_values]
 						variable.domain = pruned_domain_values
-
+						if len(variable.domain) <= 1: 
+							prevent_index = keys.index(prevent)
+							filtered_keys.append(prevent_index)
 
 			# Remove filtered key indexes
 			filtered_keys = list(set(filtered_keys)) #Ensure Unique

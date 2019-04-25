@@ -69,7 +69,7 @@ export default class DesignCanvas extends React.Component {
 
   static getScale(zoomed, saved, invalidated, activePanel) {
     if(zoomed) {
-      return 1.5; 
+      return 2.0; 
     }
 
     if(saved == 1 && activePanel == "saved") {
@@ -264,7 +264,7 @@ export default class DesignCanvas extends React.Component {
           this.highlightAddedWidget(addedID, false); 
         }
       }
-      
+
       if(this.props.invalid_reasons && this.props.invalid_reasons.length) {
         let first_reason = this.props.invalid_reasons[0]; 
         this.highlightInvalidReason(first_reason, false); 
@@ -289,7 +289,6 @@ export default class DesignCanvas extends React.Component {
     let trashed = this.state.savedState == -1; 
     let valid = this.state.valid; 
     let hasConflicts = this.props.conflicts.length; 
-    let menuVisible = !this.state.hovered; 
     let invalidated = this.state.invalidated; 
     let scalingFactor = this.state.scale;     
     let inMainCanvas = (this.state.savedState == 0 && (!this.state.invalidated)); 
@@ -320,8 +319,7 @@ export default class DesignCanvas extends React.Component {
           showTrash={!hideTrash}
           showConsider={showConsider}
           showNew={showNew}
-          cost={this.props.cost} 
-          visible={menuVisible}
+          cost={this.props.cost}
           menuAction={this.performDesignCanvasMenuAction}/>
         <div id={"design-canvas-" + this.id}
            style={{

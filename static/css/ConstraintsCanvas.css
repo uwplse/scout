@@ -151,7 +151,7 @@
 .widget-control-info span.highlighted {
    	border: 2px dashed #85144b;
    	background-color: #ef9a9a;
-   	padding: 0.2em;
+   	padding: 0.5em;
 }
 
 .widget-control-labels {
@@ -188,6 +188,7 @@
 .widget-feedback-items.highlighted {
    	border: 2px dashed #85144b;
    	background-color: #ef9a9a;
+   	padding: 0.5em;
 }
 
 .widget-feedback-items-list {
