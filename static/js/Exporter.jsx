@@ -15,7 +15,6 @@ export default class Exporter  {
     var bgRect = s.rect(); 
     bgRect.attr('width', ConstraintActions.canvas_width); 
     bgRect.attr('height', ConstraintActions.canvas_height); 
-    bgRect.attr('fill', 'white'); 
     s.append(bgRect); 
 
     this.drawDesignNode(s, design.elements); 
@@ -57,9 +56,13 @@ export default class Exporter  {
       let scale = this.getScaledSize(svg, node.width, node.height); 
 
       let transform2 = "translate(" + node.x + "," + node.y + ") scale(" + scale.scaleX + "," + scale.scaleY + ")"; 
-      let svgParsed = Snap.parse(svg); 
+      let svgParsed = Snap.parse(svg);
       var svgGroup = svgNode.g();
-      svgGroup.append(svgParsed); 
+      if(svgParsed.node && svgParsed.node.children) {
+        for(let i=0; i<svgParsed.node.children.length; i++) {
+          svgGroup.append(svgParsed.node.children[i]); 
+        }
+      }
       svgGroup.transform(transform2); 
       svgNode.append(svgGroup); 
     }

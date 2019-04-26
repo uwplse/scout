@@ -221,9 +221,9 @@ class CustomSolver(object):
 		if timed_out: 
 			for proc in jobs:
 				if proc.is_alive():  
-					print("Terminating solver process after timeout.")
+					print("Joining solver process after timeout.")
+					proc.join(0)
 					proc.terminate()
-					proc.join()
 		else: 
 			print("All solver threads completed before timeout.")
 

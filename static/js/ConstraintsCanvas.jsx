@@ -815,6 +815,7 @@ export default class ConstraintsCanvas extends React.Component {
         let groupNode = groupChildren[i]; 
         groupNode.item = true; 
         groupNode.shape.item = true; 
+        groupNode.disabled = true; 
         groupNode.src = itemSVG; 
         newChildren.push(groupNode); 
       }
@@ -849,6 +850,7 @@ export default class ConstraintsCanvas extends React.Component {
         }
 
         newGroupNode.item = true;
+        newGroupNode.disabled = true; 
         newGroupNode.shape.item = true;
         newGroupNode.children = currGroup; 
         newChildren.push(newGroupNode); 
@@ -901,6 +903,7 @@ export default class ConstraintsCanvas extends React.Component {
       node.typed = true; 
       node.src = repeatGridSVG; 
       node.shape.typed = true; 
+      node.shape.containerOrder = "important"; 
       node.alternate = undefined; 
 
       let newGroupChildren = this.restructureRepeatGroupChildren(node.children, node.typedGroupSize); 
@@ -915,6 +918,7 @@ export default class ConstraintsCanvas extends React.Component {
       newGroup.typed = true; 
       newGroup.src = repeatGridSVG; 
       newGroup.shape.typed = true; 
+      newGroup.shape.containerOrder = "important"; 
 
       let newGroupChildren  = this.restructureRepeatGroupChildren(newGroup.children, node.typedGroupSize); 
       let expKeys = newGroupChildren.map((item) => item.key); 
@@ -1234,7 +1238,7 @@ export default class ConstraintsCanvas extends React.Component {
 
   checkGroupTyping = (children) => {
     let childGroups = children.filter((child) => child.shape.type == "group"); 
-    let allGroups = childGroups.length == children.length; 
+    let allGroups = children.length > 0 && childGroups.length == children.length; 
 
     if(allGroups) {
         let canGroup = this.canMakeGroupsIntoItems(children); 
@@ -1546,9 +1550,22 @@ export default class ConstraintsCanvas extends React.Component {
       droppedInItemGroup = true; 
     }
 
-
     // Find dragObject
     let dragObj;
+    loop(data, dragKey, (item, index, arr) => {
+      dragObj = item;
+    });
+
+    if(dragObj && dropObj) {
+      // Prevent dropping a group into an alternate group 
+      let parentNode = this.getParentNodeForKey(dropObj.key, this.state.treeData[0]); 
+      if(dragObj.shape.type == "group" && 
+        (parentNode && parentNode.alternate || (dropObj.alternate && !info.dropToGap))) {
+        return; 
+      }
+    }
+
+    // Remove drag object
     loop(data, dragKey, (item, index, arr) => {
       arr.splice(index, 1);
       dragObj = item;

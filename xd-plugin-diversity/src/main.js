@@ -16,22 +16,48 @@ async function exportToJSON(selection, root) {
     let artboards = []; 
     root.children.forEach(node => {                              // [1]
         if (node instanceof Artboard) {                                  // [2]
-            let artboard = node;
+            console.log(node.name); 
+            if(node.name == "Alternative 1" || node.name == "Alternative 2" || node.name == "Alternative 3")
+             {
+                let elements = []; 
+                node.children.forEach(child => {
+                    let elementData = {}; 
+                    elementData.width = child.boundsInParent.width; 
+                    elementData.height = child.boundsInParent.height; 
+                    elementData.x = child.boundsInParent.x; 
+                    elementData.y = child.boundsInParent.y; 
+                    elementData.name = child.name; 
+                    elementData.type = "element";
+                    elementData.id = child.name; 
 
-            let elements = []; 
-            artboard.children.forEach(node => {
-                let elementData = {}; 
-                elementData.width = node.boundsInParent.width; 
-                elementData.height = node.boundsInParent.height; 
-                elementData.x = node.boundsInParent.x; 
-                elementData.y = node.boundsInParent.y; 
-                elementData.name = node.name; 
-                elements.push(elementData);
-            }); 
+                    let nameLower = child.name.toLowerCase(); 
+                    if(nameLower.indexOf("alternate") > -1) {
+                        elementData.alternate = true; 
+                        elementData.id = "alternate"; 
+                        elementData.type = "group"; 
 
-            let artboardData = {}; 
-            artboardData.children = elements; 
-            artboards.push(artboardData); 
+                        // Parse out the altenate from the name
+                        let underscoreIndex = child.name.lastIndexOf("_"); 
+                        elementData.name = child.name.substring(0, underscoreIndex); 
+                    }
+
+                    if(nameLower.indexOf("separator") > -1) {
+                        elementData.separator = true; 
+                    }
+
+                    elements.push(elementData);
+                }); 
+
+                let artboardData = {}; 
+                artboardData.children = elements; 
+                artboardData.type = "canvas"; 
+                artboardData.id = "canvas";
+                artboardData.x = 0; 
+                artboardData.y = 0; 
+                artboardData.width = 360;
+                artboardData.height = 640;  
+                artboards.push(artboardData); 
+            }
         }
     });              
 

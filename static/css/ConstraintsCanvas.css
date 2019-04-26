@@ -162,8 +162,8 @@
 }
 
 .widget-control-remove-icon {
-	transform: scale(2.0); 
-	margin-left: 1em;
+	transform: scale(1.5); 
+	margin-left: 4em;
 }
 
 .widget-container .badge {

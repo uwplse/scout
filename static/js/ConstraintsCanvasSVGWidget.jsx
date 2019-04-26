@@ -233,8 +233,9 @@ export default class ConstraintsCanvasSVGWidget extends React.Component {
               svg={source} 
               height={this.state.height + "px"} 
               width={this.state.width + "px"} />) : undefined}
-            <span 
-              className="widget-control-remove-icon glyphicon glyphicon-remove"
+              <span 
+              title="Remove this widget from the outline."
+              className="widget-control-remove-icon glyphicon glyphicon-trash"
               style={{visibility: (this.state.hovered ? "" : "hidden")}}
               onClick={this.props.removeWidgetNode.bind(this, this.props.id)}></span>
            </div>
