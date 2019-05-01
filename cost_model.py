@@ -6,8 +6,6 @@ import os
 from pprint import pprint
 import sys
 
-from shapes import ContainerShape, CanvasShape
-
 # import constants
 from cost import CANVAS_WIDTH, CANVAS_HEIGHT
 ALIGN_TOLERANCE_DELTA = 0
