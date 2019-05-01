@@ -467,9 +467,23 @@ def compute_diversity_score(t1, t2):
 			"alt_group_diff": alt_group_diff
 		}
 
-	score = sum([sum([diff[key][stype] for stype in diff[key]]) for key in diff]) / len(diff)
+	sizes = [diff[key]["size_diff"] for key in diff]
+	pos_diffs = [diff[key]["pos_diff"] for key in diff]
+	neighbor_diffs = [diff[key]["neighbor_diff"] for key in diff]
+	alt_diffs = [diff[key]["alt_group_diff"] for key in diff]
 
-	return score
+	size_total = sum(sizes) / len(diff)
+	pos_total = sum(pos_diffs) / len(diff)
+	neighbors_total = sum(neighbor_diffs) / len(diff)
+	alt_diffs_total = sum(alt_diffs) / len(diff)
+	totals = {}
+	totals['size'] = size_total
+	totals['pos'] = pos_total
+	totals['neighbors'] = neighbors_total
+	totals['alts'] = alt_diffs_total
+	
+	score = sum([sum([diff[key][stype] for stype in diff[key]]) for key in diff]) / len(diff)
+	return score, totals
 
 
 from pprint import pprint
