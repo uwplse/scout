@@ -386,6 +386,122 @@ def match_separators(t1, t2):
 				s["id"] = "separator_{}".format(i)
 				i += 1
 
+def normalize_diversity_scores(scores):
+	"""given a list of diversity scores, normalize them
+	Normalize method:
+		* pos_diff is normalized by the maximum pos-diff for all elements in all designs
+		* max_size is normalized by the maximum size-diff for all elements in all designs, the score is then sqrted
+		* rel_dist_score is normalized by the maximum relational distance score between any two pairs in all designs
+		* alt_score is not normalized
+		The result is then averaged for each design
+	Args:
+		scores: a dict of diversity scores computed from compute_unnormalized_diversity_score
+		scores[pair_id] = {
+			"element_score": ...
+			"relational_score": ...
+		}
+	Returns:
+		normalized diversity scores
+	"""
+	max_pos_diff = max([max([scores[pair_id]["element_score"][e]["pos_diff"] 
+							for e in scores[pair_id]["element_score"]]) for pair_id in scores])
+	max_size_diff = max([max([scores[pair_id]["element_score"][e]["size_diff"] 
+							for e in scores[pair_id]["element_score"]]) for pair_id in scores])
+	max_rel_dist_diff = max([max([scores[pair_id]["relational_score"][r]["dist_vec_norm"] 
+							for r in scores[pair_id]["relational_score"]]) for pair_id in scores])
+
+	# normalized and aggregated
+	final_scores = {}
+	for pair_id in scores:
+		normalized_score = {
+			"alt_group_score": np.average([scores[pair_id]["element_score"][e]["alt_group_diff"] for e in scores[pair_id]["element_score"]]),
+			"pos_diff_score":  np.average([scores[pair_id]["element_score"][e]["pos_diff"] for e in scores[pair_id]["element_score"]]) / float(max_pos_diff),
+			"size_diff_score": np.sqrt(np.average([scores[pair_id]["element_score"][e]["size_diff"] for e in scores[pair_id]["element_score"]]) / float(max_size_diff)),
+			"rel_dist_diff_score":  np.average([scores[pair_id]["relational_score"][r]["dist_vec_norm"] for r in scores[pair_id]["relational_score"]]) / float(max_rel_dist_diff)
+		}
+
+		final_scores[pair_id] = normalized_score
+
+	return final_scores
+
+def compute_unnormalized_diversity_score(t1, t2):
+	"""Given two designs t1 and t2, compute pairwise diversity score between designs
+	Args:
+		t1, t2: two object representing designs
+				* require that t1, t2, are preceeded
+		normalizers:
+			normalizing constants used for different parts of the computation
+	Returns:
+		diversity scores
+	"""
+	# annotate the element tree with essential information
+	process_element_tree(t1)
+	process_element_tree(t2)
+	match_separators(t1, t2)
+
+	_, leaves_1 = extract_groups_and_leaves(t1)
+	_, leaves_2 = extract_groups_and_leaves(t2)
+	neighbors1 = collect_neighbors(leaves_1)
+	neighbors2 = collect_neighbors(leaves_2)
+
+	# use all leave properties to compute leave difference
+	l1 = {e["id"]:e for e in leaves_1}
+	l2 = {e["id"]:e for e in leaves_2}
+	n1 = {r[0]["id"]:r[1] for r in neighbors1}
+	n2 = {r[0]["id"]:r[1] for r in neighbors2}
+
+	# only calculate scores for common elements
+	common_elements = [key for key in l1 if key in l2]
+
+	# difference between elements
+	element_score = {}
+	for i, key in enumerate(common_elements):
+		pos_diff = ((l1[key]['x'] - l2[key]['x']), (l1[key]['y'] - l2[key]['y']))
+
+		# normalize size by the maximum element size on both screen
+		size_diff = (l1[key]['height'] * l1[key]["width"] - l2[key]['height'] * l2[key]["width"]) 
+
+		alt_group_diff = 0
+		if ('alternate' in l1[key] and l1[key]['alternate'] 
+			 and 'alternate' in l2[key] and l2[key]['alternate']):
+			if l1[key]['alternate'] != l2[key]['alternate']:
+				alt_group_diff = 1
+
+		element_score[key] = {
+			"size_diff": np.absolute(size_diff),
+			"pos_diff": np.linalg.norm(pos_diff, ord=2),
+			"alt_group_diff": alt_group_diff
+		}
+
+	relational_score = {}
+	for i in range(len(common_elements)):
+		e1 = common_elements[i]
+		for j in range(i + 1, len(common_elements)):
+			e2 = common_elements[j]
+
+			# calculate the distance between the two elements in tree1
+			center_l1_key1 = np.array([l1[e1]["x"] + l1[e1]["width"] / 2, l1[e1]["y"] + l1[e1]["height"] / 2])
+			center_l1_key2 = np.array([l1[e2]["x"] + l1[e2]["width"] / 2, l1[e2]["y"] + l1[e2]["height"] / 2])
+			vec_diff_in_l1 = center_l1_key1 - center_l1_key2
+			dist_in_l1 = np.linalg.norm(vec_diff_in_l1, ord=2)
+
+			# calculate the distance between the two elements in tree2
+			center_l2_key1 = np.array([l2[e1]["x"] + l2[e1]["width"] / 2, l2[e1]["y"] + l2[e1]["height"] / 2])
+			center_l2_key2 = np.array([l2[e2]["x"] + l2[e2]["width"] / 2, l2[e2]["y"] + l2[e2]["height"] / 2])
+			vec_diff_in_l2 = center_l2_key1 - center_l2_key2
+			dist_in_l2 = np.linalg.norm(vec_diff_in_l2, ord=2)
+
+			# the relational difference is: |vec1 - vec2| 
+			# 	where vec1 = center_l1_key1 - center_l1_key2, vec2 = center_l2_key1 - center_l2_key2 
+			# comparing to difference of absolute size, vector difference also captures 
+			relational_score[(e1, e2)] = { "dist_vec_norm": np.linalg.norm(vec_diff_in_l2 - vec_diff_in_l1, ord=2) }
+	
+	return {
+		"element_score": element_score,
+		"relational_score": relational_score
+	}
+
+
 def compute_diversity_score(t1, t2):
 	"""Given two designs t1 and t2, compute their diversity score
 	Args:
@@ -487,12 +603,17 @@ def compute_diversity_score(t1, t2):
 
 
 from pprint import pprint
+
 if __name__ == '__main__':
+
 	saved_path = sys.argv[1]
 	with open(saved_path, "r") as f:
 		scout_exports = json.load(f)
 		trees = [t["elements"] for t in scout_exports["saved"]]
+		scores = {}
 		for i in range(len(trees)):
 			for j in range(i + 1, len(trees)):
-				diff = compute_diversity_score(trees[i], trees[j])
-				pprint(diff)
+				s = compute_unnormalized_diversity_score(trees[i], trees[j])
+				scores[(i,j)] = s
+		final_scores = normalize_diversity_scores(scores)
+		pprint(final_scores)
