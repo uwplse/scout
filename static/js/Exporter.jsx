@@ -58,11 +58,7 @@ export default class Exporter  {
       let transform2 = "translate(" + node.x + "," + node.y + ") scale(" + scale.scaleX + "," + scale.scaleY + ")"; 
       let svgParsed = Snap.parse(svg);
       var svgGroup = svgNode.g();
-      if(svgParsed.node && svgParsed.node.children) {
-        for(let i=0; i<svgParsed.node.children.length; i++) {
-          svgGroup.append(svgParsed.node.children[i]); 
-        }
-      }
+      svgGroup.append(svgParsed); 
       svgGroup.transform(transform2); 
       svgNode.append(svgGroup); 
     }

@@ -169,13 +169,13 @@ class Solution(object):
 		element_tree = self.process_hierarchy(tree, variables, model, cost_matrix, cost_metrics, elements_dict)
 
 		# Current cost function metrics. 
-		symmetry_cost = ch.compute_symmetry_cost(cost_matrix)
-		importance_change = cost_metrics['importance_change']
-		importance_max = cost_metrics['importance_max']
-		distance_cost = cost_metrics['distance_cost']
+		# symmetry_cost = ch.compute_symmetry_cost(cost_matrix)
+		# importance_change = cost_metrics['importance_change']
+		# importance_max = cost_metrics['importance_max']
+		# distance_cost = cost_metrics['distance_cost']
 
-		importance_cost = ch.compute_importance_cost(importance_change, importance_max)
-		cost = ch.compute_weighted_cost(symmetry_cost, importance_cost, distance_cost)
+		# importance_cost = ch.compute_importance_cost(importance_change, importance_max)
+		# cost = ch.compute_weighted_cost(symmetry_cost, importance_cost, distance_cost)
 
 		# Cost function
 		new_cost = cost_model.compute_cost(element_tree)
