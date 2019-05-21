@@ -89,21 +89,22 @@ def print_neighborhood(neighborhood):
 			str(tn["name"])+tn["type"] if tn else None,
 			str(bn["name"])+bn["type"] if bn else None))
 
-def compute_cost(layout_tree):
+def compute_cost(layout_tree, weights=None):
 	layout_tree = copy.deepcopy(layout_tree)
 	process_element_tree(layout_tree)
 	screen_features = extract_layout_features(layout_tree)
 
-	weights = {
-		'top_level_align_score': 1, 
-		'top_level_balance_score': 1, 
-		'top_level_overlapping_area': 1, 
-		'avg_element_width': 1, 
-		'avg_element_height': 1, 
-		'avg_alignment_score': 1, 
-		'density': 1, 
-		'imbalance': -1
-	}
+	if weights is None:
+		weights = {
+			'top_level_align_score': 1, 
+			'top_level_balance_score': 1, 
+			'top_level_overlapping_area': 1, 
+			'avg_element_width': 1, 
+			'avg_element_height': 1, 
+			'avg_alignment_score': 1, 
+			'density': 1, 
+			'imbalance': -1
+		}
 
 	cost = sum([weights[key] * screen_features[key] for key in weights])
 	
