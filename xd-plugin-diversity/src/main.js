@@ -12,8 +12,10 @@ async function exportToJSON(selection, root) {
     // Go to Plugins > Development > Developer Console to see this log output
     console.log("Plugin command is running!");
 
+    console.log("Changes are here"); 
     // Insert a red square at (0, 0) in the current artboard or group/container
     let artboards = []; 
+    let rootDoc = {}; 
     root.children.forEach(node => {                              // [1]
         if (node instanceof Artboard) {                                  // [2]
             console.log(node.name); 
@@ -56,13 +58,17 @@ async function exportToJSON(selection, root) {
                 artboardData.y = 0; 
                 artboardData.width = 360;
                 artboardData.height = 640;  
-                artboards.push(artboardData); 
+                let artboardTree = {}; 
+                artboardTree.elements = artboardData; 
+                artboards.push(artboardTree); 
             }
         }
     });              
 
     // for each element, get height/width/x,y 
-    const json = JSON.stringify(artboards); 
+    rootDoc.saved = artboards; 
+    console.log(rootDoc); 
+    const json = JSON.stringify(rootDoc); 
     console.log(json); 
     await alert("Connect to the Internet", //[1]
         "In order to function correctly, this plugin requires access to the Internet. Please connect to a network that has Internet access."); //[2]

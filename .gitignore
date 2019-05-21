@@ -1,4 +1,5 @@
 scout/*
+scout2/*
 static/node_modules/*
 static/dist/*
 *__pycache__

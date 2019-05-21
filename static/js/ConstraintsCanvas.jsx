@@ -815,7 +815,7 @@ export default class ConstraintsCanvas extends React.Component {
         let groupNode = groupChildren[i]; 
         groupNode.item = true; 
         groupNode.shape.item = true; 
-        groupNode.disabled = true; 
+        // groupNode.disabled = true; 
         groupNode.src = itemSVG; 
         newChildren.push(groupNode); 
       }
@@ -845,12 +845,12 @@ export default class ConstraintsCanvas extends React.Component {
         let newGroupNode = this.createNewTreeNode("item", "group", itemSVG, 
           {width: this.defaultNodeWidth, height: this.defaultNodeHeight});
 
-        for(let j=0; j<currGroup.length; j++) {
-          currGroup[j].disabled = true;
-        }
+       // for(let j=0; j<currGroup.length; j++) {
+         // currGroup[j].disabled = true;
+        //}
 
         newGroupNode.item = true;
-        newGroupNode.disabled = true; 
+        //newGroupNode.disabled = true; 
         newGroupNode.shape.item = true;
         newGroupNode.children = currGroup; 
         newChildren.push(newGroupNode); 
