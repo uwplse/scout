@@ -5,6 +5,7 @@ import numpy as np
 import os
 from pprint import pprint
 import sys
+from pprint import pprint
 
 # import constants
 from cost import CANVAS_WIDTH, CANVAS_HEIGHT
@@ -18,7 +19,7 @@ GroupFeature = namedtuple("GroupFeature",
 def process_id(node):
 	"""process id to handle alternate group and separator """
 	# consider alt-group as an element, rename its id for lookup purpose
-	if node["type"] == "group" and node["id"] == "alternate":
+	if node["type"] == "group" and (node["id"] == "alternate" or "alternate" in node):
 		node["type"] = "alternate_group"
 	elif node["type"] in ["canvas", "group"]:
 		for c in node["children"]:
@@ -404,6 +405,8 @@ def normalize_diversity_scores(scores):
 	Returns:
 		normalized diversity scores
 	"""
+	print('----')
+	print(scores)
 	max_pos_diff = max([max([scores[pair_id]["element_score"][e]["pos_diff"] 
 							for e in scores[pair_id]["element_score"]]) for pair_id in scores])
 	max_size_diff = max([max([scores[pair_id]["element_score"][e]["size_diff"] 
@@ -412,6 +415,7 @@ def normalize_diversity_scores(scores):
 							for r in scores[pair_id]["relational_score"]]) for pair_id in scores])
 
 	# normalized and aggregated
+	print(max_size_diff)
 	final_scores = {}
 	for pair_id in scores:
 		normalized_score = {
@@ -446,10 +450,8 @@ def compute_unnormalized_diversity_score(t1, t2):
 	neighbors2 = collect_neighbors(leaves_2)
 
 	# use all leave properties to compute leave difference
-	l1 = {e["id"]:e for e in leaves_1}
-	l2 = {e["id"]:e for e in leaves_2}
-	n1 = {r[0]["id"]:r[1] for r in neighbors1}
-	n2 = {r[0]["id"]:r[1] for r in neighbors2}
+	l1 = {e["name"]:e for e in leaves_1}
+	l2 = {e["name"]:e for e in leaves_2}
 
 	# only calculate scores for common elements
 	common_elements = [key for key in l1 if key in l2]
@@ -526,10 +528,10 @@ def compute_diversity_score(t1, t2):
 										y_range=(0, CANVAS_HEIGHT), return_as_dict=True)
 
 	# use all leave properties to compute leave difference
-	l1 = {e["id"]:e for e in leaves_1}
-	l2 = {e["id"]:e for e in leaves_2}
-	n1 = {r[0]["id"]:r[1] for r in neighbors1}
-	n2 = {r[0]["id"]:r[1] for r in neighbors2}
+	l1 = {e["name"]:e for e in leaves_1}
+	l2 = {e["name"]:e for e in leaves_2}
+	n1 = {r[0]["name"]:r[1] for r in neighbors1}
+	n2 = {r[0]["name"]:r[1] for r in neighbors2}
 
 	def check_neighbor_changed(n1, n2):
 		""" check whether two neighbor are the same or not"""
@@ -538,7 +540,7 @@ def compute_diversity_score(t1, t2):
 		elif n1 is None or n2 is None:
 			return False
 		else:
-			return n1["id"] != n2["id"]
+			return n1["name"] != n2["name"]
 			
 	max_element_size = max([e["width"]*e["height"] for e in leaves_1] + [e["width"]*e["height"] for e in leaves_2] )
 
@@ -602,13 +604,8 @@ def compute_diversity_score(t1, t2):
 	score = sum([sum([diff[key][stype] for stype in diff[key]]) for key in diff]) / len(diff)
 	return score, totals
 
-
-from pprint import pprint
-
-if __name__ == '__main__':
-
-	saved_path = sys.argv[1]
-	with open(saved_path, "r") as f:
+def compute_score(path): 
+	with open(path, "r") as f:
 		scout_exports = json.load(f)
 		trees = [t["elements"] for t in scout_exports["saved"]]
 		scores = {}
@@ -617,4 +614,16 @@ if __name__ == '__main__':
 				s = compute_unnormalized_diversity_score(trees[i], trees[j])
 				scores[(i,j)] = s
 		final_scores = normalize_diversity_scores(scores)
-		pprint(final_scores)
+		#pprint(final_scores)
+
+		scores = []
+		for key, score_set in final_scores.items(): 
+			#print(score_set)
+			sum_score = score_set['alt_group_score'] + score_set['pos_diff_score'] + score_set['rel_dist_diff_score'] + score_set['size_diff_score']
+			scores.append(sum_score)
+
+		return scores
+
+if __name__ == '__main__':
+	saved_path = sys.argv[1]
+	compute_score(saved_path)
