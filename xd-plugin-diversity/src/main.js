@@ -19,7 +19,8 @@ async function exportToJSON(selection, root) {
     root.children.forEach(node => {                              // [1]
         if (node instanceof Artboard) {                                  // [2]
             console.log(node.name); 
-            if(node.name == "Alternative 1" || node.name == "Alternative 2" || node.name == "Alternative 3")
+            if(node.name == "Alternative 1" || node.name == "Alternative 2" || node.name == "Alternative 3"
+                || node.name == "Original")
              {
                 let elements = []; 
                 node.children.forEach(child => {
@@ -34,13 +35,14 @@ async function exportToJSON(selection, root) {
 
                     let nameLower = child.name.toLowerCase(); 
                     if(nameLower.indexOf("alternate") > -1) {
-                        elementData.alternate = true; 
-                        elementData.id = "alternate"; 
+                        // elementData.alternate = true; 
+                        elementData.id = child.name; 
                         elementData.type = "group"; 
 
                         // Parse out the altenate from the name
                         let underscoreIndex = child.name.lastIndexOf("_"); 
                         elementData.name = child.name.substring(0, underscoreIndex); 
+                        elementData.alternate = child.name.substring(underscoreIndex, child.name.length); 
                     }
 
                     if(nameLower.indexOf("separator") > -1) {
@@ -58,6 +60,9 @@ async function exportToJSON(selection, root) {
                 artboardData.y = 0; 
                 artboardData.width = 360;
                 artboardData.height = 640;  
+
+                // Name of the artboard
+                artboardData.name = node.name; 
                 let artboardTree = {}; 
                 artboardTree.elements = artboardData; 
                 artboards.push(artboardTree); 
@@ -66,12 +71,10 @@ async function exportToJSON(selection, root) {
     });              
 
     // for each element, get height/width/x,y 
+    console.log("TEST")
     rootDoc.saved = artboards; 
-    console.log(rootDoc); 
     const json = JSON.stringify(rootDoc); 
-    console.log(json); 
-    await alert("Connect to the Internet", //[1]
-        "In order to function correctly, this plugin requires access to the Internet. Please connect to a network that has Internet access."); //[2]
+    console.log(json);
 }
 
 module.exports.commands = {
