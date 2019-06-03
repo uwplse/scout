@@ -18,7 +18,8 @@ GroupFeature = namedtuple("GroupFeature",
 def process_id(node):
 	"""process id to handle alternate group and separator """
 	# consider alt-group as an element, rename its id for lookup purpose
-	if node["type"] == "group" and node["id"] == "alternate":
+	# the latter one is for newer versino alternate group
+	if node["type"] == "group" and (node["id"] == "alternate" or "Alternate" in node["id"]):
 		node["type"] = "alternate_group"
 	elif node["type"] in ["canvas", "group"]:
 		for c in node["children"]:

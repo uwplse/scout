@@ -1,0 +1,492 @@
+{
+  "saved": [
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 125,
+            "height": 41,
+            "x": 150,
+            "y": 247,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 124,
+            "height": 16,
+            "x": 150,
+            "y": 285,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 62,
+            "height": 55,
+            "x": 251,
+            "y": 52,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 61,
+            "height": 19,
+            "x": 251,
+            "y": 96.99951171875,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 62,
+            "height": 55,
+            "x": 49,
+            "y": 52,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 61,
+            "height": 19,
+            "x": 49,
+            "y": 96.99951171875,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 62,
+            "height": 55,
+            "x": 150,
+            "y": 51,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 62,
+            "height": 19,
+            "x": 150,
+            "y": 96.99951171875,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          },
+          {
+            "width": 70.6629638671875,
+            "height": 29,
+            "x": 144.5,
+            "y": 517.5,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 16,
+            "height": 16,
+            "x": 161.28570556640625,
+            "y": 556,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          },
+          {
+            "width": 16,
+            "height": 16,
+            "x": 182.71429443359375,
+            "y": 556.0000305175781,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          },
+          {
+            "width": 70.40763854980469,
+            "height": 70.4078369140625,
+            "x": 68.811279296875,
+            "y": 240.0921630859375,
+            "name": "DesignerImage",
+            "type": "group",
+            "id": "DesignerImage_Alternate1",
+            "alternate": "_Alternate1"
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Alternative 3"
+      }
+    },
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 133,
+            "height": 44,
+            "x": 168,
+            "y": 80,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 124,
+            "height": 16,
+            "x": 168,
+            "y": 118,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 95,
+            "height": 24,
+            "x": 168,
+            "y": 142,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 16,
+            "height": 16,
+            "x": 269,
+            "y": 150,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          },
+          {
+            "width": 16,
+            "height": 16,
+            "x": 290.4285888671875,
+            "y": 150.00003051757812,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          },
+          {
+            "width": 62,
+            "height": 55,
+            "x": 24,
+            "y": 426.00048828125,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 24,
+            "y": 469,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 62,
+            "height": 55,
+            "x": 24,
+            "y": 260.0009765625,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 24,
+            "y": 303.00048828125,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 62,
+            "height": 55,
+            "x": 24,
+            "y": 342.0009765625,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 24,
+            "y": 386.00048828125,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          },
+          {
+            "width": 131.219970703125,
+            "height": 131.219970703125,
+            "x": 24,
+            "y": 68.780029296875,
+            "name": "DesignerImage",
+            "type": "group",
+            "id": "DesignerImage_Alternate0",
+            "alternate": "_Alternate0"
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Alternative 1"
+      }
+    },
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 133,
+            "height": 44,
+            "x": 120,
+            "y": 274,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 124,
+            "height": 16,
+            "x": 120,
+            "y": 312,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 95,
+            "height": 24,
+            "x": 132.50006103515625,
+            "y": 336,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 16,
+            "height": 16,
+            "x": 161.28570556640625,
+            "y": 368,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          },
+          {
+            "width": 16,
+            "height": 16,
+            "x": 182.71429443359375,
+            "y": 368.0000305175781,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          },
+          {
+            "width": 19,
+            "height": 16,
+            "x": 281,
+            "y": 441,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 255,
+            "y": 455.99951171875,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 19,
+            "height": 16,
+            "x": 61,
+            "y": 440,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 35,
+            "y": 458,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 19,
+            "height": 16,
+            "x": 171,
+            "y": 441,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 145,
+            "y": 456.99951171875,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          },
+          {
+            "width": 196.97023010253906,
+            "height": 196.97076416015625,
+            "x": 81.98680114746094,
+            "y": 70,
+            "name": "DesignerImage",
+            "type": "group",
+            "id": "DesignerImage_Alternate2",
+            "alternate": "_Alternate2"
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Alternative 2"
+      }
+    },
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 24,
+            "height": 24,
+            "x": 146.702392578125,
+            "y": 260,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 183.1309814453125,
+            "y": 260,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          },
+          {
+            "width": 100,
+            "height": 100,
+            "x": 129.84619140625,
+            "y": 36,
+            "name": "DesignerImage",
+            "type": "group",
+            "id": "DesignerImage_Alternate0",
+            "alternate": "_Alternate0"
+          },
+          {
+            "width": 133,
+            "height": 44,
+            "x": 113.8138427734375,
+            "y": 195.3951416015625,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 124,
+            "height": 16,
+            "x": 116.7298583984375,
+            "y": 239.8421630859375,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 95,
+            "height": 38,
+            "x": 130.88677978515625,
+            "y": 326,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 37,
+            "height": 33,
+            "x": 165.818603515625,
+            "y": 507,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 153.628662109375,
+            "y": 533.99951171875,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 37,
+            "height": 33,
+            "x": 278.4296875,
+            "y": 507,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 261.628662109375,
+            "y": 533.99951171875,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 37,
+            "height": 33,
+            "x": 41.20751953125,
+            "y": 507,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 28.628662109375,
+            "y": 533.99951171875,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Original"
+      }
+    }
+  ]
+}

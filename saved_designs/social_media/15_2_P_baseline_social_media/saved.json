@@ -1,0 +1,502 @@
+{
+  "saved": [
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 67.81005859375,
+            "height": 67.81000518798828,
+            "x": 4.84619140625,
+            "y": 55,
+            "name": "1_DesignerImage",
+            "type": "group",
+            "id": "1_DesignerImage_Alternate0",
+            "alternate": "_Alternate0"
+          },
+          {
+            "width": 250,
+            "height": 82,
+            "x": 77.8138427734375,
+            "y": 55.3951416015625,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 311,
+            "height": 41,
+            "x": 24.7298583984375,
+            "y": 166.8421630859375,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 28,
+            "height": 25,
+            "x": 166.578125,
+            "y": 257.015625,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 39,
+            "height": 12,
+            "x": 159.118896484375,
+            "y": 277.5372314453125,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 28,
+            "height": 25,
+            "x": 235.4874267578125,
+            "y": 257.015625,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 39,
+            "height": 12,
+            "x": 225.20654296875,
+            "y": 277.5372314453125,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 28,
+            "height": 25,
+            "x": 90.325927734375,
+            "y": 257.015625,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 40,
+            "height": 12,
+            "x": 82.628662109375,
+            "y": 277.5372314453125,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          },
+          {
+            "width": 95,
+            "height": 38,
+            "x": 132.88677978515625,
+            "y": 339,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 149.1309814453125,
+            "y": 399,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 185.702392578125,
+            "y": 399,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Alternative 3"
+      }
+    },
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 76.21636962890625,
+            "height": 76.21630096435547,
+            "x": 44.84619140625,
+            "y": 160,
+            "name": "1_DesignerImage",
+            "type": "group",
+            "id": "1_DesignerImage_Alternate0",
+            "alternate": "_Alternate0"
+          },
+          {
+            "width": 133,
+            "height": 44,
+            "x": 139.8138427734375,
+            "y": 176.3951416015625,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 124,
+            "height": 16,
+            "x": 139.7298583984375,
+            "y": 219.8421630859375,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 22,
+            "height": 19,
+            "x": 159.57818603515625,
+            "y": 316.015625,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 39,
+            "height": 12,
+            "x": 152.118896484375,
+            "y": 332.5372314453125,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 22,
+            "height": 19,
+            "x": 228.4874267578125,
+            "y": 316.015625,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 39,
+            "height": 12,
+            "x": 218.20648193359375,
+            "y": 332.5372314453125,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 22,
+            "height": 19,
+            "x": 83.325927734375,
+            "y": 316.015625,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 40,
+            "height": 12,
+            "x": 75.62860107421875,
+            "y": 332.5372314453125,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          },
+          {
+            "width": 95,
+            "height": 38,
+            "x": 128.88677978515625,
+            "y": 391,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 201.702392578125,
+            "y": 244,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 163.1309814453125,
+            "y": 244,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Alternative 1"
+      }
+    },
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 76.21636962890625,
+            "height": 76.21630096435547,
+            "x": 132.84619140625,
+            "y": 117,
+            "name": "1_DesignerImage",
+            "type": "group",
+            "id": "1_DesignerImage_Alternate0",
+            "alternate": "_Alternate0"
+          },
+          {
+            "width": 133,
+            "height": 44,
+            "x": 104.8138427734375,
+            "y": 203.3951416015625,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 124,
+            "height": 16,
+            "x": 109.7298583984375,
+            "y": 257.8421630859375,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 22,
+            "height": 19,
+            "x": 162.578125,
+            "y": 311.015625,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 39,
+            "height": 12,
+            "x": 155.118896484375,
+            "y": 327.5372314453125,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 22,
+            "height": 19,
+            "x": 231.4874267578125,
+            "y": 311.015625,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 39,
+            "height": 12,
+            "x": 221.20654296875,
+            "y": 327.5372314453125,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 22,
+            "height": 19,
+            "x": 86.325927734375,
+            "y": 311.015625,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 40,
+            "height": 12,
+            "x": 78.628662109375,
+            "y": 327.5372314453125,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          },
+          {
+            "width": 95,
+            "height": 38,
+            "x": 171.88677978515625,
+            "y": 413,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 78.702392578125,
+            "y": 421,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 117.1309814453125,
+            "y": 420,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          },
+          {
+            "width": 231,
+            "height": 1,
+            "x": 59,
+            "y": 359,
+            "name": "separator",
+            "type": "element",
+            "id": "separator",
+            "separator": true
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Alternative 2"
+      }
+    },
+    {
+      "elements": {
+        "children": [
+          {
+            "width": 24,
+            "height": 24,
+            "x": 146.702392578125,
+            "y": 260,
+            "name": "instagram",
+            "type": "element",
+            "id": "instagram"
+          },
+          {
+            "width": 24,
+            "height": 24,
+            "x": 183.1309814453125,
+            "y": 260,
+            "name": "pinterest",
+            "type": "element",
+            "id": "pinterest"
+          },
+          {
+            "width": 100,
+            "height": 100,
+            "x": 129.84619140625,
+            "y": 36,
+            "name": "1_DesignerImage",
+            "type": "group",
+            "id": "1_DesignerImage_Alternate0",
+            "alternate": "_Alternate0"
+          },
+          {
+            "width": 133,
+            "height": 44,
+            "x": 113.8138427734375,
+            "y": 195.3951416015625,
+            "name": "4_DesignerName",
+            "type": "element",
+            "id": "4_DesignerName"
+          },
+          {
+            "width": 124,
+            "height": 16,
+            "x": 116.7298583984375,
+            "y": 239.8421630859375,
+            "name": "5_DesignerCaption",
+            "type": "element",
+            "id": "5_DesignerCaption"
+          },
+          {
+            "width": 95,
+            "height": 38,
+            "x": 130.88677978515625,
+            "y": 326,
+            "name": "6_FollowButton",
+            "type": "element",
+            "id": "6_FollowButton"
+          },
+          {
+            "width": 37,
+            "height": 33,
+            "x": 165.818603515625,
+            "y": 507,
+            "name": "13_NumFollowers",
+            "type": "element",
+            "id": "13_NumFollowers"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 153.628662109375,
+            "y": 533.99951171875,
+            "name": "12_FollowersText",
+            "type": "element",
+            "id": "12_FollowersText"
+          },
+          {
+            "width": 37,
+            "height": 33,
+            "x": 278.4296875,
+            "y": 507,
+            "name": "11_NumMentions",
+            "type": "element",
+            "id": "11_NumMentions"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 261.628662109375,
+            "y": 533.99951171875,
+            "name": "10_MentionsText",
+            "type": "element",
+            "id": "10_MentionsText"
+          },
+          {
+            "width": 37,
+            "height": 33,
+            "x": 41.20751953125,
+            "y": 507,
+            "name": "9_NumFollowingText",
+            "type": "element",
+            "id": "9_NumFollowingText"
+          },
+          {
+            "width": 70,
+            "height": 22,
+            "x": 28.628662109375,
+            "y": 533.99951171875,
+            "name": "8_FollowingText",
+            "type": "element",
+            "id": "8_FollowingText"
+          }
+        ],
+        "type": "canvas",
+        "id": "canvas",
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 640,
+        "name": "Original"
+      }
+    }
+  ]
+}
