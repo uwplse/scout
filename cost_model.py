@@ -407,22 +407,24 @@ def normalize_diversity_scores(scores):
 	"""
 	print('----')
 	print(scores)
-	max_pos_diff = max([max([scores[pair_id]["element_score"][e]["pos_diff"] 
-							for e in scores[pair_id]["element_score"]]) for pair_id in scores])
-	max_size_diff = max([max([scores[pair_id]["element_score"][e]["size_diff"] 
-							for e in scores[pair_id]["element_score"]]) for pair_id in scores])
-	max_rel_dist_diff = max([max([scores[pair_id]["relational_score"][r]["dist_vec_norm"] 
-							for r in scores[pair_id]["relational_score"]]) for pair_id in scores])
+	max_pos_diff = max([max([scores[pair_id]["unnormalized_score"]["element_score"][e]["pos_diff"] 
+							for e in scores[pair_id]["unnormalized_score"]["element_score"]]) for pair_id in scores])
+	max_size_diff = max([max([scores[pair_id]["unnormalized_score"]["element_score"][e]["size_diff"] 
+							for e in scores[pair_id]["unnormalized_score"]["element_score"]]) for pair_id in scores])
+	max_rel_dist_diff = max([max([scores[pair_id]["unnormalized_score"]["relational_score"][r]["dist_vec_norm"] 
+							for r in scores[pair_id]["unnormalized_score"]["relational_score"]]) for pair_id in scores])
 
 	# normalized and aggregated
 	print(max_size_diff)
 	final_scores = {}
 	for pair_id in scores:
 		normalized_score = {
-			"alt_group_score": np.average([scores[pair_id]["element_score"][e]["alt_group_diff"] for e in scores[pair_id]["element_score"]]),
-			"pos_diff_score":  np.average([scores[pair_id]["element_score"][e]["pos_diff"] for e in scores[pair_id]["element_score"]]) / float(max_pos_diff),
-			"size_diff_score": np.sqrt(np.average([scores[pair_id]["element_score"][e]["size_diff"] for e in scores[pair_id]["element_score"]]) / float(max_size_diff)),
-			"rel_dist_diff_score":  np.average([scores[pair_id]["relational_score"][r]["dist_vec_norm"] for r in scores[pair_id]["relational_score"]]) / float(max_rel_dist_diff)
+			"alt_group_score": np.average([scores[pair_id]["unnormalized_score"]["element_score"][e]["alt_group_diff"] for e in scores[pair_id]["unnormalized_score"]["element_score"]]),
+			"pos_diff_score":  np.average([scores[pair_id]["unnormalized_score"]["element_score"][e]["pos_diff"] for e in scores[pair_id]["unnormalized_score"]["element_score"]]) / float(max_pos_diff),
+			"size_diff_score": np.sqrt(np.average([scores[pair_id]["unnormalized_score"]["element_score"][e]["size_diff"] for e in scores[pair_id]["unnormalized_score"]["element_score"]]) / float(max_size_diff)),
+			"rel_dist_diff_score":  np.average([scores[pair_id]["unnormalized_score"]["relational_score"][r]["dist_vec_norm"] for r in scores[pair_id]["unnormalized_score"]["relational_score"]]) / float(max_rel_dist_diff),
+			"exp_id1": scores[pair_id]["exp_id1"], 
+			"exp_id2": scores[pair_id]["exp_id2"]
 		}
 
 		final_scores[pair_id] = normalized_score

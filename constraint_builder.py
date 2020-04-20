@@ -412,7 +412,6 @@ class ConstraintBuilder(object):
 			self.constraints += cb.assert_expr(cb.and_expr(all_same_variables), 
 				"repeat_group_variables_all_same_" + str(i))
 
-
 		# the size increase/decrease of corresponding elements should the same. 
 		for group in subgroups: 
 			group_children = group.children 
@@ -1076,13 +1075,13 @@ class ConstraintBuilder(object):
 			"container_" + container.shape_id + "_max_height_horizontal")
 
 		# Enforce that the padding used by the container is no taller or wider than the smallest width or height element
-		# shapes_no_seps = [shp for shp in child_shapes if shp.semantic_type != "separator"]
-		# min_w_constraint = self.get_min_width_constraint(1,0,shapes_no_seps)
-		# min_h_constraint = self.get_min_height_constraint(1,0,shapes_no_seps)
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
-		# 	"container_" + container.shape_id + "_padding_lt_shortest_child")
-		# self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
-		# 	"container_" + container.shape_id + "_padding_lt_thinnest_child")
+		shapes_no_seps = [shp for shp in child_shapes if shp.semantic_type != "separator"]
+		min_w_constraint = self.get_min_width_constraint(1,0,shapes_no_seps)
+		min_h_constraint = self.get_min_height_constraint(1,0,shapes_no_seps)
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_vertical, is_columns]), cb.lt(container.variables.padding.id, min_h_constraint), "true"),
+			"container_" + container.shape_id + "_padding_lt_shortest_child")
+		self.constraints += cb.assert_expr(cb.ite(cb.or_expr([is_horizontal, is_rows]), cb.lt(container.variables.padding.id, min_w_constraint), "true"),
+			"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
 		self.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
 
