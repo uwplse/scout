@@ -1,9 +1,11 @@
+"""Analysis of HLC in each designer's exported designs for reporting numbers in the CHI paper"""
 import sys 
 import os
 import csv
 import json
 
 def get_count(path, file_name, key): 
+	"""Get the total number of designs they explored"""
 	designs_file = os.path.join(path, file_name)
 	with open(designs_file, 'r') as designs_json: 
 		designs_list = json.load(designs_json)
@@ -12,8 +14,8 @@ def get_count(path, file_name, key):
 	return 0
 
 def count_hlc(design, results_dict, parent_emphasis=False): 
-	# print(design)
 	#Groups 
+	"""Count up different types of HLC used"""
 	if design["type"] == "group": 
 		if design["alternate"]: 
 			results_dict["alternate"] += 1 
@@ -43,6 +45,7 @@ def count_hlc(design, results_dict, parent_emphasis=False):
 			count_hlc(child, results_dict, is_emph) 
 
 def compute_hlc_totals(design_path, file_name, key, results): 
+	""" Open designs file and count up HLC used """
 	designs_file = os.path.join(design_path, file_name)
 	with open(designs_file, 'r') as designs_json_file: 
 		designs_json = json.load(designs_json_file)
@@ -57,6 +60,7 @@ def compute_hlc_totals(design_path, file_name, key, results):
 			print("No designs found")
 
 def analyze_hlc(path, output): 
+	""" Output summed values for HLC to analysis CSV """
 	output_path = os.path.join(output, "analysis.csv")
 	with open(output_path, 'w') as output_file: 
 		csv_writer = csv.writer(output_file, delimiter=',')
@@ -83,6 +87,7 @@ def analyze_hlc(path, output):
 				results["locks"] = 0
 				results["total"] = 0
 
+				# Count totals for each saved file in each category """
 				compute_hlc_totals(design_path, "trashed.json", "trashed", results)
 				compute_hlc_totals(design_path, "saved.json", "saved", results)
 				compute_hlc_totals(design_path, "invalidated.json", "invalidated", results)
