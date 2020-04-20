@@ -4,25 +4,22 @@ var { getArtboardAsJSON } = require("xd-json-wrapper");
 const { alert, error } = require("../lib/dialogs.js");
 
 /**
- * The sample command.
+ *  Export a layout artboard out to JSON format.
  * @param {Selection} selection 
  * @param {RootNode} root 
  */
 async function exportToJSON(selection, root) {
-    // Go to Plugins > Development > Developer Console to see this log output
-    console.log("Plugin command is running!");
-
-    console.log("Changes are here"); 
-    // Insert a red square at (0, 0) in the current artboard or group/container
     let artboards = []; 
     let rootDoc = {}; 
     root.children.forEach(node => {                              // [1]
         if (node instanceof Artboard) {                                  // [2]
-            console.log(node.name); 
             if(node.name == "Alternative 1" || node.name == "Alternative 2" || node.name == "Alternative 3"
                 || node.name == "Original")
              {
+                // Create JSON tree structure for each of the measured artboards. 
                 let elements = []; 
+
+                // Parse child elements 
                 node.children.forEach(child => {
                     let elementData = {}; 
                     elementData.width = child.boundsInParent.width; 
@@ -35,7 +32,6 @@ async function exportToJSON(selection, root) {
 
                     let nameLower = child.name.toLowerCase(); 
                     if(nameLower.indexOf("alternate") > -1) {
-                        // elementData.alternate = true; 
                         elementData.id = child.name; 
                         elementData.type = "group"; 
 
@@ -52,6 +48,7 @@ async function exportToJSON(selection, root) {
                     elements.push(elementData);
                 }); 
 
+                // Create the root
                 let artboardData = {}; 
                 artboardData.children = elements; 
                 artboardData.type = "canvas"; 
@@ -71,7 +68,7 @@ async function exportToJSON(selection, root) {
     });              
 
     // for each element, get height/width/x,y 
-    console.log("TEST")
+    // Print JSON tree out the the console which we copy paste into another file for the analysis. 
     rootDoc.saved = artboards; 
     const json = JSON.stringify(rootDoc); 
     console.log(json);
