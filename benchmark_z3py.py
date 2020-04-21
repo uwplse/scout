@@ -1,3 +1,4 @@
+"""Benchmarking from Z3PY objects vs SMTLIB expressions"""
 from z3 import *
 import time
 import subprocess
