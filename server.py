@@ -1,4 +1,4 @@
-# server.py
+""" Web server class for Scout """
 from z3 import * 
 from flask import Flask, render_template, request
 import json
@@ -8,6 +8,7 @@ import os
 import time
 import logging
 
+# Customize the number of threads to run at a time (corresponds to the number of designs that will be retrieved per click)
 NUM_SOLVE_THREADS = 10
 NUM_CHECK_THREADS = 10
 
@@ -31,13 +32,13 @@ def importer():
 
 @app.route('/solve', methods=['POST','GET'])
 def solve(): 
-	print("solving!")
+	""" Main solving method """
 	sys.stdout.flush()
 	form_data = request.form
 
 	if "elements" in form_data and "solutions" in form_data:
-		elements_json = form_data["elements"]
-		solutions_json = form_data["solutions"]
+		elements_json = form_data["elements"] # Elements tree
+		solutions_json = form_data["solutions"] # Previous solutions 
 
 		# relative_designs = dict() 
 		# if "relative_designs" in form_data: 
@@ -62,6 +63,7 @@ def solve():
 
 @app.route('/check', methods=['POST','GET'])
 def check(): 
+	""" Validation method. Updates current validity of designs, but doesn't retrieve new ones """ 
 	print("checking!")
 	sys.stdout.flush()
 
@@ -87,6 +89,8 @@ def check():
 
 @app.route('/reflow', methods=['POST','GET'])
 def reflow(): 
+	""" Reflow method. Repair invalid designs to match the updated constraints. Retrieve new solutions to replace invalid designs
+		if they cannot be repaired """
 	print("reflowing!")
 	sys.stdout.flush()
 
@@ -100,21 +104,20 @@ def reflow():
 		solutions = form_data["solutions"]
 		elements = form_data["elements"]
 
-		# Will return the status of whether the current set of constraints is valid
-		# and also update the valid state of each of the previous solutions
 		results = repair_solution_validity(elements, solutions, changed_element_id,
 			changed_property, changed_value, keep_or_prevent)
 
 		sys.stdout.flush()
 
 		output = dict() 
+
 		# Return a new set of soltuions
 		output["solutions"] = results
 		return json.dumps(output).encode('utf-8')
 	sys.stdout.flush()
 
 def repair_solution_validity(elements, solutions, changed_element_id, changed_property, changed_value, keep_or_prevent):
-	# Wait until a context becomes available before proceeding
+	""" Creates solver instance and calls reflow """
 	try: 
 		print("Creating solver instance.")
 		solver = custom_solver.CustomSolver(elements, solutions)
@@ -127,7 +130,7 @@ def repair_solution_validity(elements, solutions, changed_element_id, changed_pr
 		print('Exception in creating solver instance.')
 
 def check_solution_validity(elements, solutions):
-	# Wait until a context becomes available before proceeding
+	""" Checks the current validity of each of the previous solutions """
 	try: 
 		print("Creating solver instance.")
 		solver = custom_solver.CustomSolver(elements, solutions)
@@ -140,6 +143,7 @@ def check_solution_validity(elements, solutions):
 		print('Exception in creating solver instance.')
 
 def get_solutions(elements, solutions, relative_designs=""):
+	""" Retrieves a new set of solutions """
 	time_start = time.time()
 	print("Creating solver instance.")
 	solver = custom_solver.CustomSolver(elements, solutions, 

@@ -10,14 +10,17 @@ CANVAS_WIDTH = 360
 CANVAS_HEIGHT = 640
 
 class Solution(object): 
+	""" Solution class keeps track of the variables and assigned values for a given design solution """
 	def __init__(self):
 		self.variables = []
 		self.id = uuid.uuid4().hex
 
 	def add_assigned_variable(self, variable): 
+		""" Add variable to the list of assigned variables """ 
 		self.variables.append(variable)
 
 	def parse_position_values(self, shape, element, variables, model):
+		""" Parse values out of the Z3 model for x, y position and store them on the element object """
 		f_x = model[variables[shape.variables.x.id]]
 		f_y = model[variables[shape.variables.y.id]]
 		adj_x = f_x.as_string()
@@ -28,7 +31,7 @@ class Solution(object):
 		element["y"] = adj_y
 
 	def parse_grid_values(self, shape, element, variables, model):
-		# Parse out the grid variables from the model.  
+		""" Parse values out of the Z3 model for layout grid variables and store them on the element object """
 		margin = int(model[variables[shape.variables.margin.id]].as_string())
 		baseline_grid = int(model[variables[shape.variables.baseline_grid.id]].as_string())
 		gutter_width = int(model[variables[shape.variables.gutter_width.id]].as_string())
@@ -43,7 +46,7 @@ class Solution(object):
 		element["grid_layout"] = [margin, columns, gutter_width, column_width]
 
 	def parse_size_values(self, shape, element, variables, model):
-		# Parse the size related variables from the model 
+		""" Parse values out of the Z3 model for height,width and store them on the element object """
 		height = model[variables[shape.computed_height()]].as_string()
 		width = model[variables[shape.computed_width()]].as_string()
 		height = int(height)
@@ -53,9 +56,7 @@ class Solution(object):
 		element["size"] = [width, height]
 
 	def parse_container_values(self, shape, element, variables, model):
-		# Also include the container properties in the element object for each container shape 
-		# TODO: At some point when we have more properties than these we should make a collection and iterate instead
-		# so we don't have to edit this place every time we add a property
+		""" Parse values out of the Z3 model for container properties and store them on the element object """
 		arrangement = model[variables[shape.variables.arrangement.id]].as_string()
 		alignment = model[variables[shape.variables.alignment.id]].as_string()
 		padding = model[variables[shape.variables.padding.id]].as_string()
@@ -67,7 +68,8 @@ class Solution(object):
 		element["group_alignment"] = int(group_alignment)
 
 	def parse_column_values(self, shape, element, variables, model):
-		# Parse the left, right column values for elements on the root of the canvas. 
+		""" Parse values out of the Z3 model for left_column, right_column, and canvas_alignment 
+		 and store them on the element object """
 		left_column = model[variables[shape.variables.left_column.id]].as_string()
 		element["left_column"] = int(left_column)
 
@@ -78,17 +80,19 @@ class Solution(object):
 		element["canvas_alignment"] = int(canvas_alignment)
 
 	def parse_alternate_values(self, shape, element, variables, model):
+		""" Parse values out of the Z3 model for alternate variable and store it on the element object """
 		alternate = model[variables[shape.variables.alternate.id]].as_string()
 		element["alternate"] = alternate
-		print(alternate)
 
 	def parse_size_multiplier_values(self, shape, element, variables, model):
+		""" Parse values out of the Z3 model for size_factor multiplier variable and store it on the element object """
 		size_factor = model[variables[shape.variables.size_factor.id]].as_string()
 		size_factor = int(size_factor)
 		element["size_factor"] = size_factor
 
 	def parse_values(self, shape, element, variables, model): 
-		# Parse solved varivalbe values from the model object  
+		""" Parses values out of the stored Z3 model and stores them on the element object.
+			What gets parsed depends on the element/shape type """
 		self.parse_position_values(shape, element, variables, model)
 
 		if shape.type == "canvas": 
@@ -109,7 +113,9 @@ class Solution(object):
 				if shape.is_alternate: 
 					self.parse_alternate_values(shape, element, variables, model)
 
-	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics, elements_dict):
+	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics):
+		""" Process element tree to get the solved variable values out of the model into corresponding elements 
+			And compute corresponding cost metrics """ 
 		if tree.element is not None: 
 			element = copy.deepcopy(tree.element)
 
@@ -146,13 +152,19 @@ class Solution(object):
 			if hasattr(tree, "children") and len(tree.children):
 				element['children'] = []
 				for child in tree.children: 
-					child_element = self.process_hierarchy(child, variables, model, cost_matrix, cost_metrics, elements_dict)
+					child_element = self.process_hierarchy(child, variables, model, cost_matrix, cost_metrics)
 					if child_element is not None: 
 						element['children'].append(child_element)
 
 			return element
 
 	def convert_to_json(self, tree, model):
+		""" Given the element tree and the Z3 model, parse the assigned values out of the model and store them 
+			in a JSON object for the solution 
+
+			Parameters: 
+				tree: Element 
+		"""
 		sln = dict()
 		cost_matrix = np.zeros((CANVAS_HEIGHT, CANVAS_WIDTH), dtype=np.uint8)
 		new_elements = dict()
@@ -165,10 +177,9 @@ class Solution(object):
 
 		variables = sh.parse_variables_from_model(model)
 
-		elements_dict = dict()
-		element_tree = self.process_hierarchy(tree, variables, model, cost_matrix, cost_metrics, elements_dict)
+		element_tree = self.process_hierarchy(tree, variables, model, cost_matrix, cost_metrics)
 
-		# Current cost function metrics. 
+		# Old cost function metrics. 
 		# symmetry_cost = ch.compute_symmetry_cost(cost_matrix)
 		# importance_change = cost_metrics['importance_change']
 		# importance_max = cost_metrics['importance_max']
@@ -177,7 +188,7 @@ class Solution(object):
 		# importance_cost = ch.compute_importance_cost(importance_change, importance_max)
 		# cost = ch.compute_weighted_cost(symmetry_cost, importance_cost, distance_cost)
 
-		# Cost function
+		# Compute the cost model score for the element tree. 
 		new_cost = cost_model.compute_cost(element_tree)
 		cost = new_cost
 
