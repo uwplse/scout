@@ -35,7 +35,8 @@ def get_possible_row_column_values(num_rows):
 	return values
 
 def parse_unsat_core(unsat_core):
-	# Parse the conflicting constraints out of the unsat core and return identifiers for each shape and the associated conflicting constraint
+	""" Parse the conflicting constraints out of the unsat core and 
+		return identifiers for each shape and the associated conflicting constraint """ 
 	conflicts = []
 	for i in range(0, len(unsat_core)): 
 		conflict = unsat_core[i]
@@ -60,6 +61,7 @@ def parse_unsat_core(unsat_core):
 	return conflicts
 
 def parse_variables_from_model(model):
+	""" Return a collection of variables parsed out of the Z3 model """ 
 	variables = dict()
 	num_vars = len(model)
 

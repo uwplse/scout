@@ -16,21 +16,30 @@ def abs(x):
 class ConstraintBuilder(object):
 	def __init__(self, solver): 
 		# So we can override the add method for debugging
+		""" Class to build up set of constraints for HLC and basic design quality.
+
+			Attributes: 
+				solver: Solver instance object
+				constraints: String that will be built up to pass to the solver containing SMT lib constraint expressions
+				decl_constraints: String that will contain the variable declarations 
+		"""
 		self.solver = solver
 		self.constraints = "(set-info :source | Python ftw |)\n"
 		self.decl_constraints = ""
 
 	def load_constraints(self): 
-		# Parse the constraints into a set of assertions
+		""" Loads the set of constraints into a set of assertions into the solver """ 
 		const = self.decl_constraints + self.constraints
 		self.solver.load_constraints(const)		
 
 	def declare_variables(self, shapes): 
+		""" Create variable declaration statements for each of the variables on each shape """ 
 		for shape in shapes.values(): 
 			for key, val in shape.variables.items():
 				self.decl_constraints += cb.declare(val.id, val.type)
 
 	def init_previous_solution_constraints(self, previous_solutions, shapes): 
+		""" Create statements for negating the value combinations for each of the previous solutions """ 
 		# Saved solutions should not appear again in the results
 		for solution in previous_solutions:
 			elements = solution["elements"]

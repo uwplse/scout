@@ -7,6 +7,7 @@ import constraint_builder
 import shapes as shape_classes
 import smtlib_builder as smt
 import solver_helpers as sh
+import override_solver
 import solution as sln
 import logging
 import numpy as np
@@ -80,27 +81,6 @@ CANVAS_RELAX_PROPERTIES = {
 	"width": [["grid_layout"], ["baseline_grid"]]
 }
 
-class OverrideSolver(object):
-	def __init__(self, solver):
-		self.solver = solver
-		self.debug = True
-		self.ctx = solver.ctx
-		self.num_constraints = 0
-
-	def load_constraints(self, constraints):
-		self.solver.from_string(constraints)
-
-	def model(self):
-		return self.solver.model()
-
-	def assertions(self):
-		return self.solver.assertions()
-
-	def add(self, constraint, name=""): 
-		if len(name) and self.debug: 
-			self.solver.assert_and_track(constraint, name)
-		else: 
-			self.solver.add(constraint)
 
 class Solver(object): 
 	def __init__(self, solver_ctx, elements, solutions=[], relative_designs=None, prune_domains=True):
@@ -127,7 +107,7 @@ class Solver(object):
 		self.variables_different = Int('VariablesDifferent')
 
 
-		self.override_solver = OverrideSolver(self.solver)
+		self.override_solver = override_solver.OverrideSolver(self.solver)
 		self.cb = constraint_builder.ConstraintBuilder(self.override_solver)
 
 		# Build the initial set of constraints on the shapes and containers 

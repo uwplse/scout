@@ -85,3 +85,7 @@ If you want to just build the web application without watching for changes to th
 ### Deploying Scout to a Docker machine on Heroku
 
 	Instructions TBD
+
+### xd_plugin_diversity
+
+	This is an xd plugin that we used to export a JSON tree with the data required for measuring spatial diversity across pairs of layouts in the evaluation. The plugin prints a JSON tree to the console, which needs to be copied to another file to run the analysis scripts. S
