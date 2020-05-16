@@ -1,3 +1,4 @@
+""" Cost model for computing weighted score for a layout """
 from collections import namedtuple
 import copy
 import json

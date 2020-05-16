@@ -1,3 +1,4 @@
+""" Old cost model functions """
 import numpy as np
 import math
 
@@ -23,7 +24,7 @@ def compute_symmetry_cost(cost_matrix):
 	bottom_half_rotated = np.flipud(bottom_half)
 
 	# Use bitwise XOR to find the bits that are still set
-	results_lr = np.bitwise_xor(first_half, second_half_rotated)
+	results_lr = np.bitwise_xor(first_half, second_half_rohtated)
 	results_tb = np.bitwise_xor(top_half, bottom_half_rotated)
 
 	total_lr = np.sum(results_lr)
