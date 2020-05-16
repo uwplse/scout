@@ -1,3 +1,6 @@
+# Main class for generating a layout with branch  and bound algorithms
+# building constraints, and calling into the solver. Also responsible for 
+# repairing solutions that are invalid by relaxing one or more property values. 
 from z3 import *
 import time
 import sys
@@ -206,6 +209,7 @@ class Solver(object):
 		return shapes,root
 
 	def construct_shape_hierarchy(self, elements, shapes, parent_emphasis="normal", at_root=False, selected_grid=[], selected_baseline_grid=[]):
+		# Build the shape hierarchy from the JSON collection 
 		shape_hierarchy = []
 		for i in range(0, len(elements)): 
 			element = elements[i]
@@ -256,6 +260,9 @@ class Solver(object):
 		return shape_hierarchy
 
 	def prune_container_child_sizes(self, container):
+		# Prune some of the size combinations for the container
+		# By randomly selecting a subset of sizes to search. 
+
 		# Group children by semantic type 
 		groups = dict()
 		for child in container.children:
@@ -303,6 +310,8 @@ class Solver(object):
 		# 			child.variables.height.domain = [val[1] for val in size_combos]
 
 	def prune_repeat_group_child_sizes(self, container): 
+		# Prune sizes for repeat group container children. 
+
 		# Get the first item in the repeat group 
 		if len(container.children): 
 			first_item = container.children[0]
@@ -327,6 +336,7 @@ class Solver(object):
 						corresponding_child_shape.variables.height.domain = [combo[1] for combo in size_combos]
 
 	def prune_size_domains(self): 
+		# Prune size domains for each shape to reduce the size of the search space. 
 		for shape in self.shapes.values(): 
 			if shape.type == "container" and not shape.item:
 				if shape.typed: 
@@ -343,7 +353,7 @@ class Solver(object):
 					self.prune_container_child_sizes(shape)
 
 	def prune_layout_grid_domains(self): 
-		# Randomly select a subset of the search space to search to find a 
+		# Randomly select a subset of the values for the layout grid to search to find a 
 		# design in this iteration. For performance. 
 		# Prune based on variable values selected intelligently 
 		canvas_shape = self.shapes["canvas"]
@@ -390,6 +400,7 @@ class Solver(object):
 				right_column.domain = right_column_pruned
 
 	def prune_size_variable_domains_for_locks(self): 
+		# If any of the shapes have locks, prune the remaining values from the domains. 
 		for shape in self.shapes.values():
 			if shape.locks is not None:
 				for lock in shape.locks:
@@ -517,12 +528,14 @@ class Solver(object):
 		return variables
 
 	def compute_search_space(self):
+		# Compute the size of the search space. 
 		total = 1
 		for variable in self.variables:
 			total *= len(variable.domain)
 		return total	
 
 	def init_output_variables(self):
+		# Output variables are the x,y position of all leaf-node shapes. 
 		output_variables = []
 		for shape in self.shapes.values(): 
 			if shape.type != "container" and shape.type != "canvas": 
@@ -542,6 +555,7 @@ class Solver(object):
 			self.solver.pop()
 
 	def select_next_variable(self):
+		# Pop the next variable off the stack to assign it 
 		return self.unassigned.pop()
 
 	def select_next_variable_random(self): 
@@ -550,10 +564,12 @@ class Solver(object):
 		return random_index, self.unassigned.pop(random_index)
 
 	def restore_variable(self, variable, index):
+		# Reset a variable back to the unassigned state. 
 		variable.assigned = None
 		self.unassigned.insert(index, variable)
 
 	def get_randomized_domain(self, variable):
+		# Randomize the order of the domain for a given variable. 
 		randomized_domain = variable.domain[0:len(variable.domain)]
 		random.shuffle(randomized_domain)
 		return randomized_domain
@@ -647,15 +663,7 @@ class Solver(object):
 		return vars_diff
 
 	def z3_solve(self): 
-		# random_seed = random.randint(1,RANDOM_SEEDS)
-		# random_seed = np.random.randint(0, 655350)
-		# random_seed2 = np.random.randint(0, 655350)
-		# z3.set_param(
-		# 	 'auto_config', False,
-	     #     'smt.arith.random_initial_value', True,
-	     #     'smt.random_seed', random_seed,
-	     #     'sat.phase', 'random',
-	     #     'sat.random_seed', random_seed2)
+		# Solve for solutions only using Z3, rather than the branch and bound (experimental)
 		solutions = []
 		num_solutions = 1
 		slns_found = 0
@@ -675,6 +683,7 @@ class Solver(object):
 		return solutions
 
 	def branch_and_bound(self, state):
+		# Main solving loop to find a valid solution 
 		if len(self.unassigned) == 0:
 			time_z3_start = time.time()
 			result = self.solver.check()
@@ -748,6 +757,7 @@ class Solver(object):
 		return 
 
 	def z3_check(self): 
+		# Checks the result of the current set of constraints with
 		result = self.solver.check()
 		if str(result) == 'sat': 
 			return True
@@ -755,10 +765,12 @@ class Solver(object):
 			return False
 
 	def check_added_or_removed_shapes(self, elements): 
+		# Look for shapes that were added or removed in this solution from the c
+		# Current set of shapes in the hierarchy. In that case, we dont' need to check validity 
+
 		shapes_added = []
 		shapes_removed = []
 
-		# Look for shapes that were added or removed and in that case, we dont' need to check validity 
 		element_ids = []
 		sh.get_element_names(elements, element_ids)
 
@@ -773,49 +785,6 @@ class Solver(object):
 
 		return shapes_added, shapes_removed
 
-	def restore_relaxed_properties(self, solution, element_id, relaxed_property_values): 
-		solution_element = solution["elements"][element_id]
-		relaxed_values = relaxed_property_values[element_id]
-		for key,relaxed_value in relaxed_values.items(): 
-			solution_element[key] = relaxed_value
-
-		# Restore child prperty values
-		self.restore_child_relaxed_properties(solution, element_id, relaxed_property_values)
-
-	def restore_child_relaxed_properties(self, solution, element_id, relaxed_property_values): 
-		# Relax child properties 
-		element_shape = self.shapes[element_id]
-		if hasattr(element_shape, 'children') and len(element_shape.children):
-			for child in element_shape.children: 
-				solution_element = solution["elements"][child.shape_id]
-
-				relaxed_values = relaxed_property_values[child.shape_id]
-				for key,relaxed_value in relaxed_values.items(): 
-					solution_element[key] = relaxed_value
-			self.restore_child_relaxed_properties(solution, child.shape_id, relaxed_property_values)
-
-	def relax_element_properties(self, elements, changed_element_id, changed_property, relaxed_property_values): 
-		element = elements[changed_element_id]
-		properties_to_relax = RELAX_PROPERTIES[changed_property]
-		for i in range(0, len(properties_to_relax)): 
-			property_group_to_relax = properties_to_relax[i]
-			for property_to_relax in property_group_to_relax: 
-				if property_to_relax in element and property_to_relax not in relaxed_property_values[changed_element_id]: 
-					relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
-		self.relax_child_properties(elements, changed_element_id, changed_property, relaxed_property_values)
-
-	def relax_canvas_properties(self, elements, changed_element_id, changed_property, relaxed_property_values):
-		#Then start to relax the canvas properties
-		canvas_element = elements["canvas"]
-		canvas_properties_to_relax = CANVAS_RELAX_PROPERTIES[changed_property]
-		if "canvas" not in relaxed_property_values: 
-			relaxed_property_values["canvas"] = dict()
-
-		for i in range(0, len(canvas_properties_to_relax)): 
-			canvas_property_group_to_relax = canvas_properties_to_relax[i]
-			for canvas_property_to_relax in canvas_property_group_to_relax: 
-				if canvas_property_to_relax not in relaxed_property_values["canvas"]: 
-					relaxed_property_values["canvas"][canvas_property_to_relax] = canvas_element[canvas_property_to_relax]
 
 	def get_parent_node(self, element_tree, element_id): 
 		# Find the elements parent node in the tree
@@ -872,7 +841,7 @@ class Solver(object):
 				self.get_elements_dict(child, elements)
 
 	def repair_solution(self, solution, changed_element_id, changed_property, changed_value, keep_or_prevent): 
-		# Remove all of the non-relaxed varibles from the unassigned variables. 
+		"""Repair loop for relaxing properties in order to make a solution consistent """ 
 		relaxed_property_values = dict() 
 		relaxed_property_values[changed_element_id] = dict()
 		relaxed_property_values[changed_element_id][changed_property] = changed_value
@@ -963,6 +932,53 @@ class Solver(object):
 
 		return None
 
+
+	def restore_relaxed_properties(self, solution, element_id, relaxed_property_values): 
+		""" Reset the properties that were relaxed back to their original values """
+		solution_element = solution["elements"][element_id]
+		relaxed_values = relaxed_property_values[element_id]
+		for key,relaxed_value in relaxed_values.items(): 
+			solution_element[key] = relaxed_value
+
+		# Restore child prperty values
+		self.restore_child_relaxed_properties(solution, element_id, relaxed_property_values)
+
+	def restore_child_relaxed_properties(self, solution, element_id, relaxed_property_values): 
+		""" Restore the values that were originally relaxed back to their original values """
+		element_shape = self.shapes[element_id]
+		if hasattr(element_shape, 'children') and len(element_shape.children):
+			for child in element_shape.children: 
+				solution_element = solution["elements"][child.shape_id]
+
+				relaxed_values = relaxed_property_values[child.shape_id]
+				for key,relaxed_value in relaxed_values.items(): 
+					solution_element[key] = relaxed_value
+			self.restore_child_relaxed_properties(solution, child.shape_id, relaxed_property_values)
+
+	def relax_element_properties(self, elements, changed_element_id, changed_property, relaxed_property_values):
+		""" Remove assignments for a given list of properties to relax in order to repair the solution. """ 
+		element = elements[changed_element_id]
+		properties_to_relax = RELAX_PROPERTIES[changed_property]
+		for i in range(0, len(properties_to_relax)): 
+			property_group_to_relax = properties_to_relax[i]
+			for property_to_relax in property_group_to_relax: 
+				if property_to_relax in element and property_to_relax not in relaxed_property_values[changed_element_id]: 
+					relaxed_property_values[changed_element_id][property_to_relax] = element[property_to_relax]
+		self.relax_child_properties(elements, changed_element_id, changed_property, relaxed_property_values)
+
+	def relax_canvas_properties(self, elements, changed_element_id, changed_property, relaxed_property_values):
+		""" Remove assignments for canvas properties in order to repair the solution """
+		canvas_element = elements["canvas"]
+		canvas_properties_to_relax = CANVAS_RELAX_PROPERTIES[changed_property]
+		if "canvas" not in relaxed_property_values: 
+			relaxed_property_values["canvas"] = dict()
+
+		for i in range(0, len(canvas_properties_to_relax)): 
+			canvas_property_group_to_relax = canvas_properties_to_relax[i]
+			for canvas_property_to_relax in canvas_property_group_to_relax: 
+				if canvas_property_to_relax not in relaxed_property_values["canvas"]: 
+					relaxed_property_values["canvas"][canvas_property_to_relax] = canvas_element[canvas_property_to_relax]
+
 	def check_validity(self, solution):
 		# Look for any shapes that have been removed or added in this solution
 		elements = solution["elements"]
@@ -1002,12 +1018,14 @@ class Solver(object):
 		return solution
 
 	def print_solution(self):
+		# Helper to print out the current solution
 		print("------------Solution------------")
 		for variable in self.variables:
 			print(variable.shape_id)
 			print(str(variable.domain[variable.assigned]))
 
 	def print_partial_solution(self):
+		# Helper to print out a partial solution. 
 		for variable in self.variables:
 			if variable.assigned is not None:
 				print(variable.shape_id)

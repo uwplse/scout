@@ -1,5 +1,6 @@
 import random
 
+# Constants that Scout uses to compute domains for element sizes. 
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
 CANVAS_ALIGNMENT = ["left", "center", "right", "other"]
@@ -15,12 +16,10 @@ SNAP_GRID_CONSTANT = 16
 MAGNIFICATION_VALUES = [1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2]
 MINIFICATION_VALUES = [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9]
 LAYOUT_COLUMNS = [2,3,4,6]
-GUTTERS = [4,8,16] # TODO can introduce a variable value for these at some point
+GUTTERS = [4,8,16] 
 COLUMNS = [1,2,3,4,5,6,7,8,9,10,11,12]
 BASELINE_GRIDS = [4,8,16]
-# MARGINS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60]
 MARGINS = [0,4,8,12,16,20,24,28,32,36,40]
-# PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
 PADDINGS = [4,8,12,16,20,24,28,32,36,40,44,48,52,56,60,64,68,72,76,80,84,88,92,96,100]
 LAYOUT_GRID_PROPERTIES = ["margin", "columns", "column_width", "gutter_width"]
 SIZE_PROPERTIES = ["width", "height", "size_factor"]
@@ -46,6 +45,7 @@ def compute_layout_grid_domains():
 	return domain
 
 def baseline_grid_consistent_with_prevents(baseline_grid, element, at_root=False):
+	""" Checks whether the baseline grid is not prevented by the locks an on element """
 	if "prevents" in element and "baseline_grid" in element["prevents"]: 
 		bg_value = element["prevented_values"]["baseline_grid"]
 		if baseline_grid in bg_value: 
@@ -53,6 +53,7 @@ def baseline_grid_consistent_with_prevents(baseline_grid, element, at_root=False
 	return True
 
 def is_consistent_with_prevents(layout_grid, element, at_root=False):
+	""" Checks whether the layout grid is not prevented by the locks on an element """
 	if "prevents" in element: 
 		for prevent in element["prevents"]: 
 			if prevent in LAYOUT_GRID_PROPERTIES: 
@@ -102,6 +103,7 @@ def baseline_grid_consistent_with_locks(baseline_grid, element, at_root=False):
 	return True
 
 def is_consistent_with_locks(layout_grid, element, at_root=False): 
+	""" Checks whether a layout grid is consistesnt with locks on an element. """
 	margin = layout_grid[0]
 	columns = layout_grid[1]
 	gutter_width = layout_grid[2]
@@ -175,6 +177,7 @@ def is_consistent_with_locks(layout_grid, element, at_root=False):
 	return True
 
 def grid_consistent_with_element_locks(layout_grid, element_tree, at_root=False): 
+	""" Checks whether a layout grid value is consistent with locks on elements in the element tree """
 	cons = is_consistent_with_locks(layout_grid, element_tree, at_root)
 	if not cons: 
 		return False
@@ -193,6 +196,7 @@ def grid_consistent_with_element_locks(layout_grid, element_tree, at_root=False)
 	return True
 
 def baseline_grid_consistent_with_element_locks(baseline_grid, element_tree, at_root=False): 
+	""" Checks whether a baseline grid value is consistent with locks on elements in the element tree """
 	cons = baseline_grid_consistent_with_locks(baseline_grid, element_tree, at_root)
 	if not cons: 
 		return False
@@ -211,9 +215,8 @@ def baseline_grid_consistent_with_element_locks(baseline_grid, element_tree, at_
 	return True
 
 def select_consistent_layout_grid(element_tree): 
+	""" Selects a layout grid value to use based on the current set of element locks """
 	layout_grids = compute_layout_grid_domains()
-
-	# Select grids consistent with the current set of locks
 	filtered_grids = []
 	for grid in layout_grids:
 		if grid_consistent_with_element_locks(grid, element_tree):
@@ -250,6 +253,15 @@ def get_layout_grids():
 	return layout_grids
 
 def compute_size_domain_change_width_only_root(importance, width, height, layout_grids, is_separator=False): 
+	""" Computes the size domain a priori for elements that will change their width only and are 
+		also located on the root of the tree. 
+
+		Attributes: 
+			importance: Current emphasis value 
+			width: original width 
+			height: original height 
+			layout_grids: possible set of layout grids that we will compute the sizes from. Root elements have to be placed on a column. 
+	"""
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
 	domain = []
@@ -286,6 +298,15 @@ def compute_size_domain_change_width_only_root(importance, width, height, layout
 	return domain_with_factor
 
 def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, layout_grids):
+	""" Computes the size domain a priori for elements that will change width and height to maintain their aspect ratio. 
+		also located on the root of the tree. 
+
+		Attributes: 
+			importance: Current emphasis value 
+			width: original width 
+			height: original height 
+			layout_grids: possible set of layout grids that we will compute the sizes from. Root elements have to be placed on a column. 
+	"""
 	# For touch targets, the calcuated sizes should only
 	# increase/decrease the width (buttons, fields)
 	domain = []
@@ -318,6 +339,15 @@ def compute_size_domain_maintain_aspect_ratio_root(importance, width, height, la
 	return domain_with_factor
 
 def compute_size_domain_change_width_only(importance, width, height, baseline_grid, is_separator=False): 
+	""" Computes the size domain a priori for elements that will change their width only, and are 
+		not located on the root of the tree. 
+
+		Attributes: 
+			importance: Current emphasis value 
+			width: original width 
+			height: original height 
+			layout_grids: possible set of layout grids that we will compute the sizes from. Root elements have to be placed on a column. 
+	"""
 	# For touch targets, the calcuated sizes should only 
 	# increase/decrease the width (buttons, fields) 
 	domain = []
@@ -363,11 +393,21 @@ def compute_size_domain_change_width_only(importance, width, height, baseline_gr
 	return domain	
 
 def get_nearest_grid_size(size, grid): 
+
 	floor_grid = (size // grid) * grid
 	ceil_grid = floor_grid + grid
 	return (ceil_grid if size - floor_grid >= ceil_grid - size else floor_grid)
 
-def compute_size_domain_maintain_aspect_ratio(importance, width, height, baseline_grid): 
+def compute_size_domain_maintain_aspect_ratio(importance, width, height, baseline_grid):
+	""" Computes the size domain a priori for elements that will change their width and height in order
+		to maintain their aspect ratio, and are not located on the root of the tree. 
+
+		Attributes: 
+			importance: Current emphasis value 
+			width: original width 
+			height: original height 
+			layout_grids: possible set of layout grids that we will compute the sizes from. Root elements have to be placed on a column. 
+	""" 
 	domain = []
 	factor_id = 0
 	aspect_ratio = width/height
