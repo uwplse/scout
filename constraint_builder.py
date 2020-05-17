@@ -8,6 +8,9 @@ import size_constraint_helpers
 
 CANVAS_HEIGHT = 640
 CANVAS_WIDTH = 360
+# We can ignore certain constraint variable values when we are checking the validity of a solution, because the 
+# other variables will account for the behavior. None of these variables are directly exposed to the designer 
+# to give feedback on. 
 IGNORED_VALUE_CONSTRAINTS = ["baseline", "canvas_alignment", "extra_in_first", "size_combo", "grid_layout", "size_factor",
 							 "outside_padding"]
 IGNORED_PREVIOUS_SOLUTION_CONSTRAINTS = ["baseline", "extra_in_first", "size_combo", "grid_layout", "canvas_alignment"]

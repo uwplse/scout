@@ -11,6 +11,7 @@ from size_domains import COLUMNS, CANVAS_ALIGNMENT, PADDINGS, BASELINE_GRIDS, GR
 # Shape classes for constructing the element hierarchy
 class Shape(object):
 	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, shape_type, at_root=False): 
+		""" Base class for a solver shape in the element tree hierarchy. Initializes Z3 variables and domains. """ 
 		self.shape_id = shape_id
 		self.semantic_type = element["type"]
 		self.element = element
@@ -39,6 +40,8 @@ class Shape(object):
 		self.orig_height = element["orig_height"]
 
 		if "locks" in element:
+			# Locks and prevents values will be used in creating constraints later
+			# to add equalities or inequalities on those values for an element. 
 			locks = []
 			for lock in element["locks"]: 
 				if "size" in element["locks"]: 
@@ -88,12 +91,16 @@ class Shape(object):
 			self.order = element["order"]
 
 		if "typed" in element: 
+			# Typed is set for repeat group elements. 
 			self.typed = element["typed"]
 
 		if "item" in element: 
+			# Item elements are repeat group 'item' elements (subgroup)
 			self.item = element["item"]
 
 		if "correspondingIDs" in element: 
+			# Corresponding IDs are the IDs of the other shapes that correspond to this shape inside of a repeat 
+			# group subgroup. 
 			self.correspondingIDs = element["correspondingIDs"]
 
 
@@ -109,16 +116,26 @@ class Shape(object):
 
 		if self.type == "leaf": 
 			size_domain = []
+			# Initialize the size domains for a shape. 
+			# We compute these size values a priori before the search, otherwise 
+			# having the solver search over all possible sizes would be intractible. 
 			if self.at_root:
-
+				# There are 2 types of size changing behaviors based on the semantic type 
+				# an element has, which we hard code into the element itself (designer does not annotate it)
+				# Touch targets (e.g., button) should only increase in width and not height. 
+				# For elements that are at the root , which means they are direct children of the
+				# root element, we resize them to fit into columns 
 				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS: 
 					is_sep = self.semantic_type in SEPARATOR_TARGETS
 					size_domain = sizes.compute_size_domain_change_width_only_root(self.importance, size_width, size_height,
 																		   selected_layout_grid, is_sep)
 				else: 
+					# All other elements should increase size or decrease while maintaining their original aspect ratio. 
 					size_domain = sizes.compute_size_domain_maintain_aspect_ratio_root(self.importance, size_width, size_height,
 																		   selected_layout_grid)
 			else: 
+				# For elements that are not at the root of the canvas, we resize them by 
+				# grid increments. 
 				if self.semantic_type in TOUCH_TARGETS or self.semantic_type in SEPARATOR_TARGETS:
 					is_sep = self.semantic_type in SEPARATOR_TARGETS
 					size_domain = sizes.compute_size_domain_change_width_only(self.importance, size_width, size_height, selected_baseline_grid, is_sep)
@@ -126,6 +143,7 @@ class Shape(object):
 					size_domain = sizes.compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height, selected_baseline_grid)
 				
 			# Select only a subset of the size values to search here: 
+			# Further helps to reduce the size of the search space. 
 			self.variables.height = var.Variable(shape_id, "height", 
 				[x[1] for x in size_domain], index_domain=False)
 			self.variables.width = var.Variable(shape_id, "width", 
@@ -154,21 +172,28 @@ class Shape(object):
 			self.search_variables.append(self.variables.y)
 
 	def computed_width(self): 
+		""" Returns the fixed width for the canvas shape, or a variable width for any other type of shape """ 
 		if self.type == "canvas": 
 			return self.orig_width
 		return self.variables.width.id
 
 	def computed_height(self):
+		""" Returns the fixed height for the canvas shape, or a variable height for any other type of shape """ 
 		if self.type == "canvas": 
 			return self.orig_height
 		return self.variables.height.id
 
 class LeafShape(Shape): 
 	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, at_root=False):
+		""" Represents a leaf shape element. """
 		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, "leaf", at_root)
 
 class ContainerShape(Shape): 
 	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, at_root=False):
+		""" Represents a container element (has at least one child element) 
+
+			Containers have extra variables like arrangement and alignment beyond the base variables for a leaf shape. 
+		"""
 		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, "container", at_root)
 		self.children = []
 		self.variables.arrangement = var.Variable(shape_id, "arrangement", 
@@ -177,6 +202,9 @@ class ContainerShape(Shape):
 			PADDINGS, index_domain=False)
 		self.variables.alignment = var.Variable(shape_id, "alignment", ["left", "center", "right"])
 		self.variables.group_alignment = var.Variable(shape_id, "group_alignment", ["left", "center", "right"])
+
+		# Search variables are a special set of variables that the solving loop will use to 
+		# search through. We do onot search through all variables a shape contains (like width or height)
 		self.search_variables.append(self.variables.alignment)
 		self.search_variables.append(self.variables.arrangement)
 		self.search_variables.append(self.variables.padding)
@@ -211,6 +239,7 @@ class ContainerShape(Shape):
 
 class CanvasShape(Shape):
 	def __init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid):
+		""" Represents the single root canvas shape which contains the rest of the element hierarchy """
 		Shape.__init__(self, solver_ctx, shape_id, element, selected_layout_grid, selected_baseline_grid, "canvas", at_root=False)
 		self.children = []
 
