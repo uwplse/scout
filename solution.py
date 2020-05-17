@@ -1,5 +1,4 @@
 from z3 import *
-import solver_helpers as sh
 import cost as ch
 import uuid
 import numpy as np
@@ -113,6 +112,17 @@ class Solution(object):
 				if shape.is_alternate: 
 					self.parse_alternate_values(shape, element, variables, model)
 
+	def parse_variables_from_model(self, model):
+		""" Return a collection of variables parsed out of the Z3 model """ 
+		variables = dict()
+		num_vars = len(model)
+
+		decls = model.decls()
+		for i in range(num_vars):
+			var = decls[i]
+			variables[var.name()] = var()
+		return variables
+
 	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics):
 		""" Process element tree to get the solved variable values out of the model into corresponding elements 
 			And compute corresponding cost metrics """ 
@@ -158,6 +168,8 @@ class Solution(object):
 
 			return element
 
+
+
 	def convert_to_json(self, tree, model):
 		""" Given the element tree and the Z3 model, parse the assigned values out of the model and store them 
 			in a JSON object for the solution 
@@ -175,7 +187,7 @@ class Solution(object):
 		cost_metrics['distance_cost'] = 0 
 		cost_metrics['importance_max'] = 0
 
-		variables = sh.parse_variables_from_model(model)
+		variables = self.parse_variables_from_model(model)
 
 		element_tree = self.process_hierarchy(tree, variables, model, cost_matrix, cost_metrics)
 

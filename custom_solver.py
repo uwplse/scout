@@ -6,7 +6,6 @@ import json
 import z3_solver
 import logging
 import solution as sln
-import solver_helpers as sh
 
 NUM_SOLUTIONS = 10
 TIMEOUT = 10
