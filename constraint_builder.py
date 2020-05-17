@@ -31,6 +31,7 @@ class ConstraintBuilder(object):
 		self.solver = solver
 		self.constraints = "(set-info :source | Python ftw |)\n"
 		self.decl_constraints = ""
+		self.columnizer = columnizer.Columnizer()
 
 	def load_constraints(self): 
 		""" Loads the set of constraints into a set of assertions into the solver """ 
@@ -920,8 +921,8 @@ class ConstraintBuilder(object):
 			"container_" + container.shape_id + "_padding_lt_thinnest_child")
 
 		# Constraints for when the arrangemnet is rows or columns. 
-		columnizer.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
-		self.constraints += columnizer.constraints
+		self.columnizer.balanced_row_column_arrangement(is_rows, is_columns, container, rows_index, columns_index, spacing)
+		self.constraints += self.columnizer.constraints
 
 	def align_container(self, container, spacing):
 		""" Alignement constraints for a container to align elements inside a container to one of 6 possible axes """
