@@ -10,7 +10,6 @@ import constraint_builder
 import domain_reducer as dr
 import shapes as shape_classes
 import smtlib_builder as smt
-import solver_helpers as sh
 import override_solver
 import solution as sln
 import logging
@@ -27,7 +26,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 RANDOM_SEEDS=100000
 CANVAS_WIDTH = 360
-DOMAIN_SIZE_REDUCTION = 4
 REPAIR_TRIES = 2
 
 # These constaints help us decide which variables to relax when we are reparing for a 
@@ -463,7 +461,7 @@ class Solver(object):
 		# It may be possible for multiple solutions to have the same outputs (exact x,y coordinates for all shapes)
 		# So to restrict this, we encode the X,Y positions in the clauses to prevent these solutions
 		all_values = []
-		variables = sh.parse_variables_from_model(model)
+		variables = solution.parse_variables_from_model(model)
 		
 		decl_constraints = "" # Because from_string requires declaring vars again even if already defined :(
 		for v_i in range(0, len(self.output_variables)): 
@@ -590,6 +588,14 @@ class Solver(object):
 		else: 
 			return False
 
+	def get_element_names(self, element_tree, element_names=[]):
+		"""Get a list of all the names of elements in the tree hierarchy"""
+		element_names.append(element_tree['name'])
+
+		if 'children' in element_tree: 
+			for child in element_tree['children']: 
+				self.get_element_names(child, element_names)
+
 	def check_added_or_removed_shapes(self, elements): 
 		# Look for shapes that were added or removed in this solution from the c
 		# Current set of shapes in the hierarchy. In that case, we dont' need to check validity 
@@ -598,7 +604,7 @@ class Solver(object):
 		shapes_removed = []
 
 		element_ids = []
-		sh.get_element_names(elements, element_ids)
+		self.get_element_names(elements, element_ids)
 
 		for element_id in element_ids:
 			if element_id not in self.shapes:

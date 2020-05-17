@@ -120,7 +120,9 @@ class Solution(object):
 		decls = model.decls()
 		for i in range(num_vars):
 			var = decls[i]
-			variables[var.name()] = var()
+			name = var.name()
+			if name != 'div0' and name != 'mod0':
+				variables[var.name()] = var()
 		return variables
 
 	def process_hierarchy(self, tree, variables, model, cost_matrix, cost_metrics):

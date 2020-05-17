@@ -1,3 +1,5 @@
+import smtlib_builder as cb
+
 def get_max_width_constraint(child_i, widest_i, child_shapes): 
 	""" Get the width value of the widest element in a set of shapes (child_shapes) """
 	if child_i < len(child_shapes): 

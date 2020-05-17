@@ -1,3 +1,8 @@
+import random 
+from size_domains import LAYOUT_GRID_PROPERTIES, SIZE_PROPERTIES, BASELINE_GRIDS
+
+DOMAIN_SIZE_REDUCTION = 4
+
 class DomainReducer(object): 
 	def __init__(self, shapes):
 		""" Class to reduce the domain sizes of the variable values based on already selected layout grids and domains 
