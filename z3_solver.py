@@ -30,6 +30,10 @@ CANVAS_WIDTH = 360
 DOMAIN_SIZE_REDUCTION = 4
 REPAIR_TRIES = 2
 
+# These constaints help us decide which variables to relax when we are reparing for a 
+# given variable conflicts. 
+# this process could likely be simplified by relaxing only those that are in conflict in the 
+# unsat core, but we didn't do that for this iteration. 
 RELAX_PROPERTIES = {
 	"arrangement": [["x", "y", "width", "height", "left_column", "right_column"], ["padding"]],
 	"padding": [["x", "y", "width", "height", "left_column", "right_column"], ["arrangement"]],
@@ -263,6 +267,7 @@ class Solver(object):
 
 
 	def init_variables(self):
+		""" Initializes the list of variables to search in a specific order to make the search go faster """
 		last = []
 		first = []
 		variables = []
@@ -394,6 +399,8 @@ class Solver(object):
 		return randomized_domain
 
 	def encode_assigned_variable(self, variable):
+		""" Used by the search loops to create constraints to encode
+		 an equality constraint for a variable value to the value it has been assigned by the search """
 		constraints = smt.declare(variable.id, variable.type)
 		if variable.name == "grid_layout":
 			assigned_value = variable.domain[variable.assigned]

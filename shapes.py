@@ -142,8 +142,6 @@ class Shape(object):
 				else: 
 					size_domain = sizes.compute_size_domain_maintain_aspect_ratio(self.importance, size_width, size_height, selected_baseline_grid)
 				
-			# Select only a subset of the size values to search here: 
-			# Further helps to reduce the size of the search space. 
 			self.variables.height = var.Variable(shape_id, "height", 
 				[x[1] for x in size_domain], index_domain=False)
 			self.variables.width = var.Variable(shape_id, "width", 
@@ -151,6 +149,11 @@ class Shape(object):
 			self.variables.size_factor = var.Variable(shape_id, "size_factor",
 				[x[2] for x in size_domain], index_domain=False)
 
+			# Size combo variables are a convenient wrapper
+			# for the width, height, and size_factor variables above (triple)
+			# In the search process, we search over the values for size_combo rather
+			# than the individual variables, so that we do not need to add constraints on width and height values 
+			# to ensure the aspect ratio of elements is maintained (which requires a multiplication constraint)
 			self.variables.size_combo = var.Variable(shape_id, "size_combo", 
 				size_domain)
 			self.search_variables.append(self.variables.size_combo)
